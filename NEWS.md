@@ -1,3 +1,13 @@
+# slicejam 0.0.3.900
+
+# updates to existing functions
+
+* `se_contrast_stats()` new arguments `block`, and `correlation` intended
+to allow blocking factors in experiment design.
+* `run_limma_replicate()` new arguments `block`, and `correlation` recognized
+from `se_contrast_stats()`.
+
+
 # slicejam 0.0.2.900
 
 # updates to existing functions
