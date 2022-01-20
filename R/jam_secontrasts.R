@@ -698,6 +698,7 @@ run_limma_replicate <- function
  mgm_cutoff=NULL,
  ave_cutoff=NULL,
  block=NULL,
+ collapse_by_gene=FALSE,
  correlation=NULL,
  verbose=FALSE,
  ...)
