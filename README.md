@@ -123,3 +123,53 @@ functions:
 
 * `matrix_normalize()` - is the core function for `se_normalize()` and operates
 on individual numeric data matrices.
+
+
+## Statistical comparisons
+
+### `se_contrast_stats()` is the central function
+
+* Applies design and contrasts defined by `SEDesign`, or given
+specific `design` and `contrasts` matrix objects.
+* Initially used to call `limma` functions on a series of `assays`
+data matrices contained in the `SummarizedExperiment` object.
+* Applies statistical thresholds to define statistical hits for follow-up:
+
+   * `adjp_cutoff`: adjusted P-value threshold
+   * `fold_cutoff`: normal space fold change threshold
+   * `mgm_cutoff`: max group mean threshold, which requires any one experiment
+   group involved in a given contrast to have mean value at or above this
+   threshold.
+
+* Additional threshold options:
+
+   * `p_cutoff`: unadjusted P-value threshold
+   * `ave_cutoff`: average expression threshold, using the equivalent of
+   `limma` column `AveExpr` with the mean group expression.
+   * `int_adj_p_cutoff`, `int_fold_cutoff`, `int_mgm_cutoff`, etc. used
+   for specific filtering of two-way interaction contrasts.
+
+* Options:
+
+   * `use_voom`: optionally enable limmavoom workflow for count data
+   * `floor_min`, `floor_value`: logic to handle numeric values below a
+   pre-defined noise threshold, values below this threshold are assigned
+   `floor_value`.
+   * `block`: optional blocking factor, which enables the
+   `limma::duplicateCorrelation()` calculation, subsequently used during
+   model fit.
+
+* Returns:
+
+   * `hit_array`: array of named numeric vectors indicating `1` up and
+   `-1` down regulated measurements. Each cell in the array contains the
+   results for one hit along three dimensions: hit threshold, assay data, contrast.
+   * `stats_dfs`: `list` of `data.frame` objects for each contrast,
+   separated by hit threshold, and by assay data analyzed.
+   * `stats_df`: one super-wide `data.frame` with results across all contrasts,
+   assay data, and hit thresholds.
+
+
+* Future work:
+
+   * enable equivalent analysis workflow steps using `DESeq2` methodology.
