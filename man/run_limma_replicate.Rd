@@ -22,6 +22,7 @@ run_limma_replicate(
   mgm_cutoff = NULL,
   ave_cutoff = NULL,
   block = NULL,
+  collapse_by_gene = FALSE,
   correlation = NULL,
   verbose = FALSE,
   ...
@@ -59,6 +60,10 @@ or \code{NULL} when a threshold should not be applied.}
 \item{ave_cutoff}{\code{numeric}
 values representing the appropriate statistical threshold,
 or \code{NULL} when a threshold should not be applied.}
+
+\item{collapse_by_gene}{\code{logical} indicating whether to apply
+\code{collapse_stats_by_gene} which chooses one "best" exemplar per gene
+when there are multiple rows that represent the same gene.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 }

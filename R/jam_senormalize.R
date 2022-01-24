@@ -192,7 +192,7 @@ se_normalize <- function
          inorm <- matrix_normalize(imatrix,
             method=imethod,
             params=params,
-            verbose=verbose - 1,
+            verbose=(verbose - 1) > 0,
             ...);
 
          # generate matrix of NA values to fill for normalized genes, samples
@@ -506,7 +506,7 @@ matrix_normalize <- function
 
    # apply log2 transform if needed
    if ("ifneeded" %in% apply_log2) {
-      if (any(abs(x) > 40)) {
+      if (any(abs(x) > 40 & !is.na(x))) {
          x <- jamba::log2signed(x,
             offset=1);
          if (verbose) {
@@ -529,8 +529,8 @@ matrix_normalize <- function
    }
 
    # apply optional floor
-   if (length(floor) > 0 & any(x <= floor)) {
-      x_floored <- (x <= floor);
+   if (length(floor) > 0 && any(x <= floor & !is.na(x))) {
+      x_floored <- (x <= floor & !is.na(x));
       x[x_floored] <- floor;
       if (verbose) {
          jamba::printDebug("matrix_normalize(): ",
