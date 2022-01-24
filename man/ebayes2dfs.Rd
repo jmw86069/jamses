@@ -150,10 +150,12 @@ Indeed, \code{merge_df=TRUE} will cause all \code{data.frame} results to be
 merged into one large \code{data.frame}, using \code{jamba::mergeAllXY()}.
 }
 \seealso{
-Other slicejam stats: 
+Other jamses stats: 
 \code{\link{handle_na_values}()},
+\code{\link{matrix_normalize}()},
 \code{\link{run_limma_replicate}()},
 \code{\link{se_contrast_stats}()},
+\code{\link{se_normalize}()},
 \code{\link{voom_jam}()}
 }
-\concept{slicejam stats}
+\concept{jamses stats}

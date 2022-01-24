@@ -17,7 +17,6 @@ Imports: jamba(>= 0.0.65.900),
    jamma (>= 0.0.17.900),
    colorjam (>= 0.0.22.900),
    SummarizedExperiment (>= 1.16.1),
-   splicejam (>= 0.0.74.900),
    data.table,
    matrixStats,
    BiocGenerics,
@@ -31,7 +30,6 @@ LazyData: true
 Remotes: github::jmw86069/jamba,
     github::jmw86069/colorjam,
     github::jmw86069/jamma,
-    github::jmw86069/splicejam,
     github::jmw86069/genejam,
     github::jmw86069/farrisdata
 URL: http://github.com/jmw86069/jamses

@@ -269,6 +269,11 @@ jp <- jamma::jammaplot(xwarpnorm,
 }
 \seealso{
 Other jamses stats: 
-\code{\link{se_normalize}()}
+\code{\link{ebayes2dfs}()},
+\code{\link{handle_na_values}()},
+\code{\link{run_limma_replicate}()},
+\code{\link{se_contrast_stats}()},
+\code{\link{se_normalize}()},
+\code{\link{voom_jam}()}
 }
 \concept{jamses stats}

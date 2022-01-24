@@ -103,10 +103,12 @@ used that in past, the priority to port this methodology
 is quite low.
 }
 \seealso{
-Other slicejam stats: 
+Other jamses stats: 
 \code{\link{ebayes2dfs}()},
 \code{\link{handle_na_values}()},
+\code{\link{matrix_normalize}()},
 \code{\link{se_contrast_stats}()},
+\code{\link{se_normalize}()},
 \code{\link{voom_jam}()}
 }
-\concept{slicejam stats}
+\concept{jamses stats}

@@ -1,7 +1,4 @@
 
-## slicejam_stats.R
-## - expression matrix operations
-
 
 #' Compute contrast statistics on SummarizedExperiment data
 #'
@@ -62,7 +59,7 @@
 #' @param assay_names `character` vector with one or more assay names
 #'    from `names(assays(se))`.
 #'
-#' @family slicejam stats
+#' @family jamses stats
 #'
 #' @export
 se_contrast_stats <- function
@@ -317,7 +314,7 @@ se_contrast_stats <- function
 #' * `"all"`: Replace all `NA` values with `na_value`.
 #' * `"none"`: Perform no replacement of `NA` values.
 #'
-#' @family slicejam stats
+#' @family jamses stats
 #'
 #' @export
 handle_na_values <- function
@@ -420,7 +417,7 @@ handle_na_values <- function
 #' incorrect. The correction removes `NA` values during this step,
 #' producing a result as expected.
 #'
-#' @family slicejam stats
+#' @family jamses stats
 #'
 #' @export
 voom_jam <- function
@@ -677,7 +674,7 @@ voom_jam <- function
 #'
 #' @inheritParams ebayes2dfs
 #'
-#' @family slicejam stats
+#' @family jamses stats
 #'
 #' @export
 run_limma_replicate <- function
@@ -882,7 +879,7 @@ run_limma_replicate <- function
 #'    When `merge_df=TRUE` the returned data will be one
 #'    `data.frame` object.
 #'
-#' @family slicejam stats
+#' @family jamses stats
 #'
 #' @param lmFit3 object returned by `limma::eBayes()`.
 #' @param lmFit1 object returned by `limma::lmFit()`, optional.

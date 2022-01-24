@@ -143,6 +143,11 @@ if (jamba::check_pkg_installed("farrisdata")) {
 }
 \seealso{
 Other jamses stats: 
-\code{\link{matrix_normalize}()}
+\code{\link{ebayes2dfs}()},
+\code{\link{handle_na_values}()},
+\code{\link{matrix_normalize}()},
+\code{\link{run_limma_replicate}()},
+\code{\link{se_contrast_stats}()},
+\code{\link{voom_jam}()}
 }
 \concept{jamses stats}

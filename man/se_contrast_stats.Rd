@@ -99,10 +99,12 @@ A subset of genes (\code{rownames(se)}) or samples (\code{colnames(se)}) can
 be defined, to restrict calculations to use only the subset data.
 }
 \seealso{
-Other slicejam stats: 
+Other jamses stats: 
 \code{\link{ebayes2dfs}()},
 \code{\link{handle_na_values}()},
+\code{\link{matrix_normalize}()},
 \code{\link{run_limma_replicate}()},
+\code{\link{se_normalize}()},
 \code{\link{voom_jam}()}
 }
-\concept{slicejam stats}
+\concept{jamses stats}

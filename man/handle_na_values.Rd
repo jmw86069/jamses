@@ -46,10 +46,12 @@ when an entire group is \code{NA} the entire group is kept at \code{NA}.
 }
 }
 \seealso{
-Other slicejam stats: 
+Other jamses stats: 
 \code{\link{ebayes2dfs}()},
+\code{\link{matrix_normalize}()},
 \code{\link{run_limma_replicate}()},
 \code{\link{se_contrast_stats}()},
+\code{\link{se_normalize}()},
 \code{\link{voom_jam}()}
 }
-\concept{slicejam stats}
+\concept{jamses stats}
