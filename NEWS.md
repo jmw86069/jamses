@@ -1,3 +1,11 @@
+# slicejam 0.0.4.900
+
+## new functions
+
+* `se_collapse_by_row()` is a new function intended to collapse
+rows, for example peptides into protein abundance.
+
+
 # slicejam 0.0.3.900
 
 # updates to existing functions
