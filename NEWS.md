@@ -1,4 +1,32 @@
-# slicejam 0.0.4.900
+# jamses 0.0.6.900
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * new argument `sedesign` allows providing `SEDesign` output from
+   `groups_to_design()`. When `isamples` is also provided, it will be
+   used to subset the `sedesign` as appropriate, using
+   `validate_design()`.
+
+* `validate_sedesign()` was updated to prevent the annoying warning
+when comparing vectors of two different sizes.
+
+## new functions
+
+* `save_sestats()` is a wrapper function intended to help export stat
+summary tables into Excel using `jamba::writeOpenxlsx()`. This function
+defines useful column style functions for statistical data types, such
+as P-values, fold changes, log fold changes, etc. It also saves
+all statistical contrasts, with one contrast in each worksheet.
+The worksheet names are limited to 31 characters, the limitation
+of MS Excel.
+
+# jamses 0.0.5.900
+
+Bumped version, to sync the transition of slicejam functions into jamses.
+
+# jamses 0.0.4.900
 
 ## new functions
 
@@ -6,7 +34,7 @@
 rows, for example peptides into protein abundance.
 
 
-# slicejam 0.0.3.900
+# jamses 0.0.3.900
 
 # updates to existing functions
 
@@ -16,7 +44,7 @@ to allow blocking factors in experiment design.
 from `se_contrast_stats()`.
 
 
-# slicejam 0.0.2.900
+# jamses 0.0.2.900
 
 # updates to existing functions
 
@@ -25,7 +53,7 @@ with specific probe or gene annotations. In this situation `rownames()`
 will be used from output of `limma::topTable()`.
 
 
-# slicejam 0.0.1.900
+# jamses 0.0.1.900
 
 ## initial package
 

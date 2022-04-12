@@ -18,6 +18,7 @@ se_contrast_stats(
   confint = FALSE,
   floor_min = NULL,
   floor_value = NULL,
+  sedesign = NULL,
   icontrasts = NULL,
   idesign = NULL,
   igenes = NULL,
@@ -89,7 +90,7 @@ whose cells contain hit flags (-1, 0, 1) named by \code{rownames(se)}.
 }
 
 Design and contrast matrices can be defined using the function
-\code{splicejam::groups2contrasts()}. That function assigns each sample
+\code{jamses::groups_to_sedesign()}. That function assigns each sample
 to a sample group, then assembles all relevant group contrasts
 which involve only one-factor contrast at a time. It optionally
 defines two-factor contrasts (contrast of contrasts) where

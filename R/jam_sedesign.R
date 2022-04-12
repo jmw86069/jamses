@@ -156,12 +156,12 @@ setClass("SEDesign",
 #' @export
 validate_sedesign <- function
 (object,
-   min_reps=1,
-   samples=NULL,
-   groups=NULL,
-   contrasts=NULL,
-   verbose=TRUE,
-   ...)
+ min_reps=1,
+ samples=NULL,
+ groups=NULL,
+ contrasts=NULL,
+ verbose=TRUE,
+ ...)
 {
    newmsg <- character();
 
@@ -230,7 +230,8 @@ validate_sedesign <- function
             } else {
                stop("rownames(design) is empty, and nrow(design) must equal length(samples)");
             }
-         } else if (!all(object@samples == rownames(object@design))) {
+         } else if (length(object@samples) != nrow(object@design) ||
+            !all(object@samples == rownames(object@design))) {
             if (all(object@samples %in% rownames(object@design))) {
                # re-order design rows using samples
                newmsg <- c(newmsg,

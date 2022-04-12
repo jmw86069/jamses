@@ -46,7 +46,7 @@
 #' whose cells contain hit flags (-1, 0, 1) named by `rownames(se)`.
 #'
 #' Design and contrast matrices can be defined using the function
-#' `splicejam::groups2contrasts()`. That function assigns each sample
+#' `jamses::groups_to_sedesign()`. That function assigns each sample
 #' to a sample group, then assembles all relevant group contrasts
 #' which involve only one-factor contrast at a time. It optionally
 #' defines two-factor contrasts (contrast of contrasts) where
@@ -76,6 +76,7 @@ se_contrast_stats <- function
  confint=FALSE,
  floor_min=NULL,
  floor_value=NULL,
+ sedesign=NULL,
  icontrasts=NULL,
  idesign=NULL,
  igenes=NULL,
@@ -103,17 +104,32 @@ se_contrast_stats <- function
    }
    igenes <- intersect(igenes, rownames(se));
 
-   if (length(idesign) == 0) {
-      stop("idesign must be defined.");
-   }
-   isamples <- intersect(isamples, rownames(idesign));
-   idesign <- idesign[match(isamples, rownames(idesign)),,drop=FALSE];
-   if (length(rownames(idesign)) == 0) {
-      stop("rownames(idesign) must contain values matching colnames(se).");
-   }
-   icontrasts <- icontrasts[match(rownames(icontrasts), colnames(idesign)),,drop=FALSE];
-   if (length(rownames(icontrasts)) == 0) {
-      stop("rownames(icontrasts) must match values in colnames(idesign).");
+   if (length(sedesign) > 0 && "SEDesign" %in% class(sedesign)) {
+      if (length(idesign) > 0 || length(icontrasts) > 0) {
+         warning(paste0("Note when supplying sedesign,",
+            "idesign and icontrasts are ignored."))
+      }
+      if (length(isamples) > 0) {
+         sedesign <- validate_sedesign(sedesign,
+            samples=isamples,
+            verbose=verbose);
+      }
+      isamples <- sedesign@samples;
+      idesign <- sedesign@design;
+      icontrasts <- sedesign@contrasts;
+   } else {
+      if (length(idesign) == 0) {
+         stop("idesign must be defined.");
+      }
+      isamples <- intersect(isamples, rownames(idesign));
+      idesign <- idesign[match(isamples, rownames(idesign)),,drop=FALSE];
+      if (length(rownames(idesign)) == 0) {
+         stop("rownames(idesign) must contain values matching colnames(se).");
+      }
+      icontrasts <- icontrasts[match(rownames(icontrasts), colnames(idesign)),,drop=FALSE];
+      if (length(rownames(icontrasts)) == 0) {
+         stop("rownames(icontrasts) must match values in colnames(idesign).");
+      }
    }
 
    ## Iterate each assay_name
