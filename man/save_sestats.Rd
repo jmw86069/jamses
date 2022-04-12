@@ -13,6 +13,8 @@ save_sestats(
   max_nchar_sheetname = 31,
   review_output = TRUE,
   sheet_prefix = NULL,
+  width_factor = 1,
+  max_rows = NULL,
   colorSub = NULL,
   verbose = FALSE,
   ...
@@ -24,7 +26,7 @@ save_sestats(
 \item{file}{\code{character} string indicating the filename to save.}
 
 \item{assay_names}{\code{character} string indicating which assay names
-to save, stored in \code{dimnames(sestats$hit_array)$Signals}.
+to save, stored in \code{dimnames(sestats$hit_array)$Signal}.
 When \code{NULL} then all assay names are saved.}
 
 \item{contrast_names}{\code{character} string indicating which contrasts
@@ -46,6 +48,9 @@ to the sheetName for each worksheet.}
 
 \item{sheet_prefix}{\code{character} string with optional character prefix
 to use when creating worksheet names.}
+
+\item{width_factor}{\code{numeric} used to adjust relative column widths
+in the output Excel worksheets.}
 
 \item{colorSub}{\code{character} vector of colors, optional, used to define
 categorical background colors for text string fields in Excel.

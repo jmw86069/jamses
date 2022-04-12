@@ -8,7 +8,7 @@
 #' @param sestats `list` object output from `se_contrast_stats()`
 #' @param file `character` string indicating the filename to save.
 #' @param assay_names `character` string indicating which assay names
-#'    to save, stored in `dimnames(sestats$hit_array)$Signals`.
+#'    to save, stored in `dimnames(sestats$hit_array)$Signal`.
 #'    When `NULL` then all assay names are saved.
 #' @param contrast_names `character` string indicating which contrasts
 #'    to save, stored in `dimnames(sestats$hit_array)$Contrasts`.
@@ -23,6 +23,8 @@
 #'    to the sheetName for each worksheet.
 #' @param sheet_prefix `character` string with optional character prefix
 #'    to use when creating worksheet names.
+#' @param width_factor `numeric` used to adjust relative column widths
+#'    in the output Excel worksheets.
 #' @param colorSub `character` vector of colors, optional, used to define
 #'    categorical background colors for text string fields in Excel.
 #'    The `names(colorSub)` are matched to character strings to assign
@@ -40,6 +42,8 @@ save_sestats <- function
  max_nchar_sheetname=31,
  review_output=TRUE,
  sheet_prefix=NULL,
+ width_factor=1,
+ max_rows=NULL,
  colorSub=NULL,
  verbose=FALSE,
  ...)
@@ -49,23 +53,23 @@ save_sestats <- function
 
    # determine which results to save
    if (length(assay_names) == 0) {
-      assay_names <- dimnames(sestats)$Signals;
+      assay_names <- dimnames(sestats$hit_array)$Signal;
    } else {
       assay_names <- intersect(assay_names,
-         dimnames(sestats)$Signals);
+         dimnames(sestats$hit_array)$Signal);
    }
    # if (length(cutoff_names) == 0) {
-   #    cutoff_names <- dimnames(cutoff_name)$Cutoffs;
+   #    cutoff_names <- dimnames(sestats$hit_array)$Cutoffs;
    # } else {
    #    cutoff_names <- intersect(cutoff_names,
-   #       dimnames(sestats)$Cutoffs);
+   #       dimnames(sestats$hit_array)$Cutoffs);
    # }
    cutoff_names <- "spacer";
    if (length(contrast_names) == 0) {
-      contrast_names <- dimnames(sestats)$Contrasts;
+      contrast_names <- dimnames(sestats$hit_array)$Contrasts;
    } else {
       contrast_names <- intersect(contrast_names,
-         dimnames(sestats)$Contrasts);
+         dimnames(sestats$hit_array)$Contrasts);
    }
 
    # assembly export_df to describe what data will be exported
@@ -98,9 +102,14 @@ save_sestats <- function
                1, max_nchar_sheetname - 4));
       }
    }
+   if (length(max_rows) > 0) {
+      max_rows <- rep(max_rows, nrow(export_df));
+      export_df$max_rows <- max_rows;
+   }
    if (review_output) {
       return(export_df);
    }
+
 
    # Iterate each stat table and save to Excel worksheet
    append <- FALSE;
@@ -117,6 +126,10 @@ save_sestats <- function
             sep="");
       }
       iDF <- sestats$stats_dfs[[assay_name]][[contrast_name]];
+      if (length(max_rows) > 0) {
+         iDF <- head(iDF,
+            max_rows[irow]);
+      }
       if (length(iDF) == 0 || nrow(iDF) == 0) {
          if (verbose) {
             jamba::printDebug("save_sestats(): ",
@@ -127,7 +140,7 @@ save_sestats <- function
       iDF <- jamba::renameColumn(iDF,
          from="probes",
          to="gene_name");
-      icols <- provigrep(c("probes|symbol|gene|protein",
+      icols <- jamba::provigrep(c("probes|symbol|gene|protein",
          "^hit ",
          "."),
          colnames(iDF));
@@ -169,11 +182,17 @@ save_sestats <- function
          lfcColumns,
          intColumns));
       save_widths <- rep(10, ncol(iDF));
-      save_widths[length(col_widths)] <- 20;
-      save_widths[hitColumns] <- 15;
-      save_widths[smallColumns] <- 8;
-      set_xlsx_colwidths(xlsxFile=stats_file_xlsx,
-         sheet=save_contrast,
+      save_widths[length(save_widths)] <- 40;
+      save_widths[hitColumns] <- 20;
+      save_widths[smallColumns] <- 15;
+      save_widths <- save_widths * width_factor;
+      if (verbose) {
+         jamba::printDebug("save_sestats(): ",
+            "      Adjusting colwidths: ", save_widths);
+      }
+      jamba::set_xlsx_colwidths(xlsxFile=file,
+         sheet=sheetName,
          widths=save_widths);
    }
+   return(invisible(export_df));
 }
