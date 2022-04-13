@@ -1,3 +1,46 @@
+# jamses 0.0.7.900
+
+## changes to existing functions
+
+* `matrix_normalize()` new argument `normgroup` normalizes subsets of
+matrix columns independently, then re-assembles the original matrix.
+
+   * Purpose is convenience of maintaining one data matrix, while also
+   applying normalization independently on each sub-matrix. The
+   attributes returned from the normalization method are also combined,
+   for example the normalization factors `"nf"` reported by
+   `jamma::jammanorm()` are combined in proper order.
+   * This feature is distinct from batch adjustment, in that the
+   data in each sub-matrix are never normalized relative to each
+   other.
+   
+      * For example, one could normalize total RNA-seq and nascent 4sU-seq
+      data independently, without expectation that the two would ever
+      have a common frame of reference to normalize one relative to another.
+      * Similarly, one could normalize each tissue type independently,
+      which may be appropriate when analyzing data that contains very
+      different mammalian tissue organ samples, such as muscle and brain.
+      It would generally not be appropriate to use quantile normalization
+      across muscle and brain samples, since the overall pattern and
+      distribution of expression values is not expected to be similar.
+      Quantile normalize assumes (and imposes) a common distribution,
+      by adjusting mean expression signal at each quantile to a common
+      mean expression across all samples.
+      * For a rough approximation of cross-tissue normalization, one
+      could apply `"quantile"` normalization within each `normgroup` defined
+      by tissue type, then apply `"jammanorm"` median normalization to
+      apply a linear adjustment of signal across tissue types. The median
+      normalization does not affect distribution, thus will not affect
+      intra-tissue contrasts, except by adjusting its overall signal
+      which may change downstream assumptions regarding signal thresholds.
+      It is still not advise to compare directly across tissue types,
+      except in some cases a two-way contrast may be appropriate
+      (comparing intra-tissue fold change to intra-tissue fold change.)
+
+   
+* `se_normalize()` also gained new argument `normgroup`, although
+this argument is merely passed through to `matrix_normalize()`.
+
 # jamses 0.0.6.900
 
 ## changes to existing functions

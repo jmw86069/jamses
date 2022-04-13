@@ -14,6 +14,7 @@ se_normalize(
     minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
     noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
     NULL, group = NULL)),
+  normgroup = NULL,
   output_sep = "_",
   override = TRUE,
   verbose = FALSE,
@@ -44,6 +45,12 @@ the default value in \code{matrix_normalize()}, for example
 \code{params=list(jammanorm=list(minimum_mean=2))} will use
 \code{minimum_mean=2} then use other default values relevant
 to the \code{jammanorm} normalization method.}
+
+\item{normgroup}{\code{character} or equivalent vector that defines subgroups
+of \code{samples} to be normalized indendently of each normgroup. When
+\code{NULL} then all data is normalized together as default.
+The \code{normgroup} vector is expected to be in the same order as
+\code{samples}, or \code{names(normgroup)} must contain all \code{samples}.}
 
 \item{output_sep}{\code{character} string used as a delimited between the
 \code{method} and the \code{assay_names} to define the output assay name,

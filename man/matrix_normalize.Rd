@@ -14,6 +14,9 @@ matrix_normalize(
     minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
     noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
     NULL, group = NULL)),
+  normgroup = NULL,
+  subset_columns = NULL,
+  debug = FALSE,
   verbose = TRUE,
   ...
 )
@@ -55,6 +58,17 @@ will also be set to \code{floor}.}
 normalization. The \code{params} should be a \code{list} named by the \code{method},
 whose values are a list named by the relevant method parameter.
 See examples.}
+
+\item{normgroup}{\code{character} or equivalent vector that defines subgroups
+of \code{samples} to be normalized indendently of each normgroup. When
+\code{NULL} then all data is normalized together as default.
+The \code{normgroup} vector is expected to be in the order of
+\code{colnames(x)} in the same order.}
+
+\item{subset_columns}{\code{integer} intended for internal use when
+\code{normgroups} is provided. This argument is used to instruct
+each normalization method to use an appropriate subset of
+\code{params} based upon the subset of columns being analyzed.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 }
@@ -128,10 +142,63 @@ which is a vector of sample groups in order of \code{colnames(x)}.
 }
 }
 
+\section{Normalization groups via \code{normgroup}}{
+The \code{normgroup} argument is intended as a convenient method to
+apply a normalization method to each independent \code{normgroup}.
+This situation is especially useful when a study contains
+multiple tissue types, or multiple data types, that may not be
+appropriate to normalize directly relative to one another.
+
+For example, one could normalize total RNA-seq and nascent 4sU-seq
+data independently, without expectation that the two would ever
+have a common frame of reference to normalize one relative to another.
+However, both may be amenable to \code{"quantile"} or
+\code{"jammanorm"} median normalization.
+
+Similarly, one could normalize each tissue type independently,
+which may be appropriate when analyzing data that contains very
+different mammalian tissue organ samples, such as muscle and brain.
+
+It would generally not be appropriate to use quantile normalization
+across muscle and brain samples, since the overall pattern and
+distribution of expression values is not expected to be similar.
+Quantile normalize assumes (and imposes) a common distribution,
+by adjusting mean expression signal at each quantile to a common
+mean expression across all samples.
+
+For a rough approximation of cross-tissue normalization, one
+could apply \code{"quantile"} normalization within each \code{normgroup} defined
+by tissue type, then apply \code{"jammanorm"} median normalization to
+apply a linear adjustment of signal across tissue types. The median
+normalization does not affect distribution, thus will not affect
+intra-tissue contrasts, except by adjusting its overall signal
+which may change downstream assumptions regarding signal thresholds.
+
+It is recommended not to compare directly across tissue types.
+In some cases a two-way contrast may be appropriate, where
+fold change within one tissue type is compared to the
+fold change within another tissue type. However, even in that
+case the two tissue types do not need to be normalized relative to
+each other upfront - the within-tissue fold change serves as
+one method of normalizing the observations across tissue types.
+}
+
 \section{Other useful parameters}{
 Note the \code{floor} and \code{enforce_norm_floor} have recommended
-default values \code{floor=0} and \code{enforce_norm_floor=TRUE}. These
-defaults will set any assay value at or below \code{0} to \code{0},
+default values \code{floor=0} and \code{enforce_norm_floor=TRUE}.
+\itemize{
+\item \code{floor} is applied prior to normalization, typically
+to minimize effects of low, noisy signal on the normalization
+process itself. Specifically, this floor is used to remove negative
+values, which may be by-products of upstream signal processing.
+"A measured signal at or below the noise floor of a platform
+technology is effectively the same as a signal at the noise floor."
+\item \code{enforce_norm_floor} is applied after normalization, typically
+as a convenience, also to prevent low, noisy signal from
+contributing to downstream analysis steps.
+}
+
+These defaults will set any assay value at or below \code{0} to \code{0},
 and after normalization any values whose input values were
 at or below \code{0} will also be set to \code{0} to prevent normalizing
 a value of \code{0} to non-zero. Any normalized value at or

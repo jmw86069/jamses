@@ -9,7 +9,7 @@
    * One contrast per worksheet.
    * Uses `jamba::writeOpenxlsx()` and defines each column type.
    * Also calls `jamba::set_xlsx_colwidths()` to set proper column widths.
-   * Optionally saves the superwide `data.frame` stat table output.
+   * TODO: Optionally saves the superwide `data.frame` stat table output.
 
 * `se_contrast_stats()` enhancements
 
@@ -33,6 +33,7 @@ distinct from second-order contrasts.
 
 * `se_contrast_stats()`, `se_normalize()`, `matrix_normalize()` need optional argument `normgroup`
 
+   * COMPLETE: `se_normalize()` and `matrix_normalize()`
    * each subset of samples is processed independently within each `normgroup`.
    * intended to allow batch processing while also keeping distinct subsets
    of samples independent of one another.

@@ -56,6 +56,11 @@
 #'    `params=list(jammanorm=list(minimum_mean=2))` will use
 #'    `minimum_mean=2` then use other default values relevant
 #'    to the `jammanorm` normalization method.
+#' @param normgroup `character` or equivalent vector that defines subgroups
+#'    of `samples` to be normalized indendently of each normgroup. When
+#'    `NULL` then all data is normalized together as default.
+#'    The `normgroup` vector is expected to be in the same order as
+#'    `samples`, or `names(normgroup)` must contain all `samples`.
 #' @param output_sep `character` string used as a delimited between the
 #'    `method` and the `assay_names` to define the output assay name,
 #'    for example when `assay_name="counts"`, `method="quantile"`,
@@ -134,6 +139,7 @@ se_normalize <- function
       `limma_batch_adjust`=list(
          batch=NULL,
          group=NULL)),
+   normgroup=NULL,
    output_sep="_",
    override=TRUE,
    verbose=FALSE,
@@ -165,6 +171,26 @@ se_normalize <- function
          length(samples),
          " samples in the input se."));
    }
+   # optional normgroup
+   if (length(normgroup) > 0) {
+      if (length(names(normgroup)) > 0) {
+         if (!all(samples %in% names(normgroup))) {
+            stop(paste(
+               "When names(normgroup) is defined,",
+               "all samples must be present in names(normgroup).",
+               "This requirement was not met."));
+         }
+         normgroup <- normgroup[match(samples, names(normgroup))];
+      } else {
+         if (length(normgroup) != length(samples)) {
+            stop(paste(
+               "When names(normgroup) are not defined,",
+               "length(normgroup) must equal length(samples).",
+               "This requirement was not met."));
+         }
+      }
+   }
+
    for (assay_name in assay_names) {
       for (imethod in method) {
          output_assay_name <- paste0(
@@ -192,6 +218,7 @@ se_normalize <- function
          inorm <- matrix_normalize(imatrix,
             method=imethod,
             params=params,
+            normgroup=normgroup,
             verbose=(verbose - 1) > 0,
             ...);
 
@@ -287,11 +314,63 @@ se_normalize <- function
 #' batch values in order of `colnames(x)`, and `"group"`
 #' which is a vector of sample groups in order of `colnames(x)`.
 #'
+#' # Normalization groups via `normgroup`
+#'
+#' The `normgroup` argument is intended as a convenient method to
+#' apply a normalization method to each independent `normgroup`.
+#' This situation is especially useful when a study contains
+#' multiple tissue types, or multiple data types, that may not be
+#' appropriate to normalize directly relative to one another.
+#'
+#' For example, one could normalize total RNA-seq and nascent 4sU-seq
+#' data independently, without expectation that the two would ever
+#' have a common frame of reference to normalize one relative to another.
+#' However, both may be amenable to `"quantile"` or
+#' `"jammanorm"` median normalization.
+#'
+#' Similarly, one could normalize each tissue type independently,
+#' which may be appropriate when analyzing data that contains very
+#' different mammalian tissue organ samples, such as muscle and brain.
+#'
+#' It would generally not be appropriate to use quantile normalization
+#' across muscle and brain samples, since the overall pattern and
+#' distribution of expression values is not expected to be similar.
+#' Quantile normalize assumes (and imposes) a common distribution,
+#' by adjusting mean expression signal at each quantile to a common
+#' mean expression across all samples.
+#'
+#' For a rough approximation of cross-tissue normalization, one
+#' could apply `"quantile"` normalization within each `normgroup` defined
+#' by tissue type, then apply `"jammanorm"` median normalization to
+#' apply a linear adjustment of signal across tissue types. The median
+#' normalization does not affect distribution, thus will not affect
+#' intra-tissue contrasts, except by adjusting its overall signal
+#' which may change downstream assumptions regarding signal thresholds.
+#'
+#' It is recommended not to compare directly across tissue types.
+#' In some cases a two-way contrast may be appropriate, where
+#' fold change within one tissue type is compared to the
+#' fold change within another tissue type. However, even in that
+#' case the two tissue types do not need to be normalized relative to
+#' each other upfront - the within-tissue fold change serves as
+#' one method of normalizing the observations across tissue types.
+#'
 #' # Other useful parameters
 #'
 #' Note the `floor` and `enforce_norm_floor` have recommended
-#' default values `floor=0` and `enforce_norm_floor=TRUE`. These
-#' defaults will set any assay value at or below `0` to `0`,
+#' default values `floor=0` and `enforce_norm_floor=TRUE`.
+#'
+#' * `floor` is applied prior to normalization, typically
+#' to minimize effects of low, noisy signal on the normalization
+#' process itself. Specifically, this floor is used to remove negative
+#' values, which may be by-products of upstream signal processing.
+#' "A measured signal at or below the noise floor of a platform
+#' technology is effectively the same as a signal at the noise floor."
+#' * `enforce_norm_floor` is applied after normalization, typically
+#' as a convenience, also to prevent low, noisy signal from
+#' contributing to downstream analysis steps.
+#'
+#' These defaults will set any assay value at or below `0` to `0`,
 #' and after normalization any values whose input values were
 #' at or below `0` will also be set to `0` to prevent normalizing
 #' a value of `0` to non-zero. Any normalized value at or
@@ -364,6 +443,15 @@ se_normalize <- function
 #'    normalization. The `params` should be a `list` named by the `method`,
 #'    whose values are a list named by the relevant method parameter.
 #'    See examples.
+#' @param normgroup `character` or equivalent vector that defines subgroups
+#'    of `samples` to be normalized indendently of each normgroup. When
+#'    `NULL` then all data is normalized together as default.
+#'    The `normgroup` vector is expected to be in the order of
+#'    `colnames(x)` in the same order.
+#' @param subset_columns `integer` intended for internal use when
+#'    `normgroups` is provided. This argument is used to instruct
+#'    each normalization method to use an appropriate subset of
+#'    `params` based upon the subset of columns being analyzed.
 #' @param verbose `logical` indicating whether to print verbose output.
 #'
 #' @examples
@@ -492,6 +580,9 @@ matrix_normalize <- function
       `limma_batch_adjust`=list(
          batch=NULL,
          group=NULL)),
+   normgroup=NULL,
+   subset_columns=NULL,
+   debug=FALSE,
    verbose=TRUE,
    ...)
 {
@@ -503,6 +594,56 @@ matrix_normalize <- function
       "params",
       params,
       verbose=FALSE);
+
+   # optional normgroup
+   if (length(normgroup) > 0) {
+      if (length(normgroup) != ncol(x)) {
+         stop(paste("length(normgroup) was not equal to ncol(x)."));
+      }
+      x_colnames <- seq_len(ncol(x));
+      x_split <- split(x_colnames, normgroup);
+      x_split_v <- unlist(unname(x_split));
+      x_split_order <- order(x_split_v);
+
+      normgroup_out <- lapply(x_split, function(i_colnames){
+         matrix_normalize(x=x[, i_colnames, drop=FALSE],
+            method=method,
+            apply_log2=apply_log2,
+            floor=floor,
+            enforce_norm_floor=enforce_norm_floor,
+            params=params,
+            normgroup=NULL,
+            subset_columns=i_colnames,
+            verbose=verbose,
+            ...);
+      });
+      #return(normgroup_out);
+      # combine normalized matrices
+      normgroup_x <- do.call(cbind, normgroup_out)[, x_split_order, drop=FALSE];
+      # combine attributes
+      normgroup_attrnames <- unique(unlist(lapply(normgroup_out, function(inorm){
+         attr_names <- setdiff(names(attributes(inorm)),
+            c("dim", "names", "dimnames"))
+      })))
+      if (length(normgroup_attrnames) > 0) {
+         normgroup_attrs <- lapply(jamba::nameVector(normgroup_attrnames), function(iattr){
+            unlist(recursive=FALSE,
+               lapply(unname(normgroup_out), function(inorm){
+                  attributes(inorm)[[iattr]]
+               }))[x_split_order]
+         })
+         for (iattr in normgroup_attrnames) {
+            attr(normgroup_x, iattr) <- normgroup_attrs[[iattr]];
+         }
+      }
+      if (debug) {
+         return(list(
+            normgroup_out=normgroup_out,
+            normgroup_attrnames=normgroup_attrnames,
+            normgroup_x=normgroup_x));
+      }
+      return(normgroup_x);
+   }
 
    # apply log2 transform if needed
    if ("ifneeded" %in% apply_log2) {
@@ -574,6 +715,11 @@ matrix_normalize <- function
                   c("\n      noise_floor_value:", noise_floor_value)}),
             sep="");
       }
+      # if no rownames(x) exist, use index integers
+      x_rownames <- rownames(x);
+      if (length(x_rownames) == 0) {
+         rownames(x) <- seq_len(nrow(x));
+      }
       inorm <- jamma::jammanorm(x,
          controlGenes=controlGenes,
          minimum_mean=minimum_mean,
@@ -584,9 +730,16 @@ matrix_normalize <- function
          noise_floor=noise_floor,
          noise_floor_value=noise_floor_value,
          verbose=verbose);
+      # if (nrow(inorm) == nrow(x) && length(x_rownames) == 0) {
+      #    rownames(inorm) <- x_rownames;
+      # }
    } else if ("limma_batch_adjust" %in% method) {
       batch <- params$limma_batch_adjust$batch;
       group <- params$limma_batch_adjust$group;
+      if (length(subset_columns) > 0) {
+         batch <- batch[subset_columns];
+         group <- group[subset_columns];
+      }
 
       designBatchGroup <- model.matrix(~0+group);
       rownames(designBatchGroup) <- colnames(x);
