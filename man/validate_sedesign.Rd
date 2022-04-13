@@ -10,7 +10,7 @@ validate_sedesign(
   samples = NULL,
   groups = NULL,
   contrasts = NULL,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }
@@ -25,7 +25,9 @@ and subsequently will be removed from the contrasts matrix.}
 \item{samples, groups, contrasts}{\code{character} vectors used to subset
 the samples, groups, or contrasts.}
 
-\item{verbose}{\code{logical} indicating whether to print verbose output.}
+\item{verbose}{\code{logical} indicating whether to print verbose output,
+where \code{verbose=TRUE} will print messages at the end of operations,
+and \code{verbose=2} will also print messages during operations.}
 
 \item{...}{additional arguments are ignored.}
 }

@@ -2,6 +2,29 @@
 
 ## changes to existing functions
 
+* `groups_to_sedesign()` new argument
+`default_sort=c("asis", "sort_samples", "mixedSort")`:
+
+   * Note in all cases, a `factor` column is sorted by its factor levels.
+   * `"asis"`: will convert any non-`factor` column to `factor`, with levels
+   defined in the order they appear in the input data. Any existing `factor`
+   column will remain as-is.
+   * `"sort_samples"`: will call `sort_samples()` in order to recognize
+   control terms, and preferentially place them first, for example
+   "Control", or "Wildtype". All other terms are sorted by `jamba::mixedSort()`
+   for alphanumeric sorting.
+   * `"mixedSort"`: will use `jamba::mixedSortDF()` to sort group columns:
+   
+      * `factor` columns are sorted according to factor levels
+      * `character` columns are alphanumeric sorted using `jamba::mixedSort()`
+   
+   * To influence the sort order, `data.frame` columns should have
+   `factor` values with defined levels in order.
+   Otherwise by default, the first entries in the `data.frame` provided
+   will become the first factor levels.
+
+* `validate_sedesign()` default argument `verbose=FALSE`, also silencing
+other internal messages which were previously always turned on.
 * `matrix_normalize()` new argument `normgroup` normalizes subsets of
 matrix columns independently, then re-assembles the original matrix.
 
@@ -37,9 +60,16 @@ matrix columns independently, then re-assembles the original matrix.
       except in some cases a two-way contrast may be appropriate
       (comparing intra-tissue fold change to intra-tissue fold change.)
 
-   
 * `se_normalize()` also gained new argument `normgroup`, although
 this argument is merely passed through to `matrix_normalize()`.
+
+## new functions
+
+* `sestats_to_df()` - simple method to convert `sestats` output from
+`se_contrast_stats()` to a `data.frame` summary with number of hits
+for each comparison. It should be suitable for `kable()` output,
+with row groups by cutoff.
+
 
 # jamses 0.0.6.900
 

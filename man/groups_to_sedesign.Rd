@@ -20,6 +20,7 @@ groups_to_sedesign(
   current_depth = 1,
   rename_first_depth = TRUE,
   return_sedesign = TRUE,
+  default_order = c("asis", "sort_samples", "mixedSort"),
   verbose = FALSE,
   ...
 )
@@ -199,6 +200,30 @@ groups_to_sedesign(ifactors)
 # Again remove WT-WT and KO-KO contrasts
 groups_to_sedesign(ifactors,
    remove_pairs=list(c("WT"), c("KO")))
+
+# demonstrating default_order "asis"
+# contrasts show A-B, because B appears fist
+# contrasts show Untreated-Treated because Treated appears first
+df_test <- data.frame(
+   set=c("B", "B", "A", "A"),
+   treat=c("Treated", "Untreated"))
+groups_to_sedesign(df_test)
+groups_to_sedesign(jamba::pasteByRow(df_test))
+
+# demonstrating default_order "sort_samples"
+# contrasts show B-A, because A is sorted first
+# contrasts show Treated-Untreated because sort_samples()
+#    determines "Untreated" is a preferred control term
+groups_to_sedesign(df_test,
+   default_order="sort_samples")
+groups_to_sedesign(jamba::pasteByRow(df_test),
+   default_order="sort_samples")
+
+# demonstrating default_order "mixedSort"
+# contrasts show B-A, because A is sorted first
+# contrasts show Untreated-Treated because Treated is sorted first
+groups_to_sedesign(df_test,
+   default_order="mixedSort")
 
 }
 \seealso{

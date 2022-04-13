@@ -1,6 +1,15 @@
 
 # TODO for jamses
 
+## 13apr2022
+
+* `save_sestats()` is super slow, for 6 worksheets, ~15 columns, 25k rows,
+took about 5 minutes. Should be much faster.
+
+   * Likely imposes changes to `jamba::writeOpenxlsx()`
+   * Is conditional formatting is the slow step? If so, skip it.
+   * Is categorical formatting is the slow step? If so, skip it.
+
 ## 11apr2022
 
 * COMPLETE: New function: `save_sestats()` or something similar.
@@ -17,7 +26,7 @@
    and `summary.sestats()` generic functions.
    * When using blocking factor with voom, follow guidance to
    apply voom/contrasts using the two-step process.
-   * Some method to enforce `normgroups`
+   * Some method to enforce `normgroup`
    
       * each group should be analyzed independently
       * results should be collated together into one `hit_array`

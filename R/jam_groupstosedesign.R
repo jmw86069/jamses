@@ -20,7 +20,7 @@
 #'       treatment=c("Control", "Control", "Treated", "Treated"),
 #'       genotype=c("Wildtype", "Knockout", "Wildtype", "Knockout"))
 #'    ```
-
+#'
 #' 2. `character` vector, where design factor levels are separated
 #' by a delimiter such as underscore `"_"`. This input will be
 #' converted to `data.frame` before processing.
@@ -158,6 +158,30 @@
 #' groups_to_sedesign(ifactors,
 #'    remove_pairs=list(c("WT"), c("KO")))
 #'
+#' # demonstrating default_order "asis"
+#' # contrasts show A-B, because B appears fist
+#' # contrasts show Untreated-Treated because Treated appears first
+#' df_test <- data.frame(
+#'    set=c("B", "B", "A", "A"),
+#'    treat=c("Treated", "Untreated"))
+#' groups_to_sedesign(df_test)
+#' groups_to_sedesign(jamba::pasteByRow(df_test))
+#'
+#' # demonstrating default_order "sort_samples"
+#' # contrasts show B-A, because A is sorted first
+#' # contrasts show Treated-Untreated because sort_samples()
+#' #    determines "Untreated" is a preferred control term
+#' groups_to_sedesign(df_test,
+#'    default_order="sort_samples")
+#' groups_to_sedesign(jamba::pasteByRow(df_test),
+#'    default_order="sort_samples")
+#'
+#' # demonstrating default_order "mixedSort"
+#' # contrasts show B-A, because A is sorted first
+#' # contrasts show Untreated-Treated because Treated is sorted first
+#' groups_to_sedesign(df_test,
+#'    default_order="mixedSort")
+#'
 #' @export
 groups_to_sedesign <- function
 (ifactors,
@@ -175,6 +199,9 @@ groups_to_sedesign <- function
  current_depth=1,
  rename_first_depth=TRUE,
  return_sedesign=TRUE,
+ default_order=c("asis",
+    "sort_samples",
+    "mixedSort"),
  verbose=FALSE,
  ...)
 {
@@ -229,6 +256,9 @@ groups_to_sedesign <- function
    }
    sample2group <- NULL;
 
+   # validate default_order
+   default_order <- match.arg(default_order);
+
    ## Handle remove_pairs by expanding to both orientations of contrast
    if (!is.null(remove_pairs)) {
       if (!is.list(remove_pairs)) {
@@ -245,7 +275,7 @@ groups_to_sedesign <- function
    ## Special case where one data.frame column is sent, which is delimited.
    ## Mainly we treat as a vector, except that we keep the rownames
    ## so we can derive isamples.
-   if (jamba::igrepHas("data.frame", class(ifactors)) &&
+   if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
          ncol(ifactors) == 1) {
       ifactors <- jamba::nameVector(ifactors[,1], rownames(ifactors));
    }
@@ -305,12 +335,19 @@ groups_to_sedesign <- function
          ifactors <- data.frame(check.names=FALSE,
             stringsAsFactors=FALSE,
             jamba::rbindList(strsplit(ifactors, factor_sep)));
-         ## Convert each column to factor for ordering
+         ## Convert each column to factor for proper sort order
          for (iCol in seq_len(ncol(ifactors))) {
-            if (jamba::igrepHas("[a-z]", ifactors[,iCol])) {
+            if ("asis" %in% default_order) {
+               ifactors[,iCol] <- factor(ifactors[,iCol],
+                  levels=unique(ifactors[,iCol]));
+            } else if ("sort_samples" %in% default_order) {
                ifactors[,iCol] <- factor(ifactors[,iCol],
                   levels=sort_samples(unique(ifactors[,iCol]),
                      pre_control_terms=pre_control_terms,
+                     ...));
+            } else {
+               ifactors[,iCol] <- factor(ifactors[,iCol],
+                  levels=jamba::mixedSort(unique(ifactors[,iCol]),
                      ...));
             }
          }
@@ -342,7 +379,7 @@ groups_to_sedesign <- function
       if (length(idesign) == 0) {
          idesign <- list2im_opt(sample2group, do_sparse=FALSE)[rownames(ifactors),levels(rowGroups),drop=FALSE];
       }
-   } else if (jamba::igrepHas("data.frame|dataframe", class(ifactors))) {
+   } else if (jamba::igrepHas("data.frame|dataframe|matrix", class(ifactors))) {
       #####################################################
       ## data.frame input
       ##
@@ -414,10 +451,43 @@ groups_to_sedesign <- function
             group_colnames);
       }
 
-      ## Use jamba::mixedSortDF() to sort the data.frame,
-      ## which will honor factor level orders if present.
-      ## To influence this sorting, use factors with ordered levels
-      ## instead of character columns.
+
+      # default_order == "asis" will convert character columns to factor
+      #    using the observed order of terms as factor levels
+      for (icol in group_colnames) {
+         if (!"factor" %in% class(ifactors[,icol])) {
+            if ("asis" %in% default_order) {
+               if (verbose) {
+                  jamba::printDebug("groups_to_sedesign(): ",
+                     "Converting '", icol, "' to factor using default_order: ", "asis");
+               }
+               ifactors[,icol] <- factor(ifactors[,icol],
+                  levels=unique(ifactors[,icol]),
+                  exclude=NULL);
+            } else if ("sort_samples" %in% default_order) {
+               if (verbose) {
+                  jamba::printDebug("groups_to_sedesign(): ",
+                     "Converting '", icol, "' to factor using default_order: ", "sort_samples");
+               }
+               ifactors[,icol] <- factor(ifactors[,icol],
+                  levels=sort_samples(unique(ifactors[,icol]),
+                     pre_control_terms=pre_control_terms,
+                     ...));
+            } else {
+               if (verbose) {
+                  jamba::printDebug("groups_to_sedesign(): ",
+                     "Converting '", icol, "' to factor using default_order: ", "mixedSort");
+               }
+               ifactors[,icol] <- factor(ifactors[,icol],
+                  levels=jamba::mixedSort(unique(ifactors[,icol]),
+                     ...));
+            }
+         }
+      }
+      # default_order == "mixedSort" will use alphanumeric sort
+      # jamba::mixedSortDF() will honor factor level orders when present,
+      # otherwise will use alphanumeric sort order.
+      # To influence the sort order, use factors with ordered levels.
       ifactors <- jamba::mixedSortDF(ifactors,
          byCols=group_colnames);
       if (verbose) {
@@ -442,7 +512,8 @@ groups_to_sedesign <- function
       ## Assume for now sample rows and group columns
       sample2group <- split(iFactors_names, rowGroups);
       if (length(idesign) == 0) {
-         idesign <- list2im_opt(sample2group, do_sparse=FALSE)[iFactors_names,as.character(unique(rowGroups)),drop=FALSE];
+         idesign <- list2im_opt(sample2group,
+            do_sparse=FALSE)[iFactors_names, as.character(unique(rowGroups)), drop=FALSE];
          if (all(isamples %in% iFactors_names)) {
             idesign <- idesign[match(isamples, iFactors_names),,drop=FALSE];
          }
@@ -822,15 +893,16 @@ sort_samples <- function
 (x,
  control_terms=c(
     "WT|wildtype",
-    "(^|[-_ ])(NT|NTC)($|[-_ ]|[0-9])",
-    "ETOH",
+    "normal|healthy|healthycontrol|^hc$",
     "control|ctrl|ctl",
-    "Vehicle|veh",
+    "(^|[-_ ])(NT|NTC)($|[-_ ]|[0-9])",
     "none|empty|blank",
+    "untreated|untrt|untreat",
+    "Vehicle|veh",
+    "ETOH|ethanol",
     #"(time|day|hour|min|minute)[s]{0,1}[0]",
-    "scramble",
-    "ttx",
-    "PBS",
+    "scramble|mock|sham",
+    "ttx|PBS",
     "knockout",
     "mutant"),
  sortFunc=jamba::mixedSort,

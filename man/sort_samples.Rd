@@ -6,9 +6,10 @@
 \usage{
 sort_samples(
   x,
-  control_terms = c("WT|wildtype", "(^|[-_ ])(NT|NTC)($|[-_ ]|[0-9])", "ETOH",
-    "control|ctrl|ctl", "Vehicle|veh", "none|empty|blank", "scramble", "ttx", "PBS",
-    "knockout", "mutant"),
+  control_terms = c("WT|wildtype", "normal|healthy|healthycontrol|^hc$",
+    "control|ctrl|ctl", "(^|[-_ ])(NT|NTC)($|[-_ ]|[0-9])", "none|empty|blank",
+    "untreated|untrt|untreat", "Vehicle|veh", "ETOH|ethanol", "scramble|mock|sham",
+    "ttx|PBS", "knockout", "mutant"),
   sortFunc = jamba::mixedSort,
   pre_control_terms = NULL,
   post_control_terms = NULL,

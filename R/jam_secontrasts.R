@@ -1461,3 +1461,50 @@ ebayes2dfs <- function
    return(lmTopTablesAll);
 }
 
+#' Convert sestats to table summary
+#'
+#' Convert sestats to table summary
+#'
+#' Note: This function is intended to provide a simple data.frame
+#' summary with the number of hits for each contrast, signal, cutoff.
+#' It is still being tested, and updated for usability.
+#'
+#' @param sestats `list` output from `se_contrast_stats()`
+#' @param style `character` string indicating what values to use:
+#'    * `"text"`: number of hits (number up, number down)
+#'    * `"integer"`: only the integer number of hits
+#' @param ... additional arguments are ignored.
+#'
+#' @export
+sestats_to_df <- function
+(sestats,
+ style=c("text", "integer"),
+ ...)
+{
+   #
+   style <- match.arg(style);
+
+   #
+   hit_array <- sestats$hit_array;
+   idf <- jamba::rbindList(lapply(jamba::nameVector(dimnames(hit_array)[[3]]), function(icutoff){
+      imatrix <- hit_array[, , icutoff]
+      ilist <- lapply(jamba::nameVector(rownames(imatrix)), function(icontrast){
+         ilist <- imatrix[icontrast, ];
+         if ("integer" %in% style) {
+            lengths(ilist)
+         } else {
+            paste0(
+               jamba::formatInt(lengths(ilist)),
+               " hits (",
+               jamba::formatInt(sapply(ilist, function(i){sum(i > 0)})),
+               " up, ",
+                  jamba::formatInt(sapply(ilist, function(i){sum(i < 0)})),
+               " down)")
+         }
+      });
+      im <- do.call(cbind, ilist);
+      rownames(im) <- dimnames(hit_array)[[2]];
+      data.frame(check.names=FALSE, im, cutoff=icutoff);
+   }))
+   idf
+}

@@ -109,7 +109,9 @@ setClass("SEDesign",
 #'    and subsequently will be removed from the contrasts matrix.
 #' @param samples,groups,contrasts `character` vectors used to subset
 #'    the samples, groups, or contrasts.
-#' @param verbose `logical` indicating whether to print verbose output.
+#' @param verbose `logical` indicating whether to print verbose output,
+#'    where `verbose=TRUE` will print messages at the end of operations,
+#'    and `verbose=2` will also print messages during operations.
 #' @param ... additional arguments are ignored.
 #'
 #' @examples
@@ -160,7 +162,7 @@ validate_sedesign <- function
  samples=NULL,
  groups=NULL,
  contrasts=NULL,
- verbose=TRUE,
+ verbose=FALSE,
  ...)
 {
    newmsg <- character();
@@ -274,8 +276,10 @@ validate_sedesign <- function
          # remove some groups that are not represented by min_reps samples
          # (this step will trigger a filtering step with contrasts later)
          design_group_drop <- colnames(object@design)[design_reps < min_reps];
-         jamba::printDebug("Dropped design groups: ",
-            design_group_drop);
+         if (verbose > 1) {
+            jamba::printDebug("Dropped design groups: ",
+               design_group_drop);
+         }
          newmsg <- c(newmsg,
             paste0("dropped design groups: ",
                jamba::cPaste(design_group_drop,
@@ -324,8 +328,10 @@ validate_sedesign <- function
                   # design groups are a subset of contrast groups
                   contrast_group_drop <- setdiff(rownames(object@contrasts),
                      colnames(object@design));
-                  jamba::printDebug("Dropped contrast groups: ",
-                     contrast_group_drop);
+                  if (verbose > 1) {
+                     jamba::printDebug("Dropped contrast groups: ",
+                        contrast_group_drop);
+                  }
                   if (length(contrast_group_drop) > 0) {
                      newmsg <- c(newmsg,
                         paste0("dropped contrast groups: ",
@@ -335,8 +341,10 @@ validate_sedesign <- function
                         !object@contrasts[i,] %in% c(0, NA)
                      }));
                      if (any(contrast_drop)) {
-                        jamba::printDebug("Dropped contrasts: ",
-                           colnames(object@contrasts)[contrast_drop]);
+                        if (verbose > 1) {
+                           jamba::printDebug("Dropped contrasts: ",
+                              colnames(object@contrasts)[contrast_drop]);
+                        }
                         newmsg <- c(newmsg,
                            paste0("dropped contrasts: ",
                               jamba::cPaste(colnames(object@contrasts)[contrast_drop],
@@ -371,7 +379,7 @@ validate_sedesign <- function
    # optional steps regarding counts per contrast
 
    # print messages
-   if (length(newmsg) > 0) {
+   if (length(newmsg) > 0 && verbose) {
       for (i in newmsg) {
          jamba::printDebug(i);
       }
