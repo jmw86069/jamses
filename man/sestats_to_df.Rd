@@ -4,7 +4,12 @@
 \alias{sestats_to_df}
 \title{Convert sestats to table summary}
 \usage{
-sestats_to_df(sestats, style = c("text", "integer"), ...)
+sestats_to_df(
+  sestats,
+  style = c("text", "integer"),
+  dimname_order = c(3, 1, 2),
+  ...
+)
 }
 \arguments{
 \item{sestats}{\code{list} output from \code{se_contrast_stats()}}
@@ -24,4 +29,18 @@ Convert sestats to table summary
 Note: This function is intended to provide a simple data.frame
 summary with the number of hits for each contrast, signal, cutoff.
 It is still being tested, and updated for usability.
+
+TODO: The order of \code{dimnames(hit_array)} should be user-customizable.
+The series of dimnames in each lapply should use this order.
+}
+\examples{
+if (FALSE) {
+hitdf <- sestats_to_df(list(hit_array=hit_array));
+hitdf_rowindex <- table(hitdf[[1]])[unique(hitdf[[1]])]
+jamba::kable_coloring(
+   hitdf[, -1, drop=FALSE],
+   row.names=FALSE) \%>\%
+   kableExtra::pack_rows(index=hitdf_rowindex)
+}
+
 }
