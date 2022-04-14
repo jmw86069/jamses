@@ -1,3 +1,17 @@
+# jamses 0.0.8.900
+
+## changes to existing functions
+
+* `groups_to_sedesign()` new behavior
+
+   * two-way interaction contrasts now retain the order of first-order
+   contrasts, preferring to alter the reverse `rev(factor_order)`
+   in order to build interaction contrasts on top of existing contrasts.
+   * some verbose output now requires `(verbose >= 2)`
+   * added verbose output for two-way contrasts removed because they
+   are equivalent, but written with different order of comparisons.
+
+
 # jamses 0.0.7.900
 
 ## changes to existing functions
