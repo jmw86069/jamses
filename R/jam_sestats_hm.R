@@ -39,8 +39,9 @@
 #' @export
 heatmap_se <- function
 (se,
-   sestats,
+   sestats=NULL,
    rows=NULL,
+   row_type="rows",
    assay_name=NULL,
    contrast_names=NULL,
    cutoff_name=1,
@@ -56,7 +57,7 @@ heatmap_se <- function
    top_colnames=NULL,
    top_annotation=NULL,
    sample_color_list=NULL,
-   row_cex=1,
+   row_cex=0.8,
    useMedian=FALSE,
    show_row_names=TRUE,
    row_label_colname=NULL,
@@ -263,7 +264,7 @@ heatmap_se <- function
       ...)
    hm_title <- paste0(
       formatInt(length(gene_hits)),
-      " rows",
+      " ", row_type,
       "\n", norm_label, ", ",
       centerby_label)
    attr(hm_hits, "hm_title") <- hm_title;
