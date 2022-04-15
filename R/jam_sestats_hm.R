@@ -271,7 +271,7 @@ heatmap_se <- function
       formatInt(length(gene_hits)),
       " ", row_type,
       "\n", norm_label, ", ",
-      centerby_label)
+      "\n", centerby_label)
    attr(hm_hits, "hm_title") <- hm_title;
    # hm_hits <- draw(hm_hits,
    #    column_title=paste0("Gene counts of ",
