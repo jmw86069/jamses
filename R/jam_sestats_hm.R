@@ -205,7 +205,7 @@ heatmap_se <- function
    # define heatmap
    #hm_hits <- ComplexHeatmap::Heatmap(
    hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
-      jamma::centerGeneData(
+      matrix=jamma::centerGeneData(
          useMedian=useMedian,
          centerGroups=centerGroups,
          x=assays(se[gene_hits, isamples])[[assay_name]],
