@@ -99,7 +99,7 @@ heatmap_se <- function
    rows <- intersect(rows, rownames(se));
    if (length(rows) > 0) {
       if (length(sestats) > 0) {
-         rows_im <- (gene_hits_im * 0)[rep(1, length(rows)), drop=FALSE];
+         rows_im <- (gene_hits_im * 0)[rep(1, length(rows)), , drop=FALSE];
          rownames(rows_im) <- rows;
          gene_hits_rows <- intersect(rows, gene_hits);
          if (length(gene_hits_rows) > 0) {
