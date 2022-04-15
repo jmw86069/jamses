@@ -7,6 +7,7 @@
 heatmap_se(
   se,
   sestats,
+  rows = NULL,
   assay_name = NULL,
   contrast_names = NULL,
   cutoff_name = 1,
@@ -15,8 +16,8 @@ heatmap_se(
   alt_contrast_names = NULL,
   alt_cutoff_name = 1,
   isamples = colnames(se),
-  normgroup_colname = "Run",
-  centerby_colnames = normgroup_colname,
+  normgroup_colname = "Type",
+  centerby_colnames = c(normgroup_colname, "Run"),
   controlSamples = NULL,
   top_colnames = NULL,
   top_annotation = NULL,

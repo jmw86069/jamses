@@ -40,6 +40,7 @@
 heatmap_se <- function
 (se,
    sestats,
+   rows=NULL,
    assay_name=NULL,
    contrast_names=NULL,
    cutoff_name=1,
@@ -48,8 +49,9 @@ heatmap_se <- function
    alt_contrast_names=NULL,
    alt_cutoff_name=1,
    isamples=colnames(se),
-   normgroup_colname="Run",
-   centerby_colnames=normgroup_colname,
+   normgroup_colname="Type",
+   centerby_colnames=c(normgroup_colname,
+      "Run"),
    controlSamples=NULL,
    top_colnames=NULL,
    top_annotation=NULL,
@@ -70,6 +72,9 @@ heatmap_se <- function
    if (!jamba::check_pkg_installed("venndir")) {
       stop("This function requires Github package venndir from 'jmw86069/venndir'");
    }
+   if (!suppressPackageStartupMessages(require(SummarizedExperiment))) {
+      stop("This function requires Bioconductor package SummarizedExperiment.");
+   }
 
    #
    if (length(contrast_names) == 0) {
@@ -77,19 +82,39 @@ heatmap_se <- function
    }
 
    # define rows to use
-   if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
-      hit_array <- sestats$hit_array;
-   } else {
-      hit_array <- sestats;
+   if (length(sestats) > 0) {
+      if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
+         hit_array <- sestats$hit_array;
+      } else {
+         hit_array <- sestats;
+      }
+      gene_hitlist <- hit_array[cutoff, contrast_names, assay_name];
+      gene_hits <- names(jamba::tcount(names(unlist(unname(
+         gene_hitlist)))));
+      gene_hits_im <- venndir::list2im_value(gene_hitlist,
+         do_sparse=FALSE)[gene_hits,,drop=FALSE];
    }
-   gene_hitlist <- hit_array[cutoff, contrast_names, assay_name];
-   gene_hits <- names(jamba::tcount(names(unlist(unname(
-      gene_hitlist)))));
-   gene_hits_im <- venndir::list2im_value(gene_hitlist,
-      do_sparse=FALSE)[gene_hits,,drop=FALSE];
+
+   # rows is user-defined
+   rows <- intersect(rows, rownames(se));
+   if (length(rows) > 0) {
+      if (length(sestats) > 0) {
+         rows_im <- (gene_hits_im * 0)[rep(1, length(rows)), drop=FALSE];
+         rownames(rows_im) <- rows;
+         gene_hits_rows <- intersect(rows, gene_hits);
+         if (length(gene_hits_rows) > 0) {
+            rows_im[match(gene_hits_rows, rows),] <-
+               gene_hits_im[match(gene_hits_rows, rownames(gene_hits_im)),,drop=FALSE];
+         }
+         gene_hits_im <- rows_im;
+      } else {
+         gene_hits_im <- NULL;
+      }
+      gene_hits <- rows;
+   }
 
    # alt gene_hitlist
-   if (length(alt_sestats) > 0) {
+   if (length(sestats) > 0 && length(alt_sestats) > 0) {
       if ("list" %in% class(alt_sestats) && "hit_array" %in% names(alt_sestats)) {
          alt_hit_array <- alt_sestats$hit_array;
       } else {
@@ -139,35 +164,39 @@ heatmap_se <- function
    }
 
    # left_annotation
-   if (length(alt_sestats) > 0) {
-      left_annotation <- ComplexHeatmap::rowAnnotation(
-         border=TRUE,
-         hits_alt=gene_hits_im_alt[gene_hits,,drop=FALSE],
-         hits=gene_hits_im[gene_hits,,drop=FALSE],
-         col=list(hits_alt=colorjam::col_div_xf(1.5),
-            hits=col_div_xf(1.5)),
-         annotation_legend_param=list(
-            hits=list(
-               at=c(-1, 0, 1),
-               color_bar="discrete",
-               border=TRUE,
-               labels=c("down", "no change", "up")),
-            hits_alt=FALSE)
-      )
+   if (length(sestats) > 0) {
+      if (length(alt_sestats) > 0) {
+         left_annotation <- ComplexHeatmap::rowAnnotation(
+            border=TRUE,
+            hits_alt=gene_hits_im_alt[gene_hits,,drop=FALSE],
+            hits=gene_hits_im[gene_hits,,drop=FALSE],
+            col=list(
+               hits_alt=colorjam::col_div_xf(1.5),
+               hits=colorjam::col_div_xf(1.5)),
+            annotation_legend_param=list(
+               hits=list(
+                  at=c(-1, 0, 1),
+                  color_bar="discrete",
+                  border=TRUE,
+                  labels=c("down", "no change", "up")),
+               hits_alt=FALSE)
+         )
+      } else {
+         left_annotation <- ComplexHeatmap::rowAnnotation(
+            border=TRUE,
+            hits=gene_hits_im[gene_hits, , drop=FALSE],
+            col=list(
+               hits=colorjam::col_div_xf(1.5)),
+            annotation_legend_param=list(
+               hits=list(
+                  at=c(-1, 0, 1),
+                  color_bar="discrete",
+                  border=TRUE,
+                  labels=c("down", "no change", "up")))
+         )
+      }
    } else {
-      left_annotation <- ComplexHeatmap::rowAnnotation(
-         border=TRUE,
-         hits=gene_hits_im[gene_hits, , drop=FALSE],
-         col=list(hits_alt=col_div_xf(1.5),
-            hits=col_div_xf(1.5)),
-         annotation_legend_param=list(
-            hits=list(
-               at=c(-1, 0, 1),
-               color_bar="discrete",
-               border=TRUE,
-               labels=c("down", "no change", "up")),
-            hits_alt=FALSE)
-      )
+      left_annotation <- NULL;
    }
 
    norm_label <- paste0(assay_name, " data");
@@ -178,7 +207,7 @@ heatmap_se <- function
       centerby_label <- paste0("centered by ",
          jamba::cPaste(centerby_colnames,
             sep="/"));
-      centerGroups <- pasteByRow(
+      centerGroups <- jamba::pasteByRow(
          colData(se[,isamples])[,centerby_colnames]);
    } else {
       centerGroups <- NULL;
@@ -188,7 +217,7 @@ heatmap_se <- function
    # row font size
    row_fontsize <- jamba::noiseFloor(
       row_cex * (60*(14 / 10))/(length(gene_hits))^(1/2),
-      minimum=2,
+      minimum=1,
       ceiling=18);
 
    # row_labels
