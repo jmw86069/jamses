@@ -153,7 +153,7 @@ heatmap_se <- function
       gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
       if (length(alt_contrast_suffix) > 0 && any(nchar(alt_contrast_suffix)) > 0) {
          colnames(gene_hits_im_alt) <- paste0(colnames(gene_hits_im_alt),
-            contrast_suffix);
+            alt_contrast_suffix);
       }
    }
 
