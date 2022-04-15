@@ -18,7 +18,12 @@ The new approach took about 25 seconds.
 display of expression data as a heatmap using `ComplexHeatmap::Heatmap()`.
 By default it uses statistical hits defined in `sestats` output
 from `se_contrast_stats()`.
-
+* `call_fn_ellipsis()` is copied from `multienrichjam::call_fn_ellipsis()`.
+This function allows passing ellipsis argument `...` to another
+function, where that function does not allow `...` and therefore
+all arguments must be strictly defined. Any arguments in `...`
+which are not defined in the other function are removed before
+calling that function.
 
 # jamses 0.0.8.900
 

@@ -45,9 +45,12 @@ heatmap_se <- function
    cutoff_name=1,
    alt_sestats=NULL,
    alt_assay_name=assay_name,
+   alt_contrast_names=NULL,
+   alt_cutoff_name=1,
    isamples=colnames(se),
    normgroup_colname="Run",
    centerby_colnames=normgroup_colname,
+   controlSamples=NULL,
    top_colnames=NULL,
    top_annotation=NULL,
    sample_color_list=NULL,
@@ -92,7 +95,10 @@ heatmap_se <- function
       } else {
          alt_hit_array <- alt_sestats;
       }
-      gene_hitlist_alt <- alt_hit_array[1, , alt_assay_name];
+      if (length(alt_contrast_names) == 0) {
+         alt_contrast_names <- dimnames(alt_hit_array)[[2]];
+      }
+      gene_hitlist_alt <- alt_hit_array[alt_cutoff_name, alt_contrast_names, alt_assay_name];
       gene_hits_alt <- names(tcount(names(unlist(unname(
          gene_hitlist_alt)))));
       gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
@@ -197,12 +203,14 @@ heatmap_se <- function
    legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
 
    # define heatmap
-   hm_hits <- ComplexHeatmap::Heatmap(
+   #hm_hits <- ComplexHeatmap::Heatmap(
+   hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       jamma::centerGeneData(
          useMedian=useMedian,
          centerGroups=centerGroups,
-         x=assays(se[gene_hits, isamples])[[assay_name]]
-      ),
+         x=assays(se[gene_hits, isamples])[[assay_name]],
+         controlSamples=controlSamples,
+         ...),
       use_raster=TRUE,
       top_annotation=top_annotation,
       left_annotation=left_annotation,
@@ -237,4 +245,61 @@ heatmap_se <- function
    #       norm_label,
    #       "\ncentered by ", centerby_label))
    hm_hits
+}
+
+
+#' Call function using safe ellipsis arguments
+#'
+#' Call function using safe ellipsis arguments
+#'
+#' This function is a wrapper function intended to help
+#' pass ellipsis arguments `...` from a parent function
+#' to an external function in a safe way.
+#' It will only include arguments from `...` that are
+#' recognized by the external function.
+#'
+#' When the external function FUN arguments `formals()`
+#' includes ellipsis `...`, then the `...` will be passed
+#' as-is without change.
+#'
+#' When the external function FUN arguments `formals()`
+#' does not include ellipsis `...`, then only named
+#' arguments in `...` that are recognized by FUN
+#' will be passed, as defined by `names(formals(FUN))`.
+#'
+#' Note that arguments must be named.
+#'
+#' @param FUN `function` that should be called with arguments
+#'    in `...`
+#' @param ... arguments are passed to `FUN()` in safe manner.
+#'
+#' @examples
+#' new_mean <- function(x, trim=0, na.rm=FALSE) {
+#'    mean(x, trim=trim, na.rm=na.rm)
+#' }
+#' x <- c(1, 3, 5, NA);
+#' new_mean(x, na.rm=TRUE);
+#' tryCatch({
+#'    new_mean(x, na.rm=TRUE, color="red");
+#' }, error=function(e){
+#'    print(e);
+#' })
+#'
+#' call_fn_ellipsis(new_mean, x=x, na.rm=TRUE, color="red")
+#' call_fn_ellipsis(new_mean, x=x, color="red")
+#'
+#' @export
+call_fn_ellipsis <- function
+(FUN,
+ ...)
+{
+   FUN_argnames <- names(formals(FUN));
+   if ("..." %in% FUN_argnames) {
+      FUN(...)
+   } else {
+      arglist <- list(...)
+      argkeep <- which(names(arglist) %in% FUN_argnames);
+      arguse <- arglist[argkeep]
+      do.call(FUN, arguse)
+   }
 }
