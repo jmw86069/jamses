@@ -44,10 +44,12 @@ heatmap_se <- function
    row_type="rows",
    assay_name=NULL,
    contrast_names=NULL,
+   contrast_suffix="",
    cutoff_name=1,
    alt_sestats=NULL,
    alt_assay_name=assay_name,
    alt_contrast_names=NULL,
+   alt_contrast_suffix="",
    alt_cutoff_name=1,
    isamples=colnames(se),
    normgroup_colname="Type",
@@ -99,6 +101,10 @@ heatmap_se <- function
          gene_hitlist)))));
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
          do_sparse=FALSE)[gene_hits,,drop=FALSE];
+      if (length(contrast_suffix) > 0 && any(nchar(contrast_suffix)) > 0) {
+         colnames(gene_hits_im) <- paste0(colnames(gene_hits_im),
+            contrast_suffix);
+      }
    }
 
    # rows is user-defined
@@ -145,6 +151,10 @@ heatmap_se <- function
       genes_shared <- intersect(gene_hits_alt,
          gene_hits);
       gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+      if (length(alt_contrast_suffix) > 0 && any(nchar(alt_contrast_suffix)) > 0) {
+         colnames(gene_hits_im_alt) <- paste0(colnames(gene_hits_im_alt),
+            contrast_suffix);
+      }
    }
 
    # normgroup for column split
@@ -225,7 +235,7 @@ heatmap_se <- function
       centerGroups <- NULL;
       centerby_label <- "global-centered";
    }
-   if (length(control_label) > 0 && nchar(control_label) > 0) {
+   if (length(control_label) > 0 && any(nchar(control_label)) > 0) {
       centerby_label <- paste(centerby_label,
          control_label);
    }
