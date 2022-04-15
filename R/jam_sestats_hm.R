@@ -54,6 +54,7 @@ heatmap_se <- function
    centerby_colnames=c(normgroup_colname,
       "Run"),
    controlSamples=NULL,
+   control_label="",
    top_colnames=NULL,
    top_annotation=NULL,
    sample_color_list=NULL,
@@ -213,6 +214,10 @@ heatmap_se <- function
    } else {
       centerGroups <- NULL;
       centerby_label <- "global-centered";
+   }
+   if (length(control_label) > 0 && nchar(control_label) > 0) {
+      centerby_label <- paste(centerby_label,
+         control_label);
    }
 
    # row font size
