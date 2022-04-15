@@ -1,6 +1,15 @@
 
 # TODO for jamses
 
+## 14apr2022
+
+Simpler methods for common visualizations
+
+* expression heatmap - using `ComplexHeatmap::Heatmap()`
+* Venn diagram of hits - using `venndir::venndir()`
+* volcano plots - migrate function from slicejam into this package
+
+
 ## 13apr2022
 
 * `save_sestats()` is super slow, for 6 worksheets, ~15 columns, 25k rows,

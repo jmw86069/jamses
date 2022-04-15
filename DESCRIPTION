@@ -13,7 +13,7 @@ Description: Jam SummarizedExperiment Stats methods to
    in statistical contrasts.
 biocViews:
 Depends: R (>= 3.6.0)
-Imports: jamba(>= 0.0.65.900),
+Imports: jamba(>= 0.0.79.900),
    jamma (>= 0.0.17.900),
    colorjam (>= 0.0.22.900),
    SummarizedExperiment (>= 1.16.1),
@@ -23,6 +23,8 @@ Imports: jamba(>= 0.0.65.900),
    limma
 Suggests:
    genejam,
+   ComplexHeatmap,
+   venndir,
    farrisdata
 License: GPL-3
 Encoding: UTF-8
@@ -31,6 +33,7 @@ Remotes: github::jmw86069/jamba,
     github::jmw86069/colorjam,
     github::jmw86069/jamma,
     github::jmw86069/genejam,
+    github::jmw86069/venndir,
     github::jmw86069/farrisdata
 URL: http://github.com/jmw86069/jamses
 BugReports: http://github.com/jmw86069/jamses/issues

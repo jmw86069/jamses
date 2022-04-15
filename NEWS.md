@@ -1,3 +1,25 @@
+# jamses 0.0.9.900
+
+## changes to existing functions
+
+* `save_sestats()` was updated to use `jamba-version-0.0.79-900` new
+`writeOpenxlsx()`, which uses a substantially faster method of saving
+worksheets, and allows building a multi-sheet Workbook prior to saving
+to a file. This change avoids the time-consuming, repeated steps:
+loading, saving, updating, saving, loading, updating, saving, etc.
+Previously, each successive worksheet added to an Excel file took
+longer to load and save. For a 15,000 row, 8 column `data.frame`,
+saving once took 3 seconds, but saving 12 worksheets took 15 minutes!
+The new approach took about 25 seconds.
+
+## new functions
+
+* `heatmap_se()` is a work in progress, but attempts to automate
+display of expression data as a heatmap using `ComplexHeatmap::Heatmap()`.
+By default it uses statistical hits defined in `sestats` output
+from `se_contrast_stats()`.
+
+
 # jamses 0.0.8.900
 
 ## changes to existing functions

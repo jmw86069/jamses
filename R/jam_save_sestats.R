@@ -93,6 +93,12 @@ save_sestats <- function
          export_df$sheetName);
    }
    if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
+      which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
+      # shorten by removing parentheses () and underscore _
+      export_df$sheetName[which_toolong] <- gsub("[()_]",
+         "",
+         export_df$sheetName[which_toolong]);
+      # substring
       export_df$sheetName <- jamba::makeNames(
          substr(export_df$sheetName,
             1, max_nchar_sheetname - 3));
@@ -113,6 +119,7 @@ save_sestats <- function
 
    # Iterate each stat table and save to Excel worksheet
    append <- FALSE;
+   wb <- NULL;
    for (irow in seq_len(nrow(export_df))) {
       assay_name <- export_df$assay_names[irow];
       cutoff_name <- export_df$cutoff_names[irow];
@@ -148,33 +155,12 @@ save_sestats <- function
       iDF$assay_name <- assay_name;
 
       # detect column types
-      highlighColumns <- jamba::igrep("symbol|gene|descr", colnames(iDF));
+      highlightColumns <- jamba::igrep("symbol|gene|descr", colnames(iDF));
       hitColumns <- jamba::igrep("^hit ", colnames(iDF));
       pvalueColumns <- jamba::igrep("p.val", colnames(iDF));
       fcColumns <- jamba::igrep("^fold ", colnames(iDF));
       lfcColumns <- jamba::igrep("^logFC ", colnames(iDF));
       intColumns <- jamba::igrep(" mean$|^mgm ", colnames(iDF));
-
-      # save to Excel
-      jamba::writeOpenxlsx(
-         file=file,
-         append=append,
-         sheetName=sheetName,
-         x=iDF,
-         verbose=FALSE,
-         autoWidth=FALSE,
-         highlighColumns=highlighColumns,
-         hitColumns=hitColumns,
-         hitRule=c(-1, 0, 1),
-         pvalueColumns=pvalueColumns,
-         pvalueRule=c(1e-05, 0.05, 1),
-         fcColumns=fcColumns,
-         lfcColumns=lfcColumns,
-         intColumns=intColumns,
-         freezePaneColumn=2,
-         colorSub=colorSub,
-         ...);
-      append <- TRUE;
 
       # adjust column widths
       smallColumns <- unique(c(pvalueColumns,
@@ -186,14 +172,33 @@ save_sestats <- function
       save_widths[hitColumns] <- 20;
       save_widths[smallColumns] <- 15;
       save_widths <- save_widths * width_factor;
-      if (verbose) {
-         jamba::printDebug("save_sestats(): ",
-            "      Adjusting colwidths: ", save_widths);
-      }
-      jamba::set_xlsx_colwidths(xlsxFile=file,
-         sheet=sheetName,
-         widths=save_widths);
+
+      # save to Excel
+      wb <- jamba::writeOpenxlsx(
+         file=NULL,
+         wb=wb,
+         append=append,
+         sheetName=sheetName,
+         x=iDF,
+         verbose=FALSE,
+         autoWidth=FALSE,
+         highlightColumns=highlightColumns,
+         hitColumns=hitColumns,
+         hitRule=c(-1, 0, 1),
+         pvalueColumns=pvalueColumns,
+         pvalueRule=c(1e-05, 0.05, 1),
+         fcColumns=fcColumns,
+         lfcColumns=lfcColumns,
+         intColumns=intColumns,
+         freezePaneColumn=2,
+         colWidths=save_widths,
+         colorSub=colorSub,
+         ...);
+      append <- TRUE;
    }
+   openxlsx::saveWorkbook(wb=wb,
+      file=file,
+      overwrite=TRUE);
    return(invisible(export_df));
 }
 
