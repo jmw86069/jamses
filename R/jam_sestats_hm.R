@@ -44,6 +44,7 @@ heatmap_se <- function
    contrast_names=NULL,
    cutoff_name=1,
    alt_sestats=NULL,
+   alt_assay_name=assay_name,
    isamples=colnames(se),
    normgroup_colname="Run",
    centerby_colnames=normgroup_colname,
@@ -53,6 +54,7 @@ heatmap_se <- function
    row_cex=1,
    useMedian=FALSE,
    show_row_names=TRUE,
+   row_label_colname=NULL,
    cluster_columns=FALSE,
    color_max=3,
    lens=2,
@@ -90,7 +92,7 @@ heatmap_se <- function
       } else {
          alt_hit_array <- alt_sestats;
       }
-      gene_hitlist_alt <- alt_hit_array[1, , norm_assay_name];
+      gene_hitlist_alt <- alt_hit_array[1, , alt_assay_name];
       gene_hits_alt <- names(tcount(names(unlist(unname(
          gene_hitlist_alt)))));
       gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
@@ -136,7 +138,7 @@ heatmap_se <- function
          border=TRUE,
          hits_alt=gene_hits_im_alt[gene_hits,,drop=FALSE],
          hits=gene_hits_im[gene_hits,,drop=FALSE],
-         col=list(hits_alt=col_div_xf(1.5),
+         col=list(hits_alt=colorjam::col_div_xf(1.5),
             hits=col_div_xf(1.5)),
          annotation_legend_param=list(
             hits=list(
@@ -196,7 +198,7 @@ heatmap_se <- function
 
    # define heatmap
    hm_hits <- ComplexHeatmap::Heatmap(
-      jamba::centerGeneData(
+      jamma::centerGeneData(
          useMedian=useMedian,
          centerGroups=centerGroups,
          x=assays(se[gene_hits, isamples])[[assay_name]]
