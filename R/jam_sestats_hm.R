@@ -78,11 +78,6 @@ heatmap_se <- function
       stop("This function requires Bioconductor package SummarizedExperiment.");
    }
 
-   #
-   if (length(contrast_names) == 0) {
-      contrast_names <- dimnames(sestats$hit_array)[[2]];
-   }
-
    # define rows to use
    if (length(sestats) > 0) {
       if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
@@ -90,7 +85,16 @@ heatmap_se <- function
       } else {
          hit_array <- sestats;
       }
-      gene_hitlist <- hit_array[cutoff, contrast_names, assay_name];
+      if (length(contrast_names) == 0) {
+         contrast_names <- dimnames(sestats$hit_array)[[2]];
+      }
+      contrast_names1 <- contrast_names;
+      if (length(contrast_names) == 1) {
+         contrast_names1 <- rep(contrast_names, 2);
+      }
+      gene_hitlist <- head(
+         hit_array[cutoff, contrast_names1, assay_name],
+         length(contrast_names));
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
@@ -125,7 +129,13 @@ heatmap_se <- function
       if (length(alt_contrast_names) == 0) {
          alt_contrast_names <- dimnames(alt_hit_array)[[2]];
       }
-      gene_hitlist_alt <- alt_hit_array[alt_cutoff_name, alt_contrast_names, alt_assay_name];
+      alt_contrast_names1 <- alt_contrast_names;
+      if (length(alt_contrast_names) == 1) {
+         alt_contrast_names1 <- rep(alt_contrast_names, 2);
+      }
+      gene_hitlist_alt <- head(
+         alt_hit_array[alt_cutoff_name, alt_contrast_names1, alt_assay_name],
+         length(alt_contrast_names));
       gene_hits_alt <- names(tcount(names(unlist(unname(
          gene_hitlist_alt)))));
       gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,

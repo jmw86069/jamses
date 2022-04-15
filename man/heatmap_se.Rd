@@ -20,6 +20,7 @@ heatmap_se(
   normgroup_colname = "Type",
   centerby_colnames = c(normgroup_colname, "Run"),
   controlSamples = NULL,
+  control_label = "",
   top_colnames = NULL,
   top_annotation = NULL,
   sample_color_list = NULL,
