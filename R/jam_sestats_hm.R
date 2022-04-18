@@ -67,6 +67,9 @@ heatmap_se <- function
    cluster_columns=FALSE,
    color_max=3,
    lens=2,
+   rename_contrasts=TRUE,
+   rename_alt_contrasts=TRUE,
+   verbose=FALSE,
    ...)
 {
    #
@@ -101,6 +104,16 @@ heatmap_se <- function
          gene_hitlist)))));
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
          do_sparse=FALSE)[gene_hits,,drop=FALSE];
+
+      # optionally rename contrasts
+      if (rename_contrasts) {
+         colnames(gene_hits_im) <- tryCatch({
+            contrast2comp(colnames(gene_hits_im));
+         }, error=function(e){
+            colnames(gene_hits_im)
+         });
+      }
+
       if (length(contrast_suffix) > 0 && any(nchar(contrast_suffix)) > 0) {
          colnames(gene_hits_im) <- paste0(colnames(gene_hits_im),
             contrast_suffix);
@@ -151,6 +164,16 @@ heatmap_se <- function
       genes_shared <- intersect(gene_hits_alt,
          gene_hits);
       gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+
+      # optionally rename contrasts
+      if (rename_contrasts) {
+         colnames(gene_hits_im_alt) <- tryCatch({
+            contrast2comp(colnames(gene_hits_im_alt));
+         }, error=function(e){
+            colnames(gene_hits_im_alt)
+         })
+      }
+
       if (length(alt_contrast_suffix) > 0 && any(nchar(alt_contrast_suffix)) > 0) {
          colnames(gene_hits_im_alt) <- paste0(colnames(gene_hits_im_alt),
             alt_contrast_suffix);

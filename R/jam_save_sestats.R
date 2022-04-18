@@ -45,6 +45,7 @@ save_sestats <- function
  width_factor=1,
  max_rows=NULL,
  colorSub=NULL,
+ rename_contrasts=TRUE,
  verbose=FALSE,
  ...)
 {
@@ -88,20 +89,41 @@ save_sestats <- function
       )
    # create sheet names
    export_df$sheetName <- export_df$contrast_names;
+
+   # optionally rename contrasts
+   if (rename_contrasts) {
+      export_df$sheetName <- tryCatch({
+         gsub("[:]", ";",
+            contrast2comp(export_df$contrast_names))
+      }, error=function(e){
+         export_df$contrast_names
+      })
+   }
+
    if (length(sheet_prefix) > 0) {
       export_df$sheetName <- paste0(sheet_prefix,
          export_df$sheetName);
    }
    if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
       which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
-      # shorten by removing parentheses () and underscore _
-      export_df$sheetName[which_toolong] <- gsub("[()_]",
+      # shorten by removing parentheses ()
+      export_df$sheetName[which_toolong] <- gsub("[()]",
          "",
          export_df$sheetName[which_toolong]);
+      # shorten by removing underscore _
+      which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
+      if (length(which_toolong) > 0) {
+         export_df$sheetName[which_toolong] <- gsub("[_]",
+            "",
+            export_df$sheetName[which_toolong]);
+         which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
+      }
       # substring
-      export_df$sheetName <- jamba::makeNames(
-         substr(export_df$sheetName,
-            1, max_nchar_sheetname - 3));
+      if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
+         export_df$sheetName <- jamba::makeNames(
+            substr(export_df$sheetName,
+               1, max_nchar_sheetname - 3));
+      }
       if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
          export_df$sheetName <- jamba::makeNames(
             substr(export_df$sheetName,

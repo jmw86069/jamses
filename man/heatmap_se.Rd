@@ -33,6 +33,9 @@ heatmap_se(
   cluster_columns = FALSE,
   color_max = 3,
   lens = 2,
+  rename_contrasts = TRUE,
+  rename_alt_contrasts = TRUE,
+  verbose = FALSE,
   ...
 )
 }

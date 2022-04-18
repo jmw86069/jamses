@@ -63,6 +63,13 @@ required to represent a statistical contrast.
 \item \code{"contrast"}: the fully-defined contrast
 \item \code{"comp"}: equivalent abbreviated form, a short comparison
 }
+
+Note that one goal is to reduce characters in Excel worksheet names,
+currently limited to 31 characters. Also note, the \code{":"} delimiter is
+not permitted in Excel sheet names, thus \code{save_sestats()} uses
+semicolon \code{";"}. This limitation may warrant using a different default
+delimiter between factors, such as comma \code{","}, or pipe \code{"|"},
+or forward-slash \code{"/"}.
 \subsection{Assumptions}{
 
 The key assumption is that an experimental group name is a

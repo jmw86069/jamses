@@ -22,6 +22,13 @@ Main driving motivation:
       * contrast: `"(Aaa_Bbb-Ccc_Bbb)-(Aaa_Ddd-Ccc_Ddd)"` (35 characters)
       * comp: `"Aaa-Cca:Bba-Dda"` (15 characters)
 
+## changes to existing functions
+
+* argument `rename_contrasts` was added to:
+
+   * `heatmap_se()`
+   * `sestats_to_df()`
+   * `save_sestats()`
 
 # jamses 0.0.9.900
 

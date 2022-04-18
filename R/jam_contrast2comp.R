@@ -11,6 +11,13 @@
 #' 1. `"contrast"`: the fully-defined contrast
 #' 2. `"comp"`: equivalent abbreviated form, a short comparison
 #'
+#' Note that one goal is to reduce characters in Excel worksheet names,
+#' currently limited to 31 characters. Also note, the `":"` delimiter is
+#' not permitted in Excel sheet names, thus `save_sestats()` uses
+#' semicolon `";"`. This limitation may warrant using a different default
+#' delimiter between factors, such as comma `","`, or pipe `"|"`,
+#' or forward-slash `"/"`.
+#'
 #' ## Assumptions
 #'
 #' The key assumption is that an experimental group name is a

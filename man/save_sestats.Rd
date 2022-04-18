@@ -16,6 +16,7 @@ save_sestats(
   width_factor = 1,
   max_rows = NULL,
   colorSub = NULL,
+  rename_contrasts = TRUE,
   verbose = FALSE,
   ...
 )

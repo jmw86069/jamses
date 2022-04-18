@@ -3,7 +3,30 @@
 
 ## 18apr2022
 
-* Some method to rename two-way contrasts to save character space.
+* New class `sestats` to replace output from `se_contrast_stats`
+
+   * slotNames:
+   
+      * hit_array
+      * hit_list
+      * stat_dfs
+      * stat_df
+   
+   * subset: [signal, contrast, cutoff]
+   
+      * intended to help filter for specific results
+      * when supplying `sestats[matrix(ncol=3)]` it will subset for
+      each element in the `hit_array`
+   
+   * accessors:
+   
+      * `summary()`, `print()` prints the `data.frame` summary of hit counts
+      * `hits()` will return `list` of `list`
+      * `hit_array()` will return the full `sestats@hit_array`
+      * `hit_im()` will return an incidence matrix of hits
+
+
+* COMPLETE: Some method to rename two-way contrasts to save character space.
 
    * Notes:
    
