@@ -1,3 +1,28 @@
+# jamses 0.0.10.900
+
+## new functions
+
+* `contrast2comp()`, `comp2contrast()` are two reciprocal functions
+intended to convert long contrast names to a short comparison form
+called a `"comp"`. The `"comp"` can be converted back to the full
+contrast name. In cases where a two-way contrast can be written
+in two equivalent forms, argument `factor_order` can be used to
+define the desired order. The statistical results are the same,
+but sometimes it helps to have specific ordering. See help docs
+and examples for details, and worked examples.
+Main driving motivation:
+
+   * `ComplexHeatmap::Heatmap()` labels are too long to fit onscreen
+   without making other non-ideal adjustments to plot dimensions.
+   * `venndir::venndir()` labels are also too long.
+   * Excel worksheets are limited to 31 characters, a typical two-way
+   contrast with 3-characters for each factor level uses 35 characters,
+   the `"comp"` for uses only 15.
+
+      * contrast: `"(Aaa_Bbb-Ccc_Bbb)-(Aaa_Ddd-Ccc_Ddd)"` (35 characters)
+      * comp: `"Aaa-Cca:Bba-Dda"` (15 characters)
+
+
 # jamses 0.0.9.900
 
 ## changes to existing functions

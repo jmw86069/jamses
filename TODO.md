@@ -1,12 +1,69 @@
 
 # TODO for jamses
 
+## 18apr2022
+
+* Some method to rename two-way contrasts to save character space.
+
+   * Notes:
+   
+      * Contrasts should be easily distinguished, since `se_contrast_stats()`
+      encodes the contrast into column headers, for example
+      
+         * `"logFC CellA_Treated-CellA_Control"`
+         * `"adj.P.Value CellA_Treated-CellA_Control"`
+         * `"P.value CellA_Treated-CellA_Control"`
+         * `"hit mgm5 adjP0.01 fc1.5 CellA_Treated-CellA_Control"`
+         * Currently "easy" to find the contrast by taking the last
+         non-whitespace string from the column header.
+         * Contrasts should have no whitespace, use `":"` delimiter?
+         
+      * Renamed contrasts ideally do not use parentheses, since the goal
+      is to reduce characters.
+      
+         * Technically `(CellA_Treated-CellA_Control)-(CellB_Treated-CellB_Control)`
+         * Equivalent: `CellA_Treated-CellA_Control:CellB_Treated-CellB_Control`
+         * Also equivalent: `Treated-Control:CellA-CellB`
+   
+   * Two-way contrast:
+      * `(CellA_Treated-CellA_Control)-(CellB_Treated-CellB_Control)`
+      (59 characters, 27 per contrast)
+
+   * Alternative two-way syntax:
+      * `Treated-Control x CellA-CellB`
+      * `Treated-Control:CellA-CellB`
+
+   * Two-way with one unchanging factor:
+      * `(CellA_Treated_WT-CellA_Control_WT)-(CellB_Treated_WT-CellB_Control_WT)`
+      (71 characters, 33 per contrast)
+
+   * Alternative two-way with extra factor:
+      * `CellA-CellB:Treated-Control:WT` (32 characters)
+      * `Treated-Control CellA-CellB WT`
+
+   * One-way contrast with extra factor:
+      * `CellA_Treated_WT-CellA_Control_WT`
+      (33 characters)
+   
+   * Alternative one-way with extra factor:
+      * `Treated-Control:CellA:WT` (24 characters)
+   
+   
 ## 14apr2022
 
 Simpler methods for common visualizations
 
-* expression heatmap - using `ComplexHeatmap::Heatmap()`
+* COMPLETE: expression heatmap - using `ComplexHeatmap::Heatmap()`
 * Venn diagram of hits - using `venndir::venndir()`
+
+   * design idea: use second order contrasts to determine which
+   contrasts are "compatible" to be used in the same Venn diagrams.
+   * contrast in cell type A; compared to same contrast in cell type B
+   * one treatment-control in cell type A; another treatment-control cell type A
+   * implied: it would not generally choose treatmentA-control cellA; treatmentB-control cellB
+   * it could compare two-way contrasts using third-order contrast logic
+
+
 * volcano plots - migrate function from slicejam into this package
 
 
