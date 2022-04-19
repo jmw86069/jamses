@@ -214,8 +214,9 @@ heatmap_se <- function
       if (length(alt_sestats) > 0) {
          left_annotation <- ComplexHeatmap::rowAnnotation(
             border=TRUE,
-            hits_alt=gene_hits_im_alt[gene_hits,,drop=FALSE],
-            hits=gene_hits_im[gene_hits,,drop=FALSE],
+            hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE],
+            hits=gene_hits_im[gene_hits, , drop=FALSE],
+            show_legend=c(TRUE, FALSE),
             col=list(
                hits_alt=colorjam::col_div_xf(1.5),
                hits=colorjam::col_div_xf(1.5)),
@@ -225,12 +226,17 @@ heatmap_se <- function
                   color_bar="discrete",
                   border=TRUE,
                   labels=c("down", "no change", "up")),
-               hits_alt=FALSE)
+               hits_alt=list(
+                  at=c(-1, 0, 1),
+                  color_bar="discrete",
+                  border=TRUE,
+                  labels=c("down", "no change", "up")))
          )
       } else {
          left_annotation <- ComplexHeatmap::rowAnnotation(
             border=TRUE,
             hits=gene_hits_im[gene_hits, , drop=FALSE],
+            show_legend=c(TRUE),
             col=list(
                hits=colorjam::col_div_xf(1.5)),
             annotation_legend_param=list(
