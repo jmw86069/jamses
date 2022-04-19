@@ -98,7 +98,7 @@ heatmap_se <- function
          contrast_names1 <- rep(contrast_names, 2);
       }
       gene_hitlist <- head(
-         hit_array[cutoff, contrast_names1, assay_name],
+         hit_array[cutoff_name, contrast_names1, assay_name],
          length(contrast_names));
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));

@@ -24,6 +24,11 @@
       * `hits()` will return `list` of `list`
       * `hit_array()` will return the full `sestats@hit_array`
       * `hit_im()` will return an incidence matrix of hits
+      
+   * converters
+   
+      * `as.list()` to convert to previous `list` format
+      * `list2sestats()` to convert from previous `list` format to `sestats`
 
 
 * COMPLETE: Some method to rename two-way contrasts to save character space.
