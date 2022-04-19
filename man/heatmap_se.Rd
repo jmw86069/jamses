@@ -36,6 +36,7 @@ heatmap_se(
   rename_contrasts = TRUE,
   rename_alt_contrasts = TRUE,
   verbose = FALSE,
+  debug = FALSE,
   ...
 )
 }

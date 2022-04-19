@@ -70,6 +70,7 @@ heatmap_se <- function
    rename_contrasts=TRUE,
    rename_alt_contrasts=TRUE,
    verbose=FALSE,
+   debug=FALSE,
    ...)
 {
    #
@@ -322,6 +323,14 @@ heatmap_se <- function
    #       " total RNA-seq DGEs",
    #       norm_label,
    #       "\ncentered by ", centerby_label))
+   if (debug) {
+      return(list(
+         hm=hm_hits,
+         top_annotation=top_annotation,
+         left_annotation=left_annotation,
+         hm_title=hm_title
+      ));
+   }
    hm_hits
 }
 
