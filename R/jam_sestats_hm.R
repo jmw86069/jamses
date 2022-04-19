@@ -216,7 +216,7 @@ heatmap_se <- function
             border=TRUE,
             hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE],
             hits=gene_hits_im[gene_hits, , drop=FALSE],
-            show_legend=c(TRUE, FALSE),
+            show_legend=c(FALSE, TRUE),
             col=list(
                hits_alt=colorjam::col_div_xf(1.5),
                hits=colorjam::col_div_xf(1.5)),
