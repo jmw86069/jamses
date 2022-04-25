@@ -59,6 +59,10 @@ heatmap_se <- function
    control_label="",
    top_colnames=NULL,
    top_annotation=NULL,
+   rowData_colnames=NULL,
+   left_annotation=NULL,
+   row_split=NULL,
+   row_title_rot=0,
    sample_color_list=NULL,
    row_cex=0.8,
    useMedian=FALSE,
@@ -247,8 +251,35 @@ heatmap_se <- function
                   labels=c("down", "no change", "up")))
          )
       }
+   } else if (length(rowData_colnames) > 0 && length(left_annotation) == 0) {
+      left_annotation <- ComplexHeatmap::rowAnnotation(
+         border=TRUE,
+         df=data.frame(check.names=FALSE,
+            rowData(se[gene_hits, isamples])[,rowData_colnames, drop=FALSE]),
+         annotation_legend_param=list(
+            border=TRUE
+         ),
+         col=sample_color_list);
    } else {
       left_annotation <- NULL;
+   }
+
+   # optional row_split
+   if (length(row_split) > 0) {
+      if ("character" %in% class(row_split)) {
+         if (all(row_split %in% colnames(rowData(se)))) {
+            row_split <- data.frame(check.names=FALSE,
+               rowData(se[gene_hits, isamples])[,row_split, drop=FALSE]);
+            print(dim(row_split));
+            print(head(row_split));
+         } else {
+            print(row_split);
+            row_split <- NULL;
+         }
+      } else {
+         print(row_split);
+         row_split <- NULL;
+      }
    }
 
    norm_label <- paste0(assay_name, " data");
@@ -307,6 +338,8 @@ heatmap_se <- function
       ),
       clustering_method_rows="ward.D2",
       column_split=column_split,
+      row_split=row_split,
+      row_title_rot=row_title_rot,
       cluster_column_slices=FALSE,
       border=TRUE,
       name="centered\nexpression",
