@@ -15,6 +15,7 @@ se_detected_rows(
   detect_minpct = 0.65,
   detect_mingroups = 1,
   isamples = colnames(se),
+  verbose = FALSE,
   ...
 )
 }
@@ -48,6 +49,8 @@ are considered "valid" based upon other criteria.}
 \item{isamples}{\code{character} optional vector of \code{colnames(se)} to use
 during this analysis. This vector is useful for example, when excluding
 outlier samples that were defined by other methods.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
 }

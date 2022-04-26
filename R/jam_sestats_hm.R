@@ -65,6 +65,7 @@ heatmap_se <- function
    row_title_rot=0,
    sample_color_list=NULL,
    row_cex=0.8,
+   column_cex=1,
    useMedian=FALSE,
    show_row_names=TRUE,
    row_label_colname=NULL,
@@ -198,6 +199,18 @@ heatmap_se <- function
       }
    }
 
+   # column font size
+   column_fontsize <- jamba::noiseFloor(
+      column_cex * 60/(length(isamples))^(1/2),
+      ceiling=20,
+      minimum=2);
+
+   # row font size
+   row_fontsize <- jamba::noiseFloor(
+      row_cex * (60*(14 / 10))/(length(gene_hits))^(1/2),
+      minimum=1,
+      ceiling=20);
+
    # determine annotations atop samples
    if (length(top_colnames) == 0) {
       top_colnames <- names(which(
@@ -217,54 +230,88 @@ heatmap_se <- function
    }
 
    # left_annotation
-   if (length(sestats) > 0) {
-      if (length(alt_sestats) > 0) {
-         left_annotation <- ComplexHeatmap::rowAnnotation(
-            border=TRUE,
-            hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE],
-            hits=gene_hits_im[gene_hits, , drop=FALSE],
-            show_legend=c(FALSE, TRUE),
-            col=list(
-               hits_alt=colorjam::col_div_xf(1.5),
-               hits=colorjam::col_div_xf(1.5)),
-            annotation_legend_param=list(
-               hits=list(
-                  at=c(-1, 0, 1),
-                  color_bar="discrete",
-                  border=TRUE,
-                  labels=c("down", "no change", "up")),
-               hits_alt=list(
-                  at=c(-1, 0, 1),
-                  color_bar="discrete",
-                  border=TRUE,
-                  labels=c("down", "no change", "up")))
-         )
-      } else {
-         left_annotation <- ComplexHeatmap::rowAnnotation(
-            border=TRUE,
-            hits=gene_hits_im[gene_hits, , drop=FALSE],
-            show_legend=c(TRUE),
-            col=list(
-               hits=colorjam::col_div_xf(1.5)),
-            annotation_legend_param=list(
-               hits=list(
-                  at=c(-1, 0, 1),
-                  color_bar="discrete",
-                  border=TRUE,
-                  labels=c("down", "no change", "up")))
-         )
+   if (length(left_annotation) == 0) {
+      column_anno_fontsize <- jamba::noiseFloor(
+         column_cex * 12,
+         ceiling=24,
+         minimum=2);
+      left_anno_list <- list();
+      left_color_list <- list();
+      left_param_list <- list();
+      show_left_legend <- logical(0);
+      # sestats annotations
+      if (length(sestats) > 0) {
+         show_left_legend <- c(TRUE,
+            show_left_legend);
+         left_anno_list <- c(list(
+            hits=gene_hits_im[gene_hits, , drop=FALSE]),
+            left_anno_list);
+         left_color_list <- c(list(
+            hits=colorjam::col_div_xf(1.5)),
+            left_color_list);
+         left_param_list <- c(list(
+            hits=list(
+               at=c(-1, 0, 1),
+               color_bar="discrete",
+               border=TRUE,
+               labels=c("down", "no change", "up"))),
+            left_param_list);
       }
-   } else if (length(rowData_colnames) > 0 && length(left_annotation) == 0) {
-      left_annotation <- ComplexHeatmap::rowAnnotation(
-         border=TRUE,
-         df=data.frame(check.names=FALSE,
-            rowData(se[gene_hits, isamples])[,rowData_colnames, drop=FALSE]),
-         annotation_legend_param=list(
-            border=TRUE
-         ),
-         col=sample_color_list);
-   } else {
-      left_annotation <- NULL;
+      # alt_sestats annotations
+      if (length(alt_sestats) > 0) {
+         show_left_legend <- c(FALSE,
+            show_left_legend);
+         left_anno_list <- c(list(
+            hits_alt=gene_hits_im[gene_hits, , drop=FALSE]),
+            left_anno_list);
+         left_color_list <- c(list(
+            hits_alt=colorjam::col_div_xf(1.5)),
+            left_color_list);
+         left_param_list <- c(list(
+            hits_alt=list(
+               at=c(-1, 0, 1),
+               color_bar="discrete",
+               border=TRUE,
+               labels=c("down", "no change", "up"))),
+            left_param_list);
+      }
+      # rowData annotations
+      if (length(rowData_colnames) > 0) {
+         show_left_legend <- c(TRUE,
+            show_left_legend);
+         left_anno_list <- c(list(
+            df=data.frame(check.names=FALSE,
+               rowData(se[gene_hits, ])[,rowData_colnames, drop=FALSE])),
+            left_anno_list);
+         use_color_list_names <- intersect(rowData_colnames,
+            names(sample_color_list));
+         left_color_list <- c(
+            sample_color_list[use_color_list_names],
+            left_color_list);
+         left_param_list <- c(
+            lapply(jamba::nameVector(rowData_colnames), function(iname){
+               if (iname %in% names(sample_color_list)) {
+                  list(border=TRUE,
+                     at=names(sample_color_list[[iname]]))
+               } else {
+                  list(border=TRUE)
+               }
+            }),
+            left_param_list);
+      }
+
+      # put it all together
+      left_alist <- alist(
+         col=left_color_list,
+         annotation_legend_param=left_param_list,
+         annotation_name_gp=grid::gpar(fontsize=column_anno_fontsize),
+         #show_legend=show_left_legend,
+         border=TRUE);
+      left_arglist <- c(
+         left_alist,
+         left_anno_list);
+      left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+         left_arglist);
    }
 
    # optional row_split
@@ -306,12 +353,6 @@ heatmap_se <- function
          control_label);
    }
 
-   # row font size
-   row_fontsize <- jamba::noiseFloor(
-      row_cex * (60*(14 / 10))/(length(gene_hits))^(1/2),
-      minimum=1,
-      ceiling=18);
-
    # row_labels
    if (length(row_label_colname) == 0) {
       row_labels <- gene_hits;
@@ -351,6 +392,7 @@ heatmap_se <- function
       show_row_names=show_row_names,
       row_labels=row_labels,
       row_names_gp=grid::gpar(fontsize=row_fontsize),
+      column_names_gp=grid::gpar(fontsize=column_fontsize),
       col=col_div_xf(color_max,
          lens=lens,
          ...),

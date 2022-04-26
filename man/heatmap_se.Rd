@@ -31,6 +31,7 @@ heatmap_se(
   row_title_rot = 0,
   sample_color_list = NULL,
   row_cex = 0.8,
+  column_cex = 1,
   useMedian = FALSE,
   show_row_names = TRUE,
   row_label_colname = NULL,
