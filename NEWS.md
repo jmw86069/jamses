@@ -1,3 +1,15 @@
+# jamses 0.0.11.900
+
+## new functions
+
+* `se_detected_rows()` is a new function to assist the process of
+defining "detected" rows which are suitable for downstream analysis.
+The rules are essentially simple heuristics based upon the total
+number of replicates, group replicates, fraction of group replicates,
+and number of sample groups where a row has "valid" measurements.
+In this case "valid" is defined as meeting a minimum abundance
+threshold, and is not `NA`.
+
 # jamses 0.0.10.900
 
 ## new functions

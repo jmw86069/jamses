@@ -69,6 +69,7 @@ heatmap_se <- function
    show_row_names=TRUE,
    row_label_colname=NULL,
    cluster_columns=FALSE,
+   column_split=NULL,
    color_max=3,
    lens=2,
    rename_contrasts=TRUE,
@@ -188,11 +189,13 @@ heatmap_se <- function
    # normgroup for column split
    normgroup_colname <- intersect(normgroup_colname,
       colnames(colData(se)));
-   if (length(normgroup_colname) > 0 &&
-         length(unique(colData(se[,isamples])[[normgroup_colname]])) > 0) {
-      column_split <- colData(se[,isamples])[[normgroup_colname]]
-   } else {
-      column_split <- NULL;
+   if (length(column_split) == 0) {
+      if (length(normgroup_colname) > 0 &&
+            length(unique(colData(se[,isamples])[[normgroup_colname]])) > 0) {
+         column_split <- colData(se[,isamples])[[normgroup_colname]]
+      } else {
+         column_split <- NULL;
+      }
    }
 
    # determine annotations atop samples
@@ -276,6 +279,8 @@ heatmap_se <- function
             print(row_split);
             row_split <- NULL;
          }
+      } else if (length(row_split) == 1 && is.numeric(row_split)) {
+         # leave as-is
       } else {
          print(row_split);
          row_split <- NULL;
@@ -347,7 +352,8 @@ heatmap_se <- function
       row_labels=row_labels,
       row_names_gp=grid::gpar(fontsize=row_fontsize),
       col=col_div_xf(color_max,
-         lens=lens),
+         lens=lens,
+         ...),
       cluster_columns=cluster_columns,
       ...)
    hm_title <- paste0(
