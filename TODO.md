@@ -1,6 +1,13 @@
 
 # TODO for jamses
 
+## 26apr2022
+
+* `se_detected_rows()` was added, however
+
+   * in future would be nice to apply constraints based upon contrasts
+
+
 ## 18apr2022
 
 * New class `sestats` to replace output from `se_contrast_stats`

@@ -273,16 +273,16 @@ heatmap_se <- function
          if (all(row_split %in% colnames(rowData(se)))) {
             row_split <- data.frame(check.names=FALSE,
                rowData(se[gene_hits, isamples])[,row_split, drop=FALSE]);
-            print(dim(row_split));
-            print(head(row_split));
+            #print(dim(row_split));
+            #print(head(row_split));
          } else {
-            print(row_split);
+            #print(row_split);
             row_split <- NULL;
          }
       } else if (length(row_split) == 1 && is.numeric(row_split)) {
          # leave as-is
       } else {
-         print(row_split);
+         #print(row_split);
          row_split <- NULL;
       }
    }

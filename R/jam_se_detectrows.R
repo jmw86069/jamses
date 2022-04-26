@@ -75,6 +75,7 @@
 #' @param isamples `character` optional vector of `colnames(se)` to use
 #'    during this analysis. This vector is useful for example, when excluding
 #'    outlier samples that were defined by other methods.
+#' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
 #'
@@ -90,6 +91,7 @@ se_detected_rows <- function
  detect_minpct=0.65,
  detect_mingroups=1,
  isamples=colnames(se),
+ verbose=FALSE,
  ...)
 {
    #
@@ -119,6 +121,11 @@ se_detected_rows <- function
 
       # percent detected per group
       reps_per_group <- tcount(igroups_i);
+      if (verbose) {
+         jamba::printDebug("se_detected_rows(): ",
+            "reps_per_group: ");
+         print(reps_per_group);
+      }
       # first determine replicates per group
       se_Pct_Group <- se_Num_Group / reps_per_group[colnames(se_Num_Group)];
       # se_Pct_Group <- se_Num_Group /
