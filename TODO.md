@@ -7,6 +7,10 @@
 
    * in future would be nice to apply constraints based upon contrasts
 
+* Migrate the `volcano_plot()` function from `slicejam::volcano_plot()`
+
+   * currently also draws block arrows in the plot margins
+
 
 ## 18apr2022
 

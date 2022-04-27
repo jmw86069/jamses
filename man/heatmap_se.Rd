@@ -46,6 +46,12 @@ heatmap_se(
   ...
 )
 }
+\arguments{
+\item{se}{\code{SummarizedExperiment} object with accessor functions:
+\code{rowData()}, \code{colData()}, and \code{assays()};
+or another suitable Bioconductor object with accessor functions:
+\code{featureData()}, \code{phenoData()}, and \code{assayData()}.}
+}
 \description{
 Expression heatmap of sestats hits
 }

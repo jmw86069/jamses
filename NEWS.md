@@ -1,3 +1,14 @@
+# jamses 0.0.12.900
+
+## changes to existing functions
+
+* `heatmap_se()` was modified to accomodate other object types,
+such as `"MethyLumiSet"` which does not have `rowData()`,`colData()`,`assays()`,
+accessor functions, instead uses a common alternative for
+Bioconductor objects: `featureData()`, `phenoData()` and `assayData()`.
+The `heatmap_se()` changes will try to use those accessor functions
+for any object whose class does not contain `"SummarizedExperiment"`.
+
 # jamses 0.0.11.900
 
 ## new functions

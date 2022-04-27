@@ -36,6 +36,11 @@
 #' `colData(se)`. If no colors are defined, `ComplexHeatmap::Heatmap()`
 #' will determine its own colors.
 #'
+#' @param se `SummarizedExperiment` object with accessor functions:
+#'    `rowData()`, `colData()`, and `assays()`;
+#'    or another suitable Bioconductor object with accessor functions:
+#'    `featureData()`, `phenoData()`, and `assayData()`.
+#'
 #' @export
 heatmap_se <- function
 (se,
@@ -187,13 +192,32 @@ heatmap_se <- function
       }
    }
 
+   # pull colData and rowData as data.frame
+   # to be tolerant of other data types
+   if (!grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+      rowData_se <- data.frame(check.names=FALSE,
+         rowData(se));
+      colData_se <- data.frame(check.names=FALSE,
+         colData(se))
+   } else {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "using accessor functions: ",
+            c("featureData()", "phenoData()"))
+      }
+      rowData_se <- as(featureData(se[gene_hits,]), "data.frame");
+      rownames(rowData_se) <- gene_hits;
+      colData_se <- as(phenoData(se[,isamples]), "data.frame")
+      rownames(colData_se) <- isamples;
+   }
+
    # normgroup for column split
    normgroup_colname <- intersect(normgroup_colname,
-      colnames(colData(se)));
+      colnames(colData_se));
    if (length(column_split) == 0) {
       if (length(normgroup_colname) > 0 &&
-            length(unique(colData(se[,isamples])[[normgroup_colname]])) > 0) {
-         column_split <- colData(se[,isamples])[[normgroup_colname]]
+            length(unique(colData_se[[normgroup_colname]])) > 0) {
+         column_split <- colData_se[[normgroup_colname]]
       } else {
          column_split <- NULL;
       }
@@ -214,15 +238,16 @@ heatmap_se <- function
    # determine annotations atop samples
    if (length(top_colnames) == 0) {
       top_colnames <- names(which(
-         sapply(colnames(colData(se)), function(i){
-            any(duplicated(colData(se)[[i]]))
+         sapply(colnames(colData_se), function(i){
+            any(duplicated(colData_se[[i]])) &&
+               length(unique(colData_se[[i]])) > 1
          })))
    }
    if (length(top_annotation) == 0) {
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
          df=data.frame(check.names=FALSE,
-            colData(se[,isamples])[,top_colnames, drop=FALSE]),
+            colData_se[,top_colnames, drop=FALSE]),
          annotation_legend_param=list(
             border=TRUE
          ),
@@ -281,7 +306,7 @@ heatmap_se <- function
             show_left_legend);
          left_anno_list <- c(list(
             df=data.frame(check.names=FALSE,
-               rowData(se[gene_hits, ])[,rowData_colnames, drop=FALSE])),
+               rowData_se[gene_hits, ][,rowData_colnames, drop=FALSE])),
             left_anno_list);
          use_color_list_names <- intersect(rowData_colnames,
             names(sample_color_list));
@@ -317,19 +342,15 @@ heatmap_se <- function
    # optional row_split
    if (length(row_split) > 0) {
       if ("character" %in% class(row_split)) {
-         if (all(row_split %in% colnames(rowData(se)))) {
+         if (all(row_split %in% colnames(rowData_se))) {
             row_split <- data.frame(check.names=FALSE,
-               rowData(se[gene_hits, isamples])[,row_split, drop=FALSE]);
-            #print(dim(row_split));
-            #print(head(row_split));
+               rowData_se[gene_hits, row_split, drop=FALSE]);
          } else {
-            #print(row_split);
             row_split <- NULL;
          }
       } else if (length(row_split) == 1 && is.numeric(row_split)) {
          # leave as-is
       } else {
-         #print(row_split);
          row_split <- NULL;
       }
    }
@@ -337,13 +358,13 @@ heatmap_se <- function
    norm_label <- paste0(assay_name, " data");
 
    centerby_colnames <- intersect(centerby_colnames,
-      colnames(colData(se)));
+      colnames(colData_se));
    if (length(centerby_colnames) > 0) {
       centerby_label <- paste0("centered by ",
          jamba::cPaste(centerby_colnames,
             sep="/"));
       centerGroups <- jamba::pasteByRow(
-         colData(se[,isamples])[,centerby_colnames]);
+         colData_se[,centerby_colnames]);
    } else {
       centerGroups <- NULL;
       centerby_label <- "global-centered";
@@ -357,20 +378,26 @@ heatmap_se <- function
    if (length(row_label_colname) == 0) {
       row_labels <- gene_hits;
    } else {
-      row_labels <- rowData(se[gene_hits,])[[row_label_colname]]
+      row_labels <- rowData_se[gene_hits, , drop=FALSE][[row_label_colname]];
    }
 
    # heatmap legend labels
    legend_at <- seq(-ceiling(color_max), to=ceiling(color_max));
    legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
 
+   # pull assay data separately so we can tolerate other object types
+   if (!grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+      se_matrix <- assays(se[gene_hits, isamples])[[assay_name]];
+   } else {
+      se_matrix <- assayData(se[gene_hits, isamples])[[assay_name]];
+   }
+
    # define heatmap
-   #hm_hits <- ComplexHeatmap::Heatmap(
    hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=jamma::centerGeneData(
          useMedian=useMedian,
          centerGroups=centerGroups,
-         x=assays(se[gene_hits, isamples])[[assay_name]],
+         x=se_matrix,
          controlSamples=controlSamples,
          ...),
       use_raster=TRUE,
