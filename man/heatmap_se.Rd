@@ -33,7 +33,8 @@ heatmap_se(
   row_cex = 0.8,
   column_cex = 1,
   useMedian = FALSE,
-  show_row_names = TRUE,
+  show_row_names = length(rows) < 2000,
+  show_row_dend = length(rows) < 2000,
   row_label_colname = NULL,
   cluster_columns = FALSE,
   column_split = NULL,
@@ -51,6 +52,18 @@ heatmap_se(
 \code{rowData()}, \code{colData()}, and \code{assays()};
 or another suitable Bioconductor object with accessor functions:
 \code{featureData()}, \code{phenoData()}, and \code{assayData()}.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{debug}{\code{logical} indicating debug mode, data is returned in a \code{list}:
+\itemize{
+\item \code{hm} object \code{ComplexHeatmap::Heatmap}
+\item \code{top_annotation} object \code{ComplexHeatmap::HeatmapAnnotation} for columns
+\item \code{left_annotation} object \code{ComplexHeatmap::HeatmapAnnotation} for rows
+\item \code{hm_title} object \code{character} string with the heatmap title.
+}}
+
+\item{...}{additional arguments are passed to supporting functions.}
 }
 \description{
 Expression heatmap of sestats hits

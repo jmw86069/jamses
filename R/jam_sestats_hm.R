@@ -40,6 +40,13 @@
 #'    `rowData()`, `colData()`, and `assays()`;
 #'    or another suitable Bioconductor object with accessor functions:
 #'    `featureData()`, `phenoData()`, and `assayData()`.
+#' @param debug `logical` indicating debug mode, data is returned in a `list`:
+#'    * `hm` object `ComplexHeatmap::Heatmap`
+#'    * `top_annotation` object `ComplexHeatmap::HeatmapAnnotation` for columns
+#'    * `left_annotation` object `ComplexHeatmap::HeatmapAnnotation` for rows
+#'    * `hm_title` object `character` string with the heatmap title.
+#' @param verbose `logical` indicating whether to print verbose output.
+#' @param ... additional arguments are passed to supporting functions.
 #'
 #' @export
 heatmap_se <- function
@@ -72,7 +79,8 @@ heatmap_se <- function
    row_cex=0.8,
    column_cex=1,
    useMedian=FALSE,
-   show_row_names=TRUE,
+   show_row_names=length(rows) < 2000,
+   show_row_dend=length(rows) < 2000,
    row_label_colname=NULL,
    cluster_columns=FALSE,
    column_split=NULL,
@@ -149,6 +157,7 @@ heatmap_se <- function
       }
       gene_hits <- rows;
    }
+   rows <- gene_hits;
 
    # alt gene_hitlist
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
@@ -194,7 +203,7 @@ heatmap_se <- function
 
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
-   if (!grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
       rowData_se <- data.frame(check.names=FALSE,
          rowData(se));
       colData_se <- data.frame(check.names=FALSE,
@@ -241,9 +250,14 @@ heatmap_se <- function
          sapply(colnames(colData_se), function(i){
             any(duplicated(colData_se[[i]])) &&
                length(unique(colData_se[[i]])) > 1
-         })))
+         })));
+      if (length(top_colnames) > 0 && verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "derived top_colnames: ",
+            top_colnames);
+      }
    }
-   if (length(top_annotation) == 0) {
+   if (length(top_annotation) == 0 && length(top_colnames) > 0) {
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
          df=data.frame(check.names=FALSE,
@@ -251,7 +265,7 @@ heatmap_se <- function
          annotation_legend_param=list(
             border=TRUE
          ),
-         col=sample_color_list);
+         col=lapply(sample_color_list, jamba::rmNA));
    }
 
    # left_annotation
@@ -302,6 +316,11 @@ heatmap_se <- function
       }
       # rowData annotations
       if (length(rowData_colnames) > 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "rowData_colnames: ",
+               rowData_colnames);
+         }
          show_left_legend <- c(TRUE,
             show_left_legend);
          left_anno_list <- c(list(
@@ -311,13 +330,14 @@ heatmap_se <- function
          use_color_list_names <- intersect(rowData_colnames,
             names(sample_color_list));
          left_color_list <- c(
-            sample_color_list[use_color_list_names],
+            jamba::rmNULL(
+               lapply(sample_color_list[use_color_list_names], jamba::rmNA)),
             left_color_list);
          left_param_list <- c(
             lapply(jamba::nameVector(rowData_colnames), function(iname){
                if (iname %in% names(sample_color_list)) {
                   list(border=TRUE,
-                     at=names(sample_color_list[[iname]]))
+                     at=jamba::rmNA(names(sample_color_list[[iname]])))
                } else {
                   list(border=TRUE)
                }
@@ -326,17 +346,29 @@ heatmap_se <- function
       }
 
       # put it all together
-      left_alist <- alist(
-         col=left_color_list,
-         annotation_legend_param=left_param_list,
-         annotation_name_gp=grid::gpar(fontsize=column_anno_fontsize),
-         #show_legend=show_left_legend,
-         border=TRUE);
-      left_arglist <- c(
-         left_alist,
-         left_anno_list);
-      left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
-         left_arglist);
+      if (length(left_anno_list) > 0) {
+         left_alist <- alist(
+            col=left_color_list,
+            annotation_legend_param=left_param_list,
+            annotation_name_gp=grid::gpar(fontsize=column_anno_fontsize),
+            #show_legend=show_left_legend,
+            border=TRUE);
+         if (debug) {
+            jamba::printDebug("heatmap_se(): ",
+               "left_alist:");
+            print(sdim(left_alist));
+            print(left_alist);
+            jamba::printDebug("heatmap_se(): ",
+               "left_anno_list:");
+            print(sdim(left_anno_list));
+            print(left_anno_list);
+         }
+         left_arglist <- c(
+            left_alist,
+            left_anno_list);
+         left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+            left_arglist);
+      }
    }
 
    # optional row_split
@@ -345,6 +377,7 @@ heatmap_se <- function
          if (all(row_split %in% colnames(rowData_se))) {
             row_split <- data.frame(check.names=FALSE,
                rowData_se[gene_hits, row_split, drop=FALSE]);
+         #} else if (length(row_split) == nrow(se)) {
          } else {
             row_split <- NULL;
          }
@@ -386,7 +419,7 @@ heatmap_se <- function
    legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
 
    # pull assay data separately so we can tolerate other object types
-   if (!grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
       se_matrix <- assays(se[gene_hits, isamples])[[assay_name]];
    } else {
       se_matrix <- assayData(se[gene_hits, isamples])[[assay_name]];
@@ -417,6 +450,7 @@ heatmap_se <- function
       border=TRUE,
       name="centered\nexpression",
       show_row_names=show_row_names,
+      show_row_dend=show_row_dend,
       row_labels=row_labels,
       row_names_gp=grid::gpar(fontsize=row_fontsize),
       column_names_gp=grid::gpar(fontsize=column_fontsize),
