@@ -201,6 +201,17 @@ heatmap_se <- function
       }
    }
 
+   # validate sample_color_list
+   if (length(sample_color_list) > 0) {
+      sample_color_list <- lapply(sample_color_list, function(i){
+         if (is.function(i)) {
+            i
+         } else {
+            jamba::rmNA(i)
+         }
+      })
+   }
+
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
    if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
@@ -265,7 +276,7 @@ heatmap_se <- function
          annotation_legend_param=list(
             border=TRUE
          ),
-         col=lapply(sample_color_list, jamba::rmNA));
+         col=sample_color_list);
    }
 
    # left_annotation
@@ -331,13 +342,19 @@ heatmap_se <- function
             names(sample_color_list));
          left_color_list <- c(
             jamba::rmNULL(
-               lapply(sample_color_list[use_color_list_names], jamba::rmNA)),
+               sample_color_list[use_color_list_names]),
             left_color_list);
          left_param_list <- c(
             lapply(jamba::nameVector(rowData_colnames), function(iname){
                if (iname %in% names(sample_color_list)) {
-                  list(border=TRUE,
-                     at=jamba::rmNA(names(sample_color_list[[iname]])))
+                  if (is.function(sample_color_list[[iname]])) {
+                     list(border=TRUE,
+                        color_bar="discrete",
+                        at=attr(sample_color_list[[iname]], "breaks"))
+                  } else {
+                     list(border=TRUE,
+                        at=jamba::rmNA(names(sample_color_list[[iname]])))
+                  }
                } else {
                   list(border=TRUE)
                }

@@ -1,3 +1,10 @@
+# jamses 0.0.13.900
+
+## changes to existing functions
+
+* `heatmap_se()` was modified to handle updated `sample_color_list`
+that contains `function` output from `circlize::colorRamp2()`.
+
 # jamses 0.0.12.900
 
 ## changes to existing functions
