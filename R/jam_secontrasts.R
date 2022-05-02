@@ -814,12 +814,13 @@ run_limma_replicate <- function
          stop(paste("posthoc_args$DEqMS$PSM_counts is empty,",
             "and is required when using posthoc_test='DEqMS'."));
       }
-      if (!all(rownames(fit3$coefficients) %in% names(PSM_counts))) {
-         stop(paste("all rownames(fit3$coefficients) must be present in",
+      if (!all(rownames(subFit3$coefficients) %in% names(PSM_counts))) {
+         print(head(subFit3$coefficients));
+         stop(paste("all rownames(subFit3$coefficients) must be present in",
             "names(PSM_counts) when using posthoc_test='DEqMS'."));
       }
-      subFit3$count <- PSM_counts[rownames(fit3$coefficients)];
-      subFit4 <- DEqMS::spectraCounteBayes(fit3,
+      subFit3$count <- PSM_counts[rownames(subFit3$coefficients)];
+      subFit4 <- DEqMS::spectraCounteBayes(subFit3,
          fit.method=posthoc_args$DEqMS$fit.method);
       renameCols <- c(renameCols,
          "sca.p",
