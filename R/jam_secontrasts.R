@@ -83,6 +83,11 @@ se_contrast_stats <- function
  isamples=NULL,
  enforce_design=TRUE,
  use_voom=FALSE,
+ posthoc_test=c("none",
+    "DEqMS"),
+ posthoc_args=list(DEqMS=list(
+    PSM_counts=NULL,
+    fit.method="loess")),
  weights=NULL,
  robust=FALSE,
  handle_na=c("partial", "full", "none"),
@@ -93,6 +98,7 @@ se_contrast_stats <- function
  ...)
 {
    handle_na <- match.arg(handle_na);
+   posthoc_test <- match.arg(posthoc_test);
 
    ## Validate input parameters
    if (length(isamples) == 0) {
@@ -195,6 +201,8 @@ se_contrast_stats <- function
          collapse_by_gene=collapse_by_gene,
          block=block,
          correlation=correlation,
+         posthoc_test=posthoc_test,
+         posthoc_args=posthoc_args,
          ...);
       ## rlr_result is a list
       ## - statsDF
@@ -701,7 +709,10 @@ run_limma_replicate <- function
  robust=FALSE,
  adjust.method="BH",
  confint=FALSE,
- trim_colnames=c("t", "B", "F"),
+ trim_colnames=c("t",
+    "B",
+    "F",
+    "sca.t"),
  adjp_cutoff=0.05,
  p_cutoff=NULL,
  fold_cutoff=1.5,
@@ -713,9 +724,18 @@ run_limma_replicate <- function
  block=NULL,
  collapse_by_gene=FALSE,
  correlation=NULL,
+ posthoc_test=c("none",
+    "DEqMS"),
+ posthoc_args=list(DEqMS=list(
+    PSM_counts=NULL,
+    fit.method="loess")),
  verbose=FALSE,
  ...)
 {
+   # validate arguments
+   posthoc_test <- match.arg(posthoc_test);
+
+   # prepate ExpressionSet
    imatrixES <- Biobase::ExpressionSet(assayData=imatrix,
       featureData=new("AnnotatedDataFrame",
          data=data.frame(
@@ -770,12 +790,43 @@ run_limma_replicate <- function
    renameCols <- c("logFC",
       "P.Value",
       "adj.P.Val",
+      "sca.p",
+      "sca.adj.pval",
       "t",
       "F",
       "B",
       "CI.L",
       "CI.R",
       "AveExpr");
+
+   ## optionally apply post-hoc tests here, driving example is DEqMS
+   subFit4 <- NULL;
+   if ("DEqMS" %in% posthoc_test) {
+      if (!jamba::check_pkg_installed("DEqMS")) {
+         stop(paste("The Bioconductor package DEqMS is not installed,",
+            "but posthoc_test='DEqMS'"));
+      }
+      PSM_counts <- posthoc_args$DEqMS$PSM_counts;
+      if (length(posthoc_args$DEqMS$fit.method) == 0) {
+         posthoc_args$DEqMS$fit.method <- "loess";
+      }
+      if (length(PSM_counts) == 0) {
+         stop(paste("posthoc_args$DEqMS$PSM_counts is empty,",
+            "and is required when using posthoc_test='DEqMS'."));
+      }
+      if (!all(rownames(fit3$coefficients) %in% names(PSM_counts))) {
+         stop(paste("all rownames(fit3$coefficients) must be present in",
+            "names(PSM_counts) when using posthoc_test='DEqMS'."));
+      }
+      subFit3$count <- PSM_counts[rownames(fit3$coefficients)];
+      subFit4 <- DEqMS::spectraCounteBayes(fit3,
+         fit.method=posthoc_args$DEqMS$fit.method);
+      renameCols <- c(renameCols,
+         "sca.p",
+         "sca.adj.pval",
+         "sca.t",
+         "count");
+   }
 
    ## Get summary table for each contrast
    contrastNames <- colnames(subFit3$contrast);
@@ -786,6 +837,7 @@ run_limma_replicate <- function
    if (TRUE) {
       stats_dfs <- ebayes2dfs(lmFit3=subFit3,
          lmFit1=subFit1,
+         lmFit4=subFit4,
          define_hits=TRUE,
          trim_colnames=trim_colnames,
          adjp_cutoff=adjp_cutoff,
@@ -796,6 +848,7 @@ run_limma_replicate <- function
          int_fold_cutoff=int_fold_cutoff,
          mgm_cutoff=mgm_cutoff,
          ave_cutoff=ave_cutoff,
+         posthoc_test=posthoc_test,
          verbose=verbose,
          ...);
    } else {
@@ -832,12 +885,15 @@ run_limma_replicate <- function
    if (length(jamba::tcount(stats_df[,1], minCount=2)) == 0) {
       rownames(stats_df) <- stats_df[,1];
    }
+   # subFit4 is included below, but removed by jamba::rmNULL() when empty
    return(
       list(stats_df=stats_df,
          stats_dfs=stats_dfs,
-         rep_fits=list(lmFit1=subFit1,
+         rep_fits=jamba::rmNULL(list(
+            lmFit1=subFit1,
             lmFit2=subFit2,
-            lmFit3=subFit3)
+            lmFit3=subFit3,
+            lmFit4=subFit4))
       )
    )
 }
@@ -899,6 +955,8 @@ run_limma_replicate <- function
 #'
 #' @param lmFit3 object returned by `limma::eBayes()`.
 #' @param lmFit1 object returned by `limma::lmFit()`, optional.
+#' @param lmFit4 object returned by `posthoc_test="DEqMS"` in
+#'    `run_limma_replicate()`.
 #' @param define_hits `logical` indicating whether to define hits
 #'    using the statistical thresholds.
 #' @param adjp_cutoff,p_cutoff,fold_cutoff,mgm_cutoff,ave_cutoff `numeric`
@@ -946,6 +1004,7 @@ run_limma_replicate <- function
 ebayes2dfs <- function
 (lmFit3=NULL,
  lmFit1=NULL,
+ lmFit4=NULL,
  define_hits=TRUE,
  adjp_cutoff=0.05,
  p_cutoff=NULL,
@@ -967,7 +1026,12 @@ ebayes2dfs <- function
  rename_contrasts=FALSE,
  sep=" ",
  int_grep="[(].+-.+-.+[)]|-.+-",
- trim_colnames=c("t", "B", "F"),
+ trim_colnames=c("t",
+    "B",
+    "F",
+    "sca.t"),
+ posthoc_test=c("none",
+    "DEqMS"),
  verbose=FALSE,
  ...)
 {
@@ -1001,6 +1065,7 @@ ebayes2dfs <- function
    ##
    ## Optionally transform the AveExpr values, most useful when reporting normal space values which are stored in log space
    transform_means <- match.arg(transform_means);
+   posthoc_test <- match.arg(posthoc_test);
 
    ## cutoffMaxGroupMean requires lmFit1
    if (!define_hits) {
@@ -1175,7 +1240,7 @@ ebayes2dfs <- function
       ## Assemble top table, handling single replicate data in a specific way
       if (!any(lmFit3$df.residual > 0)) {
          jamba::printDebug("ebayes2dfs(): ",
-            "No values for df.residual>0.",
+            "No values with df.residual > 0.",
             fgText=c("darkorange1", "red1"));
          if (confint) {
             iTopTable <- data.frame(
@@ -1199,12 +1264,44 @@ ebayes2dfs <- function
                AveExpr=lmFit3$Amean);
          }
       } else {
-         iTopTable <- limma::topTable(
-            lmFit3,
-            coef=i,
-            sort.by="none",
-            number=nrow(lmFit3),
-            confint=confint);
+         if (length(lmFit4) > 0) {
+            if ("DEqMS" %in% posthoc_test) {
+               if (verbose) {
+                  jamba::printDebug("ebayes2dfs(): ",
+                     c("DEqMS::outputResult(lmFit4) for contrast: ",
+                        iLabel),
+                     sep="");
+               }
+               iTopTable <- DEqMS::outputResult(lmFit4,
+                  coef_col=i);
+            } else {
+               if (verbose) {
+                  jamba::printDebug("ebayes2dfs(): ",
+                     c("limma::topTable(lmFit4) for contrast: ",
+                        iLabel),
+                     sep="");
+               }
+               iTopTable <- limma::topTable(
+                  lmFit4,
+                  coef=i,
+                  sort.by="none",
+                  number=nrow(lmFit4),
+                  confint=confint);
+            }
+         } else {
+            if (verbose) {
+               jamba::printDebug("ebayes2dfs(): ",
+                  c("limma::topTable(lmFit3) for contrast: ",
+                     iLabel),
+                  sep="");
+            }
+            iTopTable <- limma::topTable(
+               lmFit3,
+               coef=i,
+               sort.by="none",
+               number=nrow(lmFit3),
+               confint=confint);
+         }
       }
       ## Optionally remove extraneous colnames
       if (length(trim_colnames) > 0) {
@@ -1289,6 +1386,18 @@ ebayes2dfs <- function
                      hit_colname),
                   sep="");
             }
+
+            ## Define colnames to use for each cutoff
+            adjp_colname<- "adj.P.Val"
+            p_colname <- "P.Value"
+            logfc_colname <- "logFC"
+            mgm_colname <- "mgm"
+            ave_colname <- "AveExpr"
+            if ("DEqMS" %in% posthoc_test) {
+               adjp_colname <- "sca.adj.pval";
+               p_colname <- "sca.P.Value";
+            }
+
             ## Call utility function to get hit flags
             hit_values <- mark_stat_hits(x=iTopTable,
                adjp_cutoff=adjp_cutoff,
@@ -1296,11 +1405,11 @@ ebayes2dfs <- function
                fold_cutoff=fold_cutoff,
                mgm_cutoff=mgm_cutoff,
                ave_cutoff=ave_cutoff,
-               adjp_colname="adj.P.Val",
-               p_colname="P.Value",
-               logfc_colname="logFC",
-               mgm_colname="mgm",
-               ave_colname="AveExpr");
+               adjp_colname=adjp_colname,
+               p_colname=p_colname,
+               logfc_colname=logfc_colname,
+               mgm_colname=mgm_colname,
+               ave_colname=ave_colname);
             iTopTable[[hit_colname]] <- hit_values;
          }
       }
@@ -1347,6 +1456,8 @@ ebayes2dfs <- function
             print(head(iTopTable));
             printDebug("geneColname:", geneColname);
          }
+         # Note that DEqMS should not ever proceed here since the
+         # method is inherently based upon per-gene logic.
          iTopTableByGeneL <- collapseTopTableByGene(iTopTable,
             geneColname=geneColname,
             aveExprColname="AveExpr",
@@ -1363,49 +1474,83 @@ ebayes2dfs <- function
          retVals$top_bygene_df <- iTopTableByGene;
          retVals$multidir_probes <- iTopTableByGeneL$multiDirProbes;
       }
+
       ## Optionally rename column headers to include the contrast name
       gene_colnames <- intersect(colnames(iTopTable),
-         c(colnames(lmFit3$genes), probe_colname));
+         c(colnames(lmFit3$genes),
+            "gene",
+            probe_colname));
+
+      # optionally remove AveExpr
+      if (!include_ave_expr) {
+         iTopTable <- iTopTable[,jamba::unvigrep("AveExpr", colnames(iTopTable)),drop=FALSE];
+      }
+
+      # rename headers to include the contrast name
       if (rename_headers) {
          ## Note we do rename maxGroupMean now,
          ## since we calculate it per each specific contrast
+         #
+         # rename_from <- jamba::vigrep(c("^AveExpr$|^mgm$|p.value|adj.p.val|sca.adj.pval|^sca.t$|^count$|^logFC$|^fold$"),
+         #    colnames(iTopTable));
          rename_from <- setdiff(
-            jamba::unvigrep("AveExpr| mean$|^gene|^probe",
+            jamba::unvigrep("AveExpr| mean$|^gene|^symbol|^probe",
                colnames(iTopTable)),
             gene_colnames);
          rename_to <- paste(rename_from,
             iLabel,
             sep=sep);
          # remove repeat blank spaces
-         rename_to <- gsub("[ ]+", " ", rename_to);
+         rename_to <- gsub("^[ ]+|[ ]+$", "",
+            gsub("[ ]+", " ",
+               rename_to));
+         if (verbose) {
+            jamba::printDebug("ebayes2dfs(): ",
+               "rename stat columns:");
+            print(data.frame(rename_from, rename_to));
+         }
          iTopTable <- jamba::renameColumn(iTopTable,
             from=rename_from,
             to=rename_to);
       }
-      if (!include_ave_expr) {
-         iTopTable <- iTopTable[,jamba::unvigrep("AveExpr", colnames(iTopTable)),drop=FALSE];
-      }
-      rownames(iTopTable) <- jamba::makeNames(iTopTable[,1]);
 
       # re-order colnames
       if (TRUE) {
-         reorder_colnames <- vgrep("^(t|F|B|logFC|P.Value|adj.P.Val|fold|AveExpr)($| )",
-            colnames(iTopTable));
-         reorder_match <- match(reorder_colnames, colnames(iTopTable));
-         keep_colnames1 <- colnames(iTopTable)[seq_len(min(reorder_match) - 1)];
-         keep_colnames2 <- setdiff(colnames(iTopTable),
-            c(keep_colnames1, reorder_colnames));
-         reorder_sorted <- provigrep(c("logFC",
-            "fold",
-            "P.Value",
-            "adj.P.Val",
+         neworder_colnames <- jamba::provigrep(c(
+            "^probe|^gene|symbol|accession|accnum",
+            paste0("^hit", sep),
+            paste0("^logFC", sep),
+            paste0("^fold", sep),
+            "^sca.p.value",
+            "^sca.adj.pval",
+            "^p.value",
+            "^adj.p.val",
+            paste0("^mgm", sep),
+            " mean$",
+            paste0("^AveExpr", sep),
             "."),
-            reorder_colnames);
-         neworder_colnames <- c(keep_colnames1,
-            reorder_sorted,
-            keep_colnames2);
+            colnames(iTopTable));
+         # disable old logic for now, will remove in near future
+         if (FALSE) {
+            reorder_colnames <- jamba::vgrep("^(t|F|B|logFC|P.Value|adj.P.Val|fold|AveExpr)($| )",
+               colnames(iTopTable));
+            reorder_match <- match(reorder_colnames, colnames(iTopTable));
+            keep_colnames1 <- colnames(iTopTable)[seq_len(min(reorder_match) - 1)];
+            keep_colnames2 <- setdiff(colnames(iTopTable),
+               c(keep_colnames1, reorder_colnames));
+            reorder_sorted <- provigrep(c("logFC",
+               "fold",
+               "P.Value",
+               "adj.P.Val",
+               "."),
+               reorder_colnames);
+            neworder_colnames <- c(keep_colnames1,
+               reorder_sorted,
+               keep_colnames2);
+         }
          iTopTable <- iTopTable[, neworder_colnames, drop=FALSE];
       }
+      rownames(iTopTable) <- jamba::makeNames(iTopTable[,1]);
 
       retVals$top_df <- iTopTable;
       retVals;

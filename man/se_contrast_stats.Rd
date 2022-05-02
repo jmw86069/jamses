@@ -25,6 +25,8 @@ se_contrast_stats(
   isamples = NULL,
   enforce_design = TRUE,
   use_voom = FALSE,
+  posthoc_test = c("none", "DEqMS"),
+  posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   weights = NULL,
   robust = FALSE,
   handle_na = c("partial", "full", "none"),

@@ -7,6 +7,7 @@
 ebayes2dfs(
   lmFit3 = NULL,
   lmFit1 = NULL,
+  lmFit4 = NULL,
   define_hits = TRUE,
   adjp_cutoff = 0.05,
   p_cutoff = NULL,
@@ -28,7 +29,8 @@ ebayes2dfs(
   rename_contrasts = FALSE,
   sep = " ",
   int_grep = "[(].+-.+-.+[)]|-.+-",
-  trim_colnames = c("t", "B", "F"),
+  trim_colnames = c("t", "B", "F", "sca.t"),
+  posthoc_test = c("none", "DEqMS"),
   verbose = FALSE,
   ...
 )
@@ -37,6 +39,9 @@ ebayes2dfs(
 \item{lmFit3}{object returned by \code{limma::eBayes()}.}
 
 \item{lmFit1}{object returned by \code{limma::lmFit()}, optional.}
+
+\item{lmFit4}{object returned by \code{posthoc_test="DEqMS"} in
+\code{run_limma_replicate()}.}
 
 \item{define_hits}{\code{logical} indicating whether to define hits
 using the statistical thresholds.}

@@ -1,3 +1,58 @@
+# jamses 0.0.14.900
+
+## changes to existing functions
+
+This update attempts to extend `se_contrast_stats()` with methods
+from the Bioconductor package DEqMS. This package models error as
+a function of PSM_count, which is the number of peptide score matrix
+entries that were combined to formulate an abundance estimate for
+each protein. The approach is analogous to using `voom` as an extension
+of `limma`. In fact, DEqMS is another extension of the `limma`
+error model.
+
+* `se_contrast_stats()`
+
+   * argument `posthoc_test=c("none", "DEqMS")` to allow post-hoc tests
+   such as `DEqMS` to be applied after the core `limma` steps.
+   This argument is pushed into `run_limma_replicates()`.
+   * argument `posthoc_args` is a list named by the `posthoc_test` value,
+   containing a list of named elements used as arguments for the relevant
+   post-hoc test functions.
+
+* `run_limma_replicate()`
+
+   * argument `posthoc_test=c("none", "DEqMS")` to allow post-hoc tests
+   such as `DEqMS` to be applied after the core `limma` steps.
+   This argument is also passed to `ebayes2dfs()`.
+   * argument `posthoc_args` is a list named by the `posthoc_test` value,
+   containing a list of named elements used as arguments for the relevant
+   post-hoc test functions.
+   * argument `trim_colnames` added `"sca.t"` as additional column to
+   omit by default.
+
+* `ebayes2dfs()`
+
+   * argument `lmFit4` is optional and intended to contain additional
+   output from post-hoc methods such as `DEqMS::spectraCounteBayes()`.
+   * argument `trim_colnames` added `"sca.t"` as additional column to
+   omit by default.
+   * The order of colnames in the `data.frame` returned was updated to
+   be more consistent for different formats. Specifically, when
+   `posthoc_test="DEqMS"` the P-value columns sort with the `"sca.P.Value"`
+   and `"sca.adj.pval"` columns before the usual limma columns.
+   * when calling `mark_stat_hits()` it updates the expected colnames
+   when `posthoc_test="DEqMS"`, using `adjp_colname="sca.adj.pval"` and
+   `p_colname="sca.P.Value"`. In this way, hits are filtered by the
+   DEqMS adjusted P-value and P-value, respectively. All other statistics
+   are carried over from `lmFit3` and work as before.
+
+* `heatmap_se()`
+
+   * The incidence matrix data for `alt_sestats` was updated to handle
+   proper hit matrix, in haste to make the `left_annotation` extensible
+   the sestats hit matrix was used twice. This is why the package is
+   private, for now.
+
 # jamses 0.0.13.900
 
 ## changes to existing functions

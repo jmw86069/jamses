@@ -12,7 +12,7 @@ run_limma_replicate(
   robust = FALSE,
   adjust.method = "BH",
   confint = FALSE,
-  trim_colnames = c("t", "B", "F"),
+  trim_colnames = c("t", "B", "F", "sca.t"),
   adjp_cutoff = 0.05,
   p_cutoff = NULL,
   fold_cutoff = 1.5,
@@ -24,6 +24,8 @@ run_limma_replicate(
   block = NULL,
   collapse_by_gene = FALSE,
   correlation = NULL,
+  posthoc_test = c("none", "DEqMS"),
+  posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   verbose = FALSE,
   ...
 )

@@ -184,7 +184,10 @@ heatmap_se <- function
       colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
       genes_shared <- intersect(gene_hits_alt,
          gene_hits);
-      gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+      if (length(genes_shared) > 0) {
+         gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+      }
+      print(head(gene_hits_im_alt, 10));
 
       # optionally rename contrasts
       if (rename_contrasts) {
@@ -312,7 +315,7 @@ heatmap_se <- function
          show_left_legend <- c(FALSE,
             show_left_legend);
          left_anno_list <- c(list(
-            hits_alt=gene_hits_im[gene_hits, , drop=FALSE]),
+            hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE]),
             left_anno_list);
          left_color_list <- c(list(
             hits_alt=colorjam::col_div_xf(1.5)),
