@@ -26,7 +26,12 @@
 #' displayed.
 #'
 #' For comparison across other `sestats` results, argument `alt_sestats`
-#' allows supplying an alternative hit array.
+#' allows supplying an alternative hit array. These hit arrays are placed
+#' as `left_annotation`, alongside optional data defined by `rowData_colnames`.
+#'
+#' When `rowData_colnames` is supplied, data in the corresponding colnames
+#' of `rowData(se)` are also displayed in `left_annotation`. Colors can
+#' be defined in `sample_color_list`.
 #'
 #' Argument `sample_color_list` is intended to be the output
 #' from `platjam::design2colors()` which will very likely be moved
@@ -36,10 +41,137 @@
 #' `colData(se)`. If no colors are defined, `ComplexHeatmap::Heatmap()`
 #' will determine its own colors.
 #'
+#' A custom `left_annotation` can be supplied, but this method currently
+#' prevents the other annotations described above from being displayed.
+#' Currently the best way to supply custom row annotations in addition
+#' to those described above, supply `right_annotation` to be displayed
+#' on the right side of the heatmap.
+#'
+#' Data provided in `se` is expected to be `SummarizedExperiment`, however
+#' it also accepts other Bioconductor data types that provide
+#' accessor functions `featureData()`, `phenoData()`, and `assayData()`,
+#' including for example `"MethyLumiSet"` class.
+#'
 #' @param se `SummarizedExperiment` object with accessor functions:
 #'    `rowData()`, `colData()`, and `assays()`;
 #'    or another suitable Bioconductor object with accessor functions:
 #'    `featureData()`, `phenoData()`, and `assayData()`.
+#' @param sestats `list` output from `se_contrast_stats()`, which
+#'    specifically contains `hit_array` as a 3-dimensional array of hits,
+#'    with dimensions "Cutoffs", "Contrasts", "Signal". When `sestats`
+#'    is supplied, then all genes with a non-zero entry in `hit_array`,
+#'    for the corresponding `contrast_names`, will be included in the
+#'    heatmap. When `rows` is also supplied, then the intersection
+#'    with `rows` is displayed.
+#' @param rows `character` vector of `rownames(se)` to define a specific
+#'    set of rows to display. When `sestats` is supplied, then the
+#'    intersection of `rows` with genes defined by `sestats` is displayed.
+#' @param row_type `character` string used in the title of the heatmap
+#'    which indicates how many rows are displayed. For example
+#'    `"1,234 genes detected above background"` or
+#'    `"1,234 DEGs by limma-voom"`.
+#' @param assay_name `character` string indicating the name in
+#'    `assays(se)` to use for data to be displayed in the heatmap.
+#' @param contrast_names `character` vector of contrasts in
+#'    `sestats$hit_array` to use for the heatmap. When `contrast_names=NULL`
+#'    then all contrasts are displayed, which is the default.
+#' @param contrast_suffix `character` string with optional suffix to append
+#'    to the end of each contrast name label for `sestats` hit incidence
+#'    matrix beside the heatmap. This suffix may be useful when comparing
+#'    two methods for the same set of contrast names, with `sestats` and
+#'    `alt_sestats`.
+#' @param cutoff_name `character` or `integer` index used to define the
+#'    specific statistical cutoffs to use from `sestats$hit_array`.
+#' @param alt_sestats,alt_assay_name,alt_contrast_names,alt_contrast_suffix
+#'    arguments analogous to those described above for `sestats` which
+#'    are used when `alt_sestats` is supplied.
+#' @param isamples `character` vector of `colnames(se)` used to provide a
+#'    specific subset, or specific order of columns displayed in the heatmap.
+#' @param normgroup_colname `character` vector of colnames in `colData(se)`
+#'    used during data centering. When supplied, samples are centered
+#'    independently within each normgroup grouping.
+#' @param centerby_colnames `character` vector of colnames in `colData(se)`
+#'    used during data centering. When supplied, samples are centered
+#'    independently within each centerby grouping. It is typically used
+#'    for things like cell lines, to center each cell line by a time
+#'    point control, or untreated control.
+#' @param controlSamples `character` vector of samples to use as the
+#'    reference during data centering. Note that samples are still
+#'    centered within each normgroup and centerby grouping, and within
+#'    that grouping samples are centered to the `controlSamples`
+#'    which are present in that grouping. In absence of `controlSamples`
+#'    defined, or within the grouping, samples are centered relative
+#'    to the median value of the grouping.
+#' @param control_name `character` string used to describe the control
+#'    used during data centering, displayed in the heatmap title.
+#' @param top_colnames `character` vector of colnames to use from
+#'    `colData(se)` as annotations to display in `top_annotation` above
+#'    the heatmap. When not supplied, reasonable colnames are detected
+#'    internally:
+#'    * columns with more than one unique value
+#'    * columns with at least one duplicated value
+#' @param top_annotation specific heatmap annotation as defined by
+#'    `ComplexHeatmap::HeatmapAnnotation()`. When supplied, the `top_colnames`
+#'    described above is not used.
+#' @param rowData_colnames `character` vector of colnames in `rowData(se)`
+#'    to use for heatmap annotations displayed on the left side of
+#'    the heatmap. Specific colors can be included in `sample_color_list`
+#'    as a named `list` of color vectors or color functions. The names
+#'    of this list must match colnames to be displayed, otherwise
+#'    `ComplexHeatmap::Heatmap()` will define its own color function.
+#' @param left_annotation specific heatmap annotation as defined by
+#'    `ComplexHeatmap::rowAnnotation()`. When supplied, the `rowData_colnames`
+#'    and `sestats` row annotations are not displayed. In order to supply
+#'    custom row annotations and not lose `left_annotation` defined above,
+#'    supply the row annotations as `right_annotation`.
+#' @param alt_sestats `list` output from `se_contrast_stats()`, which
+#'    specifically contains `hit_array` as a 3-dimensional array of hits,
+#'    with dimensions "Cutoffs", "Contrasts", "Signal". This data is
+#'    only used when `sestats` is also supplied.
+#'    Note that the rows displayed is defined by `rows` and `sestats` above,
+#'    and is not defined here.
+#' @param `row_split` is used to define heatmap split by row, ultimately
+#'    passed to `ComplexHeatmap::Heatmap()` argument `row_split`. However,
+#'    the input type can vary:
+#'    * `integer` number of row splits based upon row clustering
+#'    * `character` value or values in colnames of `rowData(se)` to split
+#'    using row annotation in `se`.
+#'    * `character` or `factor` vector named by `rownames(se)` with another
+#'    custom row split, passed directly to `ComplexHeatmap::Heatmap()`
+#'    argument `row_split`, with proper order for rows being displayed.
+#' @param row_title_rot `numeric` value indicating text rotation in degrees
+#'    to use for row titles.
+#' @param sample_color_list named `list` of color vectors or color functions,
+#'    where names correspond to colnames in either `colData(se)` or
+#'    `rowData(se)`, and which are passed to corresponding left or top
+#'    annotation functions. When colors are not defined,
+#'    `ComplexHeatmap::Heatmap()` will define colors using its own internal
+#'    function.
+#' @param row_cex,column_cex `numeric` values used to adjust the row and
+#'    column name font size, relative to the automatic adjustment that
+#'    is already done based upon the number of rows and columns being
+#'    displayed.
+#' @param useMedian `logical` passed to `jamma::centerGeneData()` during
+#'    data centering.
+#' @param show_row_names,show_row_dend `logical` indicating whether to
+#'    display row names, and row dendrogram, respectively. With more than
+#'    2,000 rows this step can become somewhat slow.
+#' @param row_label_colname `character` string used as a row label, where
+#'    this value is a colname in `rowData(se)`. It is useful when rownames
+#'    are some identifier that is not user-friendly, and where another column
+#'    in the data may provide a more helpful label, for example `"SYMBOL"`
+#'    to display gene symbol instead of accession number.
+#' @param cluster_colnames `logical` indicating whether to cluster columns
+#'    by hierarchical clustering.
+#' @param column_split `character` or `integer` vector used to define
+#'    heatmap column split.
+#' @param color_max `numeric` value passed to `colorjam::col_div_xf()`
+#'    which defines the upper limit of color gradient used in the heatmap.
+#' @param lens `numeric` value passed to `colorjam::col_div_xf()` to control
+#'    the intensity of color gradient applied to the numeric range.
+#' @param rename_contrasts,rename_alt_contrasts `logical` indicating
+#'    whether to rename long contrast names in `sestats` and `alt_sestats`
+#'    using `contrast2comp()`.
 #' @param debug `logical` indicating debug mode, data is returned in a `list`:
 #'    * `hm` object `ComplexHeatmap::Heatmap`
 #'    * `top_annotation` object `ComplexHeatmap::HeatmapAnnotation` for columns
@@ -393,11 +525,12 @@ heatmap_se <- function
 
    # optional row_split
    if (length(row_split) > 0) {
-      if ("character" %in% class(row_split)) {
+      if (any(c("factor", "character") %in% class(row_split))) {
          if (all(row_split %in% colnames(rowData_se))) {
             row_split <- data.frame(check.names=FALSE,
                rowData_se[gene_hits, row_split, drop=FALSE]);
-         #} else if (length(row_split) == nrow(se)) {
+         } else if (all(names(row_split) %in% gene_hits)) {
+            row_split <- row_split[gene_hits];
          } else {
             row_split <- NULL;
          }

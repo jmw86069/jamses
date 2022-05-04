@@ -1,3 +1,13 @@
+# jamses 0.0.15.900
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * Argument `row_split` now also accepts named vector where names
+   correspond to rownames in the heatmap.
+   * Added help text for all function arguments.
+
 # jamses 0.0.14.900
 
 ## changes to existing functions

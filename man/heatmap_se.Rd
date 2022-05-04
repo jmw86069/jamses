@@ -53,6 +53,130 @@ heatmap_se(
 or another suitable Bioconductor object with accessor functions:
 \code{featureData()}, \code{phenoData()}, and \code{assayData()}.}
 
+\item{sestats}{\code{list} output from \code{se_contrast_stats()}, which
+specifically contains \code{hit_array} as a 3-dimensional array of hits,
+with dimensions "Cutoffs", "Contrasts", "Signal". When \code{sestats}
+is supplied, then all genes with a non-zero entry in \code{hit_array},
+for the corresponding \code{contrast_names}, will be included in the
+heatmap. When \code{rows} is also supplied, then the intersection
+with \code{rows} is displayed.}
+
+\item{rows}{\code{character} vector of \code{rownames(se)} to define a specific
+set of rows to display. When \code{sestats} is supplied, then the
+intersection of \code{rows} with genes defined by \code{sestats} is displayed.}
+
+\item{row_type}{\code{character} string used in the title of the heatmap
+which indicates how many rows are displayed. For example
+\code{"1,234 genes detected above background"} or
+\code{"1,234 DEGs by limma-voom"}.}
+
+\item{assay_name}{\code{character} string indicating the name in
+\code{assays(se)} to use for data to be displayed in the heatmap.}
+
+\item{contrast_names}{\code{character} vector of contrasts in
+\code{sestats$hit_array} to use for the heatmap. When \code{contrast_names=NULL}
+then all contrasts are displayed, which is the default.}
+
+\item{contrast_suffix}{\code{character} string with optional suffix to append
+to the end of each contrast name label for \code{sestats} hit incidence
+matrix beside the heatmap. This suffix may be useful when comparing
+two methods for the same set of contrast names, with \code{sestats} and
+\code{alt_sestats}.}
+
+\item{cutoff_name}{\code{character} or \code{integer} index used to define the
+specific statistical cutoffs to use from \code{sestats$hit_array}.}
+
+\item{alt_sestats, alt_assay_name, alt_contrast_names, alt_contrast_suffix}{arguments analogous to those described above for \code{sestats} which
+are used when \code{alt_sestats} is supplied.}
+
+\item{isamples}{\code{character} vector of \code{colnames(se)} used to provide a
+specific subset, or specific order of columns displayed in the heatmap.}
+
+\item{normgroup_colname}{\code{character} vector of colnames in \code{colData(se)}
+used during data centering. When supplied, samples are centered
+independently within each normgroup grouping.}
+
+\item{centerby_colnames}{\code{character} vector of colnames in \code{colData(se)}
+used during data centering. When supplied, samples are centered
+independently within each centerby grouping. It is typically used
+for things like cell lines, to center each cell line by a time
+point control, or untreated control.}
+
+\item{controlSamples}{\code{character} vector of samples to use as the
+reference during data centering. Note that samples are still
+centered within each normgroup and centerby grouping, and within
+that grouping samples are centered to the \code{controlSamples}
+which are present in that grouping. In absence of \code{controlSamples}
+defined, or within the grouping, samples are centered relative
+to the median value of the grouping.}
+
+\item{top_colnames}{\code{character} vector of colnames to use from
+\code{colData(se)} as annotations to display in \code{top_annotation} above
+the heatmap. When not supplied, reasonable colnames are detected
+internally:
+\itemize{
+\item columns with more than one unique value
+\item columns with at least one duplicated value
+}}
+
+\item{top_annotation}{specific heatmap annotation as defined by
+\code{ComplexHeatmap::HeatmapAnnotation()}. When supplied, the \code{top_colnames}
+described above is not used.}
+
+\item{rowData_colnames}{\code{character} vector of colnames in \code{rowData(se)}
+to use for heatmap annotations displayed on the left side of
+the heatmap. Specific colors can be included in \code{sample_color_list}
+as a named \code{list} of color vectors or color functions. The names
+of this list must match colnames to be displayed, otherwise
+\code{ComplexHeatmap::Heatmap()} will define its own color function.}
+
+\item{left_annotation}{specific heatmap annotation as defined by
+\code{ComplexHeatmap::rowAnnotation()}. When supplied, the \code{rowData_colnames}
+and \code{sestats} row annotations are not displayed. In order to supply
+custom row annotations and not lose \code{left_annotation} defined above,
+supply the row annotations as \code{right_annotation}.}
+
+\item{row_title_rot}{\code{numeric} value indicating text rotation in degrees
+to use for row titles.}
+
+\item{sample_color_list}{named \code{list} of color vectors or color functions,
+where names correspond to colnames in either \code{colData(se)} or
+\code{rowData(se)}, and which are passed to corresponding left or top
+annotation functions. When colors are not defined,
+\code{ComplexHeatmap::Heatmap()} will define colors using its own internal
+function.}
+
+\item{row_cex, column_cex}{\code{numeric} values used to adjust the row and
+column name font size, relative to the automatic adjustment that
+is already done based upon the number of rows and columns being
+displayed.}
+
+\item{useMedian}{\code{logical} passed to \code{jamma::centerGeneData()} during
+data centering.}
+
+\item{show_row_names, show_row_dend}{\code{logical} indicating whether to
+display row names, and row dendrogram, respectively. With more than
+2,000 rows this step can become somewhat slow.}
+
+\item{row_label_colname}{\code{character} string used as a row label, where
+this value is a colname in \code{rowData(se)}. It is useful when rownames
+are some identifier that is not user-friendly, and where another column
+in the data may provide a more helpful label, for example \code{"SYMBOL"}
+to display gene symbol instead of accession number.}
+
+\item{column_split}{\code{character} or \code{integer} vector used to define
+heatmap column split.}
+
+\item{color_max}{\code{numeric} value passed to \code{colorjam::col_div_xf()}
+which defines the upper limit of color gradient used in the heatmap.}
+
+\item{lens}{\code{numeric} value passed to \code{colorjam::col_div_xf()} to control
+the intensity of color gradient applied to the numeric range.}
+
+\item{rename_contrasts, rename_alt_contrasts}{\code{logical} indicating
+whether to rename long contrast names in \code{sestats} and \code{alt_sestats}
+using \code{contrast2comp()}.}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{debug}{\code{logical} indicating debug mode, data is returned in a \code{list}:
@@ -64,6 +188,31 @@ or another suitable Bioconductor object with accessor functions:
 }}
 
 \item{...}{additional arguments are passed to supporting functions.}
+
+\item{control_name}{\code{character} string used to describe the control
+used during data centering, displayed in the heatmap title.}
+
+\item{alt_sestats}{\code{list} output from \code{se_contrast_stats()}, which
+specifically contains \code{hit_array} as a 3-dimensional array of hits,
+with dimensions "Cutoffs", "Contrasts", "Signal". This data is
+only used when \code{sestats} is also supplied.
+Note that the rows displayed is defined by \code{rows} and \code{sestats} above,
+and is not defined here.}
+
+\item{`row_split`}{is used to define heatmap split by row, ultimately
+passed to \code{ComplexHeatmap::Heatmap()} argument \code{row_split}. However,
+the input type can vary:
+\itemize{
+\item \code{integer} number of row splits based upon row clustering
+\item \code{character} value or values in colnames of \code{rowData(se)} to split
+using row annotation in \code{se}.
+\item \code{character} or \code{factor} vector named by \code{rownames(se)} with another
+custom row split, passed directly to \code{ComplexHeatmap::Heatmap()}
+argument \code{row_split}, with proper order for rows being displayed.
+}}
+
+\item{cluster_colnames}{\code{logical} indicating whether to cluster columns
+by hierarchical clustering.}
 }
 \description{
 Expression heatmap of sestats hits
@@ -92,7 +241,12 @@ describes the assay data used, data centering, and total rows
 displayed.
 
 For comparison across other \code{sestats} results, argument \code{alt_sestats}
-allows supplying an alternative hit array.
+allows supplying an alternative hit array. These hit arrays are placed
+as \code{left_annotation}, alongside optional data defined by \code{rowData_colnames}.
+
+When \code{rowData_colnames} is supplied, data in the corresponding colnames
+of \code{rowData(se)} are also displayed in \code{left_annotation}. Colors can
+be defined in \code{sample_color_list}.
 
 Argument \code{sample_color_list} is intended to be the output
 from \code{platjam::design2colors()} which will very likely be moved
@@ -101,4 +255,15 @@ The list names should contain all \code{top_colnames}, and each vector
 name should correspond to a value in the relevant column of
 \code{colData(se)}. If no colors are defined, \code{ComplexHeatmap::Heatmap()}
 will determine its own colors.
+
+A custom \code{left_annotation} can be supplied, but this method currently
+prevents the other annotations described above from being displayed.
+Currently the best way to supply custom row annotations in addition
+to those described above, supply \code{right_annotation} to be displayed
+on the right side of the heatmap.
+
+Data provided in \code{se} is expected to be \code{SummarizedExperiment}, however
+it also accepts other Bioconductor data types that provide
+accessor functions \code{featureData()}, \code{phenoData()}, and \code{assayData()},
+including for example \code{"MethyLumiSet"} class.
 }
