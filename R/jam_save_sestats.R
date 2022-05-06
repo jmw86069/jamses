@@ -23,6 +23,16 @@
 #'    to the sheetName for each worksheet.
 #' @param sheet_prefix `character` string with optional character prefix
 #'    to use when creating worksheet names.
+#' @param use_assay_suffix `logical` indicating whether to include
+#'    `assay_names` as suffix when forming sheet names, when there is more
+#'    than one unique assay name to be saved. This step will
+#'    attempt to abbreviate `assay_names` by taking up to 4 characters
+#'    from each word in the assay name, where each word is
+#'    delimited by `"[-.:_ ]+"`.
+#'    Otherwise, sheet names are forced to be unique by taking a substring
+#'    of the contrast name of up to `max_nchar_sheetname`, passing any
+#'    duplicate strings to `jamba::makeNames()` with suffix `"_v"`
+#'    followed by an integer number.
 #' @param width_factor `numeric` used to adjust relative column widths
 #'    in the output Excel worksheets.
 #' @param colorSub `character` vector of colors, optional, used to define
@@ -38,10 +48,12 @@ save_sestats <- function
  file,
  assay_names=NULL,
  contrast_names=NULL,
+ cutoff_names=NULL,
  type=c("xlsx"),
  max_nchar_sheetname=31,
  review_output=TRUE,
  sheet_prefix=NULL,
+ use_assay_suffix=TRUE,
  width_factor=1,
  max_rows=NULL,
  colorSub=NULL,
@@ -53,24 +65,25 @@ save_sestats <- function
    type <- match.arg(type);
 
    # determine which results to save
+   # validate assay_names
+   assay_names <- intersect(assay_names,
+      dimnames(sestats$hit_array)$Signal);
    if (length(assay_names) == 0) {
       assay_names <- dimnames(sestats$hit_array)$Signal;
-   } else {
-      assay_names <- intersect(assay_names,
-         dimnames(sestats$hit_array)$Signal);
    }
-   # if (length(cutoff_names) == 0) {
-   #    cutoff_names <- dimnames(sestats$hit_array)$Cutoffs;
-   # } else {
-   #    cutoff_names <- intersect(cutoff_names,
-   #       dimnames(sestats$hit_array)$Cutoffs);
-   # }
-   cutoff_names <- "spacer";
+
+   # validate contrast_names
+   contrast_names <- intersect(contrast_names,
+      dimnames(sestats$hit_array)$Contrasts);
    if (length(contrast_names) == 0) {
       contrast_names <- dimnames(sestats$hit_array)$Contrasts;
-   } else {
-      contrast_names <- intersect(contrast_names,
-         dimnames(sestats$hit_array)$Contrasts);
+   }
+
+   # validate cutoff_names
+   cutoff_names <- intersect(cutoff_names,
+      dimnames(sestats$hit_array)$Cutoffs);
+   if (length(cutoff_names) == 0) {
+      cutoff_names <- head(dimnames(sestats$hit_array)$Cutoffs, 1);
    }
 
    # assembly export_df to describe what data will be exported
@@ -93,43 +106,79 @@ save_sestats <- function
    # optionally rename contrasts
    if (rename_contrasts) {
       export_df$sheetName <- tryCatch({
-         gsub("[:]", ";",
+         gsub("[:]+", ";",
             contrast2comp(export_df$contrast_names))
       }, error=function(e){
          export_df$contrast_names
-      })
+      });
    }
 
    if (length(sheet_prefix) > 0) {
       export_df$sheetName <- paste0(sheet_prefix,
          export_df$sheetName);
    }
-   if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
-      which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
-      # shorten by removing parentheses ()
-      export_df$sheetName[which_toolong] <- gsub("[()]",
-         "",
-         export_df$sheetName[which_toolong]);
-      # shorten by removing underscore _
-      which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
-      if (length(which_toolong) > 0) {
-         export_df$sheetName[which_toolong] <- gsub("[_]",
-            "",
-            export_df$sheetName[which_toolong]);
-         which_toolong <- which(nchar(export_df$sheetName) > max_nchar_sheetname);
+
+   # abbreviate assay_names
+   short_assay_names <- "";
+   if (use_assay_suffix &&
+         length(unique(export_df$assay_names)) > 1) {
+      for (n in 4:1) {
+         short_assay_names <- export_df$assay_names
+         ipattern <- paste0("([a-zA-Z]{1,",
+            n,
+            "})[a-zA-Z. ]*(_|$)")
+         short_assay_names <- gsub(ipattern,
+            "\\1",
+            short_assay_names)
+         test_nchar <- max(nchar(export_df$sheetName)) +
+            max(nchar(short_assay_names)) + 4;
+         if (test_nchar <= max_nchar_sheetname) {
+            break;
+         }
       }
-      # substring
-      if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
-         export_df$sheetName <- jamba::makeNames(
-            substr(export_df$sheetName,
-               1, max_nchar_sheetname - 3));
-      }
-      if (any(nchar(export_df$sheetName) > max_nchar_sheetname)) {
-         export_df$sheetName <- jamba::makeNames(
-            substr(export_df$sheetName,
-               1, max_nchar_sheetname - 4));
-      }
+      export_df$sheetName <- paste0(export_df$sheetName,
+         "_",
+         short_assay_names);
    }
+
+   # quick function to ensure unique sheetName,
+   # up to max_nchar_sheetname nchar length
+   validate_sheetNames <- function(sheetNames, max_nchar_sheetname=31, trim_n=3, ...) {
+      sheetNames <- gsub("^[-.:_ ]+|[-.:_ ]+$", "", sheetNames);
+      is_toolong <- (nchar(sheetNames) > max_nchar_sheetname);
+      if (any(is_toolong)) {
+         sheetNames[is_toolong] <- substr(sheetNames, 1, max_nchar_sheetname)
+      }
+      sheetNames <- gsub("^[-.:_ ]+|[-.:_ ]+$", "", sheetNames);
+      is_dupe <- duplicated(sheetNames);
+      if (any(is_dupe)) {
+         sheetNames[is_dupe] <- jamba::makeNames(
+            substr(sheetNames[is_dupe], 1, max_nchar_sheetname - trim_n),
+            renameOnes=TRUE,
+            suffix="_v");
+      }
+      add_n <- 0;
+      while (any(nchar(sheetNames) > max_nchar_sheetname)) {
+         add_n <- add_n + 1;
+         sheetNames[is_dupe] <- jamba::makeNames(
+            substr(sheetNames[is_dupe], 1, max_nchar_sheetname - (trim_n + add_n)),
+            renameOnes=TRUE,
+            suffix="_v");
+         if (add_n > 3) {
+            break;
+         }
+      }
+      if (any(duplicated(sheetNames))) {
+         sheetNames <- validate_sheetNames(sheetNames,
+            max_nchar_sheetname,
+            trim_n + 1);
+      }
+      sheetNames
+   }
+   # ensure each sheet name is unique and no greater than max_nchar_sheetname
+   export_df$sheetName <- validate_sheetNames(export_df$sheetName,
+      max_nchar_sheetname);
+
    if (length(max_rows) > 0) {
       max_rows <- rep(max_rows, nrow(export_df));
       export_df$max_rows <- max_rows;

@@ -8,6 +8,16 @@
    correspond to rownames in the heatmap.
    * Added help text for all function arguments.
 
+* save_sestats()`
+
+   * new argument `use_assay_suffix=TRUE` will try to add abbreviated
+   `assay_names` to the end of each Excel sheet name, when there is
+   more than one unique `assay_names` value.
+   * The Excel sheet names are required to be unique, and have no
+   more than `max_nchar_sheetname` characters in each string.
+   The sheet names are progressively shortened as necessary, then
+   are made unique when required by calling `jamba::makeNames()`.
+
 # jamses 0.0.14.900
 
 ## changes to existing functions
