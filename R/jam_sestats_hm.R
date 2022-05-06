@@ -319,7 +319,6 @@ heatmap_se <- function
       if (length(genes_shared) > 0) {
          gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
       }
-      print(head(gene_hits_im_alt, 10));
 
       # optionally rename contrasts
       if (rename_contrasts) {
