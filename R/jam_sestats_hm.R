@@ -70,6 +70,12 @@
 #'    which indicates how many rows are displayed. For example
 #'    `"1,234 genes detected above background"` or
 #'    `"1,234 DEGs by limma-voom"`.
+#' @param correlation `logical` indicating whether to calculate sample
+#'    correlation, and plot a sample-by-sample correlation heatmap.
+#'    This option is included here since many of the same arguments
+#'    are required for data centering, and sample annotations.
+#'    Note that `color_max` is forced to a maximum value of `1.0`,
+#'    representing the maximum correlation value.
 #' @param assay_name `character` string indicating the name in
 #'    `assays(se)` to use for data to be displayed in the heatmap.
 #' @param contrast_names `character` vector of contrasts in
@@ -186,6 +192,7 @@ heatmap_se <- function
    sestats=NULL,
    rows=NULL,
    row_type="rows",
+   correlation=FALSE,
    assay_name=NULL,
    contrast_names=NULL,
    contrast_suffix="",
@@ -215,6 +222,11 @@ heatmap_se <- function
    show_row_dend=length(rows) < 2000,
    row_label_colname=NULL,
    cluster_columns=FALSE,
+   cluster_rows=function(x, ...){
+      amap::hcluster(rmNA(naValue=0, x),
+         ...,
+         method="euclidean",
+         link="ward")},
    column_split=NULL,
    color_max=3,
    lens=2,
@@ -233,6 +245,9 @@ heatmap_se <- function
    }
    if (!suppressPackageStartupMessages(require(SummarizedExperiment))) {
       stop("This function requires Bioconductor package SummarizedExperiment.");
+   }
+   if (length(correlation) == 0) {
+      correlation <- FALSE;
    }
 
    # define rows to use
@@ -371,7 +386,7 @@ heatmap_se <- function
    if (length(column_split) == 0) {
       if (length(normgroup_colname) > 0 &&
             length(unique(colData_se[[normgroup_colname]])) > 0) {
-         column_split <- colData_se[[normgroup_colname]]
+         column_split <- colData_se[[normgroup_colname]];
       } else {
          column_split <- NULL;
       }
@@ -384,10 +399,17 @@ heatmap_se <- function
       minimum=2);
 
    # row font size
-   row_fontsize <- jamba::noiseFloor(
-      row_cex * (60*(14 / 10))/(length(gene_hits))^(1/2),
-      minimum=1,
-      ceiling=20);
+   if (correlation) {
+      row_fontsize <- jamba::noiseFloor(
+         row_cex * (60*(14 / 10))/(length(isamples))^(1/2),
+         minimum=1,
+         ceiling=20);
+   } else {
+      row_fontsize <- jamba::noiseFloor(
+         row_cex * (60*(14 / 10))/(length(gene_hits))^(1/2),
+         minimum=1,
+         ceiling=20);
+   }
 
    # determine annotations atop samples
    if (length(top_colnames) == 0) {
@@ -414,7 +436,7 @@ heatmap_se <- function
    }
 
    # left_annotation
-   if (length(left_annotation) == 0) {
+   if (length(left_annotation) == 0 && !correlation) {
       column_anno_fontsize <- jamba::noiseFloor(
          column_cex * 12,
          ceiling=24,
@@ -524,20 +546,41 @@ heatmap_se <- function
 
    # optional row_split
    if (length(row_split) > 0) {
-      if (any(c("factor", "character") %in% class(row_split))) {
-         if (all(row_split %in% colnames(rowData_se))) {
-            row_split <- data.frame(check.names=FALSE,
-               rowData_se[gene_hits, row_split, drop=FALSE]);
-         } else if (all(names(row_split) %in% gene_hits)) {
-            row_split <- row_split[gene_hits];
+      if (correlation) {
+         # correlation uses colData for split
+         if (any(c("factor", "character") %in% class(row_split))) {
+            if (all(row_split %in% colnames(colData_se))) {
+               row_split <- data.frame(check.names=FALSE,
+                  colData_se[gene_hits, row_split, drop=FALSE]);
+            } else if (all(names(row_split) %in% isamples)) {
+               row_split <- row_split[isamples];
+            } else {
+               row_split <- NULL;
+            }
+         } else if (length(row_split) == 1 && is.numeric(row_split)) {
+            # leave as-is
          } else {
             row_split <- NULL;
          }
-      } else if (length(row_split) == 1 && is.numeric(row_split)) {
-         # leave as-is
       } else {
-         row_split <- NULL;
+         # non-correlation uses rowData for split
+         if (any(c("factor", "character") %in% class(row_split))) {
+            if (all(row_split %in% colnames(rowData_se))) {
+               row_split <- data.frame(check.names=FALSE,
+                  rowData_se[gene_hits, row_split, drop=FALSE]);
+            } else if (all(names(row_split) %in% gene_hits)) {
+               row_split <- row_split[gene_hits];
+            } else {
+               row_split <- NULL;
+            }
+         } else if (length(row_split) == 1 && is.numeric(row_split)) {
+            # leave as-is
+         } else {
+            row_split <- NULL;
+         }
       }
+   } else if (correlation) {
+      row_split <- column_split;
    }
 
    norm_label <- paste0(assay_name, " data");
@@ -560,15 +603,34 @@ heatmap_se <- function
    }
 
    # row_labels
-   if (length(row_label_colname) == 0) {
-      row_labels <- gene_hits;
+   if (correlation) {
+      if (length(row_label_colname) == 0) {
+         row_labels <- isamples;
+      } else {
+         row_labels <- colData_se[isamples, , drop=FALSE][[row_label_colname]];
+      }
    } else {
-      row_labels <- rowData_se[gene_hits, , drop=FALSE][[row_label_colname]];
+      if (length(row_label_colname) == 0) {
+         row_labels <- gene_hits;
+      } else {
+         row_labels <- rowData_se[gene_hits, , drop=FALSE][[row_label_colname]];
+      }
    }
 
    # heatmap legend labels
-   legend_at <- seq(-ceiling(color_max), to=ceiling(color_max));
-   legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
+   if (correlation) {
+      if (abs(color_max) > 1) {
+         color_max <- 1;
+      }
+      legend_at <- seq(-ceiling(color_max),
+         to=ceiling(color_max),
+         by=0.25);
+      legend_labels <- legend_at;
+   } else {
+      legend_at <- seq(-ceiling(color_max),
+         to=ceiling(color_max));
+      legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
+   }
 
    # pull assay data separately so we can tolerate other object types
    if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
@@ -577,14 +639,36 @@ heatmap_se <- function
       se_matrix <- assayData(se[gene_hits, isamples])[[assay_name]];
    }
 
+   # cluster_columns
+   if (cluster_columns %in% TRUE) {
+      cluster_columns <- function(x, ...) {
+         amap::hcluster(rmNA(naValue=0, x),
+            ...,
+            method="euclidean",
+            link="ward")}
+   }
+
+   # define heatmap matrix
+   se_matrix <- jamma::centerGeneData(
+      useMedian=useMedian,
+      centerGroups=centerGroups,
+      x=se_matrix,
+      controlSamples=controlSamples,
+      ...);
+   hm_name <- "centered\nexpression";
+   if (correlation) {
+      # call correlation function cor()
+      se_matrix <- multienrichjam::call_fn_ellipsis(cor,
+         x=se_matrix,
+         use="pairwise.complete.obs",
+         ...);
+      cluster_rows <- cluster_columns;
+      hm_name <- "centered\ncorrelation";
+   }
+
    # define heatmap
    hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
-      matrix=jamma::centerGeneData(
-         useMedian=useMedian,
-         centerGroups=centerGroups,
-         x=se_matrix,
-         controlSamples=controlSamples,
-         ...),
+      matrix=se_matrix,
       use_raster=TRUE,
       top_annotation=top_annotation,
       left_annotation=left_annotation,
@@ -594,7 +678,7 @@ heatmap_se <- function
          at=legend_at,
          labels=legend_labels
       ),
-      clustering_method_rows="ward.D2",
+      clustering_method_rows="ward.D",
       column_split=column_split,
       row_split=row_split,
       row_title_rot=row_title_rot,
@@ -610,6 +694,7 @@ heatmap_se <- function
          lens=lens,
          ...),
       cluster_columns=cluster_columns,
+      cluster_rows=cluster_rows,
       ...)
    hm_title <- paste0(
       formatInt(length(gene_hits)),

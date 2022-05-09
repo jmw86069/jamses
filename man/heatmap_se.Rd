@@ -9,6 +9,7 @@ heatmap_se(
   sestats = NULL,
   rows = NULL,
   row_type = "rows",
+  correlation = FALSE,
   assay_name = NULL,
   contrast_names = NULL,
   contrast_suffix = "",
@@ -37,6 +38,8 @@ heatmap_se(
   show_row_dend = length(rows) < 2000,
   row_label_colname = NULL,
   cluster_columns = FALSE,
+  cluster_rows = function(x, ...) {     amap::hcluster(rmNA(naValue = 0, x), ...,
+    method = "euclidean", link = "ward") },
   column_split = NULL,
   color_max = 3,
   lens = 2,
@@ -69,6 +72,13 @@ intersection of \code{rows} with genes defined by \code{sestats} is displayed.}
 which indicates how many rows are displayed. For example
 \code{"1,234 genes detected above background"} or
 \code{"1,234 DEGs by limma-voom"}.}
+
+\item{correlation}{\code{logical} indicating whether to calculate sample
+correlation, and plot a sample-by-sample correlation heatmap.
+This option is included here since many of the same arguments
+are required for data centering, and sample annotations.
+Note that \code{color_max} is forced to a maximum value of \code{1.0},
+representing the maximum correlation value.}
 
 \item{assay_name}{\code{character} string indicating the name in
 \code{assays(se)} to use for data to be displayed in the heatmap.}

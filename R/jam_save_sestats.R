@@ -58,6 +58,9 @@ save_sestats <- function
  max_rows=NULL,
  colorSub=NULL,
  rename_contrasts=TRUE,
+ se=NULL,
+ rowData_colnames=NULL,
+ row_type="gene_name",
  verbose=FALSE,
  ...)
 {
@@ -217,18 +220,44 @@ save_sestats <- function
       }
       iDF <- jamba::renameColumn(iDF,
          from="probes",
-         to="gene_name");
+         to=row_type);
       icols <- jamba::provigrep(c("probes|symbol|gene|protein",
          "^hit ",
          "."),
          colnames(iDF));
       iDF <- iDF[,icols, drop=FALSE];
+
+      # optionally add rowData_colnames
+      if (length(se) > 0 && length(rowData_colnames) > 0) {
+         rowData_colnames <- intersect(rowData_colnames,
+            colnames(SummarizedExperiment::rowData(se)));
+         if (length(rowData_colnames) > 0) {
+            imatch <- match(iDF[,1], rownames(se));
+            if (any(is.na(imatch))) {
+               jmatch <- match(rownames(iDF), rownames(se));
+               if (!any(is.na(jmatch))) {
+                  imatch <- jmatch;
+               }
+            }
+            if (!any(is.na(imatch))) {
+               jDF <- data.frame(check.names=FALSE,
+                  SummarizedExperiment::rowData(se[imatch,])[, rowData_colnames, drop=FALSE]);
+               iDF <- data.frame(check.names=FALSE,
+                  iDF[, 1, drop=FALSE],
+                  jDF,
+                  iDF[, -1, drop=FALSE]);
+            }
+         }
+      }
+
       iDF$assay_name <- assay_name;
 
       # detect column types
       highlightColumns <- jamba::igrep("symbol|gene|descr", colnames(iDF));
       hitColumns <- jamba::igrep("^hit ", colnames(iDF));
-      pvalueColumns <- jamba::igrep("p.val", colnames(iDF));
+      pvalueColumns <- setdiff(
+         jamba::igrep("p.val|pval|adjp", colnames(iDF)),
+         hitColumns);
       fcColumns <- jamba::igrep("^fold ", colnames(iDF));
       lfcColumns <- jamba::igrep("^logFC ", colnames(iDF));
       intColumns <- jamba::igrep(" mean$|^mgm ", colnames(iDF));

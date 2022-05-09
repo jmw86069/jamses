@@ -19,6 +19,9 @@ save_sestats(
   max_rows = NULL,
   colorSub = NULL,
   rename_contrasts = TRUE,
+  se = NULL,
+  rowData_colnames = NULL,
+  row_type = "gene_name",
   verbose = FALSE,
   ...
 )

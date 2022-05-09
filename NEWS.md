@@ -1,3 +1,19 @@
+# jamses 0.0.16.900
+
+## changes to existing functions
+
+* `heatmap_se()` new argument `correlation`
+
+   * when `correlation=TRUE` it calculates a sample correlation
+   matrix, and will display a correlation heatmap.
+   * The option was added to this function in order to share much
+   of the remaining logic involving data centering, and heatmap
+   column annotations.
+   * Note that it is possible to create a correlation heatmap using
+   a subset of statistical hits, which although typically
+   creates a nice-looking correlation structure, may not be that
+   informative since it only includes statistical hits.
+
 # jamses 0.0.15.900
 
 ## changes to existing functions
