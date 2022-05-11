@@ -14,6 +14,16 @@
    creates a nice-looking correlation structure, may not be that
    informative since it only includes statistical hits.
 
+## bug fixes
+
+* `heatmap_se()` error when `row_split` was an integer number of clusters,
+and `cluster_rows` is a `function`, which is not permitted by
+`ComplexHeatmap::Heatmap()`. Instead, when `cluster_rows` or `cluster_columns`
+is a function, the function is evaluated upfront, so the resulting
+dendrogram or hclust is passed to `Heatmap()`, which does permit
+integer row and column split.
+
+
 # jamses 0.0.15.900
 
 ## changes to existing functions

@@ -666,6 +666,16 @@ heatmap_se <- function
       hm_name <- "centered\ncorrelation";
    }
 
+   # pre-calculate row clusters
+   # This step is required to enable row_split as integer number of clusters,
+   # which is not accepted when supplying a function.
+   if (is.function(cluster_rows)) {
+      cluster_rows <- cluster_rows(se_matrix)
+   }
+   if (is.function(cluster_columns)) {
+      cluster_columns <- cluster_columns(se_matrix)
+   }
+
    # define heatmap
    hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
