@@ -23,6 +23,11 @@ is a function, the function is evaluated upfront, so the resulting
 dendrogram or hclust is passed to `Heatmap()`, which does permit
 integer row and column split.
 
+   * Note that when `row_split` or `column_split` are not single numeric
+   values, the `function` must not be evaluated, otherwise that process
+   fails. Haha. Makes sense. Now both scenarios are handled, hopefully
+   this covers all scenarios.
+
 
 # jamses 0.0.15.900
 

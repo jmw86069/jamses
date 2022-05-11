@@ -669,11 +669,16 @@ heatmap_se <- function
    # pre-calculate row clusters
    # This step is required to enable row_split as integer number of clusters,
    # which is not accepted when supplying a function.
-   if (is.function(cluster_rows)) {
-      cluster_rows <- cluster_rows(se_matrix)
+   # This step does not work with character or data.frame row_split
+   if (length(row_split) == 1 &&
+         is.numeric(row_split) &&
+         is.function(cluster_rows)) {
+      cluster_rows <- cluster_rows(se_matrix);
    }
-   if (is.function(cluster_columns)) {
-      cluster_columns <- cluster_columns(se_matrix)
+   if (length(column_split) == 1 &&
+         is.numeric(column_split) &&
+         is.function(cluster_columns)) {
+      cluster_columns <- cluster_columns(se_matrix);
    }
 
    # define heatmap
