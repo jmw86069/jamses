@@ -392,6 +392,25 @@ heatmap_se <- function
       } else {
          column_split <- NULL;
       }
+   } else {
+      if (any(c("factor", "character") %in% class(column_split))) {
+         if (all(column_split %in% colnames(colData_se))) {
+            column_split <- jamba::pasteByRowOrdered(
+               data.frame(check.names=FALSE,
+                  colData_se[, column_split, drop=FALSE]),
+               keepOrder=TRUE);
+         } else if (all(names(column_split) %in% isamples)) {
+            column_split <- column_split[isamples];
+         } else if (length(column_split) == length(isamples)) {
+            # leave as-is
+         } else {
+            column_split <- NULL;
+         }
+      } else if (length(column_split) == 1 && is.numeric(column_split)) {
+         # leave as-is
+      } else {
+         column_split <- NULL;
+      }
    }
 
    # column font size
