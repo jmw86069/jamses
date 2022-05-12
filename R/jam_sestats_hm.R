@@ -303,8 +303,10 @@ heatmap_se <- function
          gene_hits_im <- NULL;
       }
       gene_hits <- rows;
+      rows <- gene_hits;
+   } else {
+      rows <- rownames(se);
    }
-   rows <- gene_hits;
 
    # alt gene_hitlist
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
@@ -705,7 +707,7 @@ heatmap_se <- function
       row_labels=row_labels,
       row_names_gp=grid::gpar(fontsize=row_fontsize),
       column_names_gp=grid::gpar(fontsize=column_fontsize),
-      col=col_div_xf(color_max,
+      col=colorjam::col_div_xf(color_max,
          lens=lens,
          ...),
       cluster_columns=cluster_columns,

@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.16.900
+Version: 0.0.17.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -13,7 +13,7 @@ Description: Jam SummarizedExperiment Stats methods to
    in statistical contrasts.
 biocViews:
 Depends: R (>= 3.6.0)
-Imports: jamba(>= 0.0.80.900),
+Imports: jamba(>= 0.0.81.900),
    jamma (>= 0.0.22.900),
    colorjam (>= 0.0.22.950),
    SummarizedExperiment (>= 1.16.1),

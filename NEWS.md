@@ -1,4 +1,23 @@
+# jamses 0.0.17.900
+
+## functions removed
+
+* `call_fn_ellipse()` was removed and placed in the `jamba` package,
+package dependency was bumped up to `jamba(>= 0.0.81.900)`
+
+## bug fixes
+
+* `heatmap_se()` error when not supplied `rows` nor `sestats`, now
+defaults to show all `rownames(se)`.
+* `heatmap_se()` error when `colorjam` package not previously loaded,
+added missing package prefix.
+
+
 # jamses 0.0.16.900
+
+## functions removed
+
+* `call_fn_ellipse()`
 
 ## changes to existing functions
 
