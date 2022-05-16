@@ -12,6 +12,12 @@ defaults to show all `rownames(se)`.
 * `heatmap_se()` error when `colorjam` package not previously loaded,
 added missing package prefix.
 
+## changes to existing functions
+
+* `heatmap_se()` argument `normgroup_colname=NULL` and
+`centerby_colnames=NULL`, instead of previous defaults which
+should not be used unless relevant to the design.
+
 
 # jamses 0.0.16.900
 

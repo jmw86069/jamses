@@ -203,9 +203,8 @@ heatmap_se <- function
    alt_contrast_suffix="",
    alt_cutoff_name=1,
    isamples=colnames(se),
-   normgroup_colname="Type",
-   centerby_colnames=c(normgroup_colname,
-      "Run"),
+   normgroup_colname=NULL,
+   centerby_colnames=NULL,
    controlSamples=NULL,
    control_label="",
    top_colnames=NULL,
@@ -385,6 +384,7 @@ heatmap_se <- function
    # normgroup for column split
    normgroup_colname <- intersect(normgroup_colname,
       colnames(colData_se));
+   print("column_split:");print(column_split);
    if (length(column_split) == 0) {
       if (length(normgroup_colname) > 0 &&
             length(unique(colData_se[[normgroup_colname]])) > 0) {
@@ -412,6 +412,7 @@ heatmap_se <- function
          column_split <- NULL;
       }
    }
+   print("column_split:");print(column_split);
 
    # column font size
    column_fontsize <- jamba::noiseFloor(
