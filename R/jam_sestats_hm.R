@@ -368,7 +368,7 @@ heatmap_se <- function
       rowData_se <- data.frame(check.names=FALSE,
          rowData(se));
       colData_se <- data.frame(check.names=FALSE,
-         colData(se))
+         colData(se[,isamples]))
    } else {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
@@ -384,7 +384,6 @@ heatmap_se <- function
    # normgroup for column split
    normgroup_colname <- intersect(normgroup_colname,
       colnames(colData_se));
-   print("column_split:");print(column_split);
    if (length(column_split) == 0) {
       if (length(normgroup_colname) > 0 &&
             length(unique(colData_se[[normgroup_colname]])) > 0) {
@@ -412,7 +411,6 @@ heatmap_se <- function
          column_split <- NULL;
       }
    }
-   print("column_split:");print(column_split);
 
    # column font size
    column_fontsize <- jamba::noiseFloor(
