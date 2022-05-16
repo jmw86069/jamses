@@ -18,6 +18,13 @@ added missing package prefix.
 `centerby_colnames=NULL`, instead of previous defaults which
 should not be used unless relevant to the design.
 
+## changes to existing functions
+
+* `save_sestats()` was updated to prioritize sorting `row_type`
+column headers first in the output Excel table, previously the
+method looked for known patterns, which obviously failed when
+`row_type` differed from those known patterns. Now the `row_type`
+value itself is used in addition to the expected patterns.
 
 # jamses 0.0.16.900
 

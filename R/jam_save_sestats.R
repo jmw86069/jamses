@@ -221,7 +221,16 @@ save_sestats <- function
       iDF <- jamba::renameColumn(iDF,
          from="probes",
          to=row_type);
-      icols <- jamba::provigrep(c("probes|symbol|gene|protein",
+      name_grep <- unique(c(
+         gsub("[()]", ".", row_type),
+         "probes",
+         "symbol",
+         "gene",
+         "protein"));
+      name_grep <- jamba::cPaste(sep="|",
+         name_grep[nchar(name_grep) > 0]);
+      icols <- jamba::provigrep(c(
+         name_grep,
          "^hit ",
          "."),
          colnames(iDF));
