@@ -1,3 +1,59 @@
+# jamses 0.0.19.900
+
+## changes to existing functions
+
+* `heatmap_se()` was updated:
+
+   * The logic of obtaining a hit list for a contrast must account for
+   multiple cutoffs, particularly when interaction contrast cutoffs
+   differ from pairwise cutoffs. This logic was pushed into new function
+   `hit_array_to_list()`.
+   * The default color legend for `left_annotation` and `top_annotation`
+   now includes `color_bar="discrete"` for numeric annotation columns.
+   The legend will display discrete color breaks instead of a continuous
+   color bar. The breaks are defined in the color function, in
+   most cases the recommended method is calling `platjam::design2colors()`,
+   which typically defines reasonable color breaks.
+
+## new functions
+
+* `hit_array_to_list()`
+
+   * Input is `hit_array` from `sestats`, as output from `se_contrast_stats()`.
+   * It optionally takes a subset of the following, which match the `dimnames()`
+   in `hit_array`:
+   
+      * `cutoff_names`
+      * `contrast_names`
+      * `assay_names`
+   
+   * Then it iterates each `contrast_names`:
+   
+      * It returns one named vector of hits for that contrast, named
+      by the measurement, with values `-1` or `1` indicating the direction.
+      * When multiple `assay_names` or `cutoff_names` are involved, it
+      combines results into one set representing the union of hits.
+   
+   * The intent is to retrieve a `list` of hits across `contrast_names`,
+   regardless if there is one or more `cutoff_names` or `assay_names`.
+
+# jamses 0.0.18.900
+
+## changes to existing functions
+
+* `sestats_to_df()` was updated:
+
+   * when `se_contrast_stats()` uses different interaction statistical
+   thresholds from the pairwise thresholds, the output `hit_array`
+   contains NA values.
+   
+      * previously any non-empty vector simply counted the length
+      * new behavior is to count non-NA entries
+      * future "fix" will be for the cell to have length=0, with no `NA`.
+      This situation only happens when `*_cutoff` and `int_*_cutoff`
+      define different thresholds.
+
+
 # jamses 0.0.17.900
 
 ## functions removed

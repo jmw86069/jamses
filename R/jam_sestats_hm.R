@@ -250,6 +250,10 @@ heatmap_se <- function
    }
 
    # define rows to use
+   gene_hitlist <- NULL;
+   alt_gene_hitlist <- NULL;
+   gene_hits_im <- NULL;
+   alt_gene_hits_im <- NULL;
    if (length(sestats) > 0) {
       if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
          hit_array <- sestats$hit_array;
@@ -259,13 +263,14 @@ heatmap_se <- function
       if (length(contrast_names) == 0) {
          contrast_names <- dimnames(sestats$hit_array)[[2]];
       }
-      contrast_names1 <- contrast_names;
-      if (length(contrast_names) == 1) {
-         contrast_names1 <- rep(contrast_names, 2);
-      }
-      gene_hitlist <- head(
-         hit_array[cutoff_name, contrast_names1, assay_name],
-         length(contrast_names));
+      # contrast_names1 <- contrast_names;
+      # if (length(contrast_names) == 1) {
+      #    contrast_names1 <- rep(contrast_names, 2);
+      # }
+      gene_hitlist <- hit_array_to_list(hit_array,
+         cutoff_names=cutoff_name,
+         contrast_names=contrast_names,
+         assay_names=assay_name);
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
@@ -317,13 +322,14 @@ heatmap_se <- function
       if (length(alt_contrast_names) == 0) {
          alt_contrast_names <- dimnames(alt_hit_array)[[2]];
       }
-      alt_contrast_names1 <- alt_contrast_names;
-      if (length(alt_contrast_names) == 1) {
-         alt_contrast_names1 <- rep(alt_contrast_names, 2);
-      }
-      gene_hitlist_alt <- head(
-         alt_hit_array[alt_cutoff_name, alt_contrast_names1, alt_assay_name],
-         length(alt_contrast_names));
+      # alt_contrast_names1 <- alt_contrast_names;
+      # if (length(alt_contrast_names) == 1) {
+      #    alt_contrast_names1 <- rep(alt_contrast_names, 2);
+      # }
+      gene_hitlist_alt <- hit_array_to_list(hit_array,
+         cutoff_names=alt_cutoff_name,
+         contrast_names=alt_contrast_names,
+         assay_names=alt_assay_name);
       gene_hits_alt <- names(tcount(names(unlist(unname(
          gene_hitlist_alt)))));
       gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
@@ -450,7 +456,8 @@ heatmap_se <- function
          df=data.frame(check.names=FALSE,
             colData_se[,top_colnames, drop=FALSE]),
          annotation_legend_param=list(
-            border=TRUE
+            border=TRUE,
+            color_bar="discrete"
          ),
          col=sample_color_list);
    }
@@ -529,6 +536,7 @@ heatmap_se <- function
                         at=attr(sample_color_list[[iname]], "breaks"))
                   } else {
                      list(border=TRUE,
+                        color_bar="discrete",
                         at=jamba::rmNA(names(sample_color_list[[iname]])))
                   }
                } else {
@@ -546,7 +554,7 @@ heatmap_se <- function
             annotation_name_gp=grid::gpar(fontsize=column_anno_fontsize),
             #show_legend=show_left_legend,
             border=TRUE);
-         if (debug) {
+         if (debug > 1) {
             jamba::printDebug("heatmap_se(): ",
                "left_alist:");
             print(sdim(left_alist));
@@ -744,12 +752,18 @@ heatmap_se <- function
    #       norm_label,
    #       "\ncentered by ", centerby_label))
    if (debug) {
-      return(list(
+      ret_list <- list(
          hm=hm_hits,
          top_annotation=top_annotation,
          left_annotation=left_annotation,
          hm_title=hm_title
-      ));
+      );
+      ret_list$gene_hits_im <- gene_hits_im;
+      ret_list$alt_gene_hits_im <- alt_gene_hits_im;
+      ret_list$gene_hitlist <- gene_hitlist;
+      ret_list$alt_gene_hitlist <- alt_gene_hitlist;
+      ret_list$hit_array <- hit_array;
+      return(ret_list)
    }
    hm_hits
 }

@@ -36,10 +36,10 @@
 #' @export
 sestats_to_df <- function
 (sestats,
-   style=c("text", "integer"),
-   dimname_order=c(3, 1, 2),
-   rename_contrasts=FALSE,
-   ...)
+ style=c("text", "integer"),
+ dimname_order=c(3, 1, 2),
+ rename_contrasts=FALSE,
+ ...)
 {
    #
    style <- match.arg(style);
@@ -50,21 +50,6 @@ sestats_to_df <- function
    } else {
       hit_array <- sestats;
    }
-   # if (length(dimname_order) == 3 && all(c(1, 2, 3) %in% dimname_order)) {
-   #    order1 <- dimname_order[1];
-   #    order2 <- dimname_order[2];
-   #    order3 <- dimname_order[3];
-   #    names1 <- dimnames(hit_array)[[order1]];
-   #    names2 <- dimnames(hit_array)[[order2]];
-   #    names3 <- dimnames(hit_array)[[order3]];
-   #    dim1 <- names(dimnames(hit_array))[order1];
-   #    dim2 <- names(dimnames(hit_array))[order2];
-   #    dim3 <- names(dimnames(hit_array))[order3];
-   #    dimnames123 <- list(names1, names2, names3);
-   #    names(dimnames123) <- c(dim1, dim2, dim3);
-   # } else {
-   #    stop("dimname_order must contain c(1, 2, 3) in any order, with length=3.");
-   # }
 
    #
    hit_array <- sestats$hit_array;
@@ -75,6 +60,9 @@ sestats_to_df <- function
          dimnames=dimnames(hit_array)[1:2]);
       ilist <- lapply(jamba::nameVector(rownames(imatrix)), function(isignal){
          ilist <- imatrix[isignal, ];
+         # remove NA values, which occurs when interaction cutoffs are
+         # used that differ from contrast cutoffs
+         ilist <- sapply(ilist, jamba::rmNA);
          if ("integer" %in% style) {
             lengths(ilist)
          } else {
