@@ -1,15 +1,26 @@
 
 # TODO for jamses
 
+## 24may2022
+
+* `sestats_to_df()` consider making a wider output format intended
+for `kable`, with relevant columns grouped by `assay_name`.
+This way the output includes one row per contrast.
+* COMPLETE: `sestats_to_df()` should report blank cell whenever NA values are
+present, to convey that no cutoff was applied for that scenario,
+rather than implying the cutoff was applied and there were no hits.
+
 ## 26apr2022
 
 * `se_detected_rows()` was added, however
 
-   * in future would be nice to apply constraints based upon contrasts
+   * in future would be nice to apply constraints based upon contrasts.
+   (In hindsight, I'm not sure what use case I had in mind!)
 
-* Migrate the `volcano_plot()` function from `slicejam::volcano_plot()`
+* COMPLETE: Migrate the `volcano_plot()` from `slicejam::volcano_plot()`
 
    * currently also draws block arrows in the plot margins
+   * Migrated into `jamma` package, alongside MA-plots.
 
 
 ## 18apr2022
@@ -103,17 +114,22 @@ Simpler methods for common visualizations
    * it could compare two-way contrasts using third-order contrast logic
 
 
-* volcano plots - migrate function from slicejam into this package
+* COMPLETE: volcano plots - migrate function from slicejam into `jamma` package.
 
 
 ## 13apr2022
 
-* `save_sestats()` is super slow, for 6 worksheets, ~15 columns, 25k rows,
-took about 5 minutes. Should be much faster.
+* COMPLETE: `save_sestats()` is super slow, for 6 worksheets,
+~15 columns, 25k rows, took about 5 minutes. Should be much faster.
 
    * Likely imposes changes to `jamba::writeOpenxlsx()`
    * Is conditional formatting is the slow step? If so, skip it.
    * Is categorical formatting is the slow step? If so, skip it.
+   * Changes were made in `jamba::writeOpenxlsx()` to operate on
+   an open Workbook without saving, passing the Workbook to each
+   internal step also without saving. Each worksheet is added to
+   the Workbook, and it is only saved at the end. Saved about 20x time
+   especially for large multi-sheet Workbooks.
 
 ## 11apr2022
 

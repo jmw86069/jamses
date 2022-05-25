@@ -60,19 +60,41 @@ sestats_to_df <- function
          dimnames=dimnames(hit_array)[1:2]);
       ilist <- lapply(jamba::nameVector(rownames(imatrix)), function(isignal){
          ilist <- imatrix[isignal, ];
-         # remove NA values, which occurs when interaction cutoffs are
-         # used that differ from contrast cutoffs
-         ilist <- sapply(ilist, jamba::rmNA);
+         # handle NA values, which occurs when interaction cutoffs are
+         # used that differ from contrast cutoffs.
+         # An NA value means the cutoff was not tested, it does not mean
+         # the cutoff was tested and no hits were found.
+         # Therefore we keep NA.
+         # ilist <- sapply(ilist, jamba::rmNA);
+         ilist_lengths <- jamba::rbindList(lapply(ilist, function(i){
+            if (length(i) > 0 && all(is.na(i))) {
+               c(hits=NA,
+                  up=NA,
+                  down=NA)
+            } else {
+               c(hits=length(i),
+                  up=sum(i > 0),
+                  down=sum(i < 0))
+            }
+         }))
          if ("integer" %in% style) {
-            lengths(ilist)
+            ilist_lengths[,1];
          } else {
-            paste0(
-               jamba::formatInt(lengths(ilist)),
-               " hits (",
-               jamba::formatInt(sapply(ilist, function(i){sum(i > 0)})),
-               " up, ",
-               jamba::formatInt(sapply(ilist, function(i){sum(i < 0)})),
-               " down)")
+            ifelse(is.na(ilist_lengths[,1]),
+               "",
+               paste0(
+                  jamba::formatInt(ilist_lengths[,"hits"]),
+                  ifelse(ilist_lengths[,1] == 0,
+                     " hits",
+                     paste0(
+                        " hits (",
+                        jamba::formatInt(ilist_lengths[,"up"]),
+                        " up, ",
+                        jamba::formatInt(ilist_lengths[,"down"]),
+                        " down)")
+                  )
+               )
+            )
          }
       });
       im <- do.call(cbind, ilist);

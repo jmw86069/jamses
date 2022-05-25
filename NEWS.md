@@ -1,3 +1,20 @@
+# jamses 0.0.20.900
+
+## changes to existing functions
+
+* `sestats_to_df()` was updated:
+
+   * now reports `""` whenever the `hit_array` value is NA,
+   because the NA in this context means
+   the cutoff was not tested for statistical hits. This situation
+   happens when using `int_adjp_cutoff`,`int_fold_cutoff`,`int_mgm_cutoff`
+   that differ from the main contrast cutoffs. Therefore, reporting
+   `0` implies the threshold was tested and no hits were found, which
+   is incorrect.
+   * also whenever there are zero hits it reports `"0 hits"` and not
+   `"0 hits (0 up, 0 down)"`. This change saves unnecessary text, also
+   makes it easier to see which entries have hits.
+
 # jamses 0.0.19.900
 
 ## changes to existing functions
