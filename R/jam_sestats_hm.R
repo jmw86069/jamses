@@ -217,7 +217,7 @@ heatmap_se <- function
    row_cex=0.8,
    column_cex=1,
    useMedian=FALSE,
-   show_row_names=length(rows) < 2000,
+   show_row_names=NULL,
    show_row_dend=length(rows) < 2000,
    row_label_colname=NULL,
    cluster_columns=FALSE,
@@ -643,6 +643,9 @@ heatmap_se <- function
       } else {
          row_labels <- rowData_se[gene_hits, , drop=FALSE][[row_label_colname]];
       }
+   }
+   if (length(show_row_names) == 0) {
+      show_row_names <- (length(gene_hits) <= 500);
    }
 
    # heatmap legend labels

@@ -1,3 +1,11 @@
+# jamses 0.0.21.900
+
+## bug fixes
+
+* `heatmap_se()` was not properly auto-detecting `show_row_names`,
+which only worked when `rows` was supplied specifically. Now it
+works when `rows` is not supplied and/or only `sestats` is also supplied.
+
 # jamses 0.0.20.900
 
 ## changes to existing functions
