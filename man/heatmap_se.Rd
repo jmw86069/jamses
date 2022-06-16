@@ -31,6 +31,7 @@ heatmap_se(
   row_split = NULL,
   row_title_rot = 0,
   sample_color_list = NULL,
+  subset_legend_colors = TRUE,
   row_cex = 0.8,
   column_cex = 1,
   useMedian = FALSE,
@@ -100,7 +101,9 @@ specific statistical cutoffs to use from \code{sestats$hit_array}.}
 are used when \code{alt_sestats} is supplied.}
 
 \item{isamples}{\code{character} vector of \code{colnames(se)} used to provide a
-specific subset, or specific order of columns displayed in the heatmap.}
+specific subset, or specific order of columns displayed in the heatmap.
+Note that the data matrix is subset \strong{after} centering, not before
+centering.}
 
 \item{normgroup_colname}{\code{character} vector of colnames in \code{colData(se)}
 used during data centering. When supplied, samples are centered
@@ -155,6 +158,14 @@ where names correspond to colnames in either \code{colData(se)} or
 annotation functions. When colors are not defined,
 \code{ComplexHeatmap::Heatmap()} will define colors using its own internal
 function.}
+
+\item{subset_legend_colors}{\code{logical} indicating whether to subset colors
+shown in the color key defined by \code{sample_color_list}, which is useful
+when the heatmap only represents a subset of color values.
+When \code{subset_legend_colors == TRUE}, the color key will only
+include colors shown in the \code{top_annotation}, when
+\code{subset_legend_colors == FALSE} all colors defined in
+\code{sample_color_list} will be included for each relevant column.}
 
 \item{row_cex, column_cex}{\code{numeric} values used to adjust the row and
 column name font size, relative to the automatic adjustment that
@@ -236,7 +247,13 @@ output from \code{se_contrast_stats()}, specifically the \code{hit_array}.
 
 The intent is to display expression values from \code{assays(se)},
 centered across all columns, or with customization defined by
-\code{centerby_colnames} and \code{normgroup_colnames}.
+\code{centerby_colnames} and \code{normgroup_colnames}. The resulting centered
+data can be subsetted by argument \code{isamples}, which occurs after
+centering in order to decouple the centering step from the display
+of resulting data. To subset samples involved in centering itself,
+either subset the input \code{se} data, or supply \code{controlSamples} to
+define a subset of samples used as the baseline in centering.
+See \code{jamma::centerGeneData()} for more details.
 
 The top heatmap annotations use \code{colData(se)} with user-supplied
 \code{top_colnames} or by auto-detecting those colnames that apply

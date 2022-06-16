@@ -1,6 +1,34 @@
 
 # TODO for jamses
 
+## 16jun2022
+
+* `heatmap_se()`
+
+   * COMPLETE: argument `isamples` should be useful to define samples
+   to display in the heatmap.
+   However, it would be useful to perform centering before
+   subsetting by samples, in order to produce more useful graphs with
+   paired data. For example, center data by each patient at time zero,
+   then display the other timepoints (since the patient time zero would
+   always be exactly zero, it only contributes a blank stripe to the
+   heatmap).
+   * COMPLETE: `top_annotation` and `left_annotation` shows color key
+   for all colors, not just the those which are displayed in the heatmap
+   annotation.
+   
+      * The potential downside is that it might affect results when two
+      heatmaps are added together using `+` or `%v%` - in those cases
+      equivalent color keys are sometimes merged together. Unsure how
+      it would be handled when they are only partially identical.
+      * UPDATE: It actually merges color keys by name, and displays
+      unique colors for each name. That's so awesome.
+   
+   * COMPLETE: create new function to choose interesting annotation colnames,
+   with logic that removes columns with 1:1 cardinality compared to
+   other chosen columns. Columns that only repeat the information
+   are no longer interesting.
+
 ## 24may2022
 
 * `sestats_to_df()` consider making a wider output format intended

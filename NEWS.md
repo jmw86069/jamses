@@ -1,3 +1,39 @@
+# jamses 0.0.23.900
+
+## updates to existing functions
+
+* `heatmap_se()` was updated
+
+   * `isamples` is applied to subset the columns displayed in the heatmap,
+   however it no longer subsets data during the data centering step.
+   This change allows centering by patient with time 0 as the control point,
+   which produces a stripe of `0` values for each patient at time zero,
+   all other times become difference from time zero. The heatmap can then
+   use `isamples` with only samples not at time zero.
+   * new argument `subset_legend_colors=TRUE` will now filter colors in
+   the `top_annotation` and `left_annotation` color legends to remove
+   categorical colors which are not represented in the data being displayed.
+   This update prevents showing a huge list of categorical colors that
+   are not relevant to the heatmap. Note that even when two heatmaps
+   are added together (with ComplexHeatmap `+` or `%v%`) the amazing
+   coding in ComplexHeatmap will merge together color legends by
+   annotation color name, showing only the unique set of colors.
+
+## new functions
+
+* `choose_annotation_colnames()` is a wrapper function to hold the simple
+logic for choosing annotation columns to include for `heatmap_se()`.
+By default it chooses columns with at least one repeated value, at
+least two unique values, and only includes the first column with
+matching cardinality. The last criterion ensures it won't display
+six columns which show the same pattern of information for all samples.
+
+## removed functions
+
+* `call_fn_ellipsis()` was removed since it was migrated to `jamba`.
+(Previous change.)
+
+
 # jamses 0.0.22.900
 
 ## bug fixes

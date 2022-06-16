@@ -11,7 +11,13 @@
 #'
 #' The intent is to display expression values from `assays(se)`,
 #' centered across all columns, or with customization defined by
-#' `centerby_colnames` and `normgroup_colnames`.
+#' `centerby_colnames` and `normgroup_colnames`. The resulting centered
+#' data can be subsetted by argument `isamples`, which occurs after
+#' centering in order to decouple the centering step from the display
+#' of resulting data. To subset samples involved in centering itself,
+#' either subset the input `se` data, or supply `controlSamples` to
+#' define a subset of samples used as the baseline in centering.
+#' See `jamma::centerGeneData()` for more details.
 #'
 #' The top heatmap annotations use `colData(se)` with user-supplied
 #' `top_colnames` or by auto-detecting those colnames that apply
@@ -93,6 +99,8 @@
 #'    are used when `alt_sestats` is supplied.
 #' @param isamples `character` vector of `colnames(se)` used to provide a
 #'    specific subset, or specific order of columns displayed in the heatmap.
+#'    Note that the data matrix is subset **after** centering, not before
+#'    centering.
 #' @param normgroup_colname `character` vector of colnames in `colData(se)`
 #'    used during data centering. When supplied, samples are centered
 #'    independently within each normgroup grouping.
@@ -153,6 +161,13 @@
 #'    annotation functions. When colors are not defined,
 #'    `ComplexHeatmap::Heatmap()` will define colors using its own internal
 #'    function.
+#' @param subset_legend_colors `logical` indicating whether to subset colors
+#'    shown in the color key defined by `sample_color_list`, which is useful
+#'    when the heatmap only represents a subset of color values.
+#'    When `subset_legend_colors == TRUE`, the color key will only
+#'    include colors shown in the `top_annotation`, when
+#'    `subset_legend_colors == FALSE` all colors defined in
+#'    `sample_color_list` will be included for each relevant column.
 #' @param row_cex,column_cex `numeric` values used to adjust the row and
 #'    column name font size, relative to the automatic adjustment that
 #'    is already done based upon the number of rows and columns being
@@ -214,6 +229,7 @@ heatmap_se <- function
    row_split=NULL,
    row_title_rot=0,
    sample_color_list=NULL,
+   subset_legend_colors=TRUE,
    row_cex=0.8,
    column_cex=1,
    useMedian=FALSE,
@@ -370,21 +386,22 @@ heatmap_se <- function
 
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
+   # Note: This process does not subset by `rows` or `isamples` yet
    if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
       rowData_se <- data.frame(check.names=FALSE,
          rowData(se));
       colData_se <- data.frame(check.names=FALSE,
-         colData(se[,isamples]))
+         colData(se))
    } else {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
             "using accessor functions: ",
             c("featureData()", "phenoData()"))
       }
-      rowData_se <- as(featureData(se[gene_hits,]), "data.frame");
-      rownames(rowData_se) <- gene_hits;
-      colData_se <- as(phenoData(se[,isamples]), "data.frame")
-      rownames(colData_se) <- isamples;
+      rowData_se <- as(featureData(se), "data.frame");
+      rownames(rowData_se) <- rownames(se);
+      colData_se <- as(phenoData(se), "data.frame")
+      rownames(colData_se) <- colnames(se);
    }
 
    # normgroup for column split
@@ -392,22 +409,28 @@ heatmap_se <- function
       colnames(colData_se));
    if (length(column_split) == 0) {
       if (length(normgroup_colname) > 0 &&
-            length(unique(colData_se[[normgroup_colname]])) > 0) {
-         column_split <- colData_se[[normgroup_colname]];
+            nrow(unique(colData_se[isamples, normgroup_colname, drop=FALSE])) > 1) {
+         column_split <- jamba::pasteByRow(
+            colData_se[isamples, normgroup_colname, drop=FALSE],
+            sep=",");
+         names(column_split) <- isamples;
       } else {
          column_split <- NULL;
       }
    } else {
       if (any(c("factor", "character") %in% class(column_split))) {
-         if (all(column_split %in% colnames(colData_se))) {
+         if (!any(duplicated(column_split)) &&
+               all(column_split %in% colnames(colData_se))) {
             column_split <- jamba::pasteByRowOrdered(
                data.frame(check.names=FALSE,
-                  colData_se[, column_split, drop=FALSE]),
+                  colData_se[isamples, column_split, drop=FALSE]),
                keepOrder=TRUE);
+            names(column_split) <- isamples;
          } else if (all(names(column_split) %in% isamples)) {
             column_split <- column_split[isamples];
          } else if (length(column_split) == length(isamples)) {
-            # leave as-is
+            # leave as-is but add isamples as names
+            names(column_split) <- isamples;
          } else {
             column_split <- NULL;
          }
@@ -437,13 +460,10 @@ heatmap_se <- function
          ceiling=20);
    }
 
-   # determine annotations atop samples
+   # choose interesting top_annotation colnames when none are supplied
    if (length(top_colnames) == 0) {
-      top_colnames <- names(which(
-         sapply(colnames(colData_se), function(i){
-            any(duplicated(colData_se[[i]])) &&
-               length(unique(colData_se[[i]])) > 1
-         })));
+      top_colnames <- choose_annotation_colnames(colData_se,
+         ...);
       if (length(top_colnames) > 0 && verbose) {
          jamba::printDebug("heatmap_se(): ",
             "derived top_colnames: ",
@@ -451,15 +471,40 @@ heatmap_se <- function
       }
    }
    if (length(top_annotation) == 0 && length(top_colnames) > 0) {
+      # subset color key by data shown in the heatmap
+      top_color_list <- NULL;
+      if (any(top_colnames %in% names(sample_color_list))) {
+         if (subset_legend_colors) {
+            top_color_list <- lapply(jamba::nameVector(top_colnames), function(top_colname){
+               sample_colors <- sample_color_list[[top_colname]];
+               if (!is.function(sample_colors)) {
+                  uniq_values <- unique(as.character(
+                     colData_se[isamples, top_colname]));
+                  sample_colors <- sample_colors[uniq_values];
+                  names(sample_colors) <- uniq_values;
+                  if (any(is.na(sample_colors))) {
+                     # fallback plan for missing values is to assign
+                     # generic rainbow categorical colors
+                     sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
+                        n=sum(is.na(sample_colors)),
+                        ...);
+                  }
+               }
+               sample_colors;
+            })
+         } else {
+            top_color_list <- sample_color_list[intersect(top_colnames, names(sample_color_list))];
+         }
+      }
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
          df=data.frame(check.names=FALSE,
-            colData_se[,top_colnames, drop=FALSE]),
+            colData_se[isamples, top_colnames, drop=FALSE]),
          annotation_legend_param=list(
             border=TRUE,
             color_bar="discrete"
          ),
-         col=sample_color_list);
+         col=top_color_list);
    }
 
    # left_annotation
@@ -519,14 +564,39 @@ heatmap_se <- function
             show_left_legend);
          left_anno_list <- c(list(
             df=data.frame(check.names=FALSE,
-               rowData_se[gene_hits, ][,rowData_colnames, drop=FALSE])),
+               rowData_se[gene_hits, rowData_colnames, drop=FALSE])),
             left_anno_list);
          use_color_list_names <- intersect(rowData_colnames,
             names(sample_color_list));
-         left_color_list <- c(
-            jamba::rmNULL(
-               sample_color_list[use_color_list_names]),
-            left_color_list);
+         leftanno_color_list <- NULL;
+         if (length(use_color_list_names) > 0) {
+            if (subset_legend_colors) {
+               leftanno_color_list <- lapply(jamba::nameVector(use_color_list_names), function(use_color_list_name){
+                  sample_colors <- sample_color_list[[use_color_list_name]];
+                  if (!is.function(sample_colors)) {
+                     uniq_values <- unique(
+                        as.character(
+                           rowData_se[gene_hits, use_color_list_name]));
+                     sample_colors <- sample_colors[uniq_values];
+                     names(sample_colors) <- uniq_values;
+                     if (any(is.na(sample_colors))) {
+                        # fallback plan for missing values is to assign
+                        # generic rainbow categorical colors
+                        sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
+                           n=sum(is.na(sample_colors)),
+                           ...);
+                     }
+                  }
+                  sample_colors;
+               })
+            } else {
+               leftanno_color_list <- sample_color_list[use_color_list_names];
+            }
+            left_color_list <- c(
+               jamba::rmNULL(
+                  leftanno_color_list),
+               left_color_list);
+         }
          left_param_list <- c(
             lapply(jamba::nameVector(rowData_colnames), function(iname){
                if (iname %in% names(sample_color_list)) {
@@ -577,11 +647,14 @@ heatmap_se <- function
       if (correlation) {
          # correlation uses colData for split
          if (any(c("factor", "character") %in% class(row_split))) {
-            if (all(row_split %in% colnames(colData_se))) {
+            if (!any(duplicated(row_split)) &&
+                  all(row_split %in% colnames(colData_se))) {
                row_split <- data.frame(check.names=FALSE,
-                  colData_se[gene_hits, row_split, drop=FALSE]);
+                  colData_se[isamples, row_split, drop=FALSE]);
             } else if (all(names(row_split) %in% isamples)) {
                row_split <- row_split[isamples];
+            } else if (length(row_split) == length(isamples)) {
+               names(row_split) <- isamples;
             } else {
                row_split <- NULL;
             }
@@ -593,7 +666,8 @@ heatmap_se <- function
       } else {
          # non-correlation uses rowData for split
          if (any(c("factor", "character") %in% class(row_split))) {
-            if (all(row_split %in% colnames(rowData_se))) {
+            if (!any(duplicated(row_split)) &&
+                  all(row_split %in% colnames(rowData_se))) {
                row_split <- data.frame(check.names=FALSE,
                   rowData_se[gene_hits, row_split, drop=FALSE]);
             } else if (all(names(row_split) %in% gene_hits)) {
@@ -632,14 +706,26 @@ heatmap_se <- function
 
    # row_labels
    if (correlation) {
-      if (length(row_label_colname) == 0) {
+      # for correlation, samples are shown on rows
+      # so it must use colData_se
+      if (length(row_label_colname) == 0 ||
+            !all(row_label_colname %in% colnames(colData_se))) {
          row_labels <- isamples;
+      } else if (length(row_label_colname) > 1) {
+         row_labels <- jamba::pasteByRow(
+            colData_se[isamples, row_label_colname, drop=FALSE],
+            sep=",");
       } else {
          row_labels <- colData_se[isamples, , drop=FALSE][[row_label_colname]];
       }
    } else {
+      # for expression data, rowData_se must be used
       if (length(row_label_colname) == 0) {
          row_labels <- gene_hits;
+      } else if (length(row_label_colname) > 1) {
+         row_labels <- jamba::pasteByRow(
+            rowData_se[gene_hits, row_label_colname, drop=FALSE],
+            sep=",");
       } else {
          row_labels <- rowData_se[gene_hits, , drop=FALSE][[row_label_colname]];
       }
@@ -664,10 +750,12 @@ heatmap_se <- function
    }
 
    # pull assay data separately so we can tolerate other object types
+   # Note columns are not subset here so they can be used during centering.
+   # After centering, isamples is used to subset columns as needed.
    if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
-      se_matrix <- assays(se[gene_hits, isamples])[[assay_name]];
+      se_matrix <- assays(se[gene_hits, ])[[assay_name]];
    } else {
-      se_matrix <- assayData(se[gene_hits, isamples])[[assay_name]];
+      se_matrix <- assayData(se[gene_hits, ])[[assay_name]];
    }
 
    # cluster_columns
@@ -680,16 +768,17 @@ heatmap_se <- function
    }
 
    # define heatmap matrix
+   # After centering, columns are subset using isamples.
    se_matrix <- jamma::centerGeneData(
       useMedian=useMedian,
       centerGroups=centerGroups,
       x=se_matrix,
       controlSamples=controlSamples,
-      ...);
+      ...)[, isamples, drop=FALSE];
    hm_name <- "centered\nexpression";
    if (correlation) {
       # call correlation function cor()
-      se_matrix <- multienrichjam::call_fn_ellipsis(cor,
+      se_matrix <- jamba::call_fn_ellipsis(cor,
          x=se_matrix,
          use="pairwise.complete.obs",
          ...);
@@ -713,7 +802,7 @@ heatmap_se <- function
    }
 
    # define heatmap
-   hm_hits <- multienrichjam::call_fn_ellipsis(ComplexHeatmap::Heatmap,
+   hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
       use_raster=TRUE,
       top_annotation=top_annotation,
@@ -771,59 +860,3 @@ heatmap_se <- function
    hm_hits
 }
 
-
-#' Call function using safe ellipsis arguments
-#'
-#' Call function using safe ellipsis arguments
-#'
-#' This function is a wrapper function intended to help
-#' pass ellipsis arguments `...` from a parent function
-#' to an external function in a safe way.
-#' It will only include arguments from `...` that are
-#' recognized by the external function.
-#'
-#' When the external function FUN arguments `formals()`
-#' includes ellipsis `...`, then the `...` will be passed
-#' as-is without change.
-#'
-#' When the external function FUN arguments `formals()`
-#' does not include ellipsis `...`, then only named
-#' arguments in `...` that are recognized by FUN
-#' will be passed, as defined by `names(formals(FUN))`.
-#'
-#' Note that arguments must be named.
-#'
-#' @param FUN `function` that should be called with arguments
-#'    in `...`
-#' @param ... arguments are passed to `FUN()` in safe manner.
-#'
-#' @examples
-#' new_mean <- function(x, trim=0, na.rm=FALSE) {
-#'    mean(x, trim=trim, na.rm=na.rm)
-#' }
-#' x <- c(1, 3, 5, NA);
-#' new_mean(x, na.rm=TRUE);
-#' tryCatch({
-#'    new_mean(x, na.rm=TRUE, color="red");
-#' }, error=function(e){
-#'    print(e);
-#' })
-#'
-#' call_fn_ellipsis(new_mean, x=x, na.rm=TRUE, color="red")
-#' call_fn_ellipsis(new_mean, x=x, color="red")
-#'
-#' @export
-call_fn_ellipsis <- function
-(FUN,
- ...)
-{
-   FUN_argnames <- names(formals(FUN));
-   if ("..." %in% FUN_argnames) {
-      FUN(...)
-   } else {
-      arglist <- list(...)
-      argkeep <- which(names(arglist) %in% FUN_argnames);
-      arguse <- arglist[argkeep]
-      do.call(FUN, arguse)
-   }
-}
