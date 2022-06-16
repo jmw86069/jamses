@@ -1,3 +1,13 @@
+# jamses 0.0.22.900
+
+## bug fixes
+
+* `hit_array_to_list()` was returning `matrix` for single contrasts,
+due to `apply()` tendency to simplify output to vector. The method
+was changed to use a different approach guaranteed to return `list`.
+* `heatmap_se()` had a typo in an edge condition when using `alt_sestats`,
+which has been corrected.
+
 # jamses 0.0.21.900
 
 ## bug fixes

@@ -326,7 +326,7 @@ heatmap_se <- function
       # if (length(alt_contrast_names) == 1) {
       #    alt_contrast_names1 <- rep(alt_contrast_names, 2);
       # }
-      gene_hitlist_alt <- hit_array_to_list(hit_array,
+      gene_hitlist_alt <- hit_array_to_list(alt_hit_array,
          cutoff_names=alt_cutoff_name,
          contrast_names=alt_contrast_names,
          assay_names=alt_assay_name);

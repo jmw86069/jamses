@@ -54,18 +54,26 @@ hit_array_to_list <- function
          length(assay_names) == 0)) {
       stop("cutoff_names, contrast_names, assay_names must match hit_array dimnames.");
    }
-   hit_list <- apply(hit_array[cutoff_names, contrast_names, assay_names, drop=FALSE], 2, function(i){
-      idf <- jamba::rbindList(lapply(i, function(j){
-         j <- jamba::rmNA(j);
-         if (length(j) == 0) {
-            return(NULL)
-         }
-         data.frame(item=names(j), value=j)
-      }))
-      if (length(idf) == 0 || nrow(idf) == 0) {
-         return(NULL)
+   # hit_list <- apply(hit_array[cutoff_names, contrast_names, assay_names, drop=FALSE], 2, function(i){
+   #    idf <- jamba::rbindList(lapply(i, function(j){
+   #       j <- jamba::rmNA(j);
+   #       if (length(j) == 0) {
+   #          return(NULL)
+   #       }
+   #       data.frame(item=names(j), value=j)
+   #    }))
+   #    if (length(idf) == 0 || nrow(idf) == 0) {
+   #       return(NULL)
+   #    }
+   #    jdf <- subset(idf, !duplicated(item));
+   #    jamba::nameVector(jdf$value, jdf$item)
+   # })
+   hit_names <- jamba::nameVector(contrast_names);
+   hit_list <- lapply(hit_names, function(icontrast){
+      k <- unlist(unname(hit_array[cutoff_names, icontrast, assay_names]));
+      if (length(k) > 0) {
+         k <- k[!duplicated(names(k))];
       }
-      jdf <- subset(idf, !duplicated(item));
-      jamba::nameVector(jdf$value, jdf$item)
+      k
    })
 }
