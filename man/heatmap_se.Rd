@@ -29,6 +29,7 @@ heatmap_se(
   rowData_colnames = NULL,
   left_annotation = NULL,
   row_split = NULL,
+  row_subcluster = NULL,
   row_title_rot = 0,
   sample_color_list = NULL,
   subset_legend_colors = TRUE,
@@ -150,6 +151,30 @@ and \code{sestats} row annotations are not displayed. In order to supply
 custom row annotations and not lose \code{left_annotation} defined above,
 supply the row annotations as \code{right_annotation}.}
 
+\item{row_subcluster}{\code{integer} or \code{character} vector representing one
+or more elements returned by \code{row_split} to use as a drill-down
+sub-cluster heatmap. This argument is experimental, and is intended
+to make it easy to "drill down" into specific row clusters.
+Said another way, \code{row_subcluster} should contain names returned
+by \code{jamba::heatmap_row_order()} on an existing heatmap. For example,
+when \code{row_split=4} the heatmap row dendrogram is split into \code{4}
+subclusters, then \code{heatmap_row_order()} returns a \code{list} with
+four vectors of rownames. In this scenario, one could use
+\code{row_subcluster=2} to display the same heatmap showing only cluster
+\code{2} of the original \code{4} clusters. The process:
+\itemize{
+\item All other arguments to \code{heatmap_se()} apply to the full heatmap.
+\item The full heatmap is generated internally, in order to create
+the appropriate \code{row_split} output, whether by dendrogram or other
+\code{row_split} arguments.
+\item \code{heatmap_row_order()} is used to create a list of row splits,
+and is matched to \code{row_subcluster}.
+\item A new subset heatmap is created using only the relevant subset of rows.
+\item The heatmap is split with the same remaining \code{row_split} entries,
+for example when \code{row_subcluster=c(1, 3)} the rows will be split
+into \code{"1"} and \code{"3"}, or the relevant \code{row_title} entries.
+}}
+
 \item{row_title_rot}{\code{numeric} value indicating text rotation in degrees
 to use for row titles.}
 
@@ -235,7 +260,7 @@ the input type can vary:
 using row annotation in \code{se}.
 \item \code{character} or \code{factor} vector named by \code{rownames(se)} with another
 custom row split, passed directly to \code{ComplexHeatmap::Heatmap()}
-argument \code{row_split}, with proper order for rows being displayed.
+argument \code{row_split}, with proper order for rows being displayed
 }}
 
 \item{cluster_colnames}{\code{logical} indicating whether to cluster columns

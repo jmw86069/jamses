@@ -1,6 +1,10 @@
 
 # TODO for jamses
 
+## 22jun2022
+
+* `heatmap_se()` - ability to "drill-down" into row clusters
+
 ## 21jun2022
 
 * COMPLETE: Bug in `heatmap_se()` when `sestats` is supplied but `se` does not

@@ -152,7 +152,28 @@
 #'    using row annotation in `se`.
 #'    * `character` or `factor` vector named by `rownames(se)` with another
 #'    custom row split, passed directly to `ComplexHeatmap::Heatmap()`
-#'    argument `row_split`, with proper order for rows being displayed.
+#'    argument `row_split`, with proper order for rows being displayed
+#' @param row_subcluster `integer` or `character` vector representing one
+#'    or more elements returned by `row_split` to use as a drill-down
+#'    sub-cluster heatmap. This argument is experimental, and is intended
+#'    to make it easy to "drill down" into specific row clusters.
+#'    Said another way, `row_subcluster` should contain names returned
+#'    by `jamba::heatmap_row_order()` on an existing heatmap. For example,
+#'    when `row_split=4` the heatmap row dendrogram is split into `4`
+#'    subclusters, then `heatmap_row_order()` returns a `list` with
+#'    four vectors of rownames. In this scenario, one could use
+#'    `row_subcluster=2` to display the same heatmap showing only cluster
+#'    `2` of the original `4` clusters. The process:
+#'    * All other arguments to `heatmap_se()` apply to the full heatmap.
+#'    * The full heatmap is generated internally, in order to create
+#'    the appropriate `row_split` output, whether by dendrogram or other
+#'    `row_split` arguments.
+#'    * `heatmap_row_order()` is used to create a list of row splits,
+#'    and is matched to `row_subcluster`.
+#'    * A new subset heatmap is created using only the relevant subset of rows.
+#'    * The heatmap is split with the same remaining `row_split` entries,
+#'    for example when `row_subcluster=c(1, 3)` the rows will be split
+#'    into `"1"` and `"3"`, or the relevant `row_title` entries.
 #' @param row_title_rot `numeric` value indicating text rotation in degrees
 #'    to use for row titles.
 #' @param sample_color_list named `list` of color vectors or color functions,
@@ -231,6 +252,7 @@ heatmap_se <- function
    rowData_colnames=NULL,
    left_annotation=NULL,
    row_split=NULL,
+   row_subcluster=NULL,
    row_title_rot=0,
    sample_color_list=NULL,
    subset_legend_colors=TRUE,
@@ -270,7 +292,87 @@ heatmap_se <- function
       correlation <- FALSE;
    }
 
-   # define rows to use
+   # row_subcluster
+   if (length(row_subcluster) > 0) {
+      hm_total <- heatmap_se(se=se,
+         sestats=sestats,
+         rows=rows,
+         row_type=row_type,
+         correlation=correlation,
+         assay_name=assay_name,
+         contrast_names=contrast_names,
+         contrast_suffix=contrast_suffix,
+         cutoff_name=cutoff_name,
+         alt_sestats=alt_sestats,
+         alt_assay_name=alt_assay_name,
+         alt_contrast_names=alt_contrast_names,
+         alt_contrast_suffix=alt_contrast_suffix,
+         alt_cutoff_name=alt_cutoff_name,
+         isamples=isamples,
+         normgroup_colname=normgroup_colname,
+         centerby_colnames=centerby_colnames,
+         controlSamples=controlSamples,
+         control_label=control_label,
+         top_colnames=top_colnames,
+         top_annotation=top_annotation,
+         rowData_colnames=rowData_colnames,
+         left_annotation=left_annotation,
+         row_split=row_split,
+         row_subcluster=NULL,
+         row_title_rot=row_title_rot,
+         sample_color_list=sample_color_list,
+         subset_legend_colors=subset_legend_colors,
+         row_cex=row_cex,
+         column_cex=column_cex,
+         row_anno_fontsize=row_anno_fontsize,
+         useMedian=useMedian,
+         show_row_names=show_row_names,
+         show_row_dend=show_row_dend,
+         row_label_colname=row_label_colname,
+         cluster_columns=cluster_columns,
+         cluster_rows=cluster_rows,
+         column_split=column_split,
+         color_max=color_max,
+         lens=lens,
+         rename_contrasts=rename_contrasts,
+         rename_alt_contrasts=rename_alt_contrasts,
+         verbose=verbose,
+         debug=debug,
+         ...)
+      row_order <- jamba::heatmap_row_order(hm_total);
+      if (length(names(row_order)) == 0) {
+         names(row_order) <- as.character(seq_along(row_order))
+      }
+
+      if (is.numeric(row_subcluster)) {
+         row_order_use <- row_order[seq_along(row_order) %in% row_subcluster];
+      } else {
+         row_order_use <- row_order[names(row_order) %in% as.character(row_subcluster)];
+      }
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "row_subcluster: ", row_subcluster);
+         jamba::printDebug("heatmap_se(): ",
+            "selected: '",
+            sep="', '",
+            names(row_order_use),
+            "'")
+      }
+      # set new argument values for the drill-down heatmap
+      rows <- unlist(unname(row_order_use));
+      cluster_rows <- FALSE;
+      row_split <- nameVector(rep(names(row_order_use),
+         lengths(row_order_use)),
+         rows);
+      # subset the se data?
+      se <- se[rows,];
+
+      if (debug) {
+         return(invisible(row_order));
+      }
+   }
+
+   # sestats - define rows to use
    gene_hitlist <- NULL;
    alt_gene_hitlist <- NULL;
    gene_hits_im <- NULL;
@@ -316,7 +418,7 @@ heatmap_se <- function
       }
    }
 
-   # rows is user-defined
+   # rows as user-defined vector
    rows <- intersect(rows, rownames(se));
    if (length(rows) > 0) {
       if (length(sestats) > 0) {
@@ -337,7 +439,7 @@ heatmap_se <- function
       rows <- rownames(se);
    }
 
-   # alt gene_hitlist
+   # alt_sestats only for rows and gene_hits defined from sestats
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
       if ("list" %in% class(alt_sestats) && "hit_array" %in% names(alt_sestats)) {
          alt_hit_array <- alt_sestats$hit_array;
@@ -383,12 +485,20 @@ heatmap_se <- function
    }
 
    # validate sample_color_list
+   # remove NA
+   # convert color name to hex
    if (length(sample_color_list) > 0) {
       sample_color_list <- lapply(sample_color_list, function(i){
          if (is.function(i)) {
             i
          } else {
-            jamba::rmNA(i)
+            i <- i[!is.na(i) & !is.na(names(i))];
+            i_is_hex <- grepl("^#", i);
+            if (any(!i_is_hex)) {
+               i[!i_is_hex] <- jamba::rgb2col(alpha=FALSE,
+                  col2rgb(i[!i_is_hex]))
+            }
+            i;
          }
       })
    }
@@ -407,9 +517,9 @@ heatmap_se <- function
             "using accessor functions: ",
             c("featureData()", "phenoData()"))
       }
-      rowData_se <- as(featureData(se), "data.frame");
+      rowData_se <- as(Biobase::featureData(se), "data.frame");
       rownames(rowData_se) <- rownames(se);
-      colData_se <- as(phenoData(se), "data.frame")
+      colData_se <- as(Biobase::phenoData(se), "data.frame")
       rownames(colData_se) <- colnames(se);
    }
 

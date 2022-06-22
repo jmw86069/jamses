@@ -1,3 +1,29 @@
+# jamses 0.0.24.900
+
+## updates to existing functions
+
+* `heatmap_se()` new argument `row_subcluster`:
+
+   * intended to help drill-down into a subset of heatmap rows by
+   using elements of `row_split` as returned by
+   `jamba::heatmap_row_order()`.
+   * The rows are split by `row_split` using the full heatmap data,
+   and can be split by...
+   
+      * cluster number using `row_split=5` integer values,
+      * annotation columns in `rowData(se)`,
+      * `character` vector, or
+      * `data.frame`
+   
+   * In any case, `heatmap_row_order()` returns a `list` of `rownames(se)`,
+   which is used to create the heatmap. In fact, rows are displayed in
+   the same order, but without any associated dendrogram even if there
+   is a dendrogram associated with the subset of rows.
+   * `row_subcluster` can be an `integer` vector referring to the row
+   list element in order, or `character` vector of one or more `names()`
+   associated with the row list elements.
+
+
 # jamses 0.0.23.900
 
 ## updates to existing functions
