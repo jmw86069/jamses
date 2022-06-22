@@ -172,6 +172,10 @@
 #'    column name font size, relative to the automatic adjustment that
 #'    is already done based upon the number of rows and columns being
 #'    displayed.
+#' @param row_anno_fontsize `numeric` base font size for row
+#'    annotation labels. Note these labels appears underneath row annotations,
+#'    alongside column labels, and therefore they are also adjusted
+#'    by multiplying `column_cex` so these labels are adjusted together.
 #' @param useMedian `logical` passed to `jamma::centerGeneData()` during
 #'    data centering.
 #' @param show_row_names,show_row_dend `logical` indicating whether to
@@ -232,6 +236,7 @@ heatmap_se <- function
    subset_legend_colors=TRUE,
    row_cex=0.8,
    column_cex=1,
+   row_anno_fontsize=11,
    useMedian=FALSE,
    show_row_names=NULL,
    show_row_dend=length(rows) < 2000,
@@ -289,6 +294,10 @@ heatmap_se <- function
          assay_names=assay_name);
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
+      # confirm all gene_hits are present in the data provided
+      if (!all(gene_hits %in% rownames(se))) {
+         gene_hits <- intersect(gene_hits, rownames(se));
+      }
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
          do_sparse=FALSE)[gene_hits,,drop=FALSE];
 
@@ -473,13 +482,26 @@ heatmap_se <- function
    if (length(top_annotation) == 0 && length(top_colnames) > 0) {
       # subset color key by data shown in the heatmap
       top_color_list <- NULL;
+      # subset any factor columns to limit colors shown in the legend
+      top_df <- data.frame(check.names=FALSE,
+         colData_se[isamples, top_colnames, drop=FALSE]);
+      for (top_colname in top_colnames) {
+         if (is.factor(top_df[[top_colname]])) {
+            top_df[[top_colname]] <- factor(top_df[[top_colname]]);
+         }
+      }
       if (any(top_colnames %in% names(sample_color_list))) {
          if (subset_legend_colors) {
             top_color_list <- lapply(jamba::nameVector(top_colnames), function(top_colname){
                sample_colors <- sample_color_list[[top_colname]];
                if (!is.function(sample_colors)) {
-                  uniq_values <- unique(as.character(
-                     colData_se[isamples, top_colname]));
+                  if (is.factor(top_df[isamples, top_colname])) {
+                     uniq_values <- levels(top_df[isamples, top_colname]);
+                  } else {
+                     uniq_values <- jamba::mixedSort(unique(
+                        as.character(
+                           top_df[isamples, top_colname])));
+                  }
                   sample_colors <- sample_colors[uniq_values];
                   names(sample_colors) <- uniq_values;
                   if (any(is.na(sample_colors))) {
@@ -496,21 +518,46 @@ heatmap_se <- function
             top_color_list <- sample_color_list[intersect(top_colnames, names(sample_color_list))];
          }
       }
+      top_param_list <- c(
+         lapply(jamba::nameVector(top_colnames), function(iname){
+            if (iname %in% names(top_color_list)) {
+               if (is.function(top_color_list[[iname]])) {
+                  if ("breaks" %in% names(attributes(top_color_list[[iname]]))) {
+                     list(border=TRUE,
+                        color_bar="discrete",
+                        at=attr(top_color_list[[iname]], "breaks"))
+                  } else {
+                     list(border=TRUE,
+                        color_bar="discrete")
+                  }
+               } else {
+                  if (subset_legend_colors) {
+                     list(border=TRUE,
+                        color_bar="discrete",
+                        at=jamba::rmNA(names(top_color_list[[iname]])))
+                  } else {
+                     list(border=TRUE)
+                  }
+               }
+            } else {
+               list(border=TRUE)
+            }
+         }));
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
-         df=data.frame(check.names=FALSE,
-            colData_se[isamples, top_colnames, drop=FALSE]),
-         annotation_legend_param=list(
-            border=TRUE,
-            color_bar="discrete"
-         ),
+         df=top_df,
+         annotation_legend_param=top_param_list,
+         # annotation_legend_param=list(
+         #    border=TRUE,
+         #    color_bar="discrete"
+         # ),
          col=top_color_list);
    }
 
    # left_annotation
    if (length(left_annotation) == 0 && !correlation) {
-      column_anno_fontsize <- jamba::noiseFloor(
-         column_cex * 12,
+      row_anno_fontsize <- jamba::noiseFloor(
+         column_cex * row_anno_fontsize,
          ceiling=24,
          minimum=2);
       left_anno_list <- list();
@@ -562,9 +609,17 @@ heatmap_se <- function
          }
          show_left_legend <- c(TRUE,
             show_left_legend);
+         # subset any factor columns to limit colors shown in the legend
+         left_df <- data.frame(check.names=FALSE,
+            rowData_se[gene_hits, rowData_colnames, drop=FALSE]);
+         for (rowData_colname in rowData_colnames) {
+            if (is.factor(left_df[[rowData_colname]])) {
+               left_df[[rowData_colname]] <- factor(left_df[[rowData_colname]]);
+            }
+         }
+         # put it together
          left_anno_list <- c(list(
-            df=data.frame(check.names=FALSE,
-               rowData_se[gene_hits, rowData_colnames, drop=FALSE])),
+            df=left_df),
             left_anno_list);
          use_color_list_names <- intersect(rowData_colnames,
             names(sample_color_list));
@@ -574,9 +629,15 @@ heatmap_se <- function
                leftanno_color_list <- lapply(jamba::nameVector(use_color_list_names), function(use_color_list_name){
                   sample_colors <- sample_color_list[[use_color_list_name]];
                   if (!is.function(sample_colors)) {
-                     uniq_values <- unique(
-                        as.character(
-                           rowData_se[gene_hits, use_color_list_name]));
+                     if (is.factor(left_df[gene_hits, use_color_list_name])) {
+                        # for factors we honor the order of factor levels
+                        uniq_values <- levels(left_df[gene_hits, use_color_list_name]);
+                     } else {
+                        # note we add mixedSort() so they are alphanumerical
+                        uniq_values <- jamba::mixedSort(unique(
+                           as.character(
+                              left_df[gene_hits, use_color_list_name])));
+                     }
                      sample_colors <- sample_colors[uniq_values];
                      names(sample_colors) <- uniq_values;
                      if (any(is.na(sample_colors))) {
@@ -596,18 +657,32 @@ heatmap_se <- function
                jamba::rmNULL(
                   leftanno_color_list),
                left_color_list);
+            if (debug) {
+               jamba::printDebug("heatmap_se(): ",
+                  "left_color_list:");
+               print(left_color_list[!jamba::sclass(left_color_list) %in% "function"]);
+            }
          }
          left_param_list <- c(
             lapply(jamba::nameVector(rowData_colnames), function(iname){
-               if (iname %in% names(sample_color_list)) {
-                  if (is.function(sample_color_list[[iname]])) {
-                     list(border=TRUE,
-                        color_bar="discrete",
-                        at=attr(sample_color_list[[iname]], "breaks"))
+               if (iname %in% names(left_color_list)) {
+                  if (is.function(left_color_list[[iname]])) {
+                     if ("breaks" %in% names(attributes(left_color_list[[iname]]))) {
+                        list(border=TRUE,
+                           color_bar="discrete",
+                           at=attr(left_color_list[[iname]], "breaks"))
+                     } else {
+                        list(border=TRUE,
+                           color_bar="discrete")
+                     }
                   } else {
-                     list(border=TRUE,
-                        color_bar="discrete",
-                        at=jamba::rmNA(names(sample_color_list[[iname]])))
+                     if (subset_legend_colors) {
+                        list(border=TRUE,
+                           color_bar="discrete",
+                           at=jamba::rmNA(names(left_color_list[[iname]])))
+                     } else {
+                        list(border=TRUE)
+                     }
                   }
                } else {
                   list(border=TRUE)
@@ -621,7 +696,7 @@ heatmap_se <- function
          left_alist <- alist(
             col=left_color_list,
             annotation_legend_param=left_param_list,
-            annotation_name_gp=grid::gpar(fontsize=column_anno_fontsize),
+            annotation_name_gp=grid::gpar(fontsize=row_anno_fontsize),
             #show_legend=show_left_legend,
             border=TRUE);
          if (debug > 1) {

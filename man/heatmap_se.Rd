@@ -34,6 +34,7 @@ heatmap_se(
   subset_legend_colors = TRUE,
   row_cex = 0.8,
   column_cex = 1,
+  row_anno_fontsize = 11,
   useMedian = FALSE,
   show_row_names = NULL,
   show_row_dend = length(rows) < 2000,
@@ -171,6 +172,11 @@ include colors shown in the \code{top_annotation}, when
 column name font size, relative to the automatic adjustment that
 is already done based upon the number of rows and columns being
 displayed.}
+
+\item{row_anno_fontsize}{\code{numeric} base font size for row
+annotation labels. Note these labels appears underneath row annotations,
+alongside column labels, and therefore they are also adjusted
+by multiplying \code{column_cex} so these labels are adjusted together.}
 
 \item{useMedian}{\code{logical} passed to \code{jamma::centerGeneData()} during
 data centering.}

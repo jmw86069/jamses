@@ -1,6 +1,12 @@
 
 # TODO for jamses
 
+## 21jun2022
+
+* COMPLETE: Bug in `heatmap_se()` when `sestats` is supplied but `se` does not
+contain all rows present in `sestats` hit array.
+* COMPLETE: `heatmap_se()` needs control over the annotation name fontsize.
+
 ## 16jun2022
 
 * `heatmap_se()`

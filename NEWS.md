@@ -13,11 +13,33 @@
    * new argument `subset_legend_colors=TRUE` will now filter colors in
    the `top_annotation` and `left_annotation` color legends to remove
    categorical colors which are not represented in the data being displayed.
-   This update prevents showing a huge list of categorical colors that
-   are not relevant to the heatmap. Note that even when two heatmaps
-   are added together (with ComplexHeatmap `+` or `%v%`) the amazing
-   coding in ComplexHeatmap will merge together color legends by
-   annotation color name, showing only the unique set of colors.
+
+      * This update prevents showing a huge list of categorical colors that
+      are not relevant to the heatmap. Note that even when two heatmaps
+      are added together (with ComplexHeatmap `+` or `%v%`) the amazing
+      coding in ComplexHeatmap will merge together color legends by
+      annotation color name, showing only the unique set of colors.
+      * It seems that ComplexHeatmap retains all colors in the heatmap object,
+      but hides colors that are unused. The `heatmap_se()` code was actually
+      encoding the `at` color labels for all colors regardless of which
+      colors were present.
+      So it is unclear the benefit of this option, but the function
+      itself was improved.
+      
+   * color legends are displayed either in order of factor levels,
+   or sorted using `jamba::mixedSort()`
+   * new argument `row_anno_fontsize` to control the specific fontsize
+   for row annotation labels. These labels appear for row annotations,
+   and appears beside the column labels on the heatmap.
+
+## bug fixes
+
+* `heatmap_se()` when `sestats` is supplied but `se` does not
+contain all rows present in `sestats` hit array, it produced an error.
+* `heatmap_se()` when annotations with factor columns were subset to remove
+a color from the legend, the color legend was still encoding `at` labels
+for the full set of colors, causing `ComplexHeatmap::HeatmapAnnotation()`
+to print a warning message.
 
 ## new functions
 
