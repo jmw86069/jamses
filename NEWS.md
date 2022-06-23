@@ -23,6 +23,9 @@
    list element in order, or `character` vector of one or more `names()`
    associated with the row list elements.
 
+* `heatmap_se()` arguments `cutoff_name` and `alt_cutoff_name` default
+values changed to `NULL`, so hits in `sestats` and `alt_sestats` will
+use all cutoffs by default, unless specified otherwise.
 
 # jamses 0.0.23.900
 

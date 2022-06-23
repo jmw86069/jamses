@@ -236,12 +236,12 @@ heatmap_se <- function
    assay_name=NULL,
    contrast_names=NULL,
    contrast_suffix="",
-   cutoff_name=1,
+   cutoff_name=NULL,
    alt_sestats=NULL,
    alt_assay_name=assay_name,
    alt_contrast_names=NULL,
    alt_contrast_suffix="",
-   alt_cutoff_name=1,
+   alt_cutoff_name=NULL,
    isamples=colnames(se),
    normgroup_colname=NULL,
    centerby_colnames=NULL,
@@ -406,7 +406,9 @@ heatmap_se <- function
       # optionally rename contrasts
       if (rename_contrasts) {
          colnames(gene_hits_im) <- tryCatch({
-            contrast2comp(colnames(gene_hits_im));
+            # paste0(".          ", gsub(":", ":",
+               contrast2comp(colnames(gene_hits_im))
+            # ));
          }, error=function(e){
             colnames(gene_hits_im)
          });
