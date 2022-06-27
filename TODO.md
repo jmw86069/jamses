@@ -1,9 +1,17 @@
 
 # TODO for jamses
 
+## 27jun2022
+
+* COMPLETE: `heatmap_se()` when not supplied `rows` nor `sestats` results in an error.
+* COMPLETE: `heatmap_se()` should have option not to center data.
+* COMPLETE: `heatmap_se()` should allow custom incidence matrix through
+`sestats` and `alt_sestats`, to avoid having to provide `sestats` or
+`hit_array`.
+
 ## 22jun2022
 
-* `heatmap_se()` - ability to "drill-down" into row clusters
+* COMPLETE: `heatmap_se()` - ability to "drill-down" into row clusters
 
 ## 21jun2022
 

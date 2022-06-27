@@ -9,16 +9,17 @@ heatmap_se(
   sestats = NULL,
   rows = NULL,
   row_type = "rows",
+  data_type = "expression",
   correlation = FALSE,
   assay_name = NULL,
   contrast_names = NULL,
   contrast_suffix = "",
-  cutoff_name = 1,
+  cutoff_name = NULL,
   alt_sestats = NULL,
   alt_assay_name = assay_name,
   alt_contrast_names = NULL,
   alt_contrast_suffix = "",
-  alt_cutoff_name = 1,
+  alt_cutoff_name = NULL,
   isamples = colnames(se),
   normgroup_colname = NULL,
   centerby_colnames = NULL,
@@ -32,6 +33,8 @@ heatmap_se(
   row_subcluster = NULL,
   row_title_rot = 0,
   sample_color_list = NULL,
+  legend_at = NULL,
+  legend_labels = NULL,
   subset_legend_colors = TRUE,
   row_cex = 0.8,
   column_cex = 1,
@@ -76,6 +79,18 @@ which indicates how many rows are displayed. For example
 \code{"1,234 genes detected above background"} or
 \code{"1,234 DEGs by limma-voom"}.}
 
+\item{data_type}{\code{character} string used as title of the heatmap
+color gradient legend, for example \code{"expression"} indicates
+the data contains gene expression measurements. Notes:
+\itemize{
+\item The prefix \code{"centered"} is automatically appended whenever
+the data is also centered for the heatmap. Set \code{centerby_colnames=FALSE}
+to display data that is not centered.
+\item The prefix \code{"correlation of"} is automatically appended when
+\code{correlation=TRUE} which displays correlation of whatever data
+is included in the heatmap.
+}}
+
 \item{correlation}{\code{logical} indicating whether to calculate sample
 correlation, and plot a sample-by-sample correlation heatmap.
 This option is included here since many of the same arguments
@@ -84,7 +99,13 @@ Note that \code{color_max} is forced to a maximum value of \code{1.0},
 representing the maximum correlation value.}
 
 \item{assay_name}{\code{character} string indicating the name in
-\code{assays(se)} to use for data to be displayed in the heatmap.}
+\code{assays(se)} to use for data to be displayed in the heatmap.
+When multiple \code{assay_name} values are supplied, the first
+assay_name that matches \code{names(assays(se))} will be used in the
+heatmap. In this way, multiple \code{assay_names} can be supplied to
+define statistical hits in \code{sestats}, which calls \code{hit_array_to_list()}
+to combine hits across \code{assay_name} entries; but only the first
+\code{assay_name} found in \code{se} is used for the heatmap values.}
 
 \item{contrast_names}{\code{character} vector of contrasts in
 \code{sestats$hit_array} to use for the heatmap. When \code{contrast_names=NULL}
@@ -111,11 +132,16 @@ centering.}
 used during data centering. When supplied, samples are centered
 independently within each normgroup grouping.}
 
-\item{centerby_colnames}{\code{character} vector of colnames in \code{colData(se)}
+\item{centerby_colnames}{either:
+\itemize{
+\item \code{character} vector of colnames in \code{colData(se)}
 used during data centering. When supplied, samples are centered
 independently within each centerby grouping. It is typically used
 for things like cell lines, to center each cell line by a time
-point control, or untreated control.}
+point control, or untreated control.
+\item \code{NULL} to perform centering across all columns in \code{se}.
+\item \code{FALSE} to disable centering.
+}}
 
 \item{controlSamples}{\code{character} vector of samples to use as the
 reference during data centering. Note that samples are still
@@ -125,13 +151,16 @@ which are present in that grouping. In absence of \code{controlSamples}
 defined, or within the grouping, samples are centered relative
 to the median value of the grouping.}
 
-\item{top_colnames}{\code{character} vector of colnames to use from
-\code{colData(se)} as annotations to display in \code{top_annotation} above
-the heatmap. When not supplied, reasonable colnames are detected
-internally:
+\item{top_colnames}{one of the following types:
 \itemize{
-\item columns with more than one unique value
-\item columns with at least one duplicated value
+\item \code{character} vector of colnames to use from
+\code{colData(se)} as annotations to display in \code{top_annotation} above
+the heatmap.
+\item \code{NULL}, will call \code{choose_annotation_colnames()} to detect
+reasonable colnames: columns with more than one unique value;
+columns with at least one duplicated value.
+\item \code{FALSE} will hide the \code{top_colnames}, which also occurs when
+\code{colData(se)} is empty.
 }}
 
 \item{top_annotation}{specific heatmap annotation as defined by
@@ -184,6 +213,18 @@ where names correspond to colnames in either \code{colData(se)} or
 annotation functions. When colors are not defined,
 \code{ComplexHeatmap::Heatmap()} will define colors using its own internal
 function.}
+
+\item{legend_at, legend_labels}{\code{numeric} and \code{character}, respectively,
+to define custom values for the heatmap color gradient legend.
+When \code{legend_at} is NULL, it uses \code{x=ceiling(color_max)} and defines
+breaks at each integer value from \code{-x} to \code{+x}.
+When \code{correlation=TRUE} the \code{legend_labels} by default use \code{legend_at}.
+Otherwise, \code{legend_labels} values inverse transformed from \code{log2(1 + x)}
+in order to display normal space fold change values, for example
+the \code{legend_at=c(-2, -1, 0, 1, 2)} would result in:
+\code{legend_labels=c("-4", "-2", "1", "2", "4")}.
+To override this behavior, supply both the custom \code{legend_at} values
+and corresponding \code{legend_labels}.}
 
 \item{subset_legend_colors}{\code{logical} indicating whether to subset colors
 shown in the color key defined by \code{sample_color_list}, which is useful
@@ -285,6 +326,8 @@ of resulting data. To subset samples involved in centering itself,
 either subset the input \code{se} data, or supply \code{controlSamples} to
 define a subset of samples used as the baseline in centering.
 See \code{jamma::centerGeneData()} for more details.
+
+Note: data centering can be disabled with \code{centerby_colnames=FALSE}.
 
 The top heatmap annotations use \code{colData(se)} with user-supplied
 \code{top_colnames} or by auto-detecting those colnames that apply

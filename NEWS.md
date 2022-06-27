@@ -1,3 +1,23 @@
+# jamses 0.0.25.900
+
+## updates to existing functions
+
+* `heatmap_se()` updates:
+
+   * new argument `data_type` used in color legend title, and heatmap title.
+   * new arguments `legend_at`, `legend_labels` to customize heatmap color
+   gradient legend positions and labels.
+   * data centering can be turned off with `centerby_colnames=FALSE`.
+   * `sestats` and `alt_sestats` can be supplied as incidence matrices directly,
+   without requiring them to be in `sestats` or `hit_array` formats.
+   * `top_colnames` can be hidden with `top_colnames=FALSE`; also when
+   `colData(se)` is empty, `top_annotation` is hidden.
+   * `assay_name` may contain multiple values to define gene hits in `sestats`;
+   however only the first matching `assay_name` in `names(assays(se))` is
+   used for the heatmap data.
+   
+
+
 # jamses 0.0.24.900
 
 ## updates to existing functions

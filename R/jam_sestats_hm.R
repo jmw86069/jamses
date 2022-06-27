@@ -19,6 +19,8 @@
 #' define a subset of samples used as the baseline in centering.
 #' See `jamma::centerGeneData()` for more details.
 #'
+#' Note: data centering can be disabled with `centerby_colnames=FALSE`.
+#'
 #' The top heatmap annotations use `colData(se)` with user-supplied
 #' `top_colnames` or by auto-detecting those colnames that apply
 #' to multiple `colnames(se)`.
@@ -76,6 +78,15 @@
 #'    which indicates how many rows are displayed. For example
 #'    `"1,234 genes detected above background"` or
 #'    `"1,234 DEGs by limma-voom"`.
+#' @param data_type `character` string used as title of the heatmap
+#'    color gradient legend, for example `"expression"` indicates
+#'    the data contains gene expression measurements. Notes:
+#'    * The prefix `"centered"` is automatically appended whenever
+#'    the data is also centered for the heatmap. Set `centerby_colnames=FALSE`
+#'    to display data that is not centered.
+#'    * The prefix `"correlation of"` is automatically appended when
+#'    `correlation=TRUE` which displays correlation of whatever data
+#'    is included in the heatmap.
 #' @param correlation `logical` indicating whether to calculate sample
 #'    correlation, and plot a sample-by-sample correlation heatmap.
 #'    This option is included here since many of the same arguments
@@ -84,6 +95,12 @@
 #'    representing the maximum correlation value.
 #' @param assay_name `character` string indicating the name in
 #'    `assays(se)` to use for data to be displayed in the heatmap.
+#'    When multiple `assay_name` values are supplied, the first
+#'    assay_name that matches `names(assays(se))` will be used in the
+#'    heatmap. In this way, multiple `assay_names` can be supplied to
+#'    define statistical hits in `sestats`, which calls `hit_array_to_list()`
+#'    to combine hits across `assay_name` entries; but only the first
+#'    `assay_name` found in `se` is used for the heatmap values.
 #' @param contrast_names `character` vector of contrasts in
 #'    `sestats$hit_array` to use for the heatmap. When `contrast_names=NULL`
 #'    then all contrasts are displayed, which is the default.
@@ -104,11 +121,14 @@
 #' @param normgroup_colname `character` vector of colnames in `colData(se)`
 #'    used during data centering. When supplied, samples are centered
 #'    independently within each normgroup grouping.
-#' @param centerby_colnames `character` vector of colnames in `colData(se)`
+#' @param centerby_colnames either:
+#'    * `character` vector of colnames in `colData(se)`
 #'    used during data centering. When supplied, samples are centered
 #'    independently within each centerby grouping. It is typically used
 #'    for things like cell lines, to center each cell line by a time
 #'    point control, or untreated control.
+#'    * `NULL` to perform centering across all columns in `se`.
+#'    * `FALSE` to disable centering.
 #' @param controlSamples `character` vector of samples to use as the
 #'    reference during data centering. Note that samples are still
 #'    centered within each normgroup and centerby grouping, and within
@@ -118,12 +138,15 @@
 #'    to the median value of the grouping.
 #' @param control_name `character` string used to describe the control
 #'    used during data centering, displayed in the heatmap title.
-#' @param top_colnames `character` vector of colnames to use from
+#' @param top_colnames one of the following types:
+#'    * `character` vector of colnames to use from
 #'    `colData(se)` as annotations to display in `top_annotation` above
-#'    the heatmap. When not supplied, reasonable colnames are detected
-#'    internally:
-#'    * columns with more than one unique value
-#'    * columns with at least one duplicated value
+#'    the heatmap.
+#'    * `NULL`, will call `choose_annotation_colnames()` to detect
+#'    reasonable colnames: columns with more than one unique value;
+#'    columns with at least one duplicated value.
+#'    * `FALSE` will hide the `top_colnames`, which also occurs when
+#'    `colData(se)` is empty.
 #' @param top_annotation specific heatmap annotation as defined by
 #'    `ComplexHeatmap::HeatmapAnnotation()`. When supplied, the `top_colnames`
 #'    described above is not used.
@@ -182,6 +205,17 @@
 #'    annotation functions. When colors are not defined,
 #'    `ComplexHeatmap::Heatmap()` will define colors using its own internal
 #'    function.
+#' @param legend_at,legend_labels `numeric` and `character`, respectively,
+#'    to define custom values for the heatmap color gradient legend.
+#'    When `legend_at` is NULL, it uses `x=ceiling(color_max)` and defines
+#'    breaks at each integer value from `-x` to `+x`.
+#'    When `correlation=TRUE` the `legend_labels` by default use `legend_at`.
+#'    Otherwise, `legend_labels` values inverse transformed from `log2(1 + x)`
+#'    in order to display normal space fold change values, for example
+#'    the `legend_at=c(-2, -1, 0, 1, 2)` would result in:
+#'    `legend_labels=c("-4", "-2", "1", "2", "4")`.
+#'    To override this behavior, supply both the custom `legend_at` values
+#'    and corresponding `legend_labels`.
 #' @param subset_legend_colors `logical` indicating whether to subset colors
 #'    shown in the color key defined by `sample_color_list`, which is useful
 #'    when the heatmap only represents a subset of color values.
@@ -232,6 +266,7 @@ heatmap_se <- function
    sestats=NULL,
    rows=NULL,
    row_type="rows",
+   data_type="expression",
    correlation=FALSE,
    assay_name=NULL,
    contrast_names=NULL,
@@ -255,6 +290,8 @@ heatmap_se <- function
    row_subcluster=NULL,
    row_title_rot=0,
    sample_color_list=NULL,
+   legend_at=NULL,
+   legend_labels=NULL,
    subset_legend_colors=TRUE,
    row_cex=0.8,
    column_cex=1,
@@ -294,10 +331,15 @@ heatmap_se <- function
 
    # row_subcluster
    if (length(row_subcluster) > 0) {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "Preparing sub-cluster heatmap.");
+      }
       hm_total <- heatmap_se(se=se,
          sestats=sestats,
          rows=rows,
          row_type=row_type,
+         data_type=data_type,
          correlation=correlation,
          assay_name=assay_name,
          contrast_names=contrast_names,
@@ -376,32 +418,50 @@ heatmap_se <- function
    gene_hitlist <- NULL;
    alt_gene_hitlist <- NULL;
    gene_hits_im <- NULL;
+   gene_hits <- NULL;
    alt_gene_hits_im <- NULL;
    if (length(sestats) > 0) {
       if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
          hit_array <- sestats$hit_array;
+      } else if ("matrix" %in% class(sestats)) {
+         gene_hits_im <- sestats;
+         hit_array <- NULL;
       } else {
          hit_array <- sestats;
       }
-      if (length(contrast_names) == 0) {
-         contrast_names <- dimnames(sestats$hit_array)[[2]];
+      if (length(hit_array) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "sestats is using a custom incidence matrix.");
+         }
+         if (length(contrast_names) > 0 &&
+               any(contrast_names %in% colnames(gene_hits_im))) {
+            contrast_names <- intersect(contrast_names,
+               colnames(gene_hits_im));
+            gene_hits_im <- gene_hits_im[, contrast_names, drop=FALSE];
+         }
+         gene_hits <- rownames(gene_hits_im);
+      } else {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "sestats is generating an incidence matrix.");
+         }
+         if (length(contrast_names) == 0) {
+            contrast_names <- dimnames(hit_array)[[2]];
+         }
+         gene_hitlist <- hit_array_to_list(hit_array,
+            cutoff_names=cutoff_name,
+            contrast_names=contrast_names,
+            assay_names=assay_name);
+         gene_hits <- names(jamba::tcount(names(unlist(unname(
+            gene_hitlist)))));
+         # confirm all gene_hits are present in the data provided
+         if (!all(gene_hits %in% rownames(se))) {
+            gene_hits <- intersect(gene_hits, rownames(se));
+         }
+         gene_hits_im <- venndir::list2im_value(gene_hitlist,
+            do_sparse=FALSE)[gene_hits,,drop=FALSE];
       }
-      # contrast_names1 <- contrast_names;
-      # if (length(contrast_names) == 1) {
-      #    contrast_names1 <- rep(contrast_names, 2);
-      # }
-      gene_hitlist <- hit_array_to_list(hit_array,
-         cutoff_names=cutoff_name,
-         contrast_names=contrast_names,
-         assay_names=assay_name);
-      gene_hits <- names(jamba::tcount(names(unlist(unname(
-         gene_hitlist)))));
-      # confirm all gene_hits are present in the data provided
-      if (!all(gene_hits %in% rownames(se))) {
-         gene_hits <- intersect(gene_hits, rownames(se));
-      }
-      gene_hits_im <- venndir::list2im_value(gene_hitlist,
-         do_sparse=FALSE)[gene_hits,,drop=FALSE];
 
       # optionally rename contrasts
       if (rename_contrasts) {
@@ -439,36 +499,59 @@ heatmap_se <- function
       rows <- gene_hits;
    } else {
       rows <- rownames(se);
+      if (length(gene_hits) > 0) {
+         rows <- intersect(gene_hits, rows);
+      }
+      gene_hits <- rows;
    }
 
    # alt_sestats only for rows and gene_hits defined from sestats
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
       if ("list" %in% class(alt_sestats) && "hit_array" %in% names(alt_sestats)) {
          alt_hit_array <- alt_sestats$hit_array;
+      } else if ("matrix" %in% class(alt_sestats)) {
+         gene_hits_im_alt1 <- alt_sestats;
+         alt_hit_array <- NULL;
       } else {
          alt_hit_array <- alt_sestats;
       }
-      if (length(alt_contrast_names) == 0) {
-         alt_contrast_names <- dimnames(alt_hit_array)[[2]];
-      }
-      # alt_contrast_names1 <- alt_contrast_names;
-      # if (length(alt_contrast_names) == 1) {
-      #    alt_contrast_names1 <- rep(alt_contrast_names, 2);
-      # }
-      gene_hitlist_alt <- hit_array_to_list(alt_hit_array,
-         cutoff_names=alt_cutoff_name,
-         contrast_names=alt_contrast_names,
-         assay_names=alt_assay_name);
-      gene_hits_alt <- names(tcount(names(unlist(unname(
-         gene_hitlist_alt)))));
-      gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
-         do_sparse=FALSE)[gene_hits_alt,,drop=FALSE];
-      gene_hits_im_alt <- (gene_hits_im * 0)[,rep(1, ncol(gene_hits_im_alt1)), drop=FALSE];
-      colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
-      genes_shared <- intersect(gene_hits_alt,
-         gene_hits);
-      if (length(genes_shared) > 0) {
-         gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+      if (length(alt_hit_array) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "alt_sestats is using a custom incidence matrix.");
+         }
+         if (length(alt_contrast_names) > 0 &&
+               any(alt_contrast_names %in% colnames(alt_gene_hits_im))) {
+            alt_contrast_names <- intersect(alt_contrast_names,
+               colnames(alt_gene_hits_im));
+            gene_hits_im_alt1 <- gene_hits_im_alt1[, alt_contrast_names, drop=FALSE];
+            gene_hits_im_alt <- (gene_hits_im * 0)[,rep(1, ncol(gene_hits_im_alt1)), drop=FALSE];
+            colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
+         }
+         genes_shared <- intersect(gene_hits,
+            rownames(gene_hits_im_alt))
+         if (length(genes_shared) > 0) {
+            gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+         }
+      } else {
+         if (length(alt_contrast_names) == 0) {
+            alt_contrast_names <- dimnames(alt_hit_array)[[2]];
+         }
+         gene_hitlist_alt <- hit_array_to_list(alt_hit_array,
+            cutoff_names=alt_cutoff_name,
+            contrast_names=alt_contrast_names,
+            assay_names=alt_assay_name);
+         gene_hits_alt <- names(tcount(names(unlist(unname(
+            gene_hitlist_alt)))));
+         gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
+            do_sparse=FALSE)[gene_hits_alt,,drop=FALSE];
+         gene_hits_im_alt <- (gene_hits_im * 0)[,rep(1, ncol(gene_hits_im_alt1)), drop=FALSE];
+         colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
+         genes_shared <- intersect(gene_hits_alt,
+            gene_hits);
+         if (length(genes_shared) > 0) {
+            gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
+         }
       }
 
       # optionally rename contrasts
@@ -591,7 +674,11 @@ heatmap_se <- function
             top_colnames);
       }
    }
-   if (length(top_annotation) == 0 && length(top_colnames) > 0) {
+   top_colnames <- intersect(top_colnames,
+      colnames(colData_se));
+   if (length(top_annotation) == 0 &&
+         length(top_colnames) > 0 &&
+         !any(top_colnames %in% FALSE)) {
       # subset color key by data shown in the heatmap
       top_color_list <- NULL;
       # subset any factor columns to limit colors shown in the legend
@@ -678,6 +765,10 @@ heatmap_se <- function
       show_left_legend <- logical(0);
       # sestats annotations
       if (length(sestats) > 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "Preparing sestats incidence matrix left_annotation.");
+         }
          show_left_legend <- c(TRUE,
             show_left_legend);
          left_anno_list <- c(list(
@@ -696,6 +787,10 @@ heatmap_se <- function
       }
       # alt_sestats annotations
       if (length(alt_sestats) > 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "Preparing alt_sestats incidence matrix left_annotation.");
+         }
          show_left_legend <- c(FALSE,
             show_left_legend);
          left_anno_list <- c(list(
@@ -716,7 +811,7 @@ heatmap_se <- function
       if (length(rowData_colnames) > 0) {
          if (verbose) {
             jamba::printDebug("heatmap_se(): ",
-               "rowData_colnames: ",
+               "preparing left_annotation for rowData_colnames: ",
                rowData_colnames);
          }
          show_left_legend <- c(TRUE,
@@ -872,23 +967,38 @@ heatmap_se <- function
       row_split <- column_split;
    }
 
-   norm_label <- paste0(assay_name, " data");
-
-   centerby_colnames <- intersect(centerby_colnames,
-      colnames(colData_se));
-   if (length(centerby_colnames) > 0) {
-      centerby_label <- paste0("centered by ",
-         jamba::cPaste(centerby_colnames,
-            sep="/"));
-      centerGroups <- jamba::pasteByRow(
-         colData_se[,centerby_colnames]);
-   } else {
-      centerGroups <- NULL;
-      centerby_label <- "global-centered";
+   assay_name <- head(intersect(assay_name,
+      names(assays(se))), 1);
+   if (length(assay_name) == 0) {
+      stop("assay_name must be supplied.")
    }
-   if (length(control_label) > 0 && any(nchar(control_label)) > 0) {
-      centerby_label <- paste(centerby_label,
-         control_label);
+   if (verbose) {
+      jamba::printDebug("heatmap_se(): ",
+         "using assay_name '", assay_name, "'");
+   }
+   norm_label <- paste0(assay_name, " ", data_type);
+
+   if (any(centerby_colnames %in% FALSE)) {
+      centerby_colnames <- NULL;
+      centerGroups <- FALSE;
+      centerby_label <- "";
+   } else {
+      centerby_colnames <- intersect(centerby_colnames,
+         colnames(colData_se));
+      if (length(centerby_colnames) > 0) {
+         centerby_label <- paste0("centered by ",
+            jamba::cPaste(centerby_colnames,
+               sep="/"));
+         centerGroups <- jamba::pasteByRow(
+            colData_se[,centerby_colnames]);
+      } else {
+         centerGroups <- NULL;
+         centerby_label <- "global-centered";
+      }
+      if (length(control_label) > 0 && any(nchar(control_label)) > 0) {
+         centerby_label <- paste(centerby_label,
+            control_label);
+      }
    }
 
    # row_labels
@@ -922,18 +1032,28 @@ heatmap_se <- function
    }
 
    # heatmap legend labels
-   if (correlation) {
-      if (abs(color_max) > 1) {
-         color_max <- 1;
+   if (length(legend_at) == 0) {
+      if (correlation) {
+         if (abs(color_max) > 1) {
+            color_max <- 1;
+         }
+         legend_at <- seq(-ceiling(color_max),
+            to=ceiling(color_max),
+            by=0.25);
+      } else {
+         legend_at <- seq(-ceiling(color_max),
+            to=ceiling(color_max));
       }
-      legend_at <- seq(-ceiling(color_max),
-         to=ceiling(color_max),
-         by=0.25);
-      legend_labels <- legend_at;
-   } else {
-      legend_at <- seq(-ceiling(color_max),
-         to=ceiling(color_max));
-      legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
+   }
+   if (length(legend_labels) != length(legend_at)) {
+      if (correlation) {
+         legend_labels <- legend_at;
+      } else {
+         legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
+         if (any(duplicated(legend_labels))) {
+            legend_labels <- round(10 * jamba::exp2signed(legend_at+0.00001, offset=0)) / 10;
+         }
+      }
    }
 
    # pull assay data separately so we can tolerate other object types
@@ -956,13 +1076,26 @@ heatmap_se <- function
 
    # define heatmap matrix
    # After centering, columns are subset using isamples.
-   se_matrix <- jamma::centerGeneData(
-      useMedian=useMedian,
-      centerGroups=centerGroups,
-      x=se_matrix,
-      controlSamples=controlSamples,
-      ...)[, isamples, drop=FALSE];
-   hm_name <- "centered\nexpression";
+   if (length(centerGroups) > 0 && any(centerGroups %in% FALSE)) {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "Not centering data.");
+      }
+      se_matrix <- se_matrix[, isamples, drop=FALSE];
+      hm_name <- data_type;
+   } else {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "Centering data.");
+      }
+      se_matrix <- jamma::centerGeneData(
+         useMedian=useMedian,
+         centerGroups=centerGroups,
+         x=se_matrix,
+         controlSamples=controlSamples,
+         ...)[, isamples, drop=FALSE];
+      hm_name <- paste0("centered\n", data_type);
+   }
    if (correlation) {
       # call correlation function cor()
       se_matrix <- jamba::call_fn_ellipsis(cor,
@@ -970,7 +1103,11 @@ heatmap_se <- function
          use="pairwise.complete.obs",
          ...);
       cluster_rows <- cluster_columns;
-      hm_name <- "centered\ncorrelation";
+      if (length(centerGroups) > 0 && any(centerGroups %in% FALSE)) {
+         hm_name <- paste0("correlation of\n", data_type);
+      } else {
+         hm_name <- paste0("correlation of\ncentered\n", data_type);
+      }
    }
 
    # pre-calculate row clusters
@@ -1006,7 +1143,7 @@ heatmap_se <- function
       row_title_rot=row_title_rot,
       cluster_column_slices=FALSE,
       border=TRUE,
-      name="centered\nexpression",
+      name=hm_name,
       show_row_names=show_row_names,
       show_row_dend=show_row_dend,
       row_labels=row_labels,
@@ -1021,15 +1158,11 @@ heatmap_se <- function
    hm_title <- paste0(
       formatInt(length(gene_hits)),
       " ", row_type,
-      "\n", norm_label, ", ",
-      "\n", centerby_label)
+      "\n", norm_label,
+      ifelse(any(nchar(centerby_label) > 0),
+         paste0(",\n", centerby_label),
+         ""))
    attr(hm_hits, "hm_title") <- hm_title;
-   # hm_hits <- draw(hm_hits,
-   #    column_title=paste0("Gene counts of ",
-   #       formatInt(length(gene_hits)),
-   #       " total RNA-seq DGEs",
-   #       norm_label,
-   #       "\ncentered by ", centerby_label))
    if (debug) {
       ret_list <- list(
          hm=hm_hits,
@@ -1041,7 +1174,6 @@ heatmap_se <- function
       ret_list$alt_gene_hits_im <- alt_gene_hits_im;
       ret_list$gene_hitlist <- gene_hitlist;
       ret_list$alt_gene_hitlist <- alt_gene_hitlist;
-      ret_list$hit_array <- hit_array;
       return(ret_list)
    }
    hm_hits
