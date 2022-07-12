@@ -1,6 +1,10 @@
 
 # TODO for jamses
 
+## 11jul2022
+
+* `heatmap_se()` font size customizations sufficient for manuscript prep.
+
 ## 27jun2022
 
 * COMPLETE: `heatmap_se()` when not supplied `rows` nor `sestats` results in an error.

@@ -284,8 +284,14 @@ heatmap_se <- function
    control_label="",
    top_colnames=NULL,
    top_annotation=NULL,
+   top_annotation_name_gp=grid::gpar(),
    rowData_colnames=NULL,
    left_annotation=NULL,
+   left_annotation_name_gp=grid::gpar(),
+   simple_anno_size=grid::unit(8, "mm"),
+   legend_title_gp=grid::gpar(fontsize=10),
+   legend_labels_gp=grid::gpar(fontsize=10),
+   legend_grid_cex=1,
    row_split=NULL,
    row_subcluster=NULL,
    row_title_rot=0,
@@ -307,6 +313,7 @@ heatmap_se <- function
          method="euclidean",
          link="ward")},
    column_split=NULL,
+   column_split_sep=",",
    color_max=3,
    lens=2,
    rename_contrasts=TRUE,
@@ -357,8 +364,14 @@ heatmap_se <- function
          control_label=control_label,
          top_colnames=top_colnames,
          top_annotation=top_annotation,
+         top_annotation_name_gp=top_annotation_name_gp,
          rowData_colnames=rowData_colnames,
          left_annotation=left_annotation,
+         left_annotation_name_gp=left_annotation_name_gp,
+         simple_anno_size=simple_anno_size,
+         legend_title_gp=legend_title_gp,
+         legend_labels_gp=legend_labels_gp,
+         legend_grid_cex=legend_grid_cex,
          row_split=row_split,
          row_subcluster=NULL,
          row_title_rot=row_title_rot,
@@ -374,6 +387,7 @@ heatmap_se <- function
          cluster_columns=cluster_columns,
          cluster_rows=cluster_rows,
          column_split=column_split,
+         column_split_sep=column_split_sep,
          color_max=color_max,
          lens=lens,
          rename_contrasts=rename_contrasts,
@@ -616,7 +630,7 @@ heatmap_se <- function
             nrow(unique(colData_se[isamples, normgroup_colname, drop=FALSE])) > 1) {
          column_split <- jamba::pasteByRow(
             colData_se[isamples, normgroup_colname, drop=FALSE],
-            sep=",");
+            sep=column_split_sep);
          names(column_split) <- isamples;
       } else {
          column_split <- NULL;
@@ -628,7 +642,8 @@ heatmap_se <- function
             column_split <- jamba::pasteByRowOrdered(
                data.frame(check.names=FALSE,
                   colData_se[isamples, column_split, drop=FALSE]),
-               keepOrder=TRUE);
+               keepOrder=TRUE,
+               sep=column_split_sep);
             names(column_split) <- isamples;
          } else if (all(names(column_split) %in% isamples)) {
             column_split <- column_split[isamples];
@@ -723,29 +738,51 @@ heatmap_se <- function
                if (is.function(top_color_list[[iname]])) {
                   if ("breaks" %in% names(attributes(top_color_list[[iname]]))) {
                      list(border=TRUE,
+                        title_gp=legend_title_gp,
+                        labels_gp=legend_labels_gp,
+                        grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                        grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                         color_bar="discrete",
                         at=attr(top_color_list[[iname]], "breaks"))
                   } else {
                      list(border=TRUE,
+                        title_gp=legend_title_gp,
+                        labels_gp=legend_labels_gp,
+                        grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                        grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                         color_bar="discrete")
                   }
                } else {
                   if (subset_legend_colors) {
                      list(border=TRUE,
+                        title_gp=legend_title_gp,
+                        labels_gp=legend_labels_gp,
+                        grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                        grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                         color_bar="discrete",
                         at=jamba::rmNA(names(top_color_list[[iname]])))
                   } else {
-                     list(border=TRUE)
+                     list(border=TRUE,
+                        grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                        grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+                        title_gp=legend_title_gp,
+                        labels_gp=legend_labels_gp)
                   }
                }
             } else {
-               list(border=TRUE)
+               list(border=TRUE,
+                  grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                  grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+                  title_gp=legend_title_gp,
+                  labels_gp=legend_labels_gp)
             }
          }));
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
          df=top_df,
+         annotation_name_gp=top_annotation_name_gp,
          annotation_legend_param=top_param_list,
+         simple_anno_size=simple_anno_size,
          # annotation_legend_param=list(
          #    border=TRUE,
          #    color_bar="discrete"
@@ -781,6 +818,10 @@ heatmap_se <- function
             hits=list(
                at=c(-1, 0, 1),
                color_bar="discrete",
+               title_gp=legend_title_gp,
+               labels_gp=legend_labels_gp,
+               grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+               grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                border=TRUE,
                labels=c("down", "no change", "up"))),
             left_param_list);
@@ -803,6 +844,10 @@ heatmap_se <- function
             hits_alt=list(
                at=c(-1, 0, 1),
                color_bar="discrete",
+               title_gp=legend_title_gp,
+               labels_gp=legend_labels_gp,
+               grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+               grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                border=TRUE,
                labels=c("down", "no change", "up"))),
             left_param_list);
@@ -877,22 +922,42 @@ heatmap_se <- function
                      if ("breaks" %in% names(attributes(left_color_list[[iname]]))) {
                         list(border=TRUE,
                            color_bar="discrete",
+                           title_gp=legend_title_gp,
+                           labels_gp=legend_labels_gp,
+                           grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                           grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                            at=attr(left_color_list[[iname]], "breaks"))
                      } else {
                         list(border=TRUE,
+                           title_gp=legend_title_gp,
+                           labels_gp=legend_labels_gp,
+                           grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                           grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                            color_bar="discrete")
                      }
                   } else {
                      if (subset_legend_colors) {
                         list(border=TRUE,
+                           title_gp=legend_title_gp,
+                           labels_gp=legend_labels_gp,
+                           grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                           grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                            color_bar="discrete",
                            at=jamba::rmNA(names(left_color_list[[iname]])))
                      } else {
-                        list(border=TRUE)
+                        list(border=TRUE,
+                           grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                           grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+                           title_gp=legend_title_gp,
+                           labels_gp=legend_labels_gp)
                      }
                   }
                } else {
-                  list(border=TRUE)
+                  list(border=TRUE,
+                     grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+                     grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+                     title_gp=legend_title_gp,
+                     labels_gp=legend_labels_gp)
                }
             }),
             left_param_list);
@@ -900,10 +965,15 @@ heatmap_se <- function
 
       # put it all together
       if (length(left_anno_list) > 0) {
+         if (length(left_annotation_name_gp) == 0) {
+            left_annotation_name_gp <- grid::gpar(fontsize=row_anno_fontsize);
+         }
          left_alist <- alist(
+            simple_anno_size=simple_anno_size,
             col=left_color_list,
             annotation_legend_param=left_param_list,
-            annotation_name_gp=grid::gpar(fontsize=row_anno_fontsize),
+            # annotation_name_gp=grid::gpar(fontsize=row_anno_fontsize),
+            annotation_name_gp=left_annotation_name_gp,
             #show_legend=show_left_legend,
             border=TRUE);
          if (debug > 1) {
@@ -1135,7 +1205,11 @@ heatmap_se <- function
          border=TRUE,
          color_bar="discrete",
          at=legend_at,
-         labels=legend_labels
+         labels=legend_labels,
+         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+         grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+         title_gp=legend_title_gp,
+         labels_gp=legend_labels_gp
       ),
       clustering_method_rows="ward.D",
       column_split=column_split,

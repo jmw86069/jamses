@@ -1,3 +1,12 @@
+# jamses 0.0.26.900
+
+## updates to existing functions
+
+* `heatmap_se()` updates:
+
+   * still in progress: several new arguments intended to customize exact
+   font size and grid size for color legends, annotations, around the heatmap.
+
 # jamses 0.0.25.900
 
 ## updates to existing functions
