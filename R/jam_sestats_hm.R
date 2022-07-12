@@ -305,6 +305,9 @@ heatmap_se <- function
    useMedian=FALSE,
    show_row_names=NULL,
    show_row_dend=length(rows) < 2000,
+   show_heatmap_legend=TRUE,
+   show_top_legend=TRUE,
+   show_left_legend=TRUE,
    row_label_colname=NULL,
    cluster_columns=FALSE,
    cluster_rows=function(x, ...){
@@ -717,6 +720,9 @@ heatmap_se <- function
                            top_df[isamples, top_colname])));
                   }
                   sample_colors <- sample_colors[uniq_values];
+                  if (length(sample_colors) == 0) {
+                     sample_colors <- rep(NA, length.out=length(uniq_values));
+                  }
                   names(sample_colors) <- uniq_values;
                   if (any(is.na(sample_colors))) {
                      # fallback plan for missing values is to assign
@@ -783,6 +789,7 @@ heatmap_se <- function
          annotation_name_gp=top_annotation_name_gp,
          annotation_legend_param=top_param_list,
          simple_anno_size=simple_anno_size,
+         show_legend=show_top_legend,
          # annotation_legend_param=list(
          #    border=TRUE,
          #    color_bar="discrete"
@@ -972,6 +979,7 @@ heatmap_se <- function
             simple_anno_size=simple_anno_size,
             col=left_color_list,
             annotation_legend_param=left_param_list,
+            show_legend=show_left_legend,
             # annotation_name_gp=grid::gpar(fontsize=row_anno_fontsize),
             annotation_name_gp=left_annotation_name_gp,
             #show_legend=show_left_legend,
@@ -1220,6 +1228,7 @@ heatmap_se <- function
       name=hm_name,
       show_row_names=show_row_names,
       show_row_dend=show_row_dend,
+      show_heatmap_legend=show_heatmap_legend,
       row_labels=row_labels,
       row_names_gp=grid::gpar(fontsize=row_fontsize),
       column_names_gp=grid::gpar(fontsize=column_fontsize),

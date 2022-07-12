@@ -6,6 +6,10 @@
 
    * still in progress: several new arguments intended to customize exact
    font size and grid size for color legends, annotations, around the heatmap.
+   * new arguments: `show_heatmap_legend`, `show_top_legend`, `show_left_legend`
+   intended to allow hiding various color legends, mostly to save plot space.
+   * `all_sample_colors` sometimes does not match left or top annotation
+   names, and now will create categorical colors in more scenarios.
 
 # jamses 0.0.25.900
 
