@@ -23,6 +23,16 @@
    numeric index positions for each label, and the order of rows may not
    be known upfront.
 
+
+## minor bug fixes
+
+* `hit_array_to_list()` was returning `NA` values when the `sestats$hit_array`
+also included `NA` values. The function now removes any `NA` values before
+returning each vector.
+* `heatmap_se()` argument `alt_sestats` was throwing an error when supplied
+with a `numeric` matrix instead of `sestats` object, this input type
+was been corrected, and the code slightly refactored for clarity.
+
 # jamses 0.0.25.900
 
 ## updates to existing functions

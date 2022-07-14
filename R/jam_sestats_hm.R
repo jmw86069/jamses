@@ -642,7 +642,7 @@ heatmap_se <- function
       if ("list" %in% class(alt_sestats) && "hit_array" %in% names(alt_sestats)) {
          alt_hit_array <- alt_sestats$hit_array;
       } else if ("matrix" %in% class(alt_sestats)) {
-         gene_hits_im_alt1 <- alt_sestats;
+         alt_gene_hits_im1 <- alt_sestats;
          alt_hit_array <- NULL;
       } else {
          alt_hit_array <- alt_sestats;
@@ -653,50 +653,45 @@ heatmap_se <- function
                "alt_sestats is using a custom incidence matrix.");
          }
          if (length(alt_contrast_names) > 0 &&
-               any(alt_contrast_names %in% colnames(alt_gene_hits_im))) {
+               any(alt_contrast_names %in% colnames(alt_gene_hits_im1))) {
             alt_contrast_names <- intersect(alt_contrast_names,
-               colnames(alt_gene_hits_im));
-            gene_hits_im_alt1 <- gene_hits_im_alt1[, alt_contrast_names, drop=FALSE];
-            gene_hits_im_alt <- (gene_hits_im * 0)[,rep(1, ncol(gene_hits_im_alt1)), drop=FALSE];
-            colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
+               colnames(alt_gene_hits_im1));
+         } else {
+            alt_contrast_names <- colnames(alt_gene_hits_im1);
          }
-         genes_shared <- intersect(gene_hits,
-            rownames(gene_hits_im_alt))
-         if (length(genes_shared) > 0) {
-            gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
-         }
+         alt_gene_hits_im1 <- alt_gene_hits_im1[, alt_contrast_names, drop=FALSE];
       } else {
          if (length(alt_contrast_names) == 0) {
             alt_contrast_names <- dimnames(alt_hit_array)[[2]];
          }
-         gene_hitlist_alt <- hit_array_to_list(alt_hit_array,
+         alt_gene_hitlist <- hit_array_to_list(alt_hit_array,
             cutoff_names=alt_cutoff_name,
             contrast_names=alt_contrast_names,
             assay_names=alt_assay_name);
-         gene_hits_alt <- names(tcount(names(unlist(unname(
-            gene_hitlist_alt)))));
-         gene_hits_im_alt1 <- venndir::list2im_value(gene_hitlist_alt,
-            do_sparse=FALSE)[gene_hits_alt,,drop=FALSE];
-         gene_hits_im_alt <- (gene_hits_im * 0)[,rep(1, ncol(gene_hits_im_alt1)), drop=FALSE];
-         colnames(gene_hits_im_alt) <- colnames(gene_hits_im_alt1);
-         genes_shared <- intersect(gene_hits_alt,
-            gene_hits);
-         if (length(genes_shared) > 0) {
-            gene_hits_im_alt[genes_shared,] <- gene_hits_im_alt1[genes_shared,];
-         }
+         alt_gene_hits_im1 <- venndir::list2im_value(alt_gene_hitlist,
+            do_sparse=FALSE);
+      }
+      # start with empty gene_hits_im, expand to ncol required here
+      alt_gene_hits_im <- (gene_hits_im * 0)[,rep(1, ncol(alt_gene_hits_im1)), drop=FALSE];
+      colnames(alt_gene_hits_im) <- colnames(alt_gene_hits_im1);
+      # determine shared genes to populate with values
+      genes_shared <- intersect(rownames(alt_gene_hits_im),
+         rownames(alt_gene_hits_im1))
+      if (length(genes_shared) > 0) {
+         alt_gene_hits_im[genes_shared,] <- alt_gene_hits_im1[genes_shared,];
       }
 
       # optionally rename contrasts
       if (rename_contrasts) {
-         colnames(gene_hits_im_alt) <- tryCatch({
-            contrast2comp(colnames(gene_hits_im_alt));
+         colnames(alt_gene_hits_im) <- tryCatch({
+            contrast2comp(colnames(alt_gene_hits_im));
          }, error=function(e){
-            colnames(gene_hits_im_alt)
+            colnames(alt_gene_hits_im)
          })
       }
 
       if (length(alt_contrast_suffix) > 0 && any(nchar(alt_contrast_suffix)) > 0) {
-         colnames(gene_hits_im_alt) <- paste0(colnames(gene_hits_im_alt),
+         colnames(alt_gene_hits_im) <- paste0(colnames(alt_gene_hits_im),
             alt_contrast_suffix);
       }
    }
@@ -958,7 +953,7 @@ heatmap_se <- function
          show_left_legend_v <- c(FALSE,
             show_left_legend_v);
          left_anno_list <- c(list(
-            hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE]),
+            hits_alt=alt_gene_hits_im[gene_hits, , drop=FALSE]),
             left_anno_list);
          left_color_list <- c(list(
             hits_alt=colorjam::col_div_xf(1.5)),

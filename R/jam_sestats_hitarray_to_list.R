@@ -24,6 +24,11 @@ hit_array_to_list <- function
  assay_names=NULL,
  ...)
 {
+   # accept sestats as input
+   if ("list" %in% class(hit_array) && "hit_array" %in% names(hit_array)) {
+      hit_array <- hit_array$hit_array;
+   }
+   # validate subset arguments
    if (length(cutoff_names) == 0) {
       cutoff_names <- dimnames(hit_array)$Cutoffs;
    }
@@ -70,10 +75,12 @@ hit_array_to_list <- function
    # })
    hit_names <- jamba::nameVector(contrast_names);
    hit_list <- lapply(hit_names, function(icontrast){
-      k <- unlist(unname(hit_array[cutoff_names, icontrast, assay_names]));
+      k <- jamba::rmNA(
+         unlist(unname(hit_array[cutoff_names, icontrast, assay_names])));
       if (length(k) > 0) {
          k <- k[!duplicated(names(k))];
       }
       k
    })
+   return(hit_list)
 }
