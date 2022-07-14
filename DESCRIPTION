@@ -13,9 +13,9 @@ Description: Jam SummarizedExperiment Stats methods to
    in statistical contrasts.
 biocViews:
 Depends: R (>= 3.6.0)
-Imports: jamba(>= 0.0.81.900),
+Imports: jamba(>= 0.0.85.900),
    jamma (>= 0.0.22.900),
-   colorjam (>= 0.0.22.950),
+   colorjam (>= 0.0.23.900),
    SummarizedExperiment (>= 1.16.1),
    data.table,
    matrixStats,

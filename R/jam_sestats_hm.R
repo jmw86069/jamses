@@ -6,8 +6,43 @@
 #' Note: Still a work in progress.
 #'
 #' This function is a bold attempt to automate the intricate task
-#' of creating an expression heatmap, by default using the `sestats`
-#' output from `se_contrast_stats()`, specifically the `hit_array`.
+#' of creating an expression heatmap, using `ComplexHeatmap::Heatmap()`.
+#' This function attempts to apply reasonable defaults to the many
+#' possible varieties of heatmaps that can be produced, including:
+#'
+#' * Optional top and left annotations based upon data in `se`
+#' from `colData(se)` and `rowData(se)`, respectively. Categorical
+#' colors are re-used from `sample_color_list` supplied, otherwise
+#' sensible default values are defined.
+#' * Data can use any `assays(se)`.
+#' * Data is centered by default, unless `centerby_colnames=FALSE`.
+#' * Optional `sestats` can be supplied to subset the heatmap to
+#' statistical hits defined in `sestats$hit_array`. A hit incidence
+#' matrix is displayed as left annotation, indicating up- and
+#' down-regulation.
+#' * Another optional `alt_sestats` can be supplied to
+#' compare statistical hits from `sestats` and `alt_sestats`, although
+#' the heatmap rows are only subset based upon `sestats`.
+#' * Optionally display a subset of sample columns after centering,
+#' so data can be centered by control group, then display only the
+#' non-control group samples.
+#' * Optional sample correlation heatmap, which re-uses the same data
+#' centering, then calculates Pearson correlation across sample columns.
+#' * Rows and columns can be split by annotations, using annotations in
+#' `rowData()` and `colData()`, respectively, or by `character` or `factor`,
+#' or by `integer` which will cluster then split data into that many
+#' subclusters.
+#' * Various labels and legend grids can be customized to exact sizes
+#' based upon `grid::gpar()` and `grid::unit()` definitions, useful
+#' for publication figures.
+#' * Row mark annotations can be used to label only a subset of rows,
+#' useful when the heatmap includes far too many labels to read them all.
+#' * Specific row split subclusters can be visualized using
+#' `row_subcluster` to define the specific `row_split` entry, useful
+#' for drilling into a specific subcluster from hierarchical clustering
+#' without the manual effort to extract the subset of rows in that cluster
+#' then re-running a new `heatmap_se()`.
+#'
 #'
 #' The intent is to display expression values from `assays(se)`,
 #' centered across all columns, or with customization defined by
@@ -31,7 +66,9 @@
 #'
 #' The heatmap title is returned as an `attr(hm, "hm_title")` that
 #' describes the assay data used, data centering, and total rows
-#' displayed.
+#' displayed. Draw the resulting heatmap like this:
+#'
+#' `ComplexHeatmap::draw(hm, column_title=attr(hm, "hm_title))`
 #'
 #' For comparison across other `sestats` results, argument `alt_sestats`
 #' allows supplying an alternative hit array. These hit arrays are placed
@@ -41,13 +78,12 @@
 #' of `rowData(se)` are also displayed in `left_annotation`. Colors can
 #' be defined in `sample_color_list`.
 #'
-#' Argument `sample_color_list` is intended to be the output
-#' from `platjam::design2colors()` which will very likely be moved
-#' into this package. It is a named list of named color vectors.
-#' The list names should contain all `top_colnames`, and each vector
-#' name should correspond to a value in the relevant column of
-#' `colData(se)`. If no colors are defined, `ComplexHeatmap::Heatmap()`
-#' will determine its own colors.
+#' Argument `sample_color_list` is a `list` named by each annotation column
+#' to be displayed as top or left annotation. Each list element is a vector
+#' of R colors named by `character` value, or for `numeric` columns is a
+#' color `function` as produced by `circlize::colorRamp2()`.
+#' The function `platjam::design2colors()` is intended to create
+#' `sample_color_list`, and will soon be moved into this package.
 #'
 #' A custom `left_annotation` can be supplied, but this method currently
 #' prevents the other annotations described above from being displayed.
@@ -64,13 +100,28 @@
 #'    `rowData()`, `colData()`, and `assays()`;
 #'    or another suitable Bioconductor object with accessor functions:
 #'    `featureData()`, `phenoData()`, and `assayData()`.
-#' @param sestats `list` output from `se_contrast_stats()`, which
-#'    specifically contains `hit_array` as a 3-dimensional array of hits,
-#'    with dimensions "Cutoffs", "Contrasts", "Signal". When `sestats`
-#'    is supplied, then all genes with a non-zero entry in `hit_array`,
-#'    for the corresponding `contrast_names`, will be included in the
-#'    heatmap. When `rows` is also supplied, then the intersection
-#'    with `rows` is displayed.
+#' @param sestats one of the following types of data:
+#'    * `list` output from `se_contrast_stats()`, which
+#'    specifically contains `hit_array` as a 3-dimensional array of hits
+#'    with dimensions "Cutoffs", "Contrasts", "Signal".
+#'    * `numeric` matrix intended to represent an incidence matrix,
+#'    where a value `0` indicates absence, and non-zero indicates presence.
+#'    This format is useful for supplying any incidence matrix, such as
+#'    gene-by-pathway (for example Github package "jmw86069/multienrichjam"
+#'    provides `mem$memIM` with gene-by-pathway matrix),
+#'    or gene-by-class (see Github package "jmw86069/pajam"
+#'    for examples using ProteinAtlas protein classification, including
+#'    membrane-bound, secreted, transcription factors, etc.), or any
+#'    incidence matrix defined by Github "jmw86069/venndir" function
+#'    `list2im_value()` or `list2im()` which converts input to a Venn diagram
+#'    into an incidence matrix.
+#'    * When `sestats` is supplied, data is converted to incidence matrix,
+#'    then columns are matched with `contrast_names`. All rows with non-zero
+#'    entry in those columns are included in the heatmap.
+#'    When `rows` is also supplied, then the intersection of incidence
+#'    matrix rows and `rows` is displayed in the heatmap.
+#'    * Note that `alt_sestats` does not subset rows displayed in the
+#'    heatmap.
 #' @param rows `character` vector of `rownames(se)` to define a specific
 #'    set of rows to display. When `sestats` is supplied, then the
 #'    intersection of `rows` with genes defined by `sestats` is displayed.
@@ -110,17 +161,21 @@
 #'    two methods for the same set of contrast names, with `sestats` and
 #'    `alt_sestats`.
 #' @param cutoff_name `character` or `integer` index used to define the
-#'    specific statistical cutoffs to use from `sestats$hit_array`.
+#'    specific statistical cutoffs to use from `sestats$hit_array`. This
+#'    argument is passed to `hit_array_to_list()` as `cutoff_names`.
 #' @param alt_sestats,alt_assay_name,alt_contrast_names,alt_contrast_suffix
 #'    arguments analogous to those described above for `sestats` which
 #'    are used when `alt_sestats` is supplied.
-#' @param isamples `character` vector of `colnames(se)` used to provide a
-#'    specific subset, or specific order of columns displayed in the heatmap.
-#'    Note that the data matrix is subset **after** centering, not before
-#'    centering.
+#' @param isamples `character` vector of `colnames(se)` used to visualize a
+#'    subset of samples used for the data centering step. Note that
+#'    data centering uses all columns supplied in `se`, and after centering,
+#'    the subset of columns defined in `isamples` is displayed in the heatmap.
+#'    This distinction makes it possible to center data by some control group,
+#'    then optionally not display the control group data.
 #' @param normgroup_colname `character` vector of colnames in `colData(se)`
 #'    used during data centering. When supplied, samples are centered
-#'    independently within each normgroup grouping.
+#'    independently within each normgroup grouping. These values are
+#'    equivalent to using `centerby_colnames`.
 #' @param centerby_colnames either:
 #'    * `character` vector of colnames in `colData(se)`
 #'    used during data centering. When supplied, samples are centered
@@ -129,15 +184,19 @@
 #'    point control, or untreated control.
 #'    * `NULL` to perform centering across all columns in `se`.
 #'    * `FALSE` to disable centering.
-#' @param controlSamples `character` vector of samples to use as the
+#' @param controlSamples `character` optional vector of samples to use as the
 #'    reference during data centering. Note that samples are still
 #'    centered within each normgroup and centerby grouping, and within
 #'    that grouping samples are centered to the `controlSamples`
-#'    which are present in that grouping. In absence of `controlSamples`
-#'    defined, or within the grouping, samples are centered relative
-#'    to the median value of the grouping.
-#' @param control_name `character` string used to describe the control
-#'    used during data centering, displayed in the heatmap title.
+#'    which are present in that grouping. Any center group for which no
+#'    samples are defined in `controlSamples` will use all samples in that
+#'    center group. Typically, `controlSamples` is used to define a
+#'    specific group as the reference for centering, so changes are displayed
+#'    relative to that group. Make sure to define `control_name` to include
+#'    an appropriate label in the heatmap title.
+#' @param control_name `character` string used in heatmap title
+#'    to describe the control used during data centering, relevant when
+#'    `controlSamples` is also supplied.
 #' @param top_colnames one of the following types:
 #'    * `character` vector of colnames to use from
 #'    `colData(se)` as annotations to display in `top_annotation` above
@@ -150,6 +209,8 @@
 #' @param top_annotation specific heatmap annotation as defined by
 #'    `ComplexHeatmap::HeatmapAnnotation()`. When supplied, the `top_colnames`
 #'    described above is not used.
+#' @param top_annotation_name_gp `grid::gpar` object to customize the
+#'    annotation name displayed beside the top annotation.
 #' @param rowData_colnames `character` vector of colnames in `rowData(se)`
 #'    to use for heatmap annotations displayed on the left side of
 #'    the heatmap. Specific colors can be included in `sample_color_list`
@@ -161,13 +222,26 @@
 #'    and `sestats` row annotations are not displayed. In order to supply
 #'    custom row annotations and not lose `left_annotation` defined above,
 #'    supply the row annotations as `right_annotation`.
-#' @param alt_sestats `list` output from `se_contrast_stats()`, which
-#'    specifically contains `hit_array` as a 3-dimensional array of hits,
-#'    with dimensions "Cutoffs", "Contrasts", "Signal". This data is
-#'    only used when `sestats` is also supplied.
-#'    Note that the rows displayed is defined by `rows` and `sestats` above,
-#'    and is not defined here.
-#' @param `row_split` is used to define heatmap split by row, ultimately
+#' @param left_annotation_name_gp `grid::gpar` object to customize the
+#'    annotation name displayed beside the left annotation.
+#' @param left_annotation_name_rot `numeric` rotation of left annotation
+#'    label, in degrees, where `0` indicates normal text, and `90` is
+#'    rotated vertically.
+#' @param right_annotation specific heatmap annotation as defined by
+#'    `ComplexHeatmap::HeatmapAnnotation()`. This element is created
+#'    automatically when `mark_rows` is supplied.
+#' @param simple_anno_size `grid::unit` size used to define heatmap
+#'    annotation sizes (height or width of each line) for any simple
+#'    annotations.
+#' @param legend_title_gp `grid::gpar` to customize the legend title
+#'    fonts, applied to each legend: top annotation, left annotation,
+#'    main heatmap.
+#' @param legend_labels_gp `grid::gpar` to customize the legend label
+#'    fonts, applied to each legend: top annotation, left annotation,
+#'    main heatmap.
+#' @param legend_grid_cex `numeric` multiplied to adjust the relative
+#'    size of each legend grid unit, applied to each relevant metric.
+#' @param row_split is used to define heatmap split by row, ultimately
 #'    passed to `ComplexHeatmap::Heatmap()` argument `row_split`. However,
 #'    the input type can vary:
 #'    * `integer` number of row splits based upon row clustering
@@ -180,23 +254,23 @@
 #'    or more elements returned by `row_split` to use as a drill-down
 #'    sub-cluster heatmap. This argument is experimental, and is intended
 #'    to make it easy to "drill down" into specific row clusters.
-#'    Said another way, `row_subcluster` should contain names returned
-#'    by `jamba::heatmap_row_order()` on an existing heatmap. For example,
-#'    when `row_split=4` the heatmap row dendrogram is split into `4`
-#'    subclusters, then `heatmap_row_order()` returns a `list` with
-#'    four vectors of rownames. In this scenario, one could use
-#'    `row_subcluster=2` to display the same heatmap showing only cluster
-#'    `2` of the original `4` clusters. The process:
-#'    * All other arguments to `heatmap_se()` apply to the full heatmap.
-#'    * The full heatmap is generated internally, in order to create
-#'    the appropriate `row_split` output, whether by dendrogram or other
-#'    `row_split` arguments.
-#'    * `heatmap_row_order()` is used to create a list of row splits,
-#'    and is matched to `row_subcluster`.
-#'    * A new subset heatmap is created using only the relevant subset of rows.
-#'    * The heatmap is split with the same remaining `row_split` entries,
-#'    for example when `row_subcluster=c(1, 3)` the rows will be split
-#'    into `"1"` and `"3"`, or the relevant `row_title` entries.
+#'    * The process internally creates a full heatmap using all arguments
+#'    as defined, then extracts the `jamba::heatmap_row_order()` which
+#'    contains row split data in a `list` of rownames vectors. The `list`
+#'    elements that match `row_subcluster` are extracted and used again
+#'    for a subsequent heatmap, and are displayed in the same order
+#'    in which they appear in the original full heatmap - which means
+#'    `cluster_rows=FALSE` is defined at this point. However `row_split`
+#'    is retained for this subset of rows, to indicate the original
+#'    row split annotation.
+#'    * Note that `row_subcluster` must match the `names()` returned
+#'    by `jamba::heatmap_row_order()` for the full heatmap, or should
+#'    include a `numeric` index for the `list` element or elements to
+#'    use.
+#'    * In principle this process would be run in two stages: First,
+#'    view a heatmap with `row_split=6`, then re-run the same heatmap
+#'    with `row_subcluster=4` to see cluster number 4 from the full
+#'    heatmap.
 #' @param row_title_rot `numeric` value indicating text rotation in degrees
 #'    to use for row titles.
 #' @param sample_color_list named `list` of color vectors or color functions,
@@ -228,7 +302,8 @@
 #'    is already done based upon the number of rows and columns being
 #'    displayed.
 #' @param row_anno_fontsize `numeric` base font size for row
-#'    annotation labels. Note these labels appears underneath row annotations,
+#'    annotation labels. This value is only used when `left_annotation_name_gp`
+#'    is not supplied. Note these labels appears underneath row annotations,
 #'    alongside column labels, and therefore they are also adjusted
 #'    by multiplying `column_cex` so these labels are adjusted together.
 #' @param useMedian `logical` passed to `jamma::centerGeneData()` during
@@ -236,15 +311,37 @@
 #' @param show_row_names,show_row_dend `logical` indicating whether to
 #'    display row names, and row dendrogram, respectively. With more than
 #'    2,000 rows this step can become somewhat slow.
+#' @param mark_rows `character` vector of values in `rownames(se)` that
+#'    should be labeled using `ComplexHeatmap::anno_mark()` in call-out
+#'    style. Usually this argument is used when `show_row_names=FALSE`,
+#'    hiding the row labels, but is not required. Values in `mark_rows`
+#'    are intersected with rows displayed in the heatmap, therefore only
+#'    matching entries will be labeled.
+#' @param mark_labels_gp `grid::gpar` to customize the font used by labels
+#'    when `mark_rows` is supplied.
+#' @param show_heatmap_legend,show_left_legend,show_top_legend `logical`
+#'    indicating whether each legend should be displayed. Sometimes there
+#'    are too many annotations, and the color legends can overwhelm the
+#'    figure.
+#' @param show_top_annotation_name,show_left_annotation_name `logical`
+#'    indicating whether to display the annotation name beside the top and
+#'    left annotations, respectively.
 #' @param row_label_colname `character` string used as a row label, where
 #'    this value is a colname in `rowData(se)`. It is useful when rownames
 #'    are some identifier that is not user-friendly, and where another column
 #'    in the data may provide a more helpful label, for example `"SYMBOL"`
 #'    to display gene symbol instead of accession number.
-#' @param cluster_colnames `logical` indicating whether to cluster columns
-#'    by hierarchical clustering.
+#' @param cluster_columns,cluster_rows `logical` indicating whether
+#'    to cluster columns by hierarchical clustering; or `function` with
+#'    a specific function that produces `hclust` or `dendrogram` output,
+#'    given a `numeric` matrix. Note that `cluster_rows` default will replace
+#'    `NA` values with zero `0` to avoid errors with missing data, and
+#'    uses `amap::hcluster()` by default which is a one-step compiled
+#'    process to perform distance calculation and hierarchical clustering.
 #' @param column_split `character` or `integer` vector used to define
 #'    heatmap column split.
+#' @param column_split_sep `character` string used as delimited when
+#'    `column_split` defines multiple split levels.
 #' @param color_max `numeric` value passed to `colorjam::col_div_xf()`
 #'    which defines the upper limit of color gradient used in the heatmap.
 #' @param lens `numeric` value passed to `colorjam::col_div_xf()` to control
@@ -252,12 +349,12 @@
 #' @param rename_contrasts,rename_alt_contrasts `logical` indicating
 #'    whether to rename long contrast names in `sestats` and `alt_sestats`
 #'    using `contrast2comp()`.
+#' @param verbose `logical` indicating whether to print verbose output.
 #' @param debug `logical` indicating debug mode, data is returned in a `list`:
 #'    * `hm` object `ComplexHeatmap::Heatmap`
 #'    * `top_annotation` object `ComplexHeatmap::HeatmapAnnotation` for columns
 #'    * `left_annotation` object `ComplexHeatmap::HeatmapAnnotation` for rows
 #'    * `hm_title` object `character` string with the heatmap title.
-#' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to supporting functions.
 #'
 #' @export
@@ -288,6 +385,8 @@ heatmap_se <- function
    rowData_colnames=NULL,
    left_annotation=NULL,
    left_annotation_name_gp=grid::gpar(),
+   left_annotation_name_rot=90,
+   right_annotation=NULL,
    simple_anno_size=grid::unit(8, "mm"),
    legend_title_gp=grid::gpar(fontsize=10),
    legend_labels_gp=grid::gpar(fontsize=10),
@@ -305,9 +404,13 @@ heatmap_se <- function
    useMedian=FALSE,
    show_row_names=NULL,
    show_row_dend=length(rows) < 2000,
+   mark_rows=NULL,
+   mark_labels_gp=grid::gpar(),
    show_heatmap_legend=TRUE,
    show_top_legend=TRUE,
    show_left_legend=TRUE,
+   show_top_annotation_name=TRUE,
+   show_left_annotation_name=TRUE,
    row_label_colname=NULL,
    cluster_columns=FALSE,
    cluster_rows=function(x, ...){
@@ -345,7 +448,8 @@ heatmap_se <- function
          jamba::printDebug("heatmap_se(): ",
             "Preparing sub-cluster heatmap.");
       }
-      hm_total <- heatmap_se(se=se,
+      hm_total <- heatmap_se(
+         se=se,
          sestats=sestats,
          rows=rows,
          row_type=row_type,
@@ -371,6 +475,8 @@ heatmap_se <- function
          rowData_colnames=rowData_colnames,
          left_annotation=left_annotation,
          left_annotation_name_gp=left_annotation_name_gp,
+         left_annotation_name_rot=left_annotation_name_rot,
+         right_annotation=right_annotation,
          simple_anno_size=simple_anno_size,
          legend_title_gp=legend_title_gp,
          legend_labels_gp=legend_labels_gp,
@@ -379,6 +485,8 @@ heatmap_se <- function
          row_subcluster=NULL,
          row_title_rot=row_title_rot,
          sample_color_list=sample_color_list,
+         legend_at=legend_at,
+         legend_labels=legend_labels,
          subset_legend_colors=subset_legend_colors,
          row_cex=row_cex,
          column_cex=column_cex,
@@ -386,6 +494,13 @@ heatmap_se <- function
          useMedian=useMedian,
          show_row_names=show_row_names,
          show_row_dend=show_row_dend,
+         mark_rows=mark_rows,
+         mark_labels_gp=mark_labels_gp,
+         show_heatmap_legend=show_heatmap_legend,
+         show_top_legend=show_top_legend,
+         show_left_legend=show_left_legend,
+         show_top_annotation_name=show_top_annotation_name,
+         show_left_annotation_name=show_left_annotation_name,
          row_label_colname=row_label_colname,
          cluster_columns=cluster_columns,
          cluster_rows=cluster_rows,
@@ -790,10 +905,7 @@ heatmap_se <- function
          annotation_legend_param=top_param_list,
          simple_anno_size=simple_anno_size,
          show_legend=show_top_legend,
-         # annotation_legend_param=list(
-         #    border=TRUE,
-         #    color_bar="discrete"
-         # ),
+         show_annotation_name=show_top_annotation_name,
          col=top_color_list);
    }
 
@@ -806,15 +918,19 @@ heatmap_se <- function
       left_anno_list <- list();
       left_color_list <- list();
       left_param_list <- list();
-      show_left_legend <- logical(0);
+      if (length(show_left_legend) == 0) {
+         show_left_legend <- TRUE;
+      }
+      show_left_legend <- rep(show_left_legend, length.out=2);
+      show_left_legend_v <- logical(0);
       # sestats annotations
       if (length(sestats) > 0) {
          if (verbose) {
             jamba::printDebug("heatmap_se(): ",
                "Preparing sestats incidence matrix left_annotation.");
          }
-         show_left_legend <- c(TRUE,
-            show_left_legend);
+         show_left_legend_v <- c(head(show_left_legend, 1));
+         show_left_legend <- tail(show_left_legend, -1);
          left_anno_list <- c(list(
             hits=gene_hits_im[gene_hits, , drop=FALSE]),
             left_anno_list);
@@ -839,8 +955,8 @@ heatmap_se <- function
             jamba::printDebug("heatmap_se(): ",
                "Preparing alt_sestats incidence matrix left_annotation.");
          }
-         show_left_legend <- c(FALSE,
-            show_left_legend);
+         show_left_legend_v <- c(FALSE,
+            show_left_legend_v);
          left_anno_list <- c(list(
             hits_alt=gene_hits_im_alt[gene_hits, , drop=FALSE]),
             left_anno_list);
@@ -866,8 +982,8 @@ heatmap_se <- function
                "preparing left_annotation for rowData_colnames: ",
                rowData_colnames);
          }
-         show_left_legend <- c(TRUE,
-            show_left_legend);
+         show_left_legend_v <- c(head(show_left_legend, 1),
+            show_left_legend_v);
          # subset any factor columns to limit colors shown in the legend
          left_df <- data.frame(check.names=FALSE,
             rowData_se[gene_hits, rowData_colnames, drop=FALSE]);
@@ -979,10 +1095,10 @@ heatmap_se <- function
             simple_anno_size=simple_anno_size,
             col=left_color_list,
             annotation_legend_param=left_param_list,
-            show_legend=show_left_legend,
-            # annotation_name_gp=grid::gpar(fontsize=row_anno_fontsize),
+            show_legend=show_left_legend_v,
+            show_annotation_name=show_left_annotation_name,
+            annotation_name_rot=left_annotation_name_rot,
             annotation_name_gp=left_annotation_name_gp,
-            #show_legend=show_left_legend,
             border=TRUE);
          if (debug > 1) {
             jamba::printDebug("heatmap_se(): ",
@@ -1188,6 +1304,22 @@ heatmap_se <- function
       }
    }
 
+   # optional mark_rows
+   mark_rows <- intersect(mark_rows, gene_hits);
+   if (length(mark_rows) > 0) {
+      mark_at <- match(mark_rows, rownames(se_matrix));
+      right_annotation_mark <- ComplexHeatmap::rowAnnotation(
+         foo=ComplexHeatmap::anno_mark(
+            at=mark_at,
+            labels=row_labels[mark_at],
+            labels_gp=mark_labels_gp))
+      if (length(right_annotation) == 0) {
+         right_annotation <- right_annotation_mark;
+      } else {
+         right_annotation <- right_annotation + right_annotation_mark;
+      }
+   }
+
    # pre-calculate row clusters
    # This step is required to enable row_split as integer number of clusters,
    # which is not accepted when supplying a function.
@@ -1209,6 +1341,7 @@ heatmap_se <- function
       use_raster=TRUE,
       top_annotation=top_annotation,
       left_annotation=left_annotation,
+      right_annotation=right_annotation,
       heatmap_legend_param=list(
          border=TRUE,
          color_bar="discrete",

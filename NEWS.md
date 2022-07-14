@@ -10,6 +10,18 @@
    intended to allow hiding various color legends, mostly to save plot space.
    * `all_sample_colors` sometimes does not match left or top annotation
    names, and now will create categorical colors in more scenarios.
+   * new argument `mark_rows` to enable optional `ComplexHeatmap::anno_mark()`
+   row labels for a subset of heatmap rows. `mark_labels_gp` to customize the
+   displayed font.
+   * new argument `right_annotation` for custom annotation
+   * new arguments `show_top_annotation_name`, `show_left_annotation_name`,
+   `left_annotation_name_rot` to customize these label positions.
+   * new arguments `mark_rows` and `mark_labels_gp` used to define
+   `anno_mark()` call-out labels for a subset of rows in the heatmap. This
+   step is difficult to define upfront when the data in `se` is subset
+   by some other aspect of `heatmap_se()`, since `anno_mark()` requires
+   numeric index positions for each label, and the order of rows may not
+   be known upfront.
 
 # jamses 0.0.25.900
 

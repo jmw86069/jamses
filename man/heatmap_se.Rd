@@ -31,6 +31,8 @@ heatmap_se(
   rowData_colnames = NULL,
   left_annotation = NULL,
   left_annotation_name_gp = grid::gpar(),
+  left_annotation_name_rot = 90,
+  right_annotation = NULL,
   simple_anno_size = grid::unit(8, "mm"),
   legend_title_gp = grid::gpar(fontsize = 10),
   legend_labels_gp = grid::gpar(fontsize = 10),
@@ -48,9 +50,13 @@ heatmap_se(
   useMedian = FALSE,
   show_row_names = NULL,
   show_row_dend = length(rows) < 2000,
+  mark_rows = NULL,
+  mark_labels_gp = grid::gpar(),
   show_heatmap_legend = TRUE,
   show_top_legend = TRUE,
   show_left_legend = TRUE,
+  show_top_annotation_name = TRUE,
+  show_left_annotation_name = TRUE,
   row_label_colname = NULL,
   cluster_columns = FALSE,
   cluster_rows = function(x, ...) {     amap::hcluster(rmNA(naValue = 0, x), ...,
@@ -72,13 +78,30 @@ heatmap_se(
 or another suitable Bioconductor object with accessor functions:
 \code{featureData()}, \code{phenoData()}, and \code{assayData()}.}
 
-\item{sestats}{\code{list} output from \code{se_contrast_stats()}, which
-specifically contains \code{hit_array} as a 3-dimensional array of hits,
-with dimensions "Cutoffs", "Contrasts", "Signal". When \code{sestats}
-is supplied, then all genes with a non-zero entry in \code{hit_array},
-for the corresponding \code{contrast_names}, will be included in the
-heatmap. When \code{rows} is also supplied, then the intersection
-with \code{rows} is displayed.}
+\item{sestats}{one of the following types of data:
+\itemize{
+\item \code{list} output from \code{se_contrast_stats()}, which
+specifically contains \code{hit_array} as a 3-dimensional array of hits
+with dimensions "Cutoffs", "Contrasts", "Signal".
+\item \code{numeric} matrix intended to represent an incidence matrix,
+where a value \code{0} indicates absence, and non-zero indicates presence.
+This format is useful for supplying any incidence matrix, such as
+gene-by-pathway (for example Github package "jmw86069/multienrichjam"
+provides \code{mem$memIM} with gene-by-pathway matrix),
+or gene-by-class (see Github package "jmw86069/pajam"
+for examples using ProteinAtlas protein classification, including
+membrane-bound, secreted, transcription factors, etc.), or any
+incidence matrix defined by Github "jmw86069/venndir" function
+\code{list2im_value()} or \code{list2im()} which converts input to a Venn diagram
+into an incidence matrix.
+\item When \code{sestats} is supplied, data is converted to incidence matrix,
+then columns are matched with \code{contrast_names}. All rows with non-zero
+entry in those columns are included in the heatmap.
+When \code{rows} is also supplied, then the intersection of incidence
+matrix rows and \code{rows} is displayed in the heatmap.
+\item Note that \code{alt_sestats} does not subset rows displayed in the
+heatmap.
+}}
 
 \item{rows}{\code{character} vector of \code{rownames(se)} to define a specific
 set of rows to display. When \code{sestats} is supplied, then the
@@ -128,19 +151,23 @@ two methods for the same set of contrast names, with \code{sestats} and
 \code{alt_sestats}.}
 
 \item{cutoff_name}{\code{character} or \code{integer} index used to define the
-specific statistical cutoffs to use from \code{sestats$hit_array}.}
+specific statistical cutoffs to use from \code{sestats$hit_array}. This
+argument is passed to \code{hit_array_to_list()} as \code{cutoff_names}.}
 
 \item{alt_sestats, alt_assay_name, alt_contrast_names, alt_contrast_suffix}{arguments analogous to those described above for \code{sestats} which
 are used when \code{alt_sestats} is supplied.}
 
-\item{isamples}{\code{character} vector of \code{colnames(se)} used to provide a
-specific subset, or specific order of columns displayed in the heatmap.
-Note that the data matrix is subset \strong{after} centering, not before
-centering.}
+\item{isamples}{\code{character} vector of \code{colnames(se)} used to visualize a
+subset of samples used for the data centering step. Note that
+data centering uses all columns supplied in \code{se}, and after centering,
+the subset of columns defined in \code{isamples} is displayed in the heatmap.
+This distinction makes it possible to center data by some control group,
+then optionally not display the control group data.}
 
 \item{normgroup_colname}{\code{character} vector of colnames in \code{colData(se)}
 used during data centering. When supplied, samples are centered
-independently within each normgroup grouping.}
+independently within each normgroup grouping. These values are
+equivalent to using \code{centerby_colnames}.}
 
 \item{centerby_colnames}{either:
 \itemize{
@@ -153,13 +180,16 @@ point control, or untreated control.
 \item \code{FALSE} to disable centering.
 }}
 
-\item{controlSamples}{\code{character} vector of samples to use as the
+\item{controlSamples}{\code{character} optional vector of samples to use as the
 reference during data centering. Note that samples are still
 centered within each normgroup and centerby grouping, and within
 that grouping samples are centered to the \code{controlSamples}
-which are present in that grouping. In absence of \code{controlSamples}
-defined, or within the grouping, samples are centered relative
-to the median value of the grouping.}
+which are present in that grouping. Any center group for which no
+samples are defined in \code{controlSamples} will use all samples in that
+center group. Typically, \code{controlSamples} is used to define a
+specific group as the reference for centering, so changes are displayed
+relative to that group. Make sure to define \code{control_name} to include
+an appropriate label in the heatmap title.}
 
 \item{top_colnames}{one of the following types:
 \itemize{
@@ -177,6 +207,9 @@ columns with at least one duplicated value.
 \code{ComplexHeatmap::HeatmapAnnotation()}. When supplied, the \code{top_colnames}
 described above is not used.}
 
+\item{top_annotation_name_gp}{\code{grid::gpar} object to customize the
+annotation name displayed beside the top annotation.}
+
 \item{rowData_colnames}{\code{character} vector of colnames in \code{rowData(se)}
 to use for heatmap annotations displayed on the left side of
 the heatmap. Specific colors can be included in \code{sample_color_list}
@@ -190,28 +223,66 @@ and \code{sestats} row annotations are not displayed. In order to supply
 custom row annotations and not lose \code{left_annotation} defined above,
 supply the row annotations as \code{right_annotation}.}
 
+\item{left_annotation_name_gp}{\code{grid::gpar} object to customize the
+annotation name displayed beside the left annotation.}
+
+\item{left_annotation_name_rot}{\code{numeric} rotation of left annotation
+label, in degrees, where \code{0} indicates normal text, and \code{90} is
+rotated vertically.}
+
+\item{right_annotation}{specific heatmap annotation as defined by
+\code{ComplexHeatmap::HeatmapAnnotation()}. This element is created
+automatically when \code{mark_rows} is supplied.}
+
+\item{simple_anno_size}{\code{grid::unit} size used to define heatmap
+annotation sizes (height or width of each line) for any simple
+annotations.}
+
+\item{legend_title_gp}{\code{grid::gpar} to customize the legend title
+fonts, applied to each legend: top annotation, left annotation,
+main heatmap.}
+
+\item{legend_labels_gp}{\code{grid::gpar} to customize the legend label
+fonts, applied to each legend: top annotation, left annotation,
+main heatmap.}
+
+\item{legend_grid_cex}{\code{numeric} multiplied to adjust the relative
+size of each legend grid unit, applied to each relevant metric.}
+
+\item{row_split}{is used to define heatmap split by row, ultimately
+passed to \code{ComplexHeatmap::Heatmap()} argument \code{row_split}. However,
+the input type can vary:
+\itemize{
+\item \code{integer} number of row splits based upon row clustering
+\item \code{character} value or values in colnames of \code{rowData(se)} to split
+using row annotation in \code{se}.
+\item \code{character} or \code{factor} vector named by \code{rownames(se)} with another
+custom row split, passed directly to \code{ComplexHeatmap::Heatmap()}
+argument \code{row_split}, with proper order for rows being displayed
+}}
+
 \item{row_subcluster}{\code{integer} or \code{character} vector representing one
 or more elements returned by \code{row_split} to use as a drill-down
 sub-cluster heatmap. This argument is experimental, and is intended
 to make it easy to "drill down" into specific row clusters.
-Said another way, \code{row_subcluster} should contain names returned
-by \code{jamba::heatmap_row_order()} on an existing heatmap. For example,
-when \code{row_split=4} the heatmap row dendrogram is split into \code{4}
-subclusters, then \code{heatmap_row_order()} returns a \code{list} with
-four vectors of rownames. In this scenario, one could use
-\code{row_subcluster=2} to display the same heatmap showing only cluster
-\code{2} of the original \code{4} clusters. The process:
 \itemize{
-\item All other arguments to \code{heatmap_se()} apply to the full heatmap.
-\item The full heatmap is generated internally, in order to create
-the appropriate \code{row_split} output, whether by dendrogram or other
-\code{row_split} arguments.
-\item \code{heatmap_row_order()} is used to create a list of row splits,
-and is matched to \code{row_subcluster}.
-\item A new subset heatmap is created using only the relevant subset of rows.
-\item The heatmap is split with the same remaining \code{row_split} entries,
-for example when \code{row_subcluster=c(1, 3)} the rows will be split
-into \code{"1"} and \code{"3"}, or the relevant \code{row_title} entries.
+\item The process internally creates a full heatmap using all arguments
+as defined, then extracts the \code{jamba::heatmap_row_order()} which
+contains row split data in a \code{list} of rownames vectors. The \code{list}
+elements that match \code{row_subcluster} are extracted and used again
+for a subsequent heatmap, and are displayed in the same order
+in which they appear in the original full heatmap - which means
+\code{cluster_rows=FALSE} is defined at this point. However \code{row_split}
+is retained for this subset of rows, to indicate the original
+row split annotation.
+\item Note that \code{row_subcluster} must match the \code{names()} returned
+by \code{jamba::heatmap_row_order()} for the full heatmap, or should
+include a \code{numeric} index for the \code{list} element or elements to
+use.
+\item In principle this process would be run in two stages: First,
+view a heatmap with \code{row_split=6}, then re-run the same heatmap
+with \code{row_subcluster=4} to see cluster number 4 from the full
+heatmap.
 }}
 
 \item{row_title_rot}{\code{numeric} value indicating text rotation in degrees
@@ -250,7 +321,8 @@ is already done based upon the number of rows and columns being
 displayed.}
 
 \item{row_anno_fontsize}{\code{numeric} base font size for row
-annotation labels. Note these labels appears underneath row annotations,
+annotation labels. This value is only used when \code{left_annotation_name_gp}
+is not supplied. Note these labels appears underneath row annotations,
 alongside column labels, and therefore they are also adjusted
 by multiplying \code{column_cex} so these labels are adjusted together.}
 
@@ -261,14 +333,44 @@ data centering.}
 display row names, and row dendrogram, respectively. With more than
 2,000 rows this step can become somewhat slow.}
 
+\item{mark_rows}{\code{character} vector of values in \code{rownames(se)} that
+should be labeled using \code{ComplexHeatmap::anno_mark()} in call-out
+style. Usually this argument is used when \code{show_row_names=FALSE},
+hiding the row labels, but is not required. Values in \code{mark_rows}
+are intersected with rows displayed in the heatmap, therefore only
+matching entries will be labeled.}
+
+\item{mark_labels_gp}{\code{grid::gpar} to customize the font used by labels
+when \code{mark_rows} is supplied.}
+
+\item{show_heatmap_legend, show_left_legend, show_top_legend}{\code{logical}
+indicating whether each legend should be displayed. Sometimes there
+are too many annotations, and the color legends can overwhelm the
+figure.}
+
+\item{show_top_annotation_name, show_left_annotation_name}{\code{logical}
+indicating whether to display the annotation name beside the top and
+left annotations, respectively.}
+
 \item{row_label_colname}{\code{character} string used as a row label, where
 this value is a colname in \code{rowData(se)}. It is useful when rownames
 are some identifier that is not user-friendly, and where another column
 in the data may provide a more helpful label, for example \code{"SYMBOL"}
 to display gene symbol instead of accession number.}
 
+\item{cluster_columns, cluster_rows}{\code{logical} indicating whether
+to cluster columns by hierarchical clustering; or \code{function} with
+a specific function that produces \code{hclust} or \code{dendrogram} output,
+given a \code{numeric} matrix. Note that \code{cluster_rows} default will replace
+\code{NA} values with zero \code{0} to avoid errors with missing data, and
+uses \code{amap::hcluster()} by default which is a one-step compiled
+process to perform distance calculation and hierarchical clustering.}
+
 \item{column_split}{\code{character} or \code{integer} vector used to define
 heatmap column split.}
+
+\item{column_split_sep}{\code{character} string used as delimited when
+\code{column_split} defines multiple split levels.}
 
 \item{color_max}{\code{numeric} value passed to \code{colorjam::col_div_xf()}
 which defines the upper limit of color gradient used in the heatmap.}
@@ -292,30 +394,9 @@ using \code{contrast2comp()}.}
 
 \item{...}{additional arguments are passed to supporting functions.}
 
-\item{control_name}{\code{character} string used to describe the control
-used during data centering, displayed in the heatmap title.}
-
-\item{alt_sestats}{\code{list} output from \code{se_contrast_stats()}, which
-specifically contains \code{hit_array} as a 3-dimensional array of hits,
-with dimensions "Cutoffs", "Contrasts", "Signal". This data is
-only used when \code{sestats} is also supplied.
-Note that the rows displayed is defined by \code{rows} and \code{sestats} above,
-and is not defined here.}
-
-\item{`row_split`}{is used to define heatmap split by row, ultimately
-passed to \code{ComplexHeatmap::Heatmap()} argument \code{row_split}. However,
-the input type can vary:
-\itemize{
-\item \code{integer} number of row splits based upon row clustering
-\item \code{character} value or values in colnames of \code{rowData(se)} to split
-using row annotation in \code{se}.
-\item \code{character} or \code{factor} vector named by \code{rownames(se)} with another
-custom row split, passed directly to \code{ComplexHeatmap::Heatmap()}
-argument \code{row_split}, with proper order for rows being displayed
-}}
-
-\item{cluster_colnames}{\code{logical} indicating whether to cluster columns
-by hierarchical clustering.}
+\item{control_name}{\code{character} string used in heatmap title
+to describe the control used during data centering, relevant when
+\code{controlSamples} is also supplied.}
 }
 \description{
 Expression heatmap of sestats hits
@@ -324,8 +405,43 @@ Expression heatmap of sestats hits
 Note: Still a work in progress.
 
 This function is a bold attempt to automate the intricate task
-of creating an expression heatmap, by default using the \code{sestats}
-output from \code{se_contrast_stats()}, specifically the \code{hit_array}.
+of creating an expression heatmap, using \code{ComplexHeatmap::Heatmap()}.
+This function attempts to apply reasonable defaults to the many
+possible varieties of heatmaps that can be produced, including:
+\itemize{
+\item Optional top and left annotations based upon data in \code{se}
+from \code{colData(se)} and \code{rowData(se)}, respectively. Categorical
+colors are re-used from \code{sample_color_list} supplied, otherwise
+sensible default values are defined.
+\item Data can use any \code{assays(se)}.
+\item Data is centered by default, unless \code{centerby_colnames=FALSE}.
+\item Optional \code{sestats} can be supplied to subset the heatmap to
+statistical hits defined in \code{sestats$hit_array}. A hit incidence
+matrix is displayed as left annotation, indicating up- and
+down-regulation.
+\item Another optional \code{alt_sestats} can be supplied to
+compare statistical hits from \code{sestats} and \code{alt_sestats}, although
+the heatmap rows are only subset based upon \code{sestats}.
+\item Optionally display a subset of sample columns after centering,
+so data can be centered by control group, then display only the
+non-control group samples.
+\item Optional sample correlation heatmap, which re-uses the same data
+centering, then calculates Pearson correlation across sample columns.
+\item Rows and columns can be split by annotations, using annotations in
+\code{rowData()} and \code{colData()}, respectively, or by \code{character} or \code{factor},
+or by \code{integer} which will cluster then split data into that many
+subclusters.
+\item Various labels and legend grids can be customized to exact sizes
+based upon \code{grid::gpar()} and \code{grid::unit()} definitions, useful
+for publication figures.
+\item Row mark annotations can be used to label only a subset of rows,
+useful when the heatmap includes far too many labels to read them all.
+\item Specific row split subclusters can be visualized using
+\code{row_subcluster} to define the specific \code{row_split} entry, useful
+for drilling into a specific subcluster from hierarchical clustering
+without the manual effort to extract the subset of rows in that cluster
+then re-running a new \code{heatmap_se()}.
+}
 
 The intent is to display expression values from \code{assays(se)},
 centered across all columns, or with customization defined by
@@ -349,7 +465,9 @@ can optionally be subset with \code{contrast_names}.
 
 The heatmap title is returned as an \code{attr(hm, "hm_title")} that
 describes the assay data used, data centering, and total rows
-displayed.
+displayed. Draw the resulting heatmap like this:
+
+\verb{ComplexHeatmap::draw(hm, column_title=attr(hm, "hm_title))}
 
 For comparison across other \code{sestats} results, argument \code{alt_sestats}
 allows supplying an alternative hit array. These hit arrays are placed
@@ -359,13 +477,12 @@ When \code{rowData_colnames} is supplied, data in the corresponding colnames
 of \code{rowData(se)} are also displayed in \code{left_annotation}. Colors can
 be defined in \code{sample_color_list}.
 
-Argument \code{sample_color_list} is intended to be the output
-from \code{platjam::design2colors()} which will very likely be moved
-into this package. It is a named list of named color vectors.
-The list names should contain all \code{top_colnames}, and each vector
-name should correspond to a value in the relevant column of
-\code{colData(se)}. If no colors are defined, \code{ComplexHeatmap::Heatmap()}
-will determine its own colors.
+Argument \code{sample_color_list} is a \code{list} named by each annotation column
+to be displayed as top or left annotation. Each list element is a vector
+of R colors named by \code{character} value, or for \code{numeric} columns is a
+color \code{function} as produced by \code{circlize::colorRamp2()}.
+The function \code{platjam::design2colors()} is intended to create
+\code{sample_color_list}, and will soon be moved into this package.
 
 A custom \code{left_annotation} can be supplied, but this method currently
 prevents the other annotations described above from being displayed.
