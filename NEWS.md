@@ -32,6 +32,16 @@ returning each vector.
 * `heatmap_se()` argument `alt_sestats` was throwing an error when supplied
 with a `numeric` matrix instead of `sestats` object, this input type
 was been corrected, and the code slightly refactored for clarity.
+* `heatmap_se()` was passing multiple values to the left_annotation argument
+`show_legend`, which only accepts one `logical` value. This bug was corrected.
+
+
+## new dev function
+
+* `contrasts2comp_dev()` is an experiment in converting the code to be
+vectorized, though the exceptions to handle unbalanced contrasts may
+still prevent this function from being as fast as intended.
+
 
 # jamses 0.0.25.900
 

@@ -1,6 +1,20 @@
 
 # TODO for jamses
 
+## 18jul2022
+
+* Some form of power calculation that leverages the same methods used
+by `se_contrast_stats()`. It could leverage the `ssizeRNA` package
+for RNA-seq data.
+* `contrast2comp()` is somehow very slow for even 10 to 20 contrast names.
+* `contrast2comp()` adjustments to tolerate having label prefix.
+
+   * for example `"fold (A_c-B_c)(A_d-B_d)"` could be recognized as
+   `"label contrast"` and return `"fold A-B:c-d"`.
+   * main assumption is no spaces in contrast name
+   * may be useful to specify whether to look for label prefix or suffix,
+   in the event a label contains a hyphen or dash `"-"` character.
+
 ## 11jul2022
 
 * `heatmap_se()` font size customizations sufficient for manuscript prep.

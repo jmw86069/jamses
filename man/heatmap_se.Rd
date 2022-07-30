@@ -346,7 +346,23 @@ when \code{mark_rows} is supplied.}
 \item{show_heatmap_legend, show_left_legend, show_top_legend}{\code{logical}
 indicating whether each legend should be displayed. Sometimes there
 are too many annotations, and the color legends can overwhelm the
-figure.}
+figure. Note that \code{show_left_legend} is applied in a specific order,
+with these rules:
+\itemize{
+\item \code{show_left_legend} is extended to at least length 2, then values
+are used in order for: \code{sestats}, \code{rowData_colnames}, in order,
+using whichever is defined.
+\item If \code{sestats} is defined, the first value in \code{show_left_legend}
+is used for this annotation, then the remaining values are used
+for \code{rowData_colnames}. Setting the first \code{show_left_legend} value
+to \code{FALSE} will ensure the legend for \code{sestats} is not displayed.
+\item If \code{rowData_colnames} is defined, then the remaining values in
+\code{show_left_legend} are recycled for all columns in
+\code{rowData_colnames}, and applied in order.
+In this way, individual columns can have the legend displayed or hidden.
+\item If \code{alt_sestats} is defined, the legend is always hidden, in favor
+of showing only the legend for \code{sestats} without duplicating this legend.
+}}
 
 \item{show_top_annotation_name, show_left_annotation_name}{\code{logical}
 indicating whether to display the annotation name beside the top and

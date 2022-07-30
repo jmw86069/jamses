@@ -322,7 +322,21 @@
 #' @param show_heatmap_legend,show_left_legend,show_top_legend `logical`
 #'    indicating whether each legend should be displayed. Sometimes there
 #'    are too many annotations, and the color legends can overwhelm the
-#'    figure.
+#'    figure. Note that `show_left_legend` is applied in a specific order,
+#'    with these rules:
+#'    * `show_left_legend` is extended to at least length 2, then values
+#'    are used in order for: `sestats`, `rowData_colnames`, in order,
+#'    using whichever is defined.
+#'    * If `sestats` is defined, the first value in `show_left_legend`
+#'    is used for this annotation, then the remaining values are used
+#'    for `rowData_colnames`. Setting the first `show_left_legend` value
+#'    to `FALSE` will ensure the legend for `sestats` is not displayed.
+#'    * If `rowData_colnames` is defined, then the remaining values in
+#'    `show_left_legend` are recycled for all columns in
+#'    `rowData_colnames`, and applied in order.
+#'    In this way, individual columns can have the legend displayed or hidden.
+#'    * If `alt_sestats` is defined, the legend is always hidden, in favor
+#'    of showing only the legend for `sestats` without duplicating this legend.
 #' @param show_top_annotation_name,show_left_annotation_name `logical`
 #'    indicating whether to display the annotation name beside the top and
 #'    left annotations, respectively.
@@ -916,7 +930,10 @@ heatmap_se <- function
       if (length(show_left_legend) == 0) {
          show_left_legend <- TRUE;
       }
-      show_left_legend <- rep(show_left_legend, length.out=2);
+      if (length(show_left_legend) < 2) {
+         show_left_legend <- rep(show_left_legend,
+            length.out=2);
+      }
       show_left_legend_v <- logical(0);
       # sestats annotations
       if (length(sestats) > 0) {
@@ -924,7 +941,7 @@ heatmap_se <- function
             jamba::printDebug("heatmap_se(): ",
                "Preparing sestats incidence matrix left_annotation.");
          }
-         show_left_legend_v <- c(head(show_left_legend, 1));
+         show_left_legend_v <- show_left_legend[1];
          show_left_legend <- tail(show_left_legend, -1);
          left_anno_list <- c(list(
             hits=gene_hits_im[gene_hits, , drop=FALSE]),
@@ -977,8 +994,8 @@ heatmap_se <- function
                "preparing left_annotation for rowData_colnames: ",
                rowData_colnames);
          }
-         show_left_legend_v <- c(head(show_left_legend, 1),
-            show_left_legend_v);
+         show_left_legend_v <- c(show_left_legend_v,
+            rep(show_left_legend, length.out=length(rowData_colnames)))
          # subset any factor columns to limit colors shown in the legend
          left_df <- data.frame(check.names=FALSE,
             rowData_se[gene_hits, rowData_colnames, drop=FALSE]);
@@ -1110,6 +1127,12 @@ heatmap_se <- function
             left_anno_list);
          left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
             left_arglist);
+         if (debug > 1) {
+            print(sdim(left_annotation@anno_list))
+            for (i in left_annotation@anno_list){
+               print(i@show_legend)
+            }
+         }
       }
    }
 
