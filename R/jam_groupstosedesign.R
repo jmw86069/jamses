@@ -644,6 +644,10 @@ groups_to_sedesign <- function
                   sort_samples(iFactorVals,
                      pre_control_terms=pre_control_terms),
                   iFactorVals);
+               # 0.0.27.900: fix for one factor column input
+               if (length(iMatch) < 2) {
+                  return(NULL)
+               }
                iCombn <- combn(iMatch, 2);
                iGrp1 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[2,]]),
                   paste0("(", rownames(iFactorsSub)[iCombn[2,]], ")"),

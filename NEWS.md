@@ -1,3 +1,17 @@
+# jamses 0.0.27.900
+
+## bug fixes
+
+* `groups_to_sedesign()` threw an error in some circumstances when the
+input `ifactors` only contained one column, but the column contained
+levels with delimiters recognized by `factor_sep`, and some levels without
+the delimiter. The error was: `"Error in combn(iMatch, 2) : n < m"`
+
+   * The workaround was to supply levels with consistent
+   delimiters, or a design that used more than one column initially.
+   * However, the R code was adjusted to handle these situations properly
+   without workarounds.
+
 # jamses 0.0.26.900
 
 ## updates to existing functions

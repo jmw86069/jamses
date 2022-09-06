@@ -1,6 +1,15 @@
 
 # TODO for jamses
 
+## 03aug2022
+
+* `groups_to_sedesign()` implement normalization groups with these rules:
+
+   * No one-way contrast, direct comparison, should be permitted which
+   compares to different normalization groups.
+   * Two-way contrasts are permitted across normalization groups, only
+   those that involve one-way comparisons within a normalization group.
+
 ## 18jul2022
 
 * Some form of power calculation that leverages the same methods used
