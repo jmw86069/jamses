@@ -1272,9 +1272,23 @@ ebayes2dfs <- function
                      c("DEqMS::outputResult(lmFit4) for contrast: ",
                         iLabel),
                      sep="");
+                  print(head(lmFit4$coefficients));
+                  print(head(lmFit4$sca.t));
                }
+               # determine coefficient index position
+               # with only one coefficient the colname gets dropped
+               # from the numeric matrix lmFit4$sca.t
+               # produced by DEqMS. So DEqMS::outputResult() fails to find the
+               # column by name, and must refer to the column by integer number
+               coef_col <- match(i,
+                  colnames(lmFit4$coefficients))
                iTopTable <- DEqMS::outputResult(lmFit4,
-                  coef_col=i);
+                  coef_col=coef_col);
+               if (verbose) {
+                  jamba::printDebug("ebayes2dfs(): ",
+                     "head(iTopTable): ");
+                  print(head(head(iTopTable)));
+               }
             } else {
                if (verbose) {
                   jamba::printDebug("ebayes2dfs(): ",

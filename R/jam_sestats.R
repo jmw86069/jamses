@@ -90,6 +90,15 @@ sestats_to_df <- function
    hit_array_new <- aperm(hit_array, dimname_order)
    idf <- jamba::rbindList(lapply(dimnames(hit_array_new)[[1]], function(dim1value){
       im <- format_hits(hit_array_new[dim1value, ,])
+      if ("list" %in% class(im)) {
+         if (all(names(im) %in% dimnames(hit_array_new)[[2]])) {
+            im <- jamba::rbindList(im);
+         } else if (all(names(im) %in% dimnames(hit_array_new)[[3]])) {
+            im <- do.call(cbind, im);
+         }
+         rownames(im) <- dimnames(hit_array_new)[[2]];
+         colnames(im) <- dimnames(hit_array_new)[[3]];
+      }
       idf1 <- data.frame(
          check.names=FALSE,
          stringsAsFactors=FALSE,

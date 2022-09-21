@@ -1,5 +1,28 @@
 # jamses 0.0.28.900
 
+## bug fixes
+
+* `se_contrast_stats()` with `posthoc_test="DEqMS"` and only one contrast
+threw an error
+`"Error in fit$sca.t[results.table$gene, coef_col] : subscript out of bounds"`.
+The error actually occurs in `ebayes2dfs()` the function that converts
+statistical model fit into a list of `data.frame` objects.
+
+   * The `DEqMS` package produces `numeric` matrix results that it also
+   summarizes into a `data.frame` via `DEqMS::outputResult()`. When there
+   is only one contrast, many of the `numeric` matrix objects also have
+   one column, and R apparently dropped the `colnames()` for the `sca.t`
+   matrix, causing `DEqMS::outputResult()` to fail when argument `coef_col`
+   is given the `character` name of the contrast instead of the `integer`
+   column number.
+   * The contrast name is preserved in the `coefficients` matrix,
+   so the contrast is converted to column number, then passed as `coef_col`,
+   and resolves the error.
+   * Calls to `DEqMS::outputResult()` use `integer` values for argument
+   `coef_col`.
+   * Some internal step in `DEqMS` does not properly handle data with only
+   one contrast, probably forgot to include `drop=FALSE` in matrix subsetting.
+
 ## changes to existing functions
 
 * `groups_to_sedesign()` updates
