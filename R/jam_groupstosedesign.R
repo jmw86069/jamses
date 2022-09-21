@@ -12,7 +12,12 @@
 #'
 #' Input can be provided in one of two ways:
 #'
-#' 1. `data.frame` where each column represents a design factor.
+#' 1. `SummarizedExperiment` where experiment design is derived from
+#' `SummarizedExperiment::colData()` of the `se` object, and
+#' uses columns defined by `group_colnames`. This input should be
+#' equivalent to providing a `data.frame` whose `rownames()` are
+#' equal to `colnames(se)`.
+#' 2. `data.frame` where each column represents a design factor.
 #'
 #'     * An example of `data.frame` input:
 #'    ```R
@@ -21,7 +26,7 @@
 #'       genotype=c("Wildtype", "Knockout", "Wildtype", "Knockout"))
 #'    ```
 #'
-#' 2. `character` vector, where design factor levels are separated
+#' 3. `character` vector, where design factor levels are separated
 #' by a delimiter such as underscore `"_"`. This input will be
 #' converted to `data.frame` before processing.
 #'
@@ -46,6 +51,17 @@
 #' This step does not call `base::make.names()`, so that
 #' step should be run beforehand if required.
 #'
+#' ## Troubleshooting
+#'
+#' * When this function returns no contrasts, or returns an unexpected
+#' error during processing, it is most likely due to the limitation
+#' of comparing one factor at a time. For example, the logic will
+#' not define contrast `time1_treatment1-time2_treatment2`, because
+#' this contrast changes two factors, it will only permit either
+#' `time1_treatment1-time1_treatment2` or `time1_treatment1-time2_treatment1`.
+#' * `max_depth` and `factor_order` are used to define the order in
+#' which factors are compared, but do not affect the order of factors
+#' used for things like group names.
 #'
 #' @return `SEDesign` object with the following slots:
 #'    * `design`: `numeric` matrix with sample-to-group association
@@ -105,15 +121,25 @@
 #' @param add_contrastdf `data.frame` or `character` or `NULL`,
 #'    intended to include a specific contrast in the output.
 #'    This argument is typically used during iterative processing,
-#'    and is not usually user-defined.
+#'    and is not usually user-defined. It must contain
+#' @param contrast_names `character` optional vector of specific
+#'    contrasts to use when creating the contrast matrix. When
+#'    `contrast_names=NULL` as default, the function defines contrasts
+#'    using its internal logic. When `contrast_names` is supplied,
+#'    only these `contrast_names` are used, with no other contrasts.
 #' @param current_depth `integer` value used during iterative
 #'    operations of this function.
 #' @param rename_first_depth `logical` value used during iterative
 #'    operations of this function.
 #' @param return_sedesign `logical` used during iterative
 #'    operations of this function. When `return_sedesign=FALSE`
-#'    this function returns a `data.frame` sufficient to be used
-#'    in argument `add_contrastdf`.
+#'    this function returns a `list`:
+#'    * `"contrast_df"`: a `data.frame` as used in argument
+#'    `add_contrastdf`, which describes each unique contrast.
+#'    * `"contrast_names"`: a `character` vector of contrast names,
+#'    which become `colnames()` of the contrast matrix.
+#'    * `"idesign"`: a `numeric` design matrix as defined by the input data,
+#'    suitable for debugging purposes for example.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
@@ -196,6 +222,7 @@ groups_to_sedesign <- function
  remove_pairs=NULL,
  pre_control_terms=NULL,
  add_contrastdf=NULL,
+ contrast_names=NULL,
  current_depth=1,
  rename_first_depth=TRUE,
  return_sedesign=TRUE,
@@ -275,7 +302,26 @@ groups_to_sedesign <- function
    ## Special case where one data.frame column is sent, which is delimited.
    ## Mainly we treat as a vector, except that we keep the rownames
    ## so we can derive isamples.
-   if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
+   if ("SummarizedExperiment" %in% class(ifactors)) {
+      se <- ifactors;
+      if (length(isamples) == 0) {
+         isamples <- colnames(se)
+      }
+      group_colnames <- intersect(group_colnames,
+         colnames(SummarizedExperiment::colData(se)));
+      if (length(group_colnames) > 0) {
+         ifactors <- data.frame(check.names=FALSE,
+            stringsAsFactors=FALSE,
+            SummarizedExperiment::colData(se)[,group_colnames, drop=FALSE])
+         rownames(ifactors) <- colnames(se);
+         ifactors <- ifactors[match(isamples, rownames(ifactors)),,drop=FALSE];
+      }
+      if (verbose) {
+         jamba::printDebug("groups_to_sedesign(): ",
+            "ifactors from SummarizedExperiment input:");
+         print(ifactors);
+      }
+   } else if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
          ncol(ifactors) == 1) {
       ifactors <- jamba::nameVector(ifactors[,1], rownames(ifactors));
    }
@@ -451,7 +497,6 @@ groups_to_sedesign <- function
             group_colnames);
       }
 
-
       # default_order == "asis" will convert character columns to factor
       #    using the observed order of terms as factor levels
       for (icol in group_colnames) {
@@ -597,255 +642,271 @@ groups_to_sedesign <- function
    ## Note: we allow applying contrasts in a different order than the
    ## columns in iFactor, if !is.null(factor_order)
    ##
-   if (length(factor_order) == 0) {
-      factor_order <- seq_along(colnames(ifactors));
-   }
-   ##
-   iContrastNames <- data.frame(check.names=FALSE,
-      stringsAsFactors=FALSE,
-      jamba::rbindList(lapply(factor_order, function(iChange){
-         if (verbose) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               "factor_order iChange:",
-               colnames(ifactors)[iChange]);
-         }
-         iNoChange <- setdiff(seq_len(ncol(ifactors)), iChange);
-         ## Optionally omit certain values from consideration,
-         ## notably for "," or "-" which already contain changing factors
-         iFactorUseRows <- jamba::unigrep(omit_grep, ifactors[,iChange]);
+   # ensure factor_order only matches columns provided
+   if (length(contrast_names) == 0) {
+      factor_order <- factor_order[factor_order <= ncol(ifactors)]
+      if (length(factor_order) == 0) {
+         factor_order <- seq_along(colnames(ifactors));
+      }
+      # ensure max_depth is no larger than the number of factors
+      max_depth <- min(c(max_depth, length(factor_order)))
 
-         if (length(iNoChange) == 0) {
-            iSplit <- rep("", length(iFactorUseRows));
-         } else {
-            iSplit <- jamba::pasteByRowOrdered(ifactors[iFactorUseRows,iNoChange,drop=FALSE],
-               sep=factor_sep);
-         }
-
-         ## Split rows by constant values in non-changing factor columns
-         iSplitL <- split(iFactorUseRows, iSplit);
-         iSplitL <- iSplitL[lengths(iSplitL) > 1];
-         ## Only consider contrasts when there are multiple rows
-         if (length(iSplitL) > 0) {
-            iDF <- jamba::rbindList(lapply(iSplitL, function(iSplitRows) {
-               use_factor_order <- unique(c(factor_order,
-                  seq_len(ncol(ifactors))));
-               iFactorsSub <- ifactors[iSplitRows, use_factor_order, drop=FALSE];
-               if (verbose >= 2) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     "   iSplitRows:",
-                     iSplitRows,
-                     ", use_factor_order:", use_factor_order);
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     "   iFactorsSub:");
-                  print(iFactorsSub);
-               }
-               iFactorVals <- iFactorsSub[,colnames(ifactors)[iChange]];
-               iMatch <- match(
-                  sort_samples(iFactorVals,
-                     pre_control_terms=pre_control_terms),
-                  iFactorVals);
-               # 0.0.27.900: fix for one factor column input
-               if (length(iMatch) < 2) {
-                  return(NULL)
-               }
-               iCombn <- combn(iMatch, 2);
-               iGrp1 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[2,]]),
-                  paste0("(", rownames(iFactorsSub)[iCombn[2,]], ")"),
-                  rownames(iFactorsSub)[iCombn[2,]]);
-               iGrp2 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[1,]]),
-                  paste0("(", rownames(iFactorsSub)[iCombn[1,]], ")"),
-                  rownames(iFactorsSub)[iCombn[1,]]);
-               iContrastName <- paste0(iGrp1, "-", iGrp2);
-               icondf <- iFactorsSub[intercalate(iCombn[2,], iCombn[1,]),,drop=FALSE];
-               iconfac <- factor(rep(iContrastName, each=2),
-                  levels=unique(iContrastName));
-               iContrastDF <- data.frame(check.names=FALSE,
-                  stringsAsFactors=FALSE,
-                  lapply(jamba::nameVector(colnames(icondf)), function(i){
-                     jamba::cPasteU(split(icondf[,i], iconfac))
-                  }),
-                  contrastName=iContrastName,
-                  row.names=iContrastName);
-
-               # Create a string representing the combination of factors.
-               # which we will use to prevent re-creating the same contrasts.
-               #
-               # Modified the string to include colname, to ensure that two
-               # factors which may share some levels, will not be confused.
-               iContrastDF[,"contrastString"] <- jamba::pasteByRow(
-                  iContrastDF[,colnames(iFactorsSub),drop=FALSE],
-                  includeNames=TRUE,
-                  sep=";",
-                  sepName=":");
-               iContrastDF;
-            }));
-            rownames(iDF) <- iDF[,"contrastName"];
+      ##
+      if (verbose) {
+         jamba::printDebug("groups_to_sedesign(): ",
+            "factor_order values:",
+            colnames(ifactors)[factor_order]);
+      }
+      iContrastNames <- data.frame(check.names=FALSE,
+         stringsAsFactors=FALSE,
+         jamba::rbindList(lapply(factor_order, function(iChange){
             if (verbose) {
                jamba::printDebug("groups_to_sedesign(): ",
-                  "   new contrasts:\n",
-                  rownames(iDF),
-                  sep=",\n");
+                  "factor_order iChange:",
+                  colnames(ifactors)[iChange]);
             }
-            iDF;
-         } else {
-            NULL;
-         }
-      })));
+            iNoChange <- setdiff(seq_len(ncol(ifactors)), iChange);
+            ## Optionally omit certain values from consideration,
+            ## notably for "," or "-" which already contain changing factors
+            iFactorUseRows <- jamba::unigrep(omit_grep, ifactors[,iChange]);
 
-   ## Optionally spike in some pre-defined non-standard contrasts
-   if (!is.null(add_contrastdf)) {
-      if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "Adding custom ",
-            "add_contrastdf");
-      }
-      iContrastNames <- rbind(iContrastNames, add_contrastdf);
-   }
+            if (length(iNoChange) == 0) {
+               iSplit <- rep("", length(iFactorUseRows));
+            } else {
+               iSplit <- jamba::pasteByRowOrdered(ifactors[iFactorUseRows,iNoChange,drop=FALSE],
+                  sep=factor_sep);
+            }
 
-   # Always make each row unique in terms of the factors compared.
-   # Note: This step enforces order of comparison in two-way contrasts.
-   # if (make_unique) {
-   if (TRUE) {
-      iDFcomponents <- jamba::pasteByRow(
-         iContrastNames[,setdiff(colnames(iContrastNames), "contrastName"),drop=FALSE],
-         sep="!");
-      if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "iDFcomponents:\n",
-            iDFcomponents, sep="\n");
-         jamba::printDebug("groups_to_sedesign(): ",
-            "unique(iDFcomponents):\n",
-            unique(iDFcomponents), sep="\n");
-      }
-      if (verbose && any(duplicated(iDFcomponents))) {
-         dupe_comps <- iDFcomponents[duplicated(iDFcomponents)];
-         dupe_kept_df <- data.frame(
-            dupe_comp=iDFcomponents[iDFcomponents %in% dupe_comps],
-            contrast=rownames(subset(iContrastNames, iDFcomponents %in% dupe_comps)),
-            outcome=ifelse(!duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]), "(kept)", "(removed)"))
-         dupe_kept_df <- jamba::mixedSortDF(byCols=1, dupe_kept_df);
-         jamba::printDebug("groups_to_sedesign(): ",
-            "   removed duplicate (equivalent) contrasts:");
-         print(dupe_kept_df[,-1, drop=FALSE]);
-      }
-      iContrastNames <- subset(iContrastNames, !duplicated(iDFcomponents));
-   }
+            ## Split rows by constant values in non-changing factor columns
+            iSplitL <- split(iFactorUseRows, iSplit);
+            iSplitL <- iSplitL[lengths(iSplitL) > 1];
+            ## Only consider contrasts when there are multiple rows
+            if (length(iSplitL) > 0) {
+               iDF <- jamba::rbindList(lapply(iSplitL, function(iSplitRows) {
+                  use_factor_order <- unique(c(factor_order,
+                     seq_len(ncol(ifactors))));
+                  iFactorsSub <- ifactors[iSplitRows, use_factor_order, drop=FALSE];
+                  if (verbose >= 2) {
+                     jamba::printDebug("groups_to_sedesign(): ",
+                        "   iSplitRows:",
+                        iSplitRows,
+                        ", use_factor_order:", use_factor_order);
+                     jamba::printDebug("groups_to_sedesign(): ",
+                        "   iFactorsSub:");
+                     print(iFactorsSub);
+                  }
+                  iFactorVals <- iFactorsSub[,colnames(ifactors)[iChange]];
+                  iMatch <- match(
+                     sort_samples(iFactorVals,
+                        pre_control_terms=pre_control_terms),
+                     iFactorVals);
+                  # 0.0.27.900: fix for one factor column input
+                  if (length(iMatch) < 2) {
+                     return(NULL)
+                  }
+                  iCombn <- combn(iMatch, 2);
+                  iGrp1 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[2,]]),
+                     paste0("(", rownames(iFactorsSub)[iCombn[2,]], ")"),
+                     rownames(iFactorsSub)[iCombn[2,]]);
+                  iGrp2 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[1,]]),
+                     paste0("(", rownames(iFactorsSub)[iCombn[1,]], ")"),
+                     rownames(iFactorsSub)[iCombn[1,]]);
+                  iContrastName <- paste0(iGrp1, "-", iGrp2);
+                  icondf <- iFactorsSub[intercalate(iCombn[2,], iCombn[1,]),,drop=FALSE];
+                  iconfac <- factor(rep(iContrastName, each=2),
+                     levels=unique(iContrastName));
+                  iContrastDF <- data.frame(check.names=FALSE,
+                     stringsAsFactors=FALSE,
+                     lapply(jamba::nameVector(colnames(icondf)), function(i){
+                        jamba::cPasteU(split(icondf[,i], iconfac))
+                     }),
+                     contrastName=iContrastName,
+                     row.names=iContrastName);
 
-   if ("contrastName" %in% colnames(iContrastNames)) {
-      if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "tcount(iContrastNames$contrastName):")
-         print(jamba::tcount(iContrastNames[,"contrastName"]));
-      }
-      rownames(iContrastNames) <- jamba::makeNames(iContrastNames[,"contrastName"]);
-   }
+                  # Create a string representing the combination of factors.
+                  # which we will use to prevent re-creating the same contrasts.
+                  #
+                  # Modified the string to include colname, to ensure that two
+                  # factors which may share some levels, will not be confused.
+                  iContrastDF[,"contrastString"] <- jamba::pasteByRow(
+                     iContrastDF[,colnames(iFactorsSub),drop=FALSE],
+                     includeNames=TRUE,
+                     sep=";",
+                     sepName=":");
+                  iContrastDF;
+               }));
+               rownames(iDF) <- iDF[,"contrastName"];
+               if (verbose) {
+                  jamba::printDebug("groups_to_sedesign(): ",
+                     "   new contrasts:\n",
+                     rownames(iDF),
+                     sep=",\n");
+               }
+               iDF;
+            } else {
+               NULL;
+            }
+         })));
 
-   # Optionally remove contrasts with factor pairs in remove_pairs
-   if (length(remove_pairs) > 0) {
-      if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "Processing any remove_pairs contrasts.");
-      }
-      for (iCol in setdiff(colnames(iContrastNames), "contrastName")) {
+      ## Optionally spike in some pre-defined non-standard contrasts
+      if (!is.null(add_contrastdf)) {
          if (verbose) {
             jamba::printDebug("groups_to_sedesign(): ",
-               "   Checking for remove_pairs in column:", iCol);
+               "Adding custom ",
+               "add_contrastdf");
          }
-         iColVals <- jamba::cPasteS(strsplit(as.character(iContrastNames[[iCol]]), ","));
-         if (any(iColVals %in% remove_pairsFull)) {
-            iWhich1 <- which(iColVals %in% remove_pairsFull);
-            iWhich <- which(!iColVals %in% remove_pairsFull);
-            if (verbose) {
-               jamba::printDebug("      removedPair with values:\n",
-                  unique(iColVals[iWhich1]),
-                  fgText=c("yellow", "purple"), sep="\n");
-            }
-            iContrastNames <- iContrastNames[iWhich,,drop=FALSE];
-         }
+         iContrastNames <- rbind(iContrastNames, add_contrastdf);
       }
-      if (nrow(iContrastNames) == 0) {
-         warning("No contrasts remain after filtering remove_pairs.");
-         return(NULL);
-      }
-   }
 
-   if (verbose >= 2) {
-      jamba::printDebug("groups_to_sedesign(): ",
-         "iContrastNames:");
-      print(head(iContrastNames, 100));
-   }
-
-   ##################################################
-   # Interaction contrasts (iterative processing)
-   if (length(setdiff(colnames(iContrastNames), "contrastName")) > 1 &&
-         current_depth < max_depth) {
-      iContrastNamesUse <- iContrastNames[,iContrastGroupsUse,drop=FALSE];
-      for (i in iContrastGroupsUse) {
-         j <- jamba::provigrep(c("^[^,]+$", "."), iContrastNamesUse[[i]]);
-         iContrastNamesUse[[i]] <- factor(iContrastNamesUse[[i]],
-            levels=unique(j));
-      }
-      if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "   Defining interactions contrasts.");
-         print(head(iContrastNamesUse[,iContrastGroupsUse,drop=FALSE], 100));
-      }
-      iContrastNamesInt <- groups_to_sedesign(iContrastNamesUse,
-         omit_grep=omit_grep,
-         current_depth=current_depth + 1,
-         max_depth=max_depth,
-         return_sedesign=FALSE,
-         factor_sep=factor_sep,
-         factor_order=rev(factor_order),
-         contrast_sep=contrast_sep,
-         rename_first_depth=rename_first_depth,
-         remove_pairs=remove_pairs,
-         pre_control_terms=pre_control_terms,
-         verbose=verbose,
-         ...);
-      if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "length(iContrastNamesInt):",
-            length(iContrastNamesInt));
-         print(iContrastNamesInt);
-      }
-      ## If length==0 then there are no valid interaction contrasts
-      if (length(iContrastNamesInt) > 0 &&
-            jamba::igrepHas("[(]", rownames(iContrastNamesInt[[1]]))) {
-         return(iContrastNamesInt);
-      }
-      if (length(iContrastNamesInt) > 0 &&
-            ncol(iContrastNamesInt) > 1 &&
-            any(is.na(iContrastNamesInt[,1]))) {
-         iContrastNamesInt <- iContrastNamesInt[!is.na(iContrastNamesInt[,1]),,drop=FALSE];
-      }
-      if (length(iContrastNamesInt) == 0 || ncol(iContrastNamesInt) > 1) {
+      # Always make each row unique in terms of the factors compared.
+      # Note: This step enforces order of comparison in two-way contrasts.
+      # if (make_unique) {
+      if (TRUE) {
+         iDFcomponents <- jamba::pasteByRow(
+            iContrastNames[,setdiff(colnames(iContrastNames), "contrastName"),drop=FALSE],
+            sep="!");
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
-               "begin iContrastNamesInt:");
-            print(head(iContrastNamesInt));
-            jamba::printDebug("  end iContrastNamesInt:");
+               "iDFcomponents:\n",
+               iDFcomponents, sep="\n");
+            jamba::printDebug("groups_to_sedesign(): ",
+               "unique(iDFcomponents):\n",
+               unique(iDFcomponents), sep="\n");
          }
-         iContrastNames <- jamba::rbindList(list(iContrastNames,
-            iContrastNamesInt));
+         if (verbose && any(duplicated(iDFcomponents))) {
+            dupe_comps <- iDFcomponents[duplicated(iDFcomponents)];
+            dupe_kept_df <- data.frame(
+               dupe_comp=iDFcomponents[iDFcomponents %in% dupe_comps],
+               contrast=rownames(subset(iContrastNames, iDFcomponents %in% dupe_comps)),
+               outcome=ifelse(!duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]), "(kept)", "(removed)"))
+            dupe_kept_df <- jamba::mixedSortDF(byCols=1, dupe_kept_df);
+            jamba::printDebug("groups_to_sedesign(): ",
+               "   removed duplicate (equivalent) contrasts:");
+            print(dupe_kept_df[,-1, drop=FALSE]);
+         }
+         iContrastNames <- subset(iContrastNames, !duplicated(iDFcomponents));
       }
-   } else {
+
+      if ("contrastName" %in% colnames(iContrastNames)) {
+         if (verbose >= 2) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               "tcount(iContrastNames$contrastName):")
+            print(jamba::tcount(iContrastNames[,"contrastName"]));
+         }
+         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[,"contrastName"]);
+      }
+
+      # Optionally remove contrasts with factor pairs in remove_pairs
+      if (length(remove_pairs) > 0) {
+         if (verbose) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               "Processing any remove_pairs contrasts.");
+         }
+         for (iCol in setdiff(colnames(iContrastNames), "contrastName")) {
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  "   Checking for remove_pairs in column:", iCol);
+            }
+            iColVals <- jamba::cPasteS(strsplit(as.character(iContrastNames[[iCol]]), ","));
+            if (any(iColVals %in% remove_pairsFull)) {
+               iWhich1 <- which(iColVals %in% remove_pairsFull);
+               iWhich <- which(!iColVals %in% remove_pairsFull);
+               if (verbose) {
+                  jamba::printDebug("      removedPair with values:\n",
+                     unique(iColVals[iWhich1]),
+                     fgText=c("yellow", "purple"), sep="\n");
+               }
+               iContrastNames <- iContrastNames[iWhich,,drop=FALSE];
+            }
+         }
+         if (nrow(iContrastNames) == 0) {
+            warning("No contrasts remain after filtering remove_pairs.");
+            return(NULL);
+         }
+      }
+
       if (verbose >= 2) {
          jamba::printDebug("groups_to_sedesign(): ",
-            "   Skipping interactions");
-         jamba::printDebug("      ncol(iContrastNames):",
-            ncol(iContrastNames));
-         jamba::printDebug("      head(iContrastNames):");
-         print(head(iContrastNames));
+            "iContrastNames:");
+         print(head(iContrastNames, 100));
+      }
+
+      ##################################################
+      # Interaction contrasts (iterative processing)
+      if (length(setdiff(colnames(iContrastNames), "contrastName")) > 1 &&
+            current_depth < max_depth) {
+         iContrastNamesUse <- iContrastNames[,iContrastGroupsUse,drop=FALSE];
+         for (i in iContrastGroupsUse) {
+            j <- jamba::provigrep(c("^[^,]+$", "."), iContrastNamesUse[[i]]);
+            iContrastNamesUse[[i]] <- factor(iContrastNamesUse[[i]],
+               levels=unique(j));
+         }
+         if (verbose >= 2) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               "   Defining interactions contrasts.");
+            print(head(iContrastNamesUse[,iContrastGroupsUse,drop=FALSE], 100));
+         }
+         iContrastNamesInt <- groups_to_sedesign(iContrastNamesUse,
+            omit_grep=omit_grep,
+            current_depth=current_depth + 1,
+            max_depth=max_depth,
+            return_sedesign=FALSE,
+            factor_sep=factor_sep,
+            factor_order=rev(factor_order),
+            contrast_sep=contrast_sep,
+            rename_first_depth=rename_first_depth,
+            remove_pairs=remove_pairs,
+            pre_control_terms=pre_control_terms,
+            verbose=verbose,
+            ...);
+         if (verbose >= 2) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               "length(iContrastNamesInt):",
+               length(iContrastNamesInt));
+            print(iContrastNamesInt);
+         }
+         ## If length==0 then there are no valid interaction contrasts
+         if (length(iContrastNamesInt) > 0 &&
+               jamba::igrepHas("[(]", rownames(iContrastNamesInt[[1]]))) {
+            return(iContrastNamesInt);
+         }
+         if (length(iContrastNamesInt) > 0 &&
+               ncol(iContrastNamesInt) > 1 &&
+               any(is.na(iContrastNamesInt[,1]))) {
+            iContrastNamesInt <- iContrastNamesInt[!is.na(iContrastNamesInt[,1]),,drop=FALSE];
+         }
+         if (length(iContrastNamesInt) == 0 || ncol(iContrastNamesInt) > 1) {
+            if (verbose >= 2) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  "begin iContrastNamesInt:");
+               print(head(iContrastNamesInt));
+               jamba::printDebug("  end iContrastNamesInt:");
+            }
+            iContrastNames <- jamba::rbindList(list(iContrastNames,
+               iContrastNamesInt));
+         }
+      } else {
+         if (verbose >= 2) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               "   Skipping interactions");
+            jamba::printDebug("      ncol(iContrastNames):",
+               ncol(iContrastNames));
+            jamba::printDebug("      head(iContrastNames):");
+            print(head(iContrastNames));
+         }
+      }
+      if ("contrastName" %in% colnames(iContrastNames)) {
+         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[["contrastName"]]);
+         contrast_names <- unique(iContrastNames[["contrastName"]]);
       }
    }
-   if ("contrastName" %in% colnames(iContrastNames)) {
-      rownames(iContrastNames) <- jamba::makeNames(iContrastNames[,"contrastName"]);
-   }
+   # end of automatic contrast definition
+   ######################################################
+
    if (return_sedesign && current_depth == 1) {
       icontrasts <- NULL;
-      if (!is.null(idesign)) {
-         icontrasts <- limma::makeContrasts(contrasts=iContrastNames[,"contrastName"],
+      if (!is.null(idesign) && length(contrast_names) > 0) {
+         icontrasts <- limma::makeContrasts(contrasts=contrast_names,
             levels=idesign);
       }
       retvals <- validate_sedesign(
@@ -853,7 +914,10 @@ groups_to_sedesign <- function
             design=idesign,
             contrasts=icontrasts));
    } else {
-      retvals <- iContrastNames;
+      retvals <- list();
+      retvals$contrast_df <- iContrastNames;
+      retvals$contrast_names <- contrast_names;
+      retvals$idesign <- idesign;
    }
    return(retvals);
 }

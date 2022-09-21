@@ -1,6 +1,47 @@
 
 # TODO for jamses
 
+## 21sep2022
+
+* `groups_to_sedesign()`
+
+   * (COMPLETE) Mechanism to supply specific contrast names to be used
+   in place of auto-generated contrasts.
+   * (COMPLETE) Allow `SummarizedExperiment` input, with `group_colnames` used
+   to define sample groups.
+
+* `sestats` object output from `se_contrast_stats()`:
+
+   * proper slot names: stats_df, stats_dfs, hit_array, hit_list, sedesign
+   * proper print method that calls `sestats_to_df()` by default.
+   * functions:
+   
+      * `hit_array(sestats)` with arguments assay_name, cutoff, contrasts
+
+* `sestats_to_df()` bug:
+
+   * apparently the colnames do not match the dimnames, `"cutoff"` is displayed
+   for `"assay_name"` values. Probably something was reversed during recursive
+   `list` navigation.
+
+## 12sep2022
+
+* `heatmap_se()` does not have option to customize arguments
+`row_names_gp` nor `column_names_gp`, which could be used to
+colorize, highlight, boldface, individual labels in the heatmap.
+
+   * Currently `row_names_gp` is defined internally, in order to
+   define `fontsize` based upon the number of rows and columns in
+   the heatmap. The `fontsize` could be applied to user-defined
+   `row_names_gp` or `column_names_gp`, however sometimes the
+   rows and columns are defined dynamically - making it difficult
+   to sync a vector of `grid::gpar(col=c("red", "black"))` values
+   to the exact rownames.
+   * To accommodate dynamic rows, it might need another method
+   such as named vectors for known `grid::gpar()` attributes: `col`,
+   `fontsize`, `fill`, `alpha`, `fontfamily`, `fontface`, `cex`, `font`
+   (`font` is an alias for `fontface`, should be passed as `fontface`).
+
 ## 03aug2022
 
 * `groups_to_sedesign()` implement normalization groups with these rules:

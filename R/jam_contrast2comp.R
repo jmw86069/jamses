@@ -49,6 +49,14 @@
 #' converted to `"comp"` form for plot labels, and converted
 #' back to `"contrasts"` as needed.
 #'
+#' Delimiters can be customized, however they must all be
+#' single-character values, avoiding `()[]` which are reserved.
+#' For example, sometimes factors are separated by `"."` such as
+#' in the contrast: `"A.B-C.B"`. In this case, use:
+#' `contrast2comp("A.B-C.B", contrast_factor_delim=".")`.
+#' The corresponding conversion back to contrast would be:
+#' `comp2contrast("A-C:B", contrast_factor_delim=".")`
+#'
 #' ## Design goals for conversion to short form comp
 #'
 #' 1. `"comp"` should be interchangeable with `"contrast"`
@@ -219,7 +227,8 @@
 #'    comparisons for two-way and higher order contrasts.
 #' @param add_attr `logical` indicating whether to add attributes to
 #'    the output, containing the input values provided.
-#' @param verbose `logical` indicating whether to print verbose output.
+#' @param verbose `logical` indicating whether to print verbose output,
+#'    or for much more verbose output use `verbose=2`.
 #' @param ... additional arguments are ignored.
 #'
 #' @export
@@ -232,6 +241,16 @@ contrast2comp <- function
  verbose=FALSE,
  ...)
 {
+   # validate delim all have 1 character
+   check_delim <- function(x){
+      (!is.list(x) && length(x) == 1 && !is.na(x) && nchar(x) == 1 &&
+            !x %in% c("(", ")", "[", "]"))
+   }
+   if (!all(check_delim(contrast_delim) &&
+         check_delim(contrast_factor_delim) &&
+         check_delim(comp_factor_delim))) {
+      stop("All delim arguments must be single character strings.")
+   }
    # check for two-way contrasts
    # contrast <- gsub("[(]([^()]+)-([^()]+)[)]",
    #    "<\\1=\\2>",
@@ -243,29 +262,41 @@ contrast2comp <- function
    # contrast2
 
    split_pattern <- paste0("[", contrast_delim, "()", "]+");
-   comps <- unname(sapply(strsplit(contrast_names, "[()-]+"), function(i){
-      im <- jamba::rbindList(strsplit(setdiff(i, ""), contrast_factor_delim));
+   contrast_delim_pattern <- paste0("[", contrast_delim, "]");
+   contrast_factor_delim_pattern <- paste0("[", contrast_factor_delim, "]")
+
+   contrast_names_split <- strsplit(contrast_names,
+      paste0("[", contrast_delim, "()]+"));
+   if (verbose > 1) {jamba::printDebug("contrast_names_split:");print(contrast_names_split);}
+   comps <- unname(sapply(contrast_names_split, function(i){
+      if (length(i) <= 1) {
+         return(i)
+      }
+      im <- jamba::rbindList(strsplit(setdiff(i, ""), contrast_factor_delim_pattern));
       ksplit <- rep(head(LETTERS, nrow(im)/2), each=2);
       # code below keeps contrast order intact
-      if (verbose > 1) {jamba::printDebug("im:");print(im);}
+      if (verbose) {jamba::printDebug("im:");print(im);}
       imnew <- jamba::rbindList(
          lapply(split(data.frame(im), ksplit), function(idf){
             do.call(cbind, lapply(seq_len(ncol(idf)), function(j){
-               jamba::cPasteU(idf[,j], sep=contrast_delim)
+               jamba::cPasteU(idf[,j],
+                  sep=contrast_delim)
             }))
          }))
       if (verbose) {jamba::printDebug("imnew:");print(imnew);}
       # check for more factors being compared than expected order contrasts
       num_comp_columns <- sum(sapply(seq_len(ncol(imnew)), function(icol){
-         any(grepl(contrast_delim, imnew[,icol]))
+         any(grepl(contrast_delim_pattern, imnew[,icol]))
       }));
       if (num_comp_columns > log2(nrow(im))) {
          return(stack_contrasts(
-            pasteByRow(im, sep=contrast_factor_delim)))
+            jamba::pasteByRow(im,
+               sep=contrast_factor_delim),
+            contrast_delim=contrast_delim))
       }
 
       diff_cols <- which(sapply(seq_len(ncol(im)), function(j){
-         (any(grepl(contrast_delim, imnew[,j])) &&
+         (any(grepl(contrast_delim_pattern, imnew[,j])) &&
             length(unique(imnew[,j])) > 1)
       }));
       if (length(diff_cols) > 0) {
@@ -274,28 +305,29 @@ contrast2comp <- function
       } else {
          diff_split <- rep(1, nrow(imnew));
       }
+      imnew_split <- split(data.frame(imnew), diff_split);
+      if (verbose > 1) {jamba::printDebug("imnew_split:");print(imnew_split);}
       imcontrasts <- unique(jamba::pasteByRow(sep=comp_factor_delim,
-         jamba::rbindList(lapply(split(data.frame(imnew), diff_split), function(imnew1) {
-            do.call(cbind, lapply(seq_len(ncol(im)), function(j){
-               if (!any(grepl(contrast_delim, imnew1[,j]))) {
-                  jamba::cPasteU(imnew1[,j], sep=contrast_delim)
+         jamba::rbindList(lapply(imnew_split, function(imnew1) {
+            do.call(cbind, lapply(seq_len(ncol(imnew1)), function(j){
+               if (!any(grepl(contrast_delim_pattern, imnew1[,j]))) {
+                  jout <- jamba::cPasteU(imnew1[,j],
+                     sep=contrast_delim)
                } else {
-                  imnew1[,j]
+                  jout <- imnew1[,j]
                }
+               jout;
             }))
          }))
       ))
-      imcontrasts <- stack_contrasts(imcontrasts);
-      # code below assumes all factor contrasts are same order
-      # jamba::pasteByRow(sep=comp_factor_delim,
-      #    do.call(cbind, lapply(seq_len(ncol(im)), function(j){
-      #       jamba::cPasteU(im[,j], sep=contrast_delim)
-      #    })))
+      imcontrasts <- stack_contrasts(imcontrasts,
+         contrast_delim=contrast_delim);
       imcontrasts
    }))
    if (add_attr) {
       attr(comps, "contrast_names") <- contrast_names;
    }
+   names(comps) <- names(contrast_names);
    comps
 }
 
@@ -314,6 +346,17 @@ comp2contrast <- function
  verbose=FALSE,
  ...)
 {
+   # validate delim all have 1 character
+   check_delim <- function(x){
+      (!is.list(x) && length(x) == 1 && !is.na(x) && nchar(x) == 1 &&
+            !x %in% c("(", ")", "[", "]"))
+   }
+   if (!all(check_delim(contrast_delim) &&
+         check_delim(contrast_factor_delim) &&
+         check_delim(comp_factor_delim))) {
+      stop("All delim arguments must be single character strings.")
+   }
+
    # factor_order
    if (length(factor_order) > 0) {
       if ("list" %in% class(factor_order)) {
@@ -323,16 +366,20 @@ comp2contrast <- function
       }
    }
 
-   comps1 <- strsplit(comps, comp_factor_delim)
+   contrast_delim_pattern <- paste0("[", contrast_delim, "]");
+   comp_factor_delim_pattern <- paste0("[", comp_factor_delim, "]");
+
+   comps1 <- strsplit(comps, comp_factor_delim_pattern)
    contrast_names <- sapply(seq_along(comps1), function(i){
       # if input contains parentheses, try to re-build piecewise
       if (grepl("[()]", comps[[i]])) {
          comppar <- comps[[i]];
          comppar1 <- strsplit(
             gsub("^[()]+|[()]+$", "", comppar),
-            paste0("[)]+-[(]+"))
+            paste0("[)]+[", contrast_delim, "][(]+"))
          imcontrasts <- sapply(comppar1, function(icomppar1){
-            stack_contrasts(comp2contrast(icomppar1))
+            stack_contrasts(comp2contrast(icomppar1),
+               contrast_delim=contrast_delim)
          });
          return(imcontrasts);
       }
@@ -352,8 +399,8 @@ comp2contrast <- function
          jseq <- intersect(factor_order[[i]], jseq);
       }
       for (j in jseq) {
-         if (any(grepl(contrast_delim, im[,j]))) {
-            iv <- unlist(strsplit(unique(im[,j]), contrast_delim));
+         if (any(grepl(contrast_delim_pattern, im[,j]))) {
+            iv <- unlist(strsplit(unique(im[,j]), contrast_delim_pattern));
             irow <- rep(seq_len(nrow(im)), length(iv));
             im <- im[irow, , drop=FALSE];
             im[,j] <- rep(iv, each=nrow(im)/length(iv));
@@ -365,9 +412,11 @@ comp2contrast <- function
          }
       }
       # imcontrasts <- stack_contrasts(im, sep=contrast_factor_delim)
-      imgroups <- jamba::pasteByRow(im, sep=contrast_factor_delim);
-      imcontrasts <- stack_contrasts(imgroups, contrast_delim)
-      imcontrasts
+      imgroups <- jamba::pasteByRow(im,
+         sep=contrast_factor_delim);
+      imcontrasts <- stack_contrasts(imgroups,
+         contrast_delim=contrast_delim)
+
       imseq <- seq(from=1, to=length(imgroups), by=2);
       imcontrasts <- paste0(imgroups[imseq],
          contrast_delim,
@@ -386,6 +435,7 @@ comp2contrast <- function
    if (add_attr) {
       attr(contrast_names, "comps") <- comps;
    }
+   names(contrast_names) <- names(comps);
    contrast_names
 }
 
@@ -434,6 +484,8 @@ stack_contrasts <- function
             ...)
       }))
    }
+   contrast_delim_pattern <- paste0("[", contrast_delim, "]");
+
    if (length(imgroups) <= 1) {
       return(imgroups)
    }
@@ -442,7 +494,7 @@ stack_contrasts <- function
       stop("length(imgroups) must be a value in 2^(int)");
    }
    imseq <- seq(from=1, to=length(imgroups), by=2);
-   imgroups <- ifelse(grepl(contrast_delim, imgroups),
+   imgroups <- ifelse(grepl(contrast_delim_pattern, imgroups),
       paste0("(", imgroups, ")"),
       imgroups);
    imcontrasts <- paste0(imgroups[imseq],

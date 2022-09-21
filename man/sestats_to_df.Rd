@@ -7,7 +7,7 @@
 sestats_to_df(
   sestats,
   style = c("text", "integer"),
-  dimname_order = c(3, 1, 2),
+  dimname_order = c(3, 2, 1),
   rename_contrasts = FALSE,
   ...
 )
@@ -25,7 +25,15 @@ sestats_to_df(
 contrasts using \code{contrast2comp()}. The main benefit is reduction
 in length of the string that describes each contrast.}
 
-\item{...}{additional arguments are ignored.}
+\item{...}{additional arguments are passed to \code{contrast2comp()}, which
+is relevant when \code{rename_contrasts=TRUE}, relevant arguments include:
+\itemize{
+\item \code{contrast_delim="-"} to
+\item \code{contrast_factor_delim="_"} to customize the delimiter between factors
+in the input group names, for example \code{"Treatment1_Time1"} uses "_".
+\item \code{comp_factor_delim=":"} to customize the delimiter between factors
+\item \code{factor_order=NULL} to customize the order of factor comparisons
+}}
 }
 \description{
 Convert sestats to table summary

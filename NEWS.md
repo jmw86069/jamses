@@ -1,3 +1,44 @@
+# jamses 0.0.28.900
+
+## changes to existing functions
+
+* `groups_to_sedesign()` updates
+
+   * input `SummarizedExperiment` is now recognized, using `group_colnames`
+   to define the experimental design `data.frame`. Data can also be subset
+   using `isamples` for example.
+   * new argument `contrast_names` to provide specific contrasts upfront,
+   therefore skipping all internal logic of defining contrasts.
+   * internal values `max_depth` and `factor_order` are validated using
+   the design `data.frame` such that it will not pursue `max_depth` nor
+   `factor_order` higher than the number of design columns available.
+   * When there are no valid contrasts for the given design groups,
+   the function returns empty contrasts instead of throwing an error.
+   One could argue that an error is actually preferred, since it forces
+   the input data to be valid, and forces the user to review the data.
+
+* `contrast2comp()` and `comp2contrast()` were reworked to handle alternate
+delimiters, which mainly involved wrapping the delimiter in proper
+regular expression patterns. During the process, obscure testing showed
+certain delimiters cause problems with regular expressions, so those
+problems were pre-emptively fixed. The help docs were expanded somewhat.
+* `sestats_to_df()` was refactored to be cleaner, correcting the issue
+of colname mislabling when `dimname_order` was different than expected.
+The function now works smoothly with any `dimname_order` values, and accepts
+`character` or `integer` input to specify the dimname ordering.
+
+## new functions
+
+* `format_hits()` is an internal function, but it might be a useful
+convenience function so it is exported. It is called by `sestats_to_df()`
+to provide a summary `data.frame` of statistical results.
+It converts a hit vector into either:
+
+   * a summary string with hits/up/down,
+   * one integer count of hits, or
+   * a vector of integers for c("hits", "up", "down")`.
+
+
 # jamses 0.0.27.900
 
 ## bug fixes

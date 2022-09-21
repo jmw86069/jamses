@@ -41,7 +41,8 @@ design factors in a comp.}
 \item{add_attr}{\code{logical} indicating whether to add attributes to
 the output, containing the input values provided.}
 
-\item{verbose}{\code{logical} indicating whether to print verbose output.}
+\item{verbose}{\code{logical} indicating whether to print verbose output,
+or for much more verbose output use \code{verbose=2}.}
 
 \item{...}{additional arguments are ignored.}
 
@@ -102,6 +103,14 @@ When using \code{groups_to_sedesign()}, the output contrasts should all
 meet these requirements, therefore all contrasts can be
 converted to \code{"comp"} form for plot labels, and converted
 back to \code{"contrasts"} as needed.
+
+Delimiters can be customized, however they must all be
+single-character values, avoiding \verb{()[]} which are reserved.
+For example, sometimes factors are separated by \code{"."} such as
+in the contrast: \code{"A.B-C.B"}. In this case, use:
+\code{contrast2comp("A.B-C.B", contrast_factor_delim=".")}.
+The corresponding conversion back to contrast would be:
+\code{comp2contrast("A-C:B", contrast_factor_delim=".")}
 }
 
 \subsection{Design goals for conversion to short form comp}{

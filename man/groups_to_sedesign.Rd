@@ -17,6 +17,7 @@ groups_to_sedesign(
   remove_pairs = NULL,
   pre_control_terms = NULL,
   add_contrastdf = NULL,
+  contrast_names = NULL,
   current_depth = 1,
   rename_first_depth = TRUE,
   return_sedesign = TRUE,
@@ -88,7 +89,13 @@ a \code{factor} with a specific order of factor levels.}
 \item{add_contrastdf}{\code{data.frame} or \code{character} or \code{NULL},
 intended to include a specific contrast in the output.
 This argument is typically used during iterative processing,
-and is not usually user-defined.}
+and is not usually user-defined. It must contain}
+
+\item{contrast_names}{\code{character} optional vector of specific
+contrasts to use when creating the contrast matrix. When
+\code{contrast_names=NULL} as default, the function defines contrasts
+using its internal logic. When \code{contrast_names} is supplied,
+only these \code{contrast_names} are used, with no other contrasts.}
 
 \item{current_depth}{\code{integer} value used during iterative
 operations of this function.}
@@ -98,8 +105,15 @@ operations of this function.}
 
 \item{return_sedesign}{\code{logical} used during iterative
 operations of this function. When \code{return_sedesign=FALSE}
-this function returns a \code{data.frame} sufficient to be used
-in argument \code{add_contrastdf}.}
+this function returns a \code{list}:
+\itemize{
+\item \code{"contrast_df"}: a \code{data.frame} as used in argument
+\code{add_contrastdf}, which describes each unique contrast.
+\item \code{"contrast_names"}: a \code{character} vector of contrast names,
+which become \code{colnames()} of the contrast matrix.
+\item \code{"idesign"}: a \code{numeric} design matrix as defined by the input data,
+suitable for debugging purposes for example.
+}}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
@@ -130,6 +144,11 @@ of each independent factor.
 
 Input can be provided in one of two ways:
 \enumerate{
+\item \code{SummarizedExperiment} where experiment design is derived from
+\code{SummarizedExperiment::colData()} of the \code{se} object, and
+uses columns defined by \code{group_colnames}. This input should be
+equivalent to providing a \code{data.frame} whose \code{rownames()} are
+equal to \code{colnames(se)}.
 \item \code{data.frame} where each column represents a design factor.
 \itemize{
 \item An example of \code{data.frame} input:
@@ -161,6 +180,19 @@ prevent confusion and potential problems using the
 contrast names in downstream analyses.
 This step does not call \code{base::make.names()}, so that
 step should be run beforehand if required.
+\subsection{Troubleshooting}{
+\itemize{
+\item When this function returns no contrasts, or returns an unexpected
+error during processing, it is most likely due to the limitation
+of comparing one factor at a time. For example, the logic will
+not define contrast \code{time1_treatment1-time2_treatment2}, because
+this contrast changes two factors, it will only permit either
+\code{time1_treatment1-time1_treatment2} or \code{time1_treatment1-time2_treatment1}.
+\item \code{max_depth} and \code{factor_order} are used to define the order in
+which factors are compared, but do not affect the order of factors
+used for things like group names.
+}
+}
 }
 \examples{
 # first define a vector of sample groups
