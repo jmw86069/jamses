@@ -3,6 +3,15 @@
 
 ## 21sep2022
 
+* `se_contrast_stats()` to include additional gene annotation data
+
+   * similarly, the first column currently hardcoded `"probes"`, should
+   use the appropriate column name, or allow it to be defined by argument.
+   * rowname is currently the only identifier included in results.
+   * implementation ideas: it could either use input `rowData(se)`, in
+   the limma model fit, or annotation can be added while each `stats_df`
+   stat `data.frame` is created.
+
 * `groups_to_sedesign()`
 
    * (COMPLETE) Mechanism to supply specific contrast names to be used

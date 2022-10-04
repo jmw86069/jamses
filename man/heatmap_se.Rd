@@ -37,6 +37,7 @@ heatmap_se(
   legend_title_gp = grid::gpar(fontsize = 10),
   legend_labels_gp = grid::gpar(fontsize = 10),
   legend_grid_cex = 1,
+  row_names_gp = NULL,
   row_split = NULL,
   row_subcluster = NULL,
   row_title_rot = 0,
@@ -61,6 +62,7 @@ heatmap_se(
   cluster_columns = FALSE,
   cluster_rows = function(x, ...) {     amap::hcluster(rmNA(naValue = 0, x), ...,
     method = "euclidean", link = "ward") },
+  column_names_gp = NULL,
   column_split = NULL,
   column_split_sep = ",",
   color_max = 3,
@@ -249,6 +251,10 @@ main heatmap.}
 \item{legend_grid_cex}{\code{numeric} multiplied to adjust the relative
 size of each legend grid unit, applied to each relevant metric.}
 
+\item{row_names_gp}{\code{gpar} to define custom column name settings.
+When \code{"fontsize"} is not defined, the automatic font size calculation
+is added to the \code{row_names_gp} supplied.}
+
 \item{row_split}{is used to define heatmap split by row, ultimately
 passed to \code{ComplexHeatmap::Heatmap()} argument \code{row_split}. However,
 the input type can vary:
@@ -381,6 +387,10 @@ given a \code{numeric} matrix. Note that \code{cluster_rows} default will replac
 \code{NA} values with zero \code{0} to avoid errors with missing data, and
 uses \code{amap::hcluster()} by default which is a one-step compiled
 process to perform distance calculation and hierarchical clustering.}
+
+\item{column_names_gp}{\code{gpar} to define custom column name settings.
+When \code{"fontsize"} is not defined, the automatic font size calculation
+is added to the \code{column_names_gp} supplied.}
 
 \item{column_split}{\code{character} or \code{integer} vector used to define
 heatmap column split.}

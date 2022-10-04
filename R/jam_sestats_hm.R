@@ -241,6 +241,9 @@
 #'    main heatmap.
 #' @param legend_grid_cex `numeric` multiplied to adjust the relative
 #'    size of each legend grid unit, applied to each relevant metric.
+#' @param row_names_gp `gpar` to define custom column name settings.
+#'    When `"fontsize"` is not defined, the automatic font size calculation
+#'    is added to the `row_names_gp` supplied.
 #' @param row_split is used to define heatmap split by row, ultimately
 #'    passed to `ComplexHeatmap::Heatmap()` argument `row_split`. However,
 #'    the input type can vary:
@@ -352,6 +355,9 @@
 #'    `NA` values with zero `0` to avoid errors with missing data, and
 #'    uses `amap::hcluster()` by default which is a one-step compiled
 #'    process to perform distance calculation and hierarchical clustering.
+#' @param column_names_gp `gpar` to define custom column name settings.
+#'    When `"fontsize"` is not defined, the automatic font size calculation
+#'    is added to the `column_names_gp` supplied.
 #' @param column_split `character` or `integer` vector used to define
 #'    heatmap column split.
 #' @param column_split_sep `character` string used as delimited when
@@ -405,6 +411,7 @@ heatmap_se <- function
    legend_title_gp=grid::gpar(fontsize=10),
    legend_labels_gp=grid::gpar(fontsize=10),
    legend_grid_cex=1,
+   row_names_gp=NULL,
    row_split=NULL,
    row_subcluster=NULL,
    row_title_rot=0,
@@ -432,6 +439,7 @@ heatmap_se <- function
          ...,
          method="euclidean",
          link="ward")},
+   column_names_gp=NULL,
    column_split=NULL,
    column_split_sep=",",
    color_max=3,
@@ -1278,7 +1286,7 @@ heatmap_se <- function
    }
 
    # cluster_columns
-   if (cluster_columns %in% TRUE) {
+   if (!is.function(cluster_columns) && cluster_columns %in% TRUE) {
       cluster_columns <- function(x, ...) {
          amap::hcluster(rmNA(naValue=0, x),
             ...,
@@ -1353,6 +1361,23 @@ heatmap_se <- function
       cluster_columns <- cluster_columns(se_matrix);
    }
 
+   # optional customization of row and column names gp
+   if (length(row_names_gp) == 0) {
+      row_names_gp <- grid::gpar(fontsize=row_fontsize)
+   } else {
+      if (!"fontsize" %in% names(row_names_gp)) {
+         row_names_gp$fontsize <- grid::gpar(fontsize=row_fontsize)$fontsize;
+      }
+   }
+   if (length(column_names_gp) == 0) {
+      column_names_gp <- grid::gpar(fontsize=column_fontsize)
+   } else {
+      if (!"fontsize" %in% names(column_names_gp)) {
+         column_names_gp$fontsize <- grid::gpar(fontsize=column_fontsize)$fontsize;
+      }
+   }
+
+
    # define heatmap
    hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
@@ -1381,8 +1406,8 @@ heatmap_se <- function
       show_row_dend=show_row_dend,
       show_heatmap_legend=show_heatmap_legend,
       row_labels=row_labels,
-      row_names_gp=grid::gpar(fontsize=row_fontsize),
-      column_names_gp=grid::gpar(fontsize=column_fontsize),
+      row_names_gp=row_names_gp,
+      column_names_gp=column_names_gp,
       col=colorjam::col_div_xf(color_max,
          lens=lens,
          ...),

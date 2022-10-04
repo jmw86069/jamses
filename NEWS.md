@@ -1,3 +1,18 @@
+# jamses 0.0.29.900
+
+## bug fixes
+
+* `heatmap_se()` did not properly check `cluster_columns` for `function`
+input, so it did not allow using a custom clustering function.
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * new arguments: `row_names_gp` and `column_names_gp` allow custom
+   settings for row and column labels, respectively.
+
+
 # jamses 0.0.28.900
 
 ## bug fixes
