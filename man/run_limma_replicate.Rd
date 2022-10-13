@@ -69,6 +69,17 @@ when there are multiple rows that represent the same gene.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 }
+\value{
+\code{list} with the following entries:
+\itemize{
+\item "stats_df": \code{data.frame} with all individual \code{data.frame} per contrast,
+merged together.
+\item "stats_df": \code{list} of individual \code{data.frame} per contrast, each
+result is the output from \code{ebayes2dfs()}.
+\item "rep_fits": \code{list} of various intermediate model fits, dependent
+upon whether limma, limma-voom, or limma-DEqMS were used.
+}
+}
 \description{
 Run limma contrasts with optional probe replicates
 }

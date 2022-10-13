@@ -1,3 +1,14 @@
+# jamses 0.0.30.900
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * removed duplicated `merge()` called across stats `data.frame` results.
+   * implemented `normgroups` for independent model fit among subsets
+   of samples.
+
+
 # jamses 0.0.29.900
 
 ## bug fixes

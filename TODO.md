@@ -1,6 +1,13 @@
 
 # TODO for jamses
 
+## 13oct2022
+
+* `se_contrast_stats()`
+
+   * COMPLETE: argument `normgroup` to enforce independent statistical analyses
+   within each unique normgroup.
+
 ## 21sep2022
 
 * `se_contrast_stats()` to include additional gene annotation data

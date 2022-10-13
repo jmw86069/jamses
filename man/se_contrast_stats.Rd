@@ -33,6 +33,8 @@ se_contrast_stats(
   collapse_by_gene = FALSE,
   block = NULL,
   correlation = NULL,
+  normgroup = NULL,
+  do_normgroups = TRUE,
   verbose = FALSE,
   ...
 )
@@ -42,6 +44,27 @@ se_contrast_stats(
 
 \item{assay_names}{\code{character} vector with one or more assay names
 from \code{names(assays(se))}.}
+
+\item{normgroup}{\code{character} or \code{factor} vector with length
+\code{length(isamples)}, whose values define independent normalization
+groups, intended so that samples in \code{isamples} are analyzed only
+with samples that have the same \code{normgroup}. During limma model
+fit, all samples in all groups are used by default, however this
+technique allows subsets of samples to be analyzed independently.
+When \code{normgroup=NULL} the default is to assume all samples are in
+the same \code{normgroup="bulk"}.
+Each subset of samples begins with the same \code{sestats}, \code{idesign},
+\code{icontrast}, however they are fed into \code{validate_sestats()} to
+subset the appropriate contrasts to use only samples within the
+current normgroup. As a result, any contrasts that span two
+normgroups will be removed, and will not appear in the output.}
+
+\item{do_normgroups}{\code{logical} whether to enable normgroup processing,
+or to use the previous technique that kept all samples together.
+Note that when \code{normgroup=NULL} the output should be identical
+with \code{do_normgroups=TRUE} and \code{do_normgroups=FALSE}.}
+
+\item{...}{additional arguments are ignored.}
 }
 \description{
 Compute contrast statistics on SummarizedExperiment data
@@ -85,9 +108,9 @@ then applying those weights during the model fit.
 
 The output is intended to include several convenient formats:
 \itemize{
-\item \code{statsDFs} - list of \code{data.frame} stats one per contrast
-\item \code{statsDF} - one \code{data.frame} with all stats together
-\item \code{statsHitsA} - \code{array} with three dimensions: signal; contrast; threshold
+\item \code{stats_dfs} - list of \code{data.frame} stats one per contrast
+\item \code{stats_df} - one \code{data.frame} with all stats together
+\item \code{hit_array} - \code{array} with three dimensions: signal; contrast; threshold
 whose cells contain hit flags (-1, 0, 1) named by \code{rownames(se)}.
 }
 

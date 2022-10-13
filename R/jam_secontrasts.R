@@ -40,9 +40,9 @@
 #'
 #' The output is intended to include several convenient formats:
 #'
-#' * `statsDFs` - list of `data.frame` stats one per contrast
-#' * `statsDF` - one `data.frame` with all stats together
-#' * `statsHitsA` - `array` with three dimensions: signal; contrast; threshold
+#' * `stats_dfs` - list of `data.frame` stats one per contrast
+#' * `stats_df` - one `data.frame` with all stats together
+#' * `hit_array` - `array` with three dimensions: signal; contrast; threshold
 #' whose cells contain hit flags (-1, 0, 1) named by `rownames(se)`.
 #'
 #' Design and contrast matrices can be defined using the function
@@ -58,6 +58,24 @@
 #' @param se `SummarizedExperiment` object
 #' @param assay_names `character` vector with one or more assay names
 #'    from `names(assays(se))`.
+#' @param normgroup `character` or `factor` vector with length
+#'    `length(isamples)`, whose values define independent normalization
+#'    groups, intended so that samples in `isamples` are analyzed only
+#'    with samples that have the same `normgroup`. During limma model
+#'    fit, all samples in all groups are used by default, however this
+#'    technique allows subsets of samples to be analyzed independently.
+#'    When `normgroup=NULL` the default is to assume all samples are in
+#'    the same `normgroup="bulk"`.
+#'    Each subset of samples begins with the same `sestats`, `idesign`,
+#'    `icontrast`, however they are fed into `validate_sestats()` to
+#'    subset the appropriate contrasts to use only samples within the
+#'    current normgroup. As a result, any contrasts that span two
+#'    normgroups will be removed, and will not appear in the output.
+#' @param do_normgroups `logical` whether to enable normgroup processing,
+#'    or to use the previous technique that kept all samples together.
+#'    Note that when `normgroup=NULL` the output should be identical
+#'    with `do_normgroups=TRUE` and `do_normgroups=FALSE`.
+#' @param ... additional arguments are ignored.
 #'
 #' @family jamses stats
 #'
@@ -94,6 +112,8 @@ se_contrast_stats <- function
  collapse_by_gene=FALSE,
  block=NULL,
  correlation=NULL,
+ normgroup=NULL,
+ do_normgroups=TRUE,
  verbose=FALSE,
  ...)
 {
@@ -138,72 +158,189 @@ se_contrast_stats <- function
       }
    }
 
+   ## normgroup implementation
+   if (length(normgroup) == 0) {
+      normgroup <- jamba::nameVector(rep("bulk", length(isamples)),
+         isamples);
+   }
+   if (length(names(normgroup)) == 0 && length(normgroup) == length(isamples)) {
+      names(normgroup) <- isamples;
+   }
+   # isamples_normgroup_list is a list separated by normgroup,
+   # each vector will be analyzed independently
+   isamples_normgroup_list <- split(isamples, normgroup[isamples]);
+
    ## Iterate each assay_name
    ## Run statistical tests for gene data
    stats_hits_dfs1 <- lapply(jamba::nameVector(assay_names), function(signalSet) {
       retVals <- list();
       imatrix <- SummarizedExperiment::assays(se[igenes, isamples])[[signalSet]];
-      if (!"none" %in% handle_na && any(is.na(imatrix))) {
-         imatrix <- handle_na_values(imatrix,
+
+      # iterate each normgroup independently
+      if (TRUE %in% do_normgroups) {
+         normgroup_stats <- lapply(jamba::nameVectorN(isamples_normgroup_list), function(normgroup_name) {
+            normgroup_samples <- isamples_normgroup_list[[normgroup_name]];
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Analyzing normgroup_name: ", normgroup_name);
+            }
+            # new imatrix_ng only uses samples in this normgroup
+            imatrix_ng <- imatrix[,normgroup_samples, drop=FALSE];
+            sestats_ng <- validate_sedesign(
+               new("SEDesign",
+                  design=idesign,
+                  contrasts=icontrasts),
+               samples=normgroup_samples);
+            icontrasts_ng <- sestats_ng@contrasts;
+            idesign_ng <- sestats_ng@design;
+            if (length(icontrasts_ng) == 0 || ncol(icontrasts_ng) == 0 || nrow(icontrasts_ng) == 0) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   No contrasts were defined for this normgroup_name.", fgText=c("darkorange2", "red"));
+               }
+               return(NULL)
+            }
+
+            if (!"none" %in% handle_na && any(is.na(imatrix_ng))) {
+               imatrix_ng <- handle_na_values(imatrix_ng,
+                  idesign=idesign_ng,
+                  handle_na=handle_na);
+            }
+            ## Optionally determine voom weights prior to running limma
+            if (use_voom) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   Determining Voom weight matrix (within probe reps).");
+               }
+               imatrix_v <- voom_jam((2^imatrix_ng)-1,
+                  design=idesign_ng,
+                  normalize.method="none",
+                  plot=FALSE,
+                  verbose=verbose,
+                  ...);
+               weights <- imatrix_v$weights;
+               rownames(weights) <- rownames(imatrix_ng);
+               colnames(weights) <- colnames(imatrix_ng);
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   Determined Voom weight matrix.");
+               }
+            }
+
+            #######################################################
+            ## Optionally convert zero (or less than zero) to NA
+            if (length(floor_min) == 1 && !is.na(floor_min) && any(imatrix_ng <= floor_min)) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     c("Applying floor_min:",
+                        floor_min,
+                        ", replacing with floor_value:",
+                        floor_value),
+                     sep="");
+               }
+               imatrix_ng[imatrix_ng <= floor_min] <- floor_value;
+            }
+
+            ## Run limma
+            rlr_result_ng <- run_limma_replicate(imatrix=imatrix_ng,
+               idesign=idesign_ng,
+               icontrasts=icontrasts_ng,
+               weights=weights,
+               robust=robust,
+               verbose=verbose,
+               adjp_cutoff=adjp_cutoff,
+               p_cutoff=p_cutoff,
+               fold_cutoff=fold_cutoff,
+               mgm_cutoff=mgm_cutoff,
+               int_adjp_cutoff=int_adjp_cutoff,
+               int_p_cutoff=int_p_cutoff,
+               int_fold_cutoff=int_fold_cutoff,
+               ave_cutoff=ave_cutoff,
+               collapse_by_gene=collapse_by_gene,
+               block=block,
+               correlation=correlation,
+               posthoc_test=posthoc_test,
+               posthoc_args=posthoc_args,
+               ...);
+            return(rlr_result_ng);
+         });
+         # end normgroup processing
+         # now assemble normgroup_stats into rlr_result as before
+         rlr_result_stats_dfs <- unlist(recursive=FALSE,
+            lapply(normgroup_stats, function(rlr){
+               rlr$stats_dfs;
+            }));
+         rlr_result_stats_df_colnames <- unique(unlist(lapply(rlr_result_stats_dfs, colnames)));
+         rlr_result_stats_df <- jamba::mergeAllXY(rlr_result_stats_dfs)
+         rlr_result_stats_df <- rlr_result_stats_df[,rlr_result_stats_df_colnames, drop=FALSE];
+         rlr_result <- list(
+            stats_df=rlr_result_stats_df,
+            stats_dfs=rlr_result_stats_dfs,
+            rep_fits=lapply(normgroup_stats, function(rlr){rlr$rep_fits})
+         )
+      } else {
+         if (!"none" %in% handle_na && any(is.na(imatrix))) {
+            imatrix <- handle_na_values(imatrix,
+               idesign=idesign,
+               handle_na=handle_na);
+         }
+         ## Optionally determine voom weights prior to running limma
+         if (use_voom) {
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Determining Voom weight matrix (within probe reps).");
+            }
+            imatrix_v <- voom_jam((2^imatrix)-1,
+               design=idesign,
+               normalize.method="none",
+               plot=FALSE,
+               verbose=verbose,
+               ...);
+            weights <- imatrix_v$weights;
+            rownames(weights) <- rownames(imatrix);
+            colnames(weights) <- colnames(imatrix);
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Determined Voom weight matrix.");
+            }
+         }
+
+         #######################################################
+         ## Optionally convert zero (or less than zero) to NA
+         if (length(floor_min) == 1 && !is.na(floor_min) && any(imatrix <= floor_min)) {
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  c("Applying floor_min:",
+                     floor_min,
+                     ", replacing with floor_value:",
+                     floor_value),
+                  sep="");
+            }
+            imatrix[imatrix <= floor_min] <- floor_value;
+         }
+
+         ## Run limma
+         rlr_result <- run_limma_replicate(imatrix=imatrix,
             idesign=idesign,
-            handle_na=handle_na);
-      }
-      ## Optionally determine voom weights prior to running limma
-      if (use_voom) {
-         if (verbose) {
-            jamba::printDebug("se_contrast_stats(): ",
-               "   Determining Voom weight matrix (within probe reps).");
-         }
-         imatrix_v <- voom_jam((2^imatrix)-1,
-            design=idesign,
-            normalize.method="none",
-            plot=FALSE,
+            icontrasts=icontrasts,
+            weights=weights,
+            robust=robust,
             verbose=verbose,
+            adjp_cutoff=adjp_cutoff,
+            p_cutoff=p_cutoff,
+            fold_cutoff=fold_cutoff,
+            mgm_cutoff=mgm_cutoff,
+            int_adjp_cutoff=int_adjp_cutoff,
+            int_p_cutoff=int_p_cutoff,
+            int_fold_cutoff=int_fold_cutoff,
+            ave_cutoff=ave_cutoff,
+            collapse_by_gene=collapse_by_gene,
+            block=block,
+            correlation=correlation,
+            posthoc_test=posthoc_test,
+            posthoc_args=posthoc_args,
             ...);
-         weights <- imatrix_v$weights;
-         rownames(weights) <- rownames(imatrix);
-         colnames(weights) <- colnames(imatrix);
-         if (verbose) {
-            jamba::printDebug("se_contrast_stats(): ",
-               "   Determined Voom weight matrix.");
-         }
       }
-
-      #######################################################
-      ## Optionally convert zero (or less than zero) to NA
-      if (length(floor_min) == 1 && !is.na(floor_min) && any(imatrix <= floor_min)) {
-         if (verbose) {
-            jamba::printDebug("se_contrast_stats(): ",
-               c("Applying floor_min:",
-                  floor_min,
-                  ", replacing with floor_value:",
-                  floor_value),
-               sep="");
-         }
-         imatrix[imatrix <= floor_min] <- floor_value;
-      }
-
-      ## Run limma
-      rlr_result <- run_limma_replicate(imatrix=imatrix,
-         idesign=idesign,
-         icontrasts=icontrasts,
-         weights=weights,
-         robust=robust,
-         verbose=verbose,
-         adjp_cutoff=adjp_cutoff,
-         p_cutoff=p_cutoff,
-         fold_cutoff=fold_cutoff,
-         mgm_cutoff=mgm_cutoff,
-         int_adjp_cutoff=int_adjp_cutoff,
-         int_p_cutoff=int_p_cutoff,
-         int_fold_cutoff=int_fold_cutoff,
-         ave_cutoff=ave_cutoff,
-         collapse_by_gene=collapse_by_gene,
-         block=block,
-         correlation=correlation,
-         posthoc_test=posthoc_test,
-         posthoc_args=posthoc_args,
-         ...);
       ## rlr_result is a list
       ## - statsDF
       ## - statsDFs
@@ -227,7 +364,7 @@ se_contrast_stats <- function
    stats_hits <- lapply(stats_dfs, function(iDFs){
       lapply(iDFs, function(iDF){
          iHitCols <- jamba::nameVector(
-            jamba::provigrep("^hit", colnames(iDF)));
+            jamba::provigrep("^hit[ .]", colnames(iDF)));
          if (verbose) {
             jamba::printDebug("se_contrast_stats(): ",
                "iHitCols:", iHitCols);
@@ -303,6 +440,9 @@ se_contrast_stats <- function
    ## Add design and contrast data used
    ret_list$idesign <- idesign;
    ret_list$icontrasts <- icontrasts;
+   if (length(normgroup) > 0 && TRUE %in% do_normgroups) {
+      ret_list$normgroup <- normgroup;
+   }
 
    return(ret_list);
 }
@@ -696,6 +836,14 @@ voom_jam <- function
 #' used that in past, the priority to port this methodology
 #' is quite low.
 #'
+#' @return `list` with the following entries:
+#'    * "stats_df": `data.frame` with all individual `data.frame` per contrast,
+#'    merged together.
+#'    * "stats_df": `list` of individual `data.frame` per contrast, each
+#'    result is the output from `ebayes2dfs()`.
+#'    * "rep_fits": `list` of various intermediate model fits, dependent
+#'    upon whether limma, limma-voom, or limma-DEqMS were used.
+#'
 #' @inheritParams ebayes2dfs
 #'
 #' @family jamses stats
@@ -877,7 +1025,7 @@ run_limma_replicate <- function
       } );
    }
 
-   stats_df <- jamba::mergeAllXY(stats_dfs);
+   # stats_df <- jamba::mergeAllXY(stats_dfs);
    stats_df_colnames <- unique(
       unlist(lapply(stats_dfs, colnames)));
    stats_df <- jamba::mergeAllXY(stats_dfs);
