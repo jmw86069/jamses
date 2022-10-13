@@ -267,12 +267,13 @@ se_contrast_stats <- function
          # end normgroup processing
          # now assemble normgroup_stats into rlr_result as before
          rlr_result_stats_dfs <- unlist(recursive=FALSE,
-            lapply(normgroup_stats, function(rlr){
+            lapply(names(normgroup_stats), function(rlr_name){
+               rlr <- normgroup_stats[[rlr_name]];
                rlr$stats_dfs;
             }));
          rlr_result_stats_df_colnames <- unique(unlist(lapply(rlr_result_stats_dfs, colnames)));
          rlr_result_stats_df <- jamba::mergeAllXY(rlr_result_stats_dfs)
-         rlr_result_stats_df <- rlr_result_stats_df[,rlr_result_stats_df_colnames, drop=FALSE];
+         # rlr_result_stats_df <- rlr_result_stats_df[,rlr_result_stats_df_colnames, drop=FALSE];
          rlr_result <- list(
             stats_df=rlr_result_stats_df,
             stats_dfs=rlr_result_stats_dfs,
