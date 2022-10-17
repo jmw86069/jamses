@@ -584,8 +584,8 @@ heatmap_se <- function
       # generate an appropriate incidence matrix
       gene_hits_im <- process_sestats_to_hitim(sestats,
          cutoff_names=cutoff_names,
-         contrast_names=contrast_names,
-         assay_names=assay_names,
+         contrast_names=contrast_name,
+         assay_names=assay_name,
          contrast_suffix=contrast_suffix,
          rename_contrasts=rename_contrasts,
          rows=rows,
@@ -612,9 +612,9 @@ heatmap_se <- function
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
       # generate an appropriate incidence matrix
       alt_gene_hits_im <- process_sestats_to_hitim(alt_sestats,
-         cutoff_names=alt_cutoff_names,
+         cutoff_names=alt_cutoff_name,
          contrast_names=alt_contrast_names,
-         assay_names=alt_assay_names,
+         assay_names=alt_assay_name,
          contrast_suffix=alt_contrast_suffix,
          rename_contrasts=rename_contrasts,
          rows=rows,

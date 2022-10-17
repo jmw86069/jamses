@@ -95,9 +95,9 @@ process_sestats_to_hitim <- function
          contrast_names <- dimnames(hit_array)[[2]];
       }
       gene_hitlist <- hit_array_to_list(hit_array,
-         cutoff_names=cutoff_name,
+         cutoff_names=cutoff_names,
          contrast_names=contrast_names,
-         assay_names=assay_name);
+         assay_names=assay_names);
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
       # confirm all gene_hits are present in the data provided
