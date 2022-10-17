@@ -635,6 +635,8 @@ groups_to_sedesign <- function
       jamba::printDebug("groups_to_sedesign(): ",
          "current_depth:",
          current_depth);
+      jamba::printDebug("groups_to_sedesign(): ",
+         "return_sedesign: ", return_sedesign)
    }
 
    ##########################################################
@@ -657,6 +659,8 @@ groups_to_sedesign <- function
             "factor_order values:",
             colnames(ifactors)[factor_order]);
       }
+      ###################################
+      # Define iContrastNames
       iContrastNames <- data.frame(check.names=FALSE,
          stringsAsFactors=FALSE,
          jamba::rbindList(lapply(factor_order, function(iChange){
@@ -747,6 +751,8 @@ groups_to_sedesign <- function
                NULL;
             }
          })));
+      # Define iContrastNames (end)
+      ###################################
 
       ## Optionally spike in some pre-defined non-standard contrasts
       if (!is.null(add_contrastdf)) {
@@ -859,23 +865,29 @@ groups_to_sedesign <- function
             pre_control_terms=pre_control_terms,
             verbose=verbose,
             ...);
+         # return value should be list with contrast_df, contrast_names, idesign
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
                "length(iContrastNamesInt):",
                length(iContrastNamesInt));
             print(iContrastNamesInt);
          }
-         ## If length==0 then there are no valid interaction contrasts
+         ## removed 0.0.31.900
+         # If length==0 then there are no valid interaction contrasts
+         # if (length(iContrastNamesInt) > 0 &&
+         #       jamba::igrepHas("[(]", rownames(iContrastNamesInt[[1]]))) {
+         #    return(iContrastNamesInt);
+         # }
+         ## updated 0.0.31.900: although not sure why there might be NA values
          if (length(iContrastNamesInt) > 0 &&
-               jamba::igrepHas("[(]", rownames(iContrastNamesInt[[1]]))) {
-            return(iContrastNamesInt);
+               ncol(iContrastNamesInt$contrast_df) > 1 &&
+               any(is.na(iContrastNamesInt$contrast_df[,1]))) {
+            iContrastNamesInt$contrast_df <- subset(iContrastNamesInt$contrast_df,
+               !is.na(iContrastNamesInt$contrast_df[,1]));
          }
-         if (length(iContrastNamesInt) > 0 &&
-               ncol(iContrastNamesInt) > 1 &&
-               any(is.na(iContrastNamesInt[,1]))) {
-            iContrastNamesInt <- iContrastNamesInt[!is.na(iContrastNamesInt[,1]),,drop=FALSE];
-         }
-         if (length(iContrastNamesInt) == 0 || ncol(iContrastNamesInt) > 1) {
+         ## updated 0.0.31.900: if there are interaction contrasts, append them
+         if (length(iContrastNamesInt$contrast_df) > 0 &&
+               ncol(iContrastNamesInt$contrast_df) > 1) {
             if (verbose >= 2) {
                jamba::printDebug("groups_to_sedesign(): ",
                   "begin iContrastNamesInt:");
@@ -883,7 +895,7 @@ groups_to_sedesign <- function
                jamba::printDebug("  end iContrastNamesInt:");
             }
             iContrastNames <- jamba::rbindList(list(iContrastNames,
-               iContrastNamesInt));
+               iContrastNamesInt$contrast_df));
          }
       } else {
          if (verbose >= 2) {
@@ -903,7 +915,8 @@ groups_to_sedesign <- function
    # end of automatic contrast definition
    ######################################################
 
-   if (return_sedesign && current_depth == 1) {
+   retvals <- list();
+   if (TRUE %in% return_sedesign && current_depth == 1) {
       icontrasts <- NULL;
       if (!is.null(idesign) && length(contrast_names) > 0) {
          icontrasts <- limma::makeContrasts(contrasts=contrast_names,
@@ -914,10 +927,14 @@ groups_to_sedesign <- function
             design=idesign,
             contrasts=icontrasts));
    } else {
-      retvals <- list();
       retvals$contrast_df <- iContrastNames;
       retvals$contrast_names <- contrast_names;
       retvals$idesign <- idesign;
+   }
+   if (verbose) {
+      jamba::printDebug("groups_to_sedesign(): ",
+         "current_depth: ", current_depth,
+         ", return_sedesign: ", return_sedesign)
    }
    return(retvals);
 }

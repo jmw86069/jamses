@@ -1,3 +1,13 @@
+# jamses 0.0.31.900
+
+## bug fixes
+
+* fixed apparent regression in `groups_to_sedesign()` for interaction contrasts
+
+   * version 0.0.30.900 apparently introduced regression bug in interaction
+   contrasts that returns only the interactions in `list` form instead
+   of all contrasts in `sedesign` form. Short-lived, fortunately.
+
 # jamses 0.0.30.900
 
 ## changes to existing functions
