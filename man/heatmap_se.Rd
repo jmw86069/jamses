@@ -107,7 +107,9 @@ heatmap.
 
 \item{rows}{\code{character} vector of \code{rownames(se)} to define a specific
 set of rows to display. When \code{sestats} is supplied, then the
-intersection of \code{rows} with genes defined by \code{sestats} is displayed.}
+intersection of \code{rows} with genes defined by \code{sestats} is displayed.
+Note that rows are required to be in \code{rownames(se)}, all other rows
+are dropped.}
 
 \item{row_type}{\code{character} string used in the title of the heatmap
 which indicates how many rows are displayed. For example

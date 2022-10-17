@@ -8,6 +8,21 @@
    contrasts that returns only the interactions in `list` form instead
    of all contrasts in `sedesign` form. Short-lived, fortunately.
 
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * moved substantial logic out, and into `process_sestats_to_hitim()`,
+   which handled the hit incidence matrix, and deciding which rows
+   are included in the heatmap with default `rows=NULL`.
+
+## new functions
+
+* `process_sestats_to_hitim()`
+
+   * previously internal logic to `heatmap_se()`, it surpassed the amount
+   of logic hidden inside a function, especially when it's used twice.
+
 # jamses 0.0.30.900
 
 ## changes to existing functions

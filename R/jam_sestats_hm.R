@@ -125,6 +125,8 @@
 #' @param rows `character` vector of `rownames(se)` to define a specific
 #'    set of rows to display. When `sestats` is supplied, then the
 #'    intersection of `rows` with genes defined by `sestats` is displayed.
+#'    Note that rows are required to be in `rownames(se)`, all other rows
+#'    are dropped.
 #' @param row_type `character` string used in the title of the heatmap
 #'    which indicates how many rows are displayed. For example
 #'    `"1,234 genes detected above background"` or
@@ -574,148 +576,50 @@ heatmap_se <- function
    gene_hits_im <- NULL;
    gene_hits <- NULL;
    alt_gene_hits_im <- NULL;
-   if (length(sestats) > 0) {
-      if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
-         hit_array <- sestats$hit_array;
-      } else if ("matrix" %in% class(sestats)) {
-         gene_hits_im <- sestats;
-         hit_array <- NULL;
-      } else {
-         hit_array <- sestats;
-      }
-      if (length(hit_array) == 0) {
-         if (verbose) {
-            jamba::printDebug("heatmap_se(): ",
-               "sestats is using a custom incidence matrix.");
-         }
-         if (length(contrast_names) > 0 &&
-               any(contrast_names %in% colnames(gene_hits_im))) {
-            contrast_names <- intersect(contrast_names,
-               colnames(gene_hits_im));
-            gene_hits_im <- gene_hits_im[, contrast_names, drop=FALSE];
-         }
-         gene_hits <- rownames(gene_hits_im);
-      } else {
-         if (verbose) {
-            jamba::printDebug("heatmap_se(): ",
-               "sestats is generating an incidence matrix.");
-         }
-         if (length(contrast_names) == 0) {
-            contrast_names <- dimnames(hit_array)[[2]];
-         }
-         gene_hitlist <- hit_array_to_list(hit_array,
-            cutoff_names=cutoff_name,
-            contrast_names=contrast_names,
-            assay_names=assay_name);
-         gene_hits <- names(jamba::tcount(names(unlist(unname(
-            gene_hitlist)))));
-         # confirm all gene_hits are present in the data provided
-         if (!all(gene_hits %in% rownames(se))) {
-            gene_hits <- intersect(gene_hits, rownames(se));
-         }
-         gene_hits_im <- venndir::list2im_value(gene_hitlist,
-            do_sparse=FALSE)[gene_hits,,drop=FALSE];
-      }
-
-      # optionally rename contrasts
-      if (rename_contrasts) {
-         colnames(gene_hits_im) <- tryCatch({
-            # paste0(".          ", gsub(":", ":",
-               contrast2comp(colnames(gene_hits_im))
-            # ));
-         }, error=function(e){
-            colnames(gene_hits_im)
-         });
-      }
-
-      if (length(contrast_suffix) > 0 && any(nchar(contrast_suffix)) > 0) {
-         colnames(gene_hits_im) <- paste0(colnames(gene_hits_im),
-            contrast_suffix);
-      }
-   }
 
    # rows as user-defined vector
    rows <- intersect(rows, rownames(se));
-   if (length(rows) > 0) {
-      if (length(sestats) > 0) {
-         rows_im <- (gene_hits_im * 0)[rep(1, length(rows)), , drop=FALSE];
-         rownames(rows_im) <- rows;
-         gene_hits_rows <- intersect(rows, gene_hits);
-         if (length(gene_hits_rows) > 0) {
-            rows_im[match(gene_hits_rows, rows),] <-
-               gene_hits_im[match(gene_hits_rows, rownames(gene_hits_im)),,drop=FALSE];
-         }
-         gene_hits_im <- rows_im;
-      } else {
-         gene_hits_im <- NULL;
-      }
-      gene_hits <- rows;
+
+   if (length(sestats) > 0) {
+      # generate an appropriate incidence matrix
+      gene_hits_im <- process_sestats_to_hitim(sestats,
+         cutoff_names=cutoff_names,
+         contrast_names=contrast_names,
+         assay_names=assay_names,
+         contrast_suffix=contrast_suffix,
+         rename_contrasts=rename_contrasts,
+         rows=rows,
+         verbose=verbose,
+         ...);
+      gene_hits <- rownames(gene_hits_im);
       rows <- gene_hits;
-   } else {
-      rows <- rownames(se);
-      if (length(gene_hits) > 0) {
-         rows <- intersect(gene_hits, rows);
+   }
+   if (length(gene_hits) == 0) {
+      if (length(rows) == 0) {
+         rows <- rownames(se);
       }
       gene_hits <- rows;
+   } else if (length(rows) == 0) {
+      rows <- gene_hits
+   }
+   if (verbose) {
+      jamba::printDebug("heatmap_se(): ",
+         "nrows in heatmap: ",
+         jamba::formatInt(length(rows)));
    }
 
    # alt_sestats only for rows and gene_hits defined from sestats
    if (length(sestats) > 0 && length(alt_sestats) > 0) {
-      if ("list" %in% class(alt_sestats) && "hit_array" %in% names(alt_sestats)) {
-         alt_hit_array <- alt_sestats$hit_array;
-      } else if ("matrix" %in% class(alt_sestats)) {
-         alt_gene_hits_im1 <- alt_sestats;
-         alt_hit_array <- NULL;
-      } else {
-         alt_hit_array <- alt_sestats;
-      }
-      if (length(alt_hit_array) == 0) {
-         if (verbose) {
-            jamba::printDebug("heatmap_se(): ",
-               "alt_sestats is using a custom incidence matrix.");
-         }
-         if (length(alt_contrast_names) > 0 &&
-               any(alt_contrast_names %in% colnames(alt_gene_hits_im1))) {
-            alt_contrast_names <- intersect(alt_contrast_names,
-               colnames(alt_gene_hits_im1));
-         } else {
-            alt_contrast_names <- colnames(alt_gene_hits_im1);
-         }
-         alt_gene_hits_im1 <- alt_gene_hits_im1[, alt_contrast_names, drop=FALSE];
-      } else {
-         if (length(alt_contrast_names) == 0) {
-            alt_contrast_names <- dimnames(alt_hit_array)[[2]];
-         }
-         alt_gene_hitlist <- hit_array_to_list(alt_hit_array,
-            cutoff_names=alt_cutoff_name,
-            contrast_names=alt_contrast_names,
-            assay_names=alt_assay_name);
-         alt_gene_hits_im1 <- venndir::list2im_value(alt_gene_hitlist,
-            do_sparse=FALSE);
-      }
-      # start with empty gene_hits_im, expand to ncol required here
-      alt_gene_hits_im <- (gene_hits_im * 0)[,rep(1, ncol(alt_gene_hits_im1)), drop=FALSE];
-      colnames(alt_gene_hits_im) <- colnames(alt_gene_hits_im1);
-      # determine shared genes to populate with values
-      genes_shared <- intersect(rownames(alt_gene_hits_im),
-         rownames(alt_gene_hits_im1))
-      if (length(genes_shared) > 0) {
-         alt_gene_hits_im[genes_shared,] <- alt_gene_hits_im1[genes_shared,];
-      }
-
-      # optionally rename contrasts
-      if (rename_contrasts) {
-         colnames(alt_gene_hits_im) <- tryCatch({
-            contrast2comp(colnames(alt_gene_hits_im));
-         }, error=function(e){
-            colnames(alt_gene_hits_im)
-         })
-      }
-
-      if (length(alt_contrast_suffix) > 0 && any(nchar(alt_contrast_suffix)) > 0) {
-         colnames(alt_gene_hits_im) <- paste0(colnames(alt_gene_hits_im),
-            alt_contrast_suffix);
-      }
+      # generate an appropriate incidence matrix
+      alt_gene_hits_im <- process_sestats_to_hitim(alt_sestats,
+         cutoff_names=alt_cutoff_names,
+         contrast_names=alt_contrast_names,
+         assay_names=alt_assay_names,
+         contrast_suffix=alt_contrast_suffix,
+         rename_contrasts=rename_contrasts,
+         rows=rows,
+         verbose=verbose,
+         ...);
    }
 
    # validate sample_color_list
