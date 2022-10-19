@@ -148,12 +148,17 @@
 #'    representing the maximum correlation value.
 #' @param assay_name `character` string indicating the name in
 #'    `assays(se)` to use for data to be displayed in the heatmap.
-#'    When multiple `assay_name` values are supplied, the first
+#'    * When multiple `assay_name` values are supplied, the first
 #'    assay_name that matches `names(assays(se))` will be used in the
 #'    heatmap. In this way, multiple `assay_names` can be supplied to
 #'    define statistical hits in `sestats`, which calls `hit_array_to_list()`
 #'    to combine hits across `assay_name` entries; but only the first
 #'    `assay_name` found in `se` is used for the heatmap values.
+#'    * When there is only one value for `assayNames(se)`, then
+#'    `assay_name` will default to this value, instead of acting like
+#'    it couldn't possibly know what was intended. Haha.
+#'    * Lastly, `assay_name` can be a `numeric` index, helpful in case
+#'    `assays(se)` contains no names - not recommended but it can happen.
 #' @param contrast_names `character` vector of contrasts in
 #'    `sestats$hit_array` to use for the heatmap. When `contrast_names=NULL`
 #'    then all contrasts are displayed, which is the default.
@@ -583,8 +588,8 @@ heatmap_se <- function
    if (length(sestats) > 0) {
       # generate an appropriate incidence matrix
       gene_hits_im <- process_sestats_to_hitim(sestats,
-         cutoff_names=cutoff_names,
-         contrast_names=contrast_name,
+         cutoff_names=cutoff_name,
+         contrast_names=contrast_names,
          assay_names=assay_name,
          contrast_suffix=contrast_suffix,
          rename_contrasts=rename_contrasts,
@@ -592,7 +597,9 @@ heatmap_se <- function
          verbose=verbose,
          ...);
       gene_hits <- rownames(gene_hits_im);
-      rows <- gene_hits;
+      if (length(rows) == 0) {
+         rows <- gene_hits;
+      }
    }
    if (length(gene_hits) == 0) {
       if (length(rows) == 0) {
@@ -601,6 +608,12 @@ heatmap_se <- function
       gene_hits <- rows;
    } else if (length(rows) == 0) {
       rows <- gene_hits
+   }
+   # confirm all rows exist in rownames(se)
+   if (!all(gene_hits %in% rownames(se))) {
+      gene_hits <- intersect(gene_hits, rownames(se));
+      rows <- gene_hits;
+      gene_hits_im <- gene_hits_im[gene_hits, , drop=FALSE];
    }
    if (verbose) {
       jamba::printDebug("heatmap_se(): ",
@@ -1094,7 +1107,14 @@ heatmap_se <- function
    assay_name <- head(intersect(assay_name,
       names(assays(se))), 1);
    if (length(assay_name) == 0) {
-      stop("assay_name must be supplied.")
+      if (length(SummarizedExperiment::assays(se)) == 1) {
+         assay_name <- head(names(SummarizedExperiment::assays(se)), 1);
+         if (length(assay_name) == 0) {
+            assay_name <- 1;
+         }
+      } else {
+         stop("assay_name must be supplied when there are multiple assays(se)")
+      }
    }
    if (verbose) {
       jamba::printDebug("heatmap_se(): ",

@@ -137,12 +137,19 @@ representing the maximum correlation value.}
 
 \item{assay_name}{\code{character} string indicating the name in
 \code{assays(se)} to use for data to be displayed in the heatmap.
-When multiple \code{assay_name} values are supplied, the first
+\itemize{
+\item When multiple \code{assay_name} values are supplied, the first
 assay_name that matches \code{names(assays(se))} will be used in the
 heatmap. In this way, multiple \code{assay_names} can be supplied to
 define statistical hits in \code{sestats}, which calls \code{hit_array_to_list()}
 to combine hits across \code{assay_name} entries; but only the first
-\code{assay_name} found in \code{se} is used for the heatmap values.}
+\code{assay_name} found in \code{se} is used for the heatmap values.
+\item When there is only one value for \code{assayNames(se)}, then
+\code{assay_name} will default to this value, instead of acting like
+it couldn't possibly know what was intended. Haha.
+\item Lastly, \code{assay_name} can be a \code{numeric} index, helpful in case
+\code{assays(se)} contains no names - not recommended but it can happen.
+}}
 
 \item{contrast_names}{\code{character} vector of contrasts in
 \code{sestats$hit_array} to use for the heatmap. When \code{contrast_names=NULL}

@@ -15,6 +15,9 @@
    * moved substantial logic out, and into `process_sestats_to_hitim()`,
    which handled the hit incidence matrix, and deciding which rows
    are included in the heatmap with default `rows=NULL`.
+   * quality of life change: when there is only one `assayNames(se)`, then
+   `assay_name` defaults to the only possible value, instead of acting
+   like it couldn't possibly know what I mean. Haha.
 
 ## new functions
 

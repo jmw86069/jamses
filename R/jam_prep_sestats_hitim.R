@@ -100,10 +100,6 @@ process_sestats_to_hitim <- function
          assay_names=assay_names);
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
-      # confirm all gene_hits are present in the data provided
-      if (!all(gene_hits %in% rownames(se))) {
-         gene_hits <- intersect(gene_hits, rownames(se));
-      }
       gene_hits_im <- venndir::list2im_value(gene_hitlist,
          do_sparse=FALSE)[gene_hits, , drop=FALSE];
    }
@@ -129,6 +125,7 @@ process_sestats_to_hitim <- function
          rows_use_match1 <- match(rows_use, rownames(rows_im));
          rows_use_match2 <- match(rows_use, rownames(gene_hits_im));
          rows_im[rows_use_match1, colnames(gene_hits_im)] <- gene_hits_im[rows_use_match2, colnames(gene_hits_im), drop=FALSE];
+         gene_hits_im <- rows_im;
       }
    }
 
