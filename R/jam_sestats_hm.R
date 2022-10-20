@@ -291,21 +291,42 @@
 #'    function.
 #' @param legend_at,legend_labels `numeric` and `character`, respectively,
 #'    to define custom values for the heatmap color gradient legend.
-#'    When `legend_at` is NULL, it uses `x=ceiling(color_max)` and defines
-#'    breaks at each integer value from `-x` to `+x`.
-#'    When `correlation=TRUE` the `legend_labels` by default use `legend_at`.
-#'    Otherwise, `legend_labels` values inverse transformed from `log2(1 + x)`
-#'    in order to display normal space fold change values, for example
-#'    the `legend_at=c(-2, -1, 0, 1, 2)` would result in:
+#'    * When `legend_at` is supplied, it is used as provided.
+#'    * When `legend_labels` is supplied, it is used only when its length
+#'    equals `length(legend_at)`, in which case it is used as provided.
+#'    * When `centerby_colnames=FALSE` and the matrix data does not contain
+#'    negative values, `legend_at` uses integers from `0` to `color_max`,
+#'    to avoid presenting a color legend with unnecessary negative values.
+#'    However, when `color_max <= 1` it uses `pretty(c(0, color_max))`,
+#'    removing extraneous values, then ensuring the maximum value is
+#'    `color_max`. For example when `color_max=0.85`,
+#'    the `legend_at` is likely to be `c(0, 0.2, 0.4, 0.6, 0.8, 0.85)`.
+#'    * When `centerby_colnames` is not `FALSE`, and/or data contains
+#'    negative values, the `legend_at` is symmetric above and below zero.
+#'    When `color_max <= 1` the label is created using
+#'    `pretty(c(-color_max, color_max))`, as described above, so `color_max`
+#'    is used as the minimum and maximum value.
+#'    When `color_max > 1` the `legend_at` uses integer steps.
+#'    * When `color_max <= 1` the `legend_labels` are presented as-is with
+#'    no transformation.
+#'    * When `color_max > 1` the `legend_labels` are transformed with
+#'    `exp2signed(x)` which is the inverse of `log2(1 + x)`. This inverse
+#'    tranform displays normal space values, in the case of centered data,
+#'    the values represent normal space fold changes.
+#'    For example the `legend_at=c(-2, -1, 0, 1, 2)` would result in
 #'    `legend_labels=c("-4", "-2", "1", "2", "4")`.
-#'    To override this behavior, supply both the custom `legend_at` values
+#'    * When `correlation=TRUE` the `legend_labels` by default use `legend_at`,
+#'    following rules for `color_max <= 1` above.
+#'    Otherwise, `legend_labels` values inverse transformed from `log2(1 + x)`
+#'    in order to display normal space fold change values,
+#'    * To override any of this behavior, supply both `legend_at`
 #'    and corresponding `legend_labels`.
 #' @param subset_legend_colors `logical` indicating whether to subset colors
 #'    shown in the color key defined by `sample_color_list`, which is useful
-#'    when the heatmap only represents a subset of color values.
-#'    When `subset_legend_colors == TRUE`, the color key will only
-#'    include colors shown in the `top_annotation`, when
-#'    `subset_legend_colors == FALSE` all colors defined in
+#'    when the heatmap only represents a subset of categorical color values.
+#'    * When `subset_legend_colors == TRUE`, the color key will only
+#'    include colors shown in the `top_annotation`.
+#'    * When `subset_legend_colors == FALSE` all colors defined in
 #'    `sample_color_list` will be included for each relevant column.
 #' @param row_cex,column_cex `numeric` values used to adjust the row and
 #'    column name font size, relative to the automatic adjustment that
@@ -499,6 +520,34 @@
 #'    sample_color_list=sample_color_list)
 #' ComplexHeatmap::draw(hm5,
 #'    column_title=attr(hm5, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # custom column_names_gp
+#' hm6 <- heatmap_se(se,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+#'       font=rep(c(1, 2, 1), c(3, 5, 24))),
+#'    column_split=c("Group"),
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' ComplexHeatmap::draw(hm6,
+#'    column_title=attr(hm6, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # correlation heatmap
+#' hm6corr <- heatmap_se(se,
+#'    correlation=TRUE,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+#'       font=rep(c(1, 2, 1), c(3, 5, 24))),
+#'    column_split=c("Group"),
+#'    sample_color_list=sample_color_list)
+#' ComplexHeatmap::draw(hm6corr,
+#'    column_title=attr(hm6corr, "hm_title"),
 #'    merge_legends=TRUE)
 #'
 #' @export
@@ -1292,6 +1341,15 @@ heatmap_se <- function
       show_row_names <- (length(gene_hits) <= 500);
    }
 
+   # pull assay data separately so we can tolerate other object types
+   # Note columns are not subset here so they can be used during centering.
+   # After centering, isamples is used to subset columns as needed.
+   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+      se_matrix <- assays(se[gene_hits, ])[[assay_name]];
+   } else {
+      se_matrix <- assayData(se[gene_hits, ])[[assay_name]];
+   }
+
    # heatmap legend labels
    if (length(legend_at) == 0) {
       if (correlation) {
@@ -1301,29 +1359,49 @@ heatmap_se <- function
          legend_at <- seq(-ceiling(color_max),
             to=ceiling(color_max),
             by=0.25);
+         if (length(legend_labels) == 0) {
+            legend_labels <- legend_at;
+         }
       } else {
-         legend_at <- seq(-ceiling(color_max),
-            to=ceiling(color_max));
+         if (FALSE %in% centerby_colnames && min(se_matrix, na.rm=TRUE) >= 0) {
+            if (color_max <= 1) {
+               legend_pretty <- pretty(c(0, color_max), n=4)
+               legend_at <- unique(c(
+                  legend_pretty[legend_pretty <= color_max],
+                  color_max))
+               if (length(legend_labels) == 0) {
+                  legend_labels <- legend_at;
+               }
+            } else {
+               legend_at <- seq(from=0,
+                  to=ceiling(color_max));
+            }
+         } else {
+            if (color_max <= 1) {
+               legend_pretty <- pretty(c(-color_max, color_max), n=6)
+               legend_at <- unique(c(
+                  -color_max,
+                  legend_pretty[legend_pretty <= color_max & legend_pretty >= -color_max],
+                  color_max))
+               if (length(legend_labels) == 0) {
+                  legend_labels <- legend_at;
+               }
+            } else {
+               legend_at <- seq(-ceiling(color_max),
+                  to=ceiling(color_max));
+            }
+         }
       }
    }
    if (length(legend_labels) != length(legend_at)) {
       if (correlation) {
          legend_labels <- legend_at;
       } else {
-         legend_labels <- round(jamba::exp2signed(legend_at+0.001, offset=0))
+         legend_labels <- round(jamba::exp2signed(legend_at+0.000001, offset=0))
          if (any(duplicated(legend_labels))) {
-            legend_labels <- round(10 * jamba::exp2signed(legend_at+0.00001, offset=0)) / 10;
+            legend_labels <- round(10 * jamba::exp2signed(legend_at+0.000001, offset=0)) / 10;
          }
       }
-   }
-
-   # pull assay data separately so we can tolerate other object types
-   # Note columns are not subset here so they can be used during centering.
-   # After centering, isamples is used to subset columns as needed.
-   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
-      se_matrix <- assays(se[gene_hits, ])[[assay_name]];
-   } else {
-      se_matrix <- assayData(se[gene_hits, ])[[assay_name]];
    }
 
    # cluster_columns
@@ -1406,15 +1484,23 @@ heatmap_se <- function
    if (length(row_names_gp) == 0) {
       row_names_gp <- grid::gpar(fontsize=row_fontsize)
    } else {
+      # if fontsize is not defined we add it here,
+      # otherwise use row_names_gp as supplied
       if (!"fontsize" %in% names(row_names_gp)) {
-         row_names_gp$fontsize <- grid::gpar(fontsize=row_fontsize)$fontsize;
+         row_names_gp <- do.call(grid::gpar,
+            c(row_names_gp,
+               alist(fontsize=row_fontsize)))
       }
    }
    if (length(column_names_gp) == 0) {
       column_names_gp <- grid::gpar(fontsize=column_fontsize)
    } else {
+      # if fontsize is not defined we add it here,
+      # otherwise use column_names_gp as supplied
       if (!"fontsize" %in% names(column_names_gp)) {
-         column_names_gp$fontsize <- grid::gpar(fontsize=column_fontsize)$fontsize;
+         column_names_gp <- do.call(grid::gpar,
+            c(column_names_gp,
+               alist(fontsize=column_fontsize)))
       }
    }
 

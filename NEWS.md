@@ -8,6 +8,11 @@
    contrasts that returns only the interactions in `list` form instead
    of all contrasts in `sedesign` form. Short-lived, fortunately.
 
+* `heatmap_se()`
+
+   * fixed bug with user-supplied `row_names_gp` or `column_names_gp`
+   that does not also define `fontsize`.
+
 ## changes to existing functions
 
 * `heatmap_se()`
@@ -18,6 +23,12 @@
    * quality of life change: when there is only one `assayNames(se)`, then
    `assay_name` defaults to the only possible value, instead of acting
    like it couldn't possibly know what I mean. Haha.
+   * `legend_at` is smarter when `centerby_colnames=FALSE` and there is
+   no data centering, the legend only includes negative values when
+   data contains negative values.
+   * `legend_labels` are smarter when `color_max <= 1`, it uses the numerical
+   value without transformation.
+   * vastly expanded the examples and the param help text.
 
 ## new functions
 

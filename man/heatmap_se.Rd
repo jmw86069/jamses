@@ -312,23 +312,48 @@ function.}
 
 \item{legend_at, legend_labels}{\code{numeric} and \code{character}, respectively,
 to define custom values for the heatmap color gradient legend.
-When \code{legend_at} is NULL, it uses \code{x=ceiling(color_max)} and defines
-breaks at each integer value from \code{-x} to \code{+x}.
-When \code{correlation=TRUE} the \code{legend_labels} by default use \code{legend_at}.
-Otherwise, \code{legend_labels} values inverse transformed from \code{log2(1 + x)}
-in order to display normal space fold change values, for example
-the \code{legend_at=c(-2, -1, 0, 1, 2)} would result in:
+\itemize{
+\item When \code{legend_at} is supplied, it is used as provided.
+\item When \code{legend_labels} is supplied, it is used only when its length
+equals \code{length(legend_at)}, in which case it is used as provided.
+\item When \code{centerby_colnames=FALSE} and the matrix data does not contain
+negative values, \code{legend_at} uses integers from \code{0} to \code{color_max},
+to avoid presenting a color legend with unnecessary negative values.
+However, when \code{color_max <= 1} it uses \code{pretty(c(0, color_max))},
+removing extraneous values, then ensuring the maximum value is
+\code{color_max}. For example when \code{color_max=0.85},
+the \code{legend_at} is likely to be \code{c(0, 0.2, 0.4, 0.6, 0.8, 0.85)}.
+\item When \code{centerby_colnames} is not \code{FALSE}, and/or data contains
+negative values, the \code{legend_at} is symmetric above and below zero.
+When \code{color_max <= 1} the label is created using
+\code{pretty(c(-color_max, color_max))}, as described above, so \code{color_max}
+is used as the minimum and maximum value.
+When \code{color_max > 1} the \code{legend_at} uses integer steps.
+\item When \code{color_max <= 1} the \code{legend_labels} are presented as-is with
+no transformation.
+\item When \code{color_max > 1} the \code{legend_labels} are transformed with
+\code{exp2signed(x)} which is the inverse of \code{log2(1 + x)}. This inverse
+tranform displays normal space values, in the case of centered data,
+the values represent normal space fold changes.
+For example the \code{legend_at=c(-2, -1, 0, 1, 2)} would result in
 \code{legend_labels=c("-4", "-2", "1", "2", "4")}.
-To override this behavior, supply both the custom \code{legend_at} values
-and corresponding \code{legend_labels}.}
+\item When \code{correlation=TRUE} the \code{legend_labels} by default use \code{legend_at},
+following rules for \code{color_max <= 1} above.
+Otherwise, \code{legend_labels} values inverse transformed from \code{log2(1 + x)}
+in order to display normal space fold change values,
+\item To override any of this behavior, supply both \code{legend_at}
+and corresponding \code{legend_labels}.
+}}
 
 \item{subset_legend_colors}{\code{logical} indicating whether to subset colors
 shown in the color key defined by \code{sample_color_list}, which is useful
-when the heatmap only represents a subset of color values.
-When \code{subset_legend_colors == TRUE}, the color key will only
-include colors shown in the \code{top_annotation}, when
-\code{subset_legend_colors == FALSE} all colors defined in
-\code{sample_color_list} will be included for each relevant column.}
+when the heatmap only represents a subset of categorical color values.
+\itemize{
+\item When \code{subset_legend_colors == TRUE}, the color key will only
+include colors shown in the \code{top_annotation}.
+\item When \code{subset_legend_colors == FALSE} all colors defined in
+\code{sample_color_list} will be included for each relevant column.
+}}
 
 \item{row_cex, column_cex}{\code{numeric} values used to adjust the row and
 column name font size, relative to the automatic adjustment that
@@ -645,6 +670,34 @@ hm5 <- heatmap_se(se,
    sample_color_list=sample_color_list)
 ComplexHeatmap::draw(hm5,
    column_title=attr(hm5, "hm_title"),
+   merge_legends=TRUE)
+
+# custom column_names_gp
+hm6 <- heatmap_se(se,
+   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   control_label="vs WildType",
+   column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+      font=rep(c(1, 2, 1), c(3, 5, 24))),
+   column_split=c("Group"),
+   row_split=c("Class"),
+   rowData_colnames=c("Class"),
+   cluster_row_slices=FALSE,
+   sample_color_list=sample_color_list)
+ComplexHeatmap::draw(hm6,
+   column_title=attr(hm6, "hm_title"),
+   merge_legends=TRUE)
+
+# correlation heatmap
+hm6corr <- heatmap_se(se,
+   correlation=TRUE,
+   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   control_label="vs WildType",
+   column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+      font=rep(c(1, 2, 1), c(3, 5, 24))),
+   column_split=c("Group"),
+   sample_color_list=sample_color_list)
+ComplexHeatmap::draw(hm6corr,
+   column_title=attr(hm6corr, "hm_title"),
    merge_legends=TRUE)
 
 }

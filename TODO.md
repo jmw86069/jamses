@@ -1,6 +1,14 @@
 
 # TODO for jamses
 
+## 20oct2022
+
+* `heatmap_se()`
+
+   * when `centerby_colnames=FALSE` no data centering is performed,
+   the color legend should match the range of data, and hide negative
+   values if there are no negative values.
+
 ## 13oct2022
 
 * `se_contrast_stats()`
