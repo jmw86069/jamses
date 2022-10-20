@@ -384,6 +384,123 @@
 #'    * `hm_title` object `character` string with the heatmap title.
 #' @param ... additional arguments are passed to supporting functions.
 #'
+#' @examples
+#' set.seed(123)
+#' nr <- 1000;
+#' nc <- 32;
+#' m <- matrix(ncol=nc, nrow=nr, rnorm(nc * nr) * 0.8);
+#' k <- seq_len(nr*2/4)+nr*2/4;
+#' m[k, c(1:8+8, 1:8+16+8)] <- m[k, c(1:8+8, 1:8+16+8)] +
+#'    rnorm(8 * nr*2/5)*1 + 2;
+#' k <- seq_len(nr/4)+nr*3/4;
+#' m[k, c(17:32)] <- m[k, c(17:32)] +
+#'    rnorm(8 * nr/5)*1 - 3.5;
+#' rownames(m) <- jamba::makeNames(rep("gene", nrow(m)));
+#' colnames(m) <- jamba::makeNames(rep("sample", ncol(m)));
+#' se <- SummarizedExperiment::SummarizedExperiment(
+#'    assays=list(counts=m),
+#'    rowData=data.frame(row.names=rownames(m),
+#'       Class=rep(c("A", "A", "B", "C"), each=nr/4)),
+#'    colData=data.frame(row.names=colnames(m),
+#'       Group=rep(c("WildType", "Dex", "MG132", "DEX+MG132"), each=nc/4)))
+#'
+#' # optionally define factor levels to force the order of labels
+#' colData(se)$Group <- factor(colData(se)$Group,
+#'    levels=unique(colData(se)$Group))
+#'
+#' # basic heatmap
+#' hm <- heatmap_se(se)
+#'
+#' # draw by printing hm, or call draw() to add useful options
+#' ComplexHeatmap::draw(hm,
+#'    column_title=attr(hm, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # add specific colors
+#' sample_color_list <- list(
+#'    Group=colorjam::group2colors(unique(colData(se)$Group)),
+#'    Class=colorjam::group2colors(unique(rowData(se)$Class)))
+#'
+#' heatmap_se(se,
+#'    sample_color_list=sample_color_list)
+#'
+#' # let's have some fun now
+#' heatmap_se(se,
+#'    column_split=c("Group"),
+#'    column_title_rot=90,
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#'
+#' # center by WildType samples
+#' # - controlSamples
+#' # - control_label
+#' hm2 <- heatmap_se(se,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    column_split=c("Group"),
+#'    column_title_rot=90,
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' hm2drawn <- ComplexHeatmap::draw(hm2,
+#'    column_title=attr(hm2, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # labels only a subset of rows
+#' mark_rows <- c(sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=5),
+#'    sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=3));
+#' hm3 <- heatmap_se(se,
+#'    mark_rows=mark_rows,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    column_split=c("Group"),
+#'    column_title_rot=90,
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' ComplexHeatmap::draw(hm3,
+#'    column_title=attr(hm3, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # sestats can accept list, incidence matrix, hit_array, or sestats
+#' sestats_list <- list(
+#'    contrast1=setNames(sample(c(1, -1), replace=TRUE, size=50),
+#'       sample(rownames(se), size=50)),
+#'    contrast2=setNames(sample(c(1, -1), replace=TRUE, size=50),
+#'       sample(rownames(se), size=50)))
+#' hm4 <- heatmap_se(se,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    sestats=sestats_list,
+#'    column_split=c("Group"),
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' ComplexHeatmap::draw(hm4,
+#'    column_title=attr(hm4, "hm_title"),
+#'    merge_legends=TRUE)
+#'
+#' # sestats as incidence matrix
+#' # - automatically subsets rows unless rows is defined
+#' sestats_im <- venndir::list2im_value(sestats_list, do_sparse=FALSE)
+#' hm5 <- heatmap_se(se,
+#'    controlSamples=rownames(subset(colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    sestats=sestats_im,
+#'    column_split=c("Group"),
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' ComplexHeatmap::draw(hm5,
+#'    column_title=attr(hm5, "hm_title"),
+#'    merge_legends=TRUE)
+#'
 #' @export
 heatmap_se <- function
 (se,
@@ -442,7 +559,7 @@ heatmap_se <- function
    row_label_colname=NULL,
    cluster_columns=FALSE,
    cluster_rows=function(x, ...){
-      amap::hcluster(rmNA(naValue=0, x),
+      amap::hcluster(jamba::rmNA(naValue=0, x),
          ...,
          method="euclidean",
          link="ward")},
@@ -1212,7 +1329,7 @@ heatmap_se <- function
    # cluster_columns
    if (!is.function(cluster_columns) && cluster_columns %in% TRUE) {
       cluster_columns <- function(x, ...) {
-         amap::hcluster(rmNA(naValue=0, x),
+         amap::hcluster(jamba::rmNA(naValue=0, x),
             ...,
             method="euclidean",
             link="ward")}
@@ -1339,7 +1456,7 @@ heatmap_se <- function
       cluster_rows=cluster_rows,
       ...)
    hm_title <- paste0(
-      formatInt(length(gene_hits)),
+      jamba::formatInt(length(gene_hits)),
       " ", row_type,
       "\n", norm_label,
       ifelse(any(nchar(centerby_label) > 0),
