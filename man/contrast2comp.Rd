@@ -3,6 +3,8 @@
 \name{contrast2comp}
 \alias{contrast2comp}
 \alias{comp2contrast}
+\alias{names_contrast2comp}
+\alias{names_comp2contrast}
 \title{Convert contrast to short-form comp, convert comp to contrast}
 \usage{
 contrast2comp(
@@ -16,6 +18,27 @@ contrast2comp(
 )
 
 comp2contrast(
+  comps,
+  contrast_delim = "-",
+  contrast_factor_delim = "_",
+  comp_factor_delim = ":",
+  factor_order = NULL,
+  add_attr = FALSE,
+  verbose = FALSE,
+  ...
+)
+
+names_contrast2comp(
+  contrast_names,
+  contrast_delim = "-",
+  contrast_factor_delim = "_",
+  comp_factor_delim = ":",
+  add_attr = FALSE,
+  verbose = FALSE,
+  ...
+)
+
+names_comp2contrast(
   comps,
   contrast_delim = "-",
   contrast_factor_delim = "_",

@@ -1,5 +1,19 @@
 # jamses 0.0.31.900
 
+## new functions
+
+* `names_contrast2comp()` and `names_comp2contrast()` are analogous to
+`contrast2comp()` and `comp2contrast()` except they operate on the
+object names, making it convenient to wrapper around `list` objects
+where the list names are the contrasts or comps.
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * argument `normgroup` now accepts `colnames(colData(se))` to define
+   normgroups by column annotations.
+
 ## bug fixes
 
 * fixed apparent regression in `groups_to_sedesign()` for interaction contrasts

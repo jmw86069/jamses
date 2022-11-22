@@ -3,7 +3,22 @@
 
 ## 22nov2022
 
-* previous update to `groups_to_sedesign()` introduced a regression (error)
+* Add concept of `"normgroup"` to `sestats_to_df()`
+
+   * Implied: `"normgroup"` should also be added to `sestats`.
+
+* Add per-gene logic and functions developed for the DM-JDM manuscript.
+* Bonus points: optionally print commands as they are being run, for example:
+
+   * general idea is that `se_contrasts()` is a wrapper around limma,
+   so it should be able to print the equivalent calls to `limma::lmFit()`
+   for example, so a user can observe the progression of analysis steps.
+   * command to convert SE to expression matrix / and ExpressionSet used by limma
+   * command to run optional `voom_jam()`; then the vanilla `limma::voom()`
+   * command to run `run_limma_replicate()`
+   * command to run `limma::lmFit()`, `limma::eBayes()`
+
+* COMPLETE: previous update to `groups_to_sedesign()` introduced a regression (error)
 for input that generates two-way contrasts.
 
 ## 20oct2022

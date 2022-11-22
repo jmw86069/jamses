@@ -511,3 +511,61 @@ stack_contrasts <- function
    }
    imcontrasts
 }
+
+
+#' Convert contrast to short-form comparison using object names
+#'
+#' @rdname contrast2comp
+#'
+#' @export
+names_contrast2comp <- function
+(contrast_names,
+ contrast_delim="-",
+ contrast_factor_delim="_",
+ comp_factor_delim=":",
+ add_attr=FALSE,
+ verbose=FALSE,
+ ...)
+{
+   #
+   xnames <- names(contrast_names);
+   xcomp <- contrast2comp(contrast_names=xnames,
+      contrast_delim=contrast_delim,
+      contrast_factor_delim=contrast_factor_delim,
+      comp_factor_delim=comp_factor_delim,
+      add_attr=add_attr,
+      verbose=verbose,
+      ...)
+   names(contrast_names) <- xcomp;
+   return(contrast_names);
+}
+
+
+#' Convert short-form comparison to statistical contrast using object names
+#'
+#' @rdname contrast2comp
+#'
+#' @export
+names_comp2contrast <- function
+(comps,
+ contrast_delim="-",
+ contrast_factor_delim="_",
+ comp_factor_delim=":",
+ factor_order=NULL,
+ add_attr=FALSE,
+ verbose=FALSE,
+ ...)
+{
+   #
+   xcomp <- names(comps);
+   xnames <- comp2contrast(comps=xcomp,
+      contrast_delim=contrast_delim,
+      contrast_factor_delim=contrast_factor_delim,
+      comp_factor_delim=comp_factor_delim,
+      factor_order=factor_order,
+      add_attr=add_attr,
+      verbose=verbose,
+      ...)
+   names(comps) <- xnames;
+   return(comps);
+}

@@ -162,6 +162,12 @@ se_contrast_stats <- function
    if (length(normgroup) == 0) {
       normgroup <- jamba::nameVector(rep("bulk", length(isamples)),
          isamples);
+   } else if (all(normgroup %in% colnames(SummarizedExperiment::colData(se[,isamples])))) {
+      normgroup <- jamba::nameVector(
+         jamba::pasteByRowOrdered(
+            data.frame(check.names=FALSE,
+               SummarizedExperiment::colData(se[,isamples])[,normgroup, drop=FALSE])),
+         isamples);
    }
    if (length(names(normgroup)) == 0 && length(normgroup) == length(isamples)) {
       names(normgroup) <- isamples;
@@ -271,7 +277,19 @@ se_contrast_stats <- function
                rlr <- normgroup_stats[[rlr_name]];
                rlr$stats_dfs;
             }));
+         if (verbose) {
+            jamba::printDebug("se_contrast_stats(): ",
+               "ssdim(normgroup_stats):");
+            print(jamba::ssdim(normgroup_stats));
+         }
          rlr_result_stats_df_colnames <- unique(unlist(lapply(rlr_result_stats_dfs, colnames)));
+         if (verbose) {
+            jamba::printDebug("se_contrast_stats(): ",
+               "sdim(rlr_result_stats_dfs):");
+            print(jamba::sdim(rlr_result_stats_dfs));
+            print(head(head(se_contrast_stats, 1)[[1]], 3));
+            print(head(tail(se_contrast_stats, 1)[[1]], 3));
+         }
          rlr_result_stats_df <- jamba::mergeAllXY(rlr_result_stats_dfs)
          # rlr_result_stats_df <- rlr_result_stats_df[,rlr_result_stats_df_colnames, drop=FALSE];
          rlr_result <- list(
