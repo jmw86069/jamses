@@ -7,11 +7,16 @@
    * version 0.0.30.900 apparently introduced regression bug in interaction
    contrasts that returns only the interactions in `list` form instead
    of all contrasts in `sedesign` form. Short-lived, fortunately.
+   * Some debug potential was added with `verbose=TRUE`, that prints
+   iterative contrast name generation, with indent to help show when the
+   function is iteratively calling itself.
 
 * `heatmap_se()`
 
    * fixed bug with user-supplied `row_names_gp` or `column_names_gp`
    that does not also define `fontsize`.
+   * new arguments `cluster_column_slices=FALSE`, `cluster_row_slices=FALSE`
+   to allow this behavior to be overridden when relevant
 
 ## changes to existing functions
 

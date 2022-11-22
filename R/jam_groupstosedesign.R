@@ -318,6 +318,7 @@ groups_to_sedesign <- function
       }
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "ifactors from SummarizedExperiment input:");
          print(ifactors);
       }
@@ -332,6 +333,7 @@ groups_to_sedesign <- function
       ##
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "splitting vector into groups");
       }
       if (length(names(ifactors)) == 0) {
@@ -415,6 +417,7 @@ groups_to_sedesign <- function
       }
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "ifactors:");
          print(head(ifactors, 40));
       }
@@ -431,6 +434,7 @@ groups_to_sedesign <- function
       ##
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "using existing data.frame");
       }
       if (length(rownames(ifactors)) == 0) {
@@ -460,6 +464,7 @@ groups_to_sedesign <- function
                ifactors <- ifactors[match(isamples, rownames(ifactors)),,drop=FALSE];
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
+                     indent=(current_depth-1)*5,
                      "Specifying ifactors[isamples,]");
                   print(head(ifactors));
                }
@@ -467,6 +472,7 @@ groups_to_sedesign <- function
          }
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "head(ifactors):");
             print(head(ifactors, 100));
          }
@@ -491,8 +497,10 @@ groups_to_sedesign <- function
       }
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "Specifying ifactors[,group_colnames,drop=FALSE]");
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "group_colnames:",
             group_colnames);
       }
@@ -504,6 +512,7 @@ groups_to_sedesign <- function
             if ("asis" %in% default_order) {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
+                     indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "asis");
                }
                ifactors[,icol] <- factor(ifactors[,icol],
@@ -512,6 +521,7 @@ groups_to_sedesign <- function
             } else if ("sort_samples" %in% default_order) {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
+                     indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "sort_samples");
                }
                ifactors[,icol] <- factor(ifactors[,icol],
@@ -521,6 +531,7 @@ groups_to_sedesign <- function
             } else {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
+                     indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "mixedSort");
                }
                ifactors[,icol] <- factor(ifactors[,icol],
@@ -537,6 +548,7 @@ groups_to_sedesign <- function
          byCols=group_colnames);
       if (verbose >= 2) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "ifactors:");
          print(head(ifactors));
       }
@@ -573,6 +585,7 @@ groups_to_sedesign <- function
       ##
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "converting idesign into ifactors data.frame");
       }
       ## Assume for now, idesign matrix with sample rows and group columns
@@ -593,14 +606,20 @@ groups_to_sedesign <- function
             suffix="_");
       }
       rownames(ifactors) <- unname(jamba::pasteByRow(ifactors, sep=factor_sep));
-      jamba::printDebug("ifactors:");print(ifactors);
+      if (verbose) {
+         jamba::printDebug("ifactors:",
+            indent=(current_depth-1)*5)
+         print(ifactors);
+      }
    }
    if (verbose >= 2) {
       jamba::printDebug("groups_to_sedesign(): ",
+         indent=(current_depth-1)*5,
          "ifactors:");
       print(head(ifactors));
       if (!is.null(sample2group)) {
-         jamba::printDebug("sample2group:");
+         jamba::printDebug("sample2group:",
+            indent=(current_depth-1)*5)
          print(head(sample2group));
       }
    }
@@ -626,6 +645,7 @@ groups_to_sedesign <- function
 
    if (verbose >= 2) {
       jamba::printDebug("groups_to_sedesign(): ",
+         indent=(current_depth-1)*5,
          "ifactors:");
       print(head(ifactors));
    }
@@ -633,9 +653,11 @@ groups_to_sedesign <- function
 
    if (verbose) {
       jamba::printDebug("groups_to_sedesign(): ",
+         indent=(current_depth-1)*5,
          "current_depth:",
          current_depth);
       jamba::printDebug("groups_to_sedesign(): ",
+         indent=(current_depth-1)*5,
          "return_sedesign: ", return_sedesign)
    }
 
@@ -656,6 +678,7 @@ groups_to_sedesign <- function
       ##
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "factor_order values:",
             colnames(ifactors)[factor_order]);
       }
@@ -666,6 +689,7 @@ groups_to_sedesign <- function
          jamba::rbindList(lapply(factor_order, function(iChange){
             if (verbose) {
                jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
                   "factor_order iChange:",
                   colnames(ifactors)[iChange]);
             }
@@ -692,10 +716,12 @@ groups_to_sedesign <- function
                   iFactorsSub <- ifactors[iSplitRows, use_factor_order, drop=FALSE];
                   if (verbose >= 2) {
                      jamba::printDebug("groups_to_sedesign(): ",
+                        indent=(current_depth-1)*5,
                         "   iSplitRows:",
                         iSplitRows,
                         ", use_factor_order:", use_factor_order);
                      jamba::printDebug("groups_to_sedesign(): ",
+                        indent=(current_depth-1)*5,
                         "   iFactorsSub:");
                      print(iFactorsSub);
                   }
@@ -742,6 +768,7 @@ groups_to_sedesign <- function
                rownames(iDF) <- iDF[,"contrastName"];
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
+                     indent=(current_depth-1)*5,
                      "   new contrasts:\n",
                      rownames(iDF),
                      sep=",\n");
@@ -758,6 +785,7 @@ groups_to_sedesign <- function
       if (!is.null(add_contrastdf)) {
          if (verbose) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "Adding custom ",
                "add_contrastdf");
          }
@@ -773,6 +801,7 @@ groups_to_sedesign <- function
             sep="!");
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "iDFcomponents:\n",
                iDFcomponents, sep="\n");
             jamba::printDebug("groups_to_sedesign(): ",
@@ -787,6 +816,7 @@ groups_to_sedesign <- function
                outcome=ifelse(!duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]), "(kept)", "(removed)"))
             dupe_kept_df <- jamba::mixedSortDF(byCols=1, dupe_kept_df);
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "   removed duplicate (equivalent) contrasts:");
             print(dupe_kept_df[,-1, drop=FALSE]);
          }
@@ -796,6 +826,7 @@ groups_to_sedesign <- function
       if ("contrastName" %in% colnames(iContrastNames)) {
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "tcount(iContrastNames$contrastName):")
             print(jamba::tcount(iContrastNames[,"contrastName"]));
          }
@@ -806,11 +837,13 @@ groups_to_sedesign <- function
       if (length(remove_pairs) > 0) {
          if (verbose) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "Processing any remove_pairs contrasts.");
          }
          for (iCol in setdiff(colnames(iContrastNames), "contrastName")) {
             if (verbose) {
                jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
                   "   Checking for remove_pairs in column:", iCol);
             }
             iColVals <- jamba::cPasteS(strsplit(as.character(iContrastNames[[iCol]]), ","));
@@ -819,6 +852,7 @@ groups_to_sedesign <- function
                iWhich <- which(!iColVals %in% remove_pairsFull);
                if (verbose) {
                   jamba::printDebug("      removedPair with values:\n",
+                     indent=(current_depth-1)*5,
                      unique(iColVals[iWhich1]),
                      fgText=c("yellow", "purple"), sep="\n");
                }
@@ -833,6 +867,7 @@ groups_to_sedesign <- function
 
       if (verbose >= 2) {
          jamba::printDebug("groups_to_sedesign(): ",
+            indent=(current_depth-1)*5,
             "iContrastNames:");
          print(head(iContrastNames, 100));
       }
@@ -849,6 +884,7 @@ groups_to_sedesign <- function
          }
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "   Defining interactions contrasts.");
             print(head(iContrastNamesUse[,iContrastGroupsUse,drop=FALSE], 100));
          }
@@ -868,6 +904,7 @@ groups_to_sedesign <- function
          # return value should be list with contrast_df, contrast_names, idesign
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "length(iContrastNamesInt):",
                length(iContrastNamesInt));
             print(iContrastNamesInt);
@@ -888,20 +925,43 @@ groups_to_sedesign <- function
          ## updated 0.0.31.900: if there are interaction contrasts, append them
          if (length(iContrastNamesInt$contrast_df) > 0 &&
                ncol(iContrastNamesInt$contrast_df) > 1) {
+            if (verbose >= 1) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "Combining iContrastNames with iContrastNamesInt.");
+            }
             if (verbose >= 2) {
                jamba::printDebug("groups_to_sedesign(): ",
-                  "begin iContrastNamesInt:");
+                  indent=(current_depth-1)*5,
+                  "head(iContrastNames):");
+               print(head(iContrastNames));
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "begin(iContrastNamesInt):");
                print(head(iContrastNamesInt));
-               jamba::printDebug("  end iContrastNamesInt:");
+               # jamba::printDebug("  end iContrastNamesInt:");
             }
             iContrastNames <- jamba::rbindList(list(iContrastNames,
                iContrastNamesInt$contrast_df));
+            if (verbose >= 1) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "combined head(iContrastNames):");
+               print(head(iContrastNames));
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "combined tail(iContrastNames):");
+               print(tail(iContrastNames));
+            }
          }
       } else {
+         # no interaction contrasts to be defined
          if (verbose >= 2) {
             jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
                "   Skipping interactions");
             jamba::printDebug("      ncol(iContrastNames):",
+               indent=(current_depth-1)*5,
                ncol(iContrastNames));
             jamba::printDebug("      head(iContrastNames):");
             print(head(iContrastNames));
@@ -933,6 +993,7 @@ groups_to_sedesign <- function
    }
    if (verbose) {
       jamba::printDebug("groups_to_sedesign(): ",
+         indent=(current_depth-1)*5,
          "current_depth: ", current_depth,
          ", return_sedesign: ", return_sedesign)
    }

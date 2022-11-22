@@ -1,6 +1,11 @@
 
 # TODO for jamses
 
+## 22nov2022
+
+* previous update to `groups_to_sedesign()` introduced a regression (error)
+for input that generates two-way contrasts.
+
 ## 20oct2022
 
 * `heatmap_se()`
@@ -8,6 +13,10 @@
    * when `centerby_colnames=FALSE` no data centering is performed,
    the color legend should match the range of data, and hide negative
    values if there are no negative values.
+   * allow custom `col` color function in form of `circlize::colorRamp2()`
+   * deprecate `sample_color_list` into `color_list`; or consider adding
+   `row_color_list` so row colors can contain the same colnames
+   with different color assignments compared with `sample_color_list`. Hmmm.
 
 ## 13oct2022
 
