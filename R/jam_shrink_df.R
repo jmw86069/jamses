@@ -7,21 +7,23 @@
 #' and a groupBy key, and to collapse multiple rows per key
 #' into one row per key.
 #'
+#' @family jamses utilities
+#'
 #' @export
 shrinkDataFrame <- function
 (x,
-   groupBy,
-   na.rm=TRUE,
-   stringShrinkFunc=function(x)jamba::cPasteSU(x, na.rm=TRUE),
-   numShrinkFunc=mean,
-   addStringCols=NULL,
-   stringToNumFunc=as.character,
-   keepNAgroupBy=TRUE,
-   includeNumReps=FALSE,
-   collapseMethod=2,
-   applyKeepCols=TRUE,
-   verbose=FALSE,
-   ...)
+ groupBy,
+ na.rm=TRUE,
+ stringShrinkFunc=function(x)jamba::cPasteSU(x, na.rm=TRUE),
+ numShrinkFunc=mean,
+ addStringCols=NULL,
+ stringToNumFunc=as.character,
+ keepNAgroupBy=TRUE,
+ includeNumReps=FALSE,
+ collapseMethod=2,
+ applyKeepCols=TRUE,
+ verbose=FALSE,
+ ...)
 {
    ## Purpose is to take a data.frame with multiple column classes,
    ## and a groupBy key, and to collapse multiple rows per key

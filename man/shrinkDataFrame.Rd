@@ -28,3 +28,16 @@ Purpose is to take a data.frame with multiple column classes,
 and a groupBy key, and to collapse multiple rows per key
 into one row per key.
 }
+\seealso{
+Other jamses utilities: 
+\code{\link{fold_to_log2fold}()},
+\code{\link{log2fold_to_fold}()},
+\code{\link{mark_stat_hits}()},
+\code{\link{se_collapse_by_column}()},
+\code{\link{se_collapse_by_row}()},
+\code{\link{shrink_df}()},
+\code{\link{strsplitOrdered}()},
+\code{\link{update_function_params}()},
+\code{\link{update_list_elements}()}
+}
+\concept{jamses utilities}

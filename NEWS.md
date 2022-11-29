@@ -1,3 +1,19 @@
+# jamses 0.0.32.900
+
+## new functions
+
+* `se_collapse_by_column()` which is the equivalent of `se_collapse_by_row()`
+except that the default math is much simpler, to perform mean calculation
+with optional outlier removal prior to calculating the mean.
+* new experimental function `shrink_df()` as potential drop-in replacement
+for `shrinkDataFrame()`. This new function is intended to have simpler
+processing, with less complicated history than `shrinkDataFrame()`.
+
+## changes to existing functions
+
+* minor updates to help text for `se_collapse_by_row()`, added `@family`
+to this and other functions.
+
 # jamses 0.0.31.900
 
 ## new functions

@@ -60,6 +60,17 @@
 #' but only after exponentiating the data, for example the reciprocal
 #' `( 2 ^ x ) - 1` is sufficient.
 #'
+#' @family jamses utilities
+#'
+#' @return `SummarizedExperiment` object with these changes:
+#'    * rows will be collapsed by `row_groups`, for each `assays(se)`
+#'    `numeric` matrix defined by `assay_names`. The collapse may
+#'    optionally apply a data transformation defined in
+#'    `data_transform` in order to apply an appropriate `numeric` summary
+#'    calculation.
+#'    * `rowData(se)` will also be collapsed by `shrinkDataFrame()` to
+#'    combine unique values from each row annotation.
+#'
 #' @param se `SummarizedExperiment`
 #' @param rows `character` vector of `rows(se)` to use for analysis. When
 #'    `rows=NULL` the default is to use all `rows(se)`.
@@ -90,17 +101,17 @@
 #' @export
 se_collapse_by_row <- function
 (se,
-   rows=rownames(se),
-   row_groups,
-   assay_names=NULL,
-   group_func_name=c("sum", "weighted.mean", "geomean", "none"),
-   rowStatsFunc=NULL,
-   rowDataColnames=NULL,
-   keepNULLlevels=FALSE,
-   delim="[ ]*[;,]+[ ]*",
-   data_transform=c("none", "log2p+sqrt", "log2+sqrt", "log2p", "log2"),
-   verbose=TRUE,
-   ...)
+ rows=rownames(se),
+ row_groups,
+ assay_names=NULL,
+ group_func_name=c("sum", "weighted.mean", "geomean", "none"),
+ rowStatsFunc=NULL,
+ rowDataColnames=NULL,
+ keepNULLlevels=FALSE,
+ delim="[ ]*[;,]+[ ]*",
+ data_transform=c("none", "log2p+sqrt", "log2+sqrt", "log2p", "log2"),
+ verbose=TRUE,
+ ...)
 {
    ## Purpose is to collapse rows of a SummarizedExperiment object, intended
    ## for proteomics data to combine per-peptide rows into per-protein rows
@@ -457,7 +468,7 @@ se_collapse_by_row <- function
          "Collapsing rowData(se)");
    }
    rowDataShrunk <- shrinkDataFrame(
-      x=rowData(se[rows,])[,rowDataColnames,drop=FALSE],
+      x=SummarizedExperiment::rowData(se[rows,])[, rowDataColnames, drop=FALSE],
       groupBy=row_groups,
       includeNumReps=TRUE,
       verbose=(verbose - 1) > 0,

@@ -131,6 +131,10 @@ and requires entries to be at or below the threshold.
 Other jamses utilities: 
 \code{\link{fold_to_log2fold}()},
 \code{\link{log2fold_to_fold}()},
+\code{\link{se_collapse_by_column}()},
+\code{\link{se_collapse_by_row}()},
+\code{\link{shrinkDataFrame}()},
+\code{\link{shrink_df}()},
 \code{\link{strsplitOrdered}()},
 \code{\link{update_function_params}()},
 \code{\link{update_list_elements}()}

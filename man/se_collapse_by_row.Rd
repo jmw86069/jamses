@@ -58,6 +58,18 @@ assumption is that all assays were transformed by this method.}
 
 \item{...}{additional arguments are passed to \code{jamba::rowGroupMeans()}.}
 }
+\value{
+\code{SummarizedExperiment} object with these changes:
+\itemize{
+\item rows will be collapsed by \code{row_groups}, for each \code{assays(se)}
+\code{numeric} matrix defined by \code{assay_names}. The collapse may
+optionally apply a data transformation defined in
+\code{data_transform} in order to apply an appropriate \code{numeric} summary
+calculation.
+\item \code{rowData(se)} will also be collapsed by \code{shrinkDataFrame()} to
+combine unique values from each row annotation.
+}
+}
 \description{
 Collapse SummarizedExperiment data by row
 }
@@ -119,3 +131,16 @@ but only after exponentiating the data, for example the reciprocal
 \code{( 2 ^ x ) - 1} is sufficient.
 }
 }
+\seealso{
+Other jamses utilities: 
+\code{\link{fold_to_log2fold}()},
+\code{\link{log2fold_to_fold}()},
+\code{\link{mark_stat_hits}()},
+\code{\link{se_collapse_by_column}()},
+\code{\link{shrinkDataFrame}()},
+\code{\link{shrink_df}()},
+\code{\link{strsplitOrdered}()},
+\code{\link{update_function_params}()},
+\code{\link{update_list_elements}()}
+}
+\concept{jamses utilities}
