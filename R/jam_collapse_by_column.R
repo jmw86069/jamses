@@ -179,7 +179,7 @@ se_collapse_by_column <- function
       ...);
 
    se_shrunk <- SummarizedExperiment::SummarizedExperiment(
-      assays=assaysGroupedL,
+      assays=assays_grouped_list,
       rowData=SummarizedExperiment::rowData(se),
       colData=colDataShrunk,
       metadata=list(
