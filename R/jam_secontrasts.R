@@ -1503,8 +1503,14 @@ ebayes2dfs <- function
             lmFit1$coefficients[coef_match, iCoefCols, drop=FALSE],
             from=iCoefCols,
             to=iCoefLabs);
-         mgm <- matrixStats::rowMaxs(gm_m,
-            na.rm=TRUE);
+         # 29nov2022: replace rowMaxs() due to persistent Segfaults
+         # caused by matrixStats::rowMaxs() 'memory not mapped'.
+         #
+         mgm <- apply(gm_m, 1, function(imax){
+            max(imax, na.rm=TRUE)
+         })
+         # mgm <- matrixStats::rowMaxs(gm_m,
+         #    na.rm=TRUE);
          if (include_group_means) {
             iTopTable[,colnames(gm_m)] <- gm_m;
          }

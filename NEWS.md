@@ -13,6 +13,10 @@ processing, with less complicated history than `shrinkDataFrame()`.
 
 * minor updates to help text for `se_collapse_by_row()`, added `@family`
 to this and other functions.
+* `se_contrast_stats()` was changed from using `matrixStats::rowMaxs()`
+instead to use `apply(x, 1, max, na.rm=TRUE)` - due to persistent
+Segfaults caused by `matrixStats::rowMaxs()` on multiple architectures
+(OSX, linux) and with recent package versions, at least for R-3.6.1.
 
 # jamses 0.0.31.900
 
