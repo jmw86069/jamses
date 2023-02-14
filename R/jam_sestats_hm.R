@@ -397,6 +397,20 @@
 #' @param rename_contrasts,rename_alt_contrasts `logical` indicating
 #'    whether to rename long contrast names in `sestats` and `alt_sestats`
 #'    using `contrast2comp()`.
+#' @param use_raster `logical` passed to `ComplexHeatmap::Heatmap()` to
+#'    determine whether heatmaps should be converted to raster images,
+#'    which effectively turns each heatmap panel into a single graphical
+#'    object.
+#'    Recommend `use_raster=TRUE` and also installing R package `magick`
+#'    which greatly enhances speed and quality of rasterized heatmap
+#'    output. When `magick` is not available, it may be best to use
+#'    `use_raster=FALSE`.
+#'    When `use_raster=FALSE` each pixel square of a heatmap
+#'    is its own graphical object. For heatmaps with very large dimensions,
+#'    having each pixel as an object can make the heatmap extremely large
+#'    in memory, and sometimes pixels can overlap others because the
+#'    minimum pixel size of the output graphics device does not
+#'    reflect the actual size of each pixel.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param debug `logical` indicating debug mode, data is returned in a `list`:
 #'    * `hm` object `ComplexHeatmap::Heatmap`
@@ -621,6 +635,7 @@ heatmap_se <- function
    lens=2,
    rename_contrasts=TRUE,
    rename_alt_contrasts=TRUE,
+   use_raster=TRUE,
    verbose=FALSE,
    debug=FALSE,
    ...)
@@ -1510,7 +1525,7 @@ heatmap_se <- function
    # define heatmap
    hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
-      use_raster=TRUE,
+      use_raster=use_raster,
       top_annotation=top_annotation,
       left_annotation=left_annotation,
       right_annotation=right_annotation,
@@ -1544,6 +1559,7 @@ heatmap_se <- function
       cluster_columns=cluster_columns,
       cluster_rows=cluster_rows,
       ...)
+   # define heatmap title using relevant arguments
    hm_title <- paste0(
       jamba::formatInt(length(gene_hits)),
       " ", row_type,

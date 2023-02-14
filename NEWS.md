@@ -1,3 +1,39 @@
+# jamses 0.0.34.900
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * new argument `use_raster=TRUE` which allows turning it off.
+   When R package `magick` is not installed, on some systems it causes
+   an error when trying to render ComplexHeatmap with `use_raster=TRUE`.
+   Using `use_raster=FALSE` avoids the error.
+
+* `groups_to_sedesign()`
+
+   * small update to enforce `mixedSortDF(..., honorFactor=TRUE)`
+   to ensure that `data.frame` columns that contain `factor` values
+   will use the `levels` to define the proper sort order.
+
+# jamses 0.0.33.900
+
+## package dependencies
+
+* `ComplexHeatmap` now requires version `2.13.4` or higher, and points
+to the Github repository instead of Bioconductor. This change is required
+for R-3.6.1 whose matching Bioconductor version 3.10 only offers
+ComplexHeatmap version 2.2.0, and throws an error with `heatmap_se()`
+when rendering row annotations.
+* `jamba` dependency now requires version `0.0.88.900`, to pick up the subtle
+but important change to `mixedSort()`
+* `colorjam` was bumped to version `0.0.23.900` for consistency.
+
+## changes to existing functions
+
+* `groups_to_sedesign()`
+
+   * 
+
 # jamses 0.0.32.900
 
 ## new functions

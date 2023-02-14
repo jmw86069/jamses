@@ -71,6 +71,7 @@ heatmap_se(
   lens = 2,
   rename_contrasts = TRUE,
   rename_alt_contrasts = TRUE,
+  use_raster = TRUE,
   verbose = FALSE,
   debug = FALSE,
   ...
@@ -443,6 +444,21 @@ the intensity of color gradient applied to the numeric range.}
 \item{rename_contrasts, rename_alt_contrasts}{\code{logical} indicating
 whether to rename long contrast names in \code{sestats} and \code{alt_sestats}
 using \code{contrast2comp()}.}
+
+\item{use_raster}{\code{logical} passed to \code{ComplexHeatmap::Heatmap()} to
+determine whether heatmaps should be converted to raster images,
+which effectively turns each heatmap panel into a single graphical
+object.
+Recommend \code{use_raster=TRUE} and also installing R package \code{magick}
+which greatly enhances speed and quality of rasterized heatmap
+output. When \code{magick} is not available, it may be best to use
+\code{use_raster=FALSE}.
+When \code{use_raster=FALSE} each pixel square of a heatmap
+is its own graphical object. For heatmaps with very large dimensions,
+having each pixel as an object can make the heatmap extremely large
+in memory, and sometimes pixels can overlap others because the
+minimum pixel size of the output graphics device does not
+reflect the actual size of each pixel.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

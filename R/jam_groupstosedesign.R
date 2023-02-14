@@ -545,6 +545,7 @@ groups_to_sedesign <- function
       # otherwise will use alphanumeric sort order.
       # To influence the sort order, use factors with ordered levels.
       ifactors <- jamba::mixedSortDF(ifactors,
+         honorFactor=TRUE,
          byCols=group_colnames);
       if (verbose >= 2) {
          jamba::printDebug("groups_to_sedesign(): ",
@@ -811,6 +812,7 @@ groups_to_sedesign <- function
          if (verbose && any(duplicated(iDFcomponents))) {
             dupe_comps <- iDFcomponents[duplicated(iDFcomponents)];
             dupe_kept_df <- data.frame(
+               stringsAsFactors=FALSE,
                dupe_comp=iDFcomponents[iDFcomponents %in% dupe_comps],
                contrast=rownames(subset(iContrastNames, iDFcomponents %in% dupe_comps)),
                outcome=ifelse(!duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]), "(kept)", "(removed)"))
