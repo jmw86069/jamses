@@ -104,7 +104,10 @@ se_collapse_by_row <- function
  rows=rownames(se),
  row_groups,
  assay_names=NULL,
- group_func_name=c("sum", "weighted.mean", "geomean", "none"),
+ group_func_name=c("sum",
+    "weighted.mean",
+    "geomean",
+    "none"),
  rowStatsFunc=NULL,
  rowDataColnames=NULL,
  keepNULLlevels=FALSE,
@@ -186,6 +189,13 @@ se_collapse_by_row <- function
    }
 
    ## group_func_name will become a vector of text or NA values, named by signal
+   group_func_args <- c("sum",
+      "weighted.mean",
+      "geomean",
+      "none");
+   if (identical(group_func_args, group_func_name)) {
+      group_func_name <- head(group_func_name, 1);
+   }
    if (length(group_func_name) > 0) {
       if (length(names(group_func_name)) == 0) {
          ## If given group_func_name without names, assign names by signal
@@ -242,7 +252,10 @@ se_collapse_by_row <- function
       #x <- x[!isNA];
       #w[is.na(w)] <- 0;
       apply(x, 1, function(x1){
-         weighted.mean(x=x1, w=x1, na.rm=TRUE, ...);
+         weighted.mean(x=x1,
+            w=x1,
+            na.rm=TRUE,
+            ...);
       })
       #rowWeightedMeans(x=x,
       #   w=w,

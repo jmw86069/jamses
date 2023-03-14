@@ -201,9 +201,20 @@
 #'    specific group as the reference for centering, so changes are displayed
 #'    relative to that group. Make sure to define `control_name` to include
 #'    an appropriate label in the heatmap title.
-#' @param control_name `character` string used in heatmap title
+#' @param control_label `character` string used in heatmap title
 #'    to describe the control used during data centering, relevant when
 #'    `controlSamples` is also supplied.
+#' @param controlFloor,naControlAction,naControlFloor passed to
+#'    `jamma::centerGeneData()` to customize data centering.
+#'    * `controlFloor` imposes an optional noise floor to control group
+#'    mean/median values, so the summary value during centering is at
+#'    least `controlFloor`. Useful for defining an effective noise floor
+#'    for a platform technology.
+#'    * `naControlAction` defines the action taken only when values for
+#'    all control samples are `NA`.
+#'    * `naControlFloor` is a `numeric` value used when
+#'    `naControlAction="floor"`, which causes the group reference value
+#'    to use the value provided in `naControlFloor`.
 #' @param top_colnames one of the following types:
 #'    * `character` vector of colnames to use from
 #'    `colData(se)` as annotations to display in `top_annotation` above
@@ -586,6 +597,12 @@ heatmap_se <- function
    centerby_colnames=NULL,
    controlSamples=NULL,
    control_label="",
+   controlFloor=NA,
+   naControlAction=c("na",
+      "row",
+      "floor",
+      "min"),
+   naControlFloor=0,
    top_colnames=NULL,
    top_annotation=NULL,
    top_annotation_name_gp=grid::gpar(),
@@ -1449,6 +1466,9 @@ heatmap_se <- function
          centerGroups=centerGroups,
          x=se_matrix,
          controlSamples=controlSamples,
+         controlFloor=controlFloor,
+         naControlAction=naControlAction,
+         naControlFloor=naControlFloor,
          ...)[, isamples, drop=FALSE];
       hm_name <- paste0("centered\n", data_type);
    }

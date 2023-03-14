@@ -25,6 +25,9 @@ heatmap_se(
   centerby_colnames = NULL,
   controlSamples = NULL,
   control_label = "",
+  controlFloor = NA,
+  naControlAction = c("na", "row", "floor", "min"),
+  naControlFloor = 0,
   top_colnames = NULL,
   top_annotation = NULL,
   top_annotation_name_gp = grid::gpar(),
@@ -204,6 +207,24 @@ center group. Typically, \code{controlSamples} is used to define a
 specific group as the reference for centering, so changes are displayed
 relative to that group. Make sure to define \code{control_name} to include
 an appropriate label in the heatmap title.}
+
+\item{control_label}{\code{character} string used in heatmap title
+to describe the control used during data centering, relevant when
+\code{controlSamples} is also supplied.}
+
+\item{controlFloor, naControlAction, naControlFloor}{passed to
+\code{jamma::centerGeneData()} to customize data centering.
+\itemize{
+\item \code{controlFloor} imposes an optional noise floor to control group
+mean/median values, so the summary value during centering is at
+least \code{controlFloor}. Useful for defining an effective noise floor
+for a platform technology.
+\item \code{naControlAction} defines the action taken only when values for
+all control samples are \code{NA}.
+\item \code{naControlFloor} is a \code{numeric} value used when
+\code{naControlAction="floor"}, which causes the group reference value
+to use the value provided in \code{naControlFloor}.
+}}
 
 \item{top_colnames}{one of the following types:
 \itemize{
@@ -471,10 +492,6 @@ reflect the actual size of each pixel.}
 }}
 
 \item{...}{additional arguments are passed to supporting functions.}
-
-\item{control_name}{\code{character} string used in heatmap title
-to describe the control used during data centering, relevant when
-\code{controlSamples} is also supplied.}
 }
 \description{
 Expression heatmap of sestats hits

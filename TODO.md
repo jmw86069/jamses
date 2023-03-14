@@ -1,6 +1,15 @@
 
 # TODO for jamses
 
+## 12mar2023
+
+* `heatmap_se()` improvements
+
+   * Some method to hide `column_title` labels.
+   * Consider `hmgrouplabel` function `heatmap_column_group_labels()`
+   which enables cleaner column labels when the heatmap is split by one
+   or more variables in `colData(se)`.
+
 ## 22nov2022
 
 * Add concept of `"normgroup"` to `sestats_to_df()`

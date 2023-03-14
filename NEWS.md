@@ -1,3 +1,37 @@
+# jamses 0.0.35.900
+
+## changes to existing functions
+
+Dependency on `jamma` bumped to version `0.0.28.900` for new arguments
+to `naControlAction`, see below.
+
+* `heatmap_se()`
+
+   * New arguments for data centering: `controlFloor`,
+   `naControlAction`, `naControlFloor`
+   * `controlFloor` is a `numeric` value for optional noise floor used
+   for control groups during centering. If the control group mean/median
+   value is below `controlFloor`, it is set to `controlFloor` to define
+   a minimum baseline for centering. It is mostly useful when the effective
+   noise floor for a platform is above zero.
+   * `naControlAction` and `naControlFloor` handle the specific case where all
+   `controlSamples` have `NA` values for a particular row.
+   By default, all centered values would become `NA` thereby making
+   platform measurements disappear from the heatmap.
+   Sometimes it is preferable to define another reference
+   so the non-NA values can be indicated in the heatmap.
+   * See `jamma::centerGeneData()` for more information.
+   * The most common alternatives:
+   
+      * `naControlAction="row"`: uses the remaining non-NA values from that row
+      * `naControlAction="floor"`: assigns the `numeric` value
+      `naControlFloor`, which is useful when the reference value
+      should be a known baseline limit of detection.
+
+* `shrink_df()`
+
+   * Argument `numShrinkFunc` now includes `na.rm=TRUE` by default.
+
 # jamses 0.0.34.900
 
 ## changes to existing functions

@@ -9,7 +9,7 @@ shrinkDataFrame(
   groupBy,
   na.rm = TRUE,
   stringShrinkFunc = function(x) jamba::cPasteSU(x, na.rm = TRUE),
-  numShrinkFunc = mean,
+  numShrinkFunc = function(x) {     mean(x, na.rm = TRUE) },
   addStringCols = NULL,
   stringToNumFunc = as.character,
   keepNAgroupBy = TRUE,
