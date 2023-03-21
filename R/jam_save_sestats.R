@@ -269,13 +269,13 @@ save_sestats <- function
          hitColumns);
       fcColumns <- jamba::igrep("^fold ", colnames(iDF));
       lfcColumns <- jamba::igrep("^logFC ", colnames(iDF));
-      intColumns <- jamba::igrep(" mean$|^mgm ", colnames(iDF));
+      numColumns <- jamba::igrep(" mean$|^mgm ", colnames(iDF));
 
       # adjust column widths
       smallColumns <- unique(c(pvalueColumns,
          fcColumns,
          lfcColumns,
-         intColumns));
+         numColumns));
       save_widths <- rep(10, ncol(iDF));
       save_widths[length(save_widths)] <- 40;
       save_widths[hitColumns] <- 20;
@@ -298,7 +298,7 @@ save_sestats <- function
          pvalueRule=c(1e-05, 0.05, 1),
          fcColumns=fcColumns,
          lfcColumns=lfcColumns,
-         intColumns=intColumns,
+         numColumns=numColumns,
          freezePaneColumn=2,
          colWidths=save_widths,
          colorSub=colorSub,

@@ -14,6 +14,21 @@
    when there is no respective row or column dendrogram or clustering
    function.
 
+## changes to existing functions
+
+* `save_sestats()`
+
+   * Default format for mgm and mean is "num" instead of "int",
+   which assumes log2-scaled values that are generally at or less than 20.
+
+* `heatmap_se()`
+
+   * the default gap between row annotations is defined by the
+   ComplexHeatmap option `"ROW_ANNO_PADDING"`, so the gap between heatmap
+   and annotation is the same as the gap between two annotations.
+   In future the gap width might become a separate option but not just yet.
+
+
 # jamses 0.0.35.900
 
 ## changes to existing functions

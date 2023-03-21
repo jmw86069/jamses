@@ -1228,6 +1228,7 @@ heatmap_se <- function
          left_alist <- alist(
             simple_anno_size=simple_anno_size,
             col=left_color_list,
+            gap=ComplexHeatmap::ht_opt("ROW_ANNO_PADDING"),
             annotation_legend_param=left_param_list,
             show_legend=show_left_legend_v,
             show_annotation_name=show_left_annotation_name,
