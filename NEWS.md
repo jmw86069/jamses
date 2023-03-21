@@ -1,3 +1,19 @@
+# jamses 0.0.36.900
+
+## bug fixes
+
+* `heatmap_se()`
+
+   * `row_split` passed as integer value when `cluster_rows=FALSE`
+   caused an error:
+   "Error: Length or nrow of `row_split` should be same as nrow of `matrix`."
+   The error was caused because rows cannot be split into subgroups
+   in the absence of a row clustering.
+   * The same error for `column_split` was also present, and was fixed.
+   * Resolution is that `row_split` or `column_split` is converted to `NULL`
+   when there is no respective row or column dendrogram or clustering
+   function.
+
 # jamses 0.0.35.900
 
 ## changes to existing functions

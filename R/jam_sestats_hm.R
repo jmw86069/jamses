@@ -5,33 +5,31 @@
 #'
 #' Note: Still a work in progress.
 #'
-#' This function is a bold attempt to automate the intricate task
-#' of creating an expression heatmap, using `ComplexHeatmap::Heatmap()`.
-#' This function attempts to apply reasonable defaults to the many
-#' possible varieties of heatmaps that can be produced, including:
+#' This function is a bold attempt to simplify the intricate task
+#' of creating an expression heatmap, using `ComplexHeatmap::Heatmap()`,
+#' given a `SummarizedExperiment` object.
 #'
-#' * Optional top and left annotations based upon data in `se`
-#' from `colData(se)` and `rowData(se)`, respectively. Categorical
-#' colors are re-used from `sample_color_list` supplied, otherwise
-#' sensible default values are defined.
-#' * Data can use any `assays(se)`.
-#' * Data is centered by default, unless `centerby_colnames=FALSE`.
-#' * Optional `sestats` can be supplied to subset the heatmap to
-#' statistical hits defined in `sestats$hit_array`. A hit incidence
-#' matrix is displayed as left annotation, indicating up- and
-#' down-regulation.
-#' * Another optional `alt_sestats` can be supplied to
-#' compare statistical hits from `sestats` and `alt_sestats`, although
-#' the heatmap rows are only subset based upon `sestats`.
-#' * Optionally display a subset of sample columns after centering,
-#' so data can be centered by control group, then display only the
-#' non-control group samples.
-#' * Optional sample correlation heatmap, which re-uses the same data
+#' It attempts to enable:
+#' * Selection of `assays(se)` to use in the heatmap
+#' * Use of `rowData(se)` or `colData(se)` to produce row and
+#' column annotations, respectively.
+#' * Re-use of defined colors for annotations.
+#' * Use of color gradient and numeric default for typical heatmaps.
+#' * Convenient row data centering, versus all columns, or controls,
+#' or centering of independent centering groups.
+#' * Convenient display of statistical hits beside the heatmap.
+#' By default rows are subsetted to show only statistical hits.
+#' * Row and column split by `rowData(se)` and `colData(se)` annotations.
+#'
+#' Additional features:
+#'
+#' * Data centering can be disabled with `centerby_colnames=FALSE`.
+#' * Alternative hits can be displayed using `alt_sestats`. It does not
+#' subset heatmap rows, it inherits rows from `sestats`.
+#' * Display a subset of columns after centering, useful to hide
+#' the control group for certain figures.
+#' * Option to display sample correlation heatmap, which re-uses the same data
 #' centering, then calculates Pearson correlation across sample columns.
-#' * Rows and columns can be split by annotations, using annotations in
-#' `rowData()` and `colData()`, respectively, or by `character` or `factor`,
-#' or by `integer` which will cluster then split data into that many
-#' subclusters.
 #' * Various labels and legend grids can be customized to exact sizes
 #' based upon `grid::gpar()` and `grid::unit()` definitions, useful
 #' for publication figures.
@@ -42,7 +40,6 @@
 #' for drilling into a specific subcluster from hierarchical clustering
 #' without the manual effort to extract the subset of rows in that cluster
 #' then re-running a new `heatmap_se()`.
-#'
 #'
 #' The intent is to display expression values from `assays(se)`,
 #' centered across all columns, or with customization defined by
@@ -1263,7 +1260,7 @@ heatmap_se <- function
 
    # optional row_split
    if (length(row_split) > 0) {
-      if (correlation) {
+      if (TRUE %in% correlation) {
          # correlation uses colData for split
          if (any(c("factor", "character") %in% class(row_split))) {
             if (!any(duplicated(row_split)) &&
@@ -1300,8 +1297,12 @@ heatmap_se <- function
             row_split <- NULL;
          }
       }
-   } else if (correlation) {
+   } else if (TRUE %in% correlation) {
       row_split <- column_split;
+   }
+   if (verbose && length(row_split) > 0) {
+      jamba::printDebug("heatmap_se(): ",
+         "row_split:", head(row_split, 20));
    }
 
    assay_name <- head(intersect(assay_name,
@@ -1507,14 +1508,41 @@ heatmap_se <- function
    # which is not accepted when supplying a function.
    # This step does not work with character or data.frame row_split
    if (length(row_split) == 1 &&
-         is.numeric(row_split) &&
-         is.function(cluster_rows)) {
-      cluster_rows <- cluster_rows(se_matrix);
+         is.numeric(row_split)) {
+      if (is.function(cluster_rows)) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               paste0("row_split requires for cluster_rows()",
+                  " to be applied to generate a dendrogram."));
+         }
+         cluster_rows <- cluster_rows(se_matrix);
+      } else if (FALSE %in% cluster_rows || length(cluster_rows) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "row_split ignored because cluster_rows=FALSE.");
+         }
+         row_split <- NULL;
+      }
    }
    if (length(column_split) == 1 &&
-         is.numeric(column_split) &&
-         is.function(cluster_columns)) {
-      cluster_columns <- cluster_columns(se_matrix);
+         is.numeric(column_split)) {
+      #    is.function(cluster_columns)) {
+      # cluster_columns <- cluster_columns(se_matrix);
+      if (is.function(cluster_columns)) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               paste0("column_split requires for cluster_columns()",
+                  " to be applied to generate a dendrogram."));
+         }
+         cluster_columns <- cluster_columns(se_matrix);
+      } else if (FALSE %in% cluster_columns || length(cluster_columns) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "column_split ignored because cluster_columns=FALSE.");
+         }
+         column_split <- NULL;
+      }
+
    }
 
    # optional customization of row and column names gp
@@ -1543,6 +1571,11 @@ heatmap_se <- function
 
 
    # define heatmap
+   if (verbose && length(row_split) > 0) {
+      jamba::printDebug("heatmap_se(): ",
+         "row_split (pre-heatmap):");print(head(row_split, 20));
+   }
+
    hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
       use_raster=use_raster,

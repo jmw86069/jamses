@@ -499,33 +499,33 @@ Expression heatmap of sestats hits
 \details{
 Note: Still a work in progress.
 
-This function is a bold attempt to automate the intricate task
-of creating an expression heatmap, using \code{ComplexHeatmap::Heatmap()}.
-This function attempts to apply reasonable defaults to the many
-possible varieties of heatmaps that can be produced, including:
+This function is a bold attempt to simplify the intricate task
+of creating an expression heatmap, using \code{ComplexHeatmap::Heatmap()},
+given a \code{SummarizedExperiment} object.
+
+It attempts to enable:
 \itemize{
-\item Optional top and left annotations based upon data in \code{se}
-from \code{colData(se)} and \code{rowData(se)}, respectively. Categorical
-colors are re-used from \code{sample_color_list} supplied, otherwise
-sensible default values are defined.
-\item Data can use any \code{assays(se)}.
-\item Data is centered by default, unless \code{centerby_colnames=FALSE}.
-\item Optional \code{sestats} can be supplied to subset the heatmap to
-statistical hits defined in \code{sestats$hit_array}. A hit incidence
-matrix is displayed as left annotation, indicating up- and
-down-regulation.
-\item Another optional \code{alt_sestats} can be supplied to
-compare statistical hits from \code{sestats} and \code{alt_sestats}, although
-the heatmap rows are only subset based upon \code{sestats}.
-\item Optionally display a subset of sample columns after centering,
-so data can be centered by control group, then display only the
-non-control group samples.
-\item Optional sample correlation heatmap, which re-uses the same data
+\item Selection of \code{assays(se)} to use in the heatmap
+\item Use of \code{rowData(se)} or \code{colData(se)} to produce row and
+column annotations, respectively.
+\item Re-use of defined colors for annotations.
+\item Use of color gradient and numeric default for typical heatmaps.
+\item Convenient row data centering, versus all columns, or controls,
+or centering of independent centering groups.
+\item Convenient display of statistical hits beside the heatmap.
+By default rows are subsetted to show only statistical hits.
+\item Row and column split by \code{rowData(se)} and \code{colData(se)} annotations.
+}
+
+Additional features:
+\itemize{
+\item Data centering can be disabled with \code{centerby_colnames=FALSE}.
+\item Alternative hits can be displayed using \code{alt_sestats}. It does not
+subset heatmap rows, it inherits rows from \code{sestats}.
+\item Display a subset of columns after centering, useful to hide
+the control group for certain figures.
+\item Option to display sample correlation heatmap, which re-uses the same data
 centering, then calculates Pearson correlation across sample columns.
-\item Rows and columns can be split by annotations, using annotations in
-\code{rowData()} and \code{colData()}, respectively, or by \code{character} or \code{factor},
-or by \code{integer} which will cluster then split data into that many
-subclusters.
 \item Various labels and legend grids can be customized to exact sizes
 based upon \code{grid::gpar()} and \code{grid::unit()} definitions, useful
 for publication figures.

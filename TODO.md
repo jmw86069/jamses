@@ -5,7 +5,7 @@
 
 * `heatmap_se()` improvements
 
-   * Some method to hide `column_title` labels.
+   * DONE: Some method to hide `column_title` labels. Use `column_title=" "`.
    * Consider `hmgrouplabel` function `heatmap_column_group_labels()`
    which enables cleaner column labels when the heatmap is split by one
    or more variables in `colData(se)`.
