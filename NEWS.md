@@ -1,3 +1,13 @@
+# jamses 0.0.37.900
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * new argument `color_floor` passed to `colorjam::col_div_xf()` which
+   optionally prevents coloring numeric values below the floor, therefore
+   starts the color gradient at this value up to `color_max`.
+
 # jamses 0.0.36.900
 
 ## bug fixes

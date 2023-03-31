@@ -10,7 +10,7 @@
 #' given a `SummarizedExperiment` object.
 #'
 #' It attempts to enable:
-#' * Selection of `assays(se)` to use in the heatmap
+#' * selection of `assays(se)` to use in the heatmap
 #' * Use of `rowData(se)` or `colData(se)` to produce row and
 #' column annotations, respectively.
 #' * Re-use of defined colors for annotations.
@@ -400,6 +400,10 @@
 #'    `column_split` defines multiple split levels.
 #' @param color_max `numeric` value passed to `colorjam::col_div_xf()`
 #'    which defines the upper limit of color gradient used in the heatmap.
+#' @param color_floor `numeric` value passed to `colorjam::col_div_xf()`
+#'    argument `floor` which defines the minimum non-zero numeric value
+#'    for a color to be applied. This option is available to prevent coloring
+#'    values below the `color_floor` which can be useful in some circumstances.
 #' @param lens `numeric` value passed to `colorjam::col_div_xf()` to control
 #'    the intensity of color gradient applied to the numeric range.
 #' @param rename_contrasts,rename_alt_contrasts `logical` indicating
@@ -646,6 +650,7 @@ heatmap_se <- function
    column_split=NULL,
    column_split_sep=",",
    color_max=3,
+   color_floor=0,
    lens=2,
    rename_contrasts=TRUE,
    rename_alt_contrasts=TRUE,
@@ -733,6 +738,7 @@ heatmap_se <- function
          column_split=column_split,
          column_split_sep=column_split_sep,
          color_max=color_max,
+         color_floor=color_floor,
          lens=lens,
          rename_contrasts=rename_contrasts,
          rename_alt_contrasts=rename_alt_contrasts,
@@ -1387,6 +1393,7 @@ heatmap_se <- function
    }
 
    # heatmap legend labels
+   # TODO: handle non-zero color_floor
    if (length(legend_at) == 0) {
       if (correlation) {
          if (abs(color_max) > 1) {
@@ -1609,6 +1616,7 @@ heatmap_se <- function
       column_names_gp=column_names_gp,
       col=colorjam::col_div_xf(color_max,
          lens=lens,
+         floor=color_floor,
          ...),
       cluster_columns=cluster_columns,
       cluster_rows=cluster_rows,

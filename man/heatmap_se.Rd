@@ -71,6 +71,7 @@ heatmap_se(
   column_split = NULL,
   column_split_sep = ",",
   color_max = 3,
+  color_floor = 0,
   lens = 2,
   rename_contrasts = TRUE,
   rename_alt_contrasts = TRUE,
@@ -459,6 +460,11 @@ heatmap column split.}
 \item{color_max}{\code{numeric} value passed to \code{colorjam::col_div_xf()}
 which defines the upper limit of color gradient used in the heatmap.}
 
+\item{color_floor}{\code{numeric} value passed to \code{colorjam::col_div_xf()}
+argument \code{floor} which defines the minimum non-zero numeric value
+for a color to be applied. This option is available to prevent coloring
+values below the \code{color_floor} which can be useful in some circumstances.}
+
 \item{lens}{\code{numeric} value passed to \code{colorjam::col_div_xf()} to control
 the intensity of color gradient applied to the numeric range.}
 
@@ -505,7 +511,7 @@ given a \code{SummarizedExperiment} object.
 
 It attempts to enable:
 \itemize{
-\item Selection of \code{assays(se)} to use in the heatmap
+\item selection of \code{assays(se)} to use in the heatmap
 \item Use of \code{rowData(se)} or \code{colData(se)} to produce row and
 column annotations, respectively.
 \item Re-use of defined colors for annotations.

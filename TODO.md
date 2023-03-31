@@ -1,6 +1,17 @@
 
 # TODO for jamses
 
+## 28mar2023
+
+* `heatmap_se()`
+
+   * Add optional title above `sestats` incidence matrix display,
+   which could address need to display which `assay_name`, and `cutoff_name`
+   was used.
+   * Might be useful to have additional option to provide a label to display
+   atop the `sestats` incidence matrix.
+   * Probably needs other options such as font sizing, label rotation, etc. Oi.
+
 ## 12mar2023
 
 * `heatmap_se()` improvements
