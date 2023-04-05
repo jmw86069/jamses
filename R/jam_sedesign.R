@@ -547,3 +547,29 @@ setMethod("contrasts<-",
       validate_sedesign(x);
    }
 )
+
+
+setGeneric("contrast_names", function(object) {standardGeneric("contrast_names")})
+
+#' @export
+setMethod("contrast_names",
+   signature=c(object="SEDesign"),
+   definition=function(object) {
+      colnames(object@contrasts);
+   }
+)
+
+setGeneric("contrast_names<-", function(object, value) {standardGeneric("contrast_names<-")})
+
+#' @export
+setMethod("contrast_names<-",
+   signature=c(object="SEDesign",
+      value="ANY"),
+   definition=function(object, value) {
+      contrast_matrix <- limma::makeContrasts(
+         contrasts=value,
+         levels=object@design)
+      object@contrasts <- contrast_matrix;
+      validate_sedesign(object);
+   }
+)

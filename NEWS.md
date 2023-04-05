@@ -1,3 +1,32 @@
+# jamses 0.0.38.900
+
+## new functions
+
+* `contrast_names_to_sedesign()`
+
+   * convenience function to convert contrast names to corresponding
+   `sedesign` object.
+   * Its core utility is that it provides a way to test whether two-way
+   or higher contrasts are mathematically equivalent.
+   * It may also be useful for test cases to produce a quick `sedesign`
+   with only a specific set of contrasts.
+   * In future `plot_sedesign()` will display the design with layout
+   similar to `vcd::mosaic()`, then will use block arrows to indicate
+   contrasts across groups.
+
+## new methods
+
+* `contrast_names()`
+
+   * enables quickly retrieving the vector of contrasts in a `sedesign` object
+   * also enables re-defining contrasts given a specific vector
+   of contrast names.
+
+## unit tests
+
+* `contrast2comp()` and `comp2contrast()` are first.
+* will provide unit tests for all core functions.
+
 # jamses 0.0.37.900
 
 ## changes to existing functions

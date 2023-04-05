@@ -1,6 +1,34 @@
 
 # TODO for jamses
 
+## 05apr2023
+
+* use `testthat` unit testing
+* `sedesign` object
+
+   * add method `contrastNames()` (or `contrast_names()`)
+   * consider adding `comps()` as shortcut for `contrast2comp()`
+
+* `contrast2comp()`
+
+   * optimize performance, it is surprisingly slow, but functional
+   * consider embedding the factor order into the output for two-way
+   contrasts, to ensure the output exactly matches input even when
+   alternate outputs are mathematically equivalent.
+
+* add `plot_sedesign()`, `plot_contrasts()`
+
+   * display design with similar layout orientation to `vcd::mosaic()`
+   * indicate contrasts with block arrows drawn between groups
+   * optionally label groups by number of replicates
+   * optionally label contrasts by number of statistical hits
+
+* DONE: add `contrast_names_to_sedesign()`
+
+   * convenience function to produce `sedesign` from only `contrastNames`
+   * mostly helpful for demo purposes, development of `plot_sedesign()`
+
+
 ## 28mar2023
 
 * `heatmap_se()`

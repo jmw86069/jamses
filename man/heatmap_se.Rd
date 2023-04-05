@@ -64,8 +64,10 @@ heatmap_se(
   row_label_colname = NULL,
   cluster_columns = FALSE,
   cluster_column_slices = FALSE,
-  cluster_rows = function(x, ...) {     amap::hcluster(jamba::rmNA(naValue = 0, x),
-    ..., method = "euclidean", link = "ward") },
+  cluster_rows = function(x, ...) {
+     amap::hcluster(jamba::rmNA(naValue = 0, x), ...,
+    method = "euclidean", link = "ward")
+ },
   cluster_row_slices = FALSE,
   column_names_gp = NULL,
   column_split = NULL,

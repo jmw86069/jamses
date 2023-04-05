@@ -34,34 +34,12 @@ run_limma_replicate(
 \item{confint}{\code{logical} passed to \code{limma::topTable()}, which defines
 whether to return confidence intervals for each log2 fold change.}
 
-\item{adjp_cutoff}{\code{numeric}
+\item{adjp_cutoff, p_cutoff, fold_cutoff, mgm_cutoff, ave_cutoff}{\code{numeric}
 values representing the appropriate statistical threshold,
 or \code{NULL} when a threshold should not be applied.}
 
-\item{p_cutoff}{\code{numeric}
-values representing the appropriate statistical threshold,
-or \code{NULL} when a threshold should not be applied.}
-
-\item{fold_cutoff}{\code{numeric}
-values representing the appropriate statistical threshold,
-or \code{NULL} when a threshold should not be applied.}
-
-\item{int_adjp_cutoff}{\code{numeric}
+\item{int_adjp_cutoff, int_p_cutoff, int_fold_cutoff}{\code{numeric}
 thresholds to apply only to interaction contrasts.}
-
-\item{int_p_cutoff}{\code{numeric}
-thresholds to apply only to interaction contrasts.}
-
-\item{int_fold_cutoff}{\code{numeric}
-thresholds to apply only to interaction contrasts.}
-
-\item{mgm_cutoff}{\code{numeric}
-values representing the appropriate statistical threshold,
-or \code{NULL} when a threshold should not be applied.}
-
-\item{ave_cutoff}{\code{numeric}
-values representing the appropriate statistical threshold,
-or \code{NULL} when a threshold should not be applied.}
 
 \item{collapse_by_gene}{\code{logical} indicating whether to apply
 \code{collapse_stats_by_gene} which chooses one "best" exemplar per gene

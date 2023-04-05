@@ -157,8 +157,11 @@
 #'    "(CellB_Treated-CellB_Control)-(CellA_Treated-CellA_Control)",
 #'    "(CellA_Treated-CellB_Treated)-(CellA_Control-CellB_Control)"
 #' );
+#' contrast2comp(contrast_names)
+#'
 #' contrast2comp(contrast_names, comp_factor_delim=";")
-#' comps <- contrast2comp(contrast_names);
+#'
+#' comps <- contrast2comp(contrast_names)
 #' data.frame(contrast_names,
 #'    nchar_contrasts=nchar(contrast_names),
 #'    comps,
@@ -166,15 +169,17 @@
 #'
 #' # compare conversion back to contrast
 #' data.frame(contrast_names,
+#'    comps=comps,
 #'    contrast_again=comp2contrast(comps),
 #'    changed=contrast_names != comp2contrast(comps))
 #'
 #' # factors can be ordered by contrast
 #' contrasts2 <- comp2contrast(comps,
 #'    factor_order=list(1:2, 1:2, 1:2,
-#'       c(2,1), c(2,1), 1:2))
+#'       2:1, 2:1, 1:2))
 #' # compare conversion back to contrast
 #' data.frame(contrast_names,
+#'    comps=comps,
 #'    contrasts2,
 #'    changed=contrast_names != contrasts2)
 #'
@@ -186,6 +191,7 @@
 #' comp_diff
 #' # it is converted back to original form
 #' comp2contrast(comp_diff)
+#'
 #' data.frame(contrast_diff,
 #'    nchar_contrasts=nchar(contrast_diff),
 #'    comp_diff,
@@ -201,17 +207,41 @@
 #'    ")-(",
 #'    gsub("([a-zA-Z])([-)])", "\\1_WT\\2", contrast_names[4]),
 #'    ")"))
+#' contrast_names_3way <- c(
+#'    paste0("(CellA_Treated-CellA_Control)-",
+#'       "(CellB_Treated-CellB_Control)"),
+#'    paste0("(CellA_Treated_Mut-CellA_Control_Mut)-",
+#'       "(CellB_Treated_Mut-CellB_Control_Mut)"),
+#'    paste0("(CellA_Treated_WT-CellA_Control_WT)-",
+#'       "(CellB_Treated_WT-CellB_Control_WT)"),
+#'    paste0("((CellA_Treated_Mut-CellB_Treated_Mut)-",
+#'       "(CellA_Control_Mut-CellB_Control_Mut))-",
+#'       "((CellA_Treated_WT-CellB_Treated_WT)-",
+#'       "(CellA_Control_WT-CellB_Control_WT))"),
+#'    paste0("((CellA_Treated_Mut-CellA_Control_Mut)-",
+#'       "(CellB_Treated_Mut-CellB_Control_Mut))-",
+#'       "((CellA_Treated_WT-CellA_Control_WT)-",
+#'       "(CellB_Treated_WT-CellB_Control_WT))"))
 #' comp_3way <- contrast2comp(contrast_names_3way);
-#' contrasts2_3way <- comp2contrast(comp_3way);
-#' contrasts2_3way <- comp2contrast(comp_3way, factor_order=c(2,1,3));
 #' data.frame(contrast_names_3way,
 #'    nchar_contrasts=nchar(contrast_names_3way),
 #'    comp_3way,
 #'    nchar_comps=nchar(comp_3way));
 #'
+#' # compare to input
+#' contrasts2_3way <- comp2contrast(comp_3way);
+#' # mathematically correct contrasts but in different order from input
 #' data.frame(contrast_names_3way,
 #'    contrasts2_3way,
 #'    changed=contrast_names_3way != contrasts2_3way);
+#'
+#' # custom factor order produces the same contrasts as input
+#' contrasts2_3way_v2 <- comp2contrast(comp_3way,
+#'    factor_order=list(c(2,1,3), c(2,1,3), c(2,1,3),
+#'       c(1,2,3), c(2,1,3)));
+#' data.frame(contrast_names_3way,
+#'    contrasts2_3way_v2,
+#'    changed=contrast_names_3way != contrasts2_3way_v2);
 #'
 #' @param contrast_names `character` vector of statistical contrasts
 #' @param contrast_delim `character` string delimiter between groups,

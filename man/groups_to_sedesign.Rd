@@ -152,7 +152,9 @@ equal to \code{colnames(se)}.
 \item \code{data.frame} where each column represents a design factor.
 \itemize{
 \item An example of \code{data.frame} input:
-}\if{html}{\out{<div class="sourceCode R">}}\preformatted{ifactors <- data.frame(
+}
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{ifactors <- data.frame(
    treatment=c("Control", "Control", "Treated", "Treated"),
    genotype=c("Wildtype", "Knockout", "Wildtype", "Knockout"))
 }\if{html}{\out{</div>}}
@@ -161,7 +163,9 @@ by a delimiter such as underscore \code{"_"}. This input will be
 converted to \code{data.frame} before processing.
 \itemize{
 \item An example of \code{character} input:
-}\if{html}{\out{<div class="sourceCode R">}}\preformatted{ifactors <- c(
+}
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{ifactors <- c(
    "Control_Wildtype",
    "Control_Knockout",
    "Treated_Wildtype",
