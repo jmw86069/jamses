@@ -376,6 +376,10 @@
 #'    In this way, individual columns can have the legend displayed or hidden.
 #'    * If `alt_sestats` is defined, the legend is always hidden, in favor
 #'    of showing only the legend for `sestats` without duplicating this legend.
+#' @param legend_border_color `character` color used as border color tofor
+#'    be used as a border color for the various legend colors. Note this
+#'    argument recognizes only the first color provided, and does not
+#'    recycle different colors across the various legend borders.
 #' @param show_top_annotation_name,show_left_annotation_name `logical`
 #'    indicating whether to display the annotation name beside the top and
 #'    left annotations, respectively.
@@ -635,6 +639,7 @@ heatmap_se <- function
    show_heatmap_legend=TRUE,
    show_top_legend=TRUE,
    show_left_legend=TRUE,
+   legend_border_color="black",
    show_top_annotation_name=TRUE,
    show_left_annotation_name=TRUE,
    row_label_colname=NULL,
@@ -671,6 +676,11 @@ heatmap_se <- function
    }
    if (length(correlation) == 0) {
       correlation <- FALSE;
+   }
+   if (length(legend_border_color) == 0) {
+      legend_border_color <- "transparent";
+   } else {
+      legend_border_color <- head(legend_border_color, 1)
    }
 
    # row_subcluster
@@ -995,7 +1005,7 @@ heatmap_se <- function
             if (iname %in% names(top_color_list)) {
                if (is.function(top_color_list[[iname]])) {
                   if ("breaks" %in% names(attributes(top_color_list[[iname]]))) {
-                     list(border=TRUE,
+                     list(border=legend_border_color,
                         title_gp=legend_title_gp,
                         labels_gp=legend_labels_gp,
                         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
@@ -1003,7 +1013,7 @@ heatmap_se <- function
                         color_bar="discrete",
                         at=attr(top_color_list[[iname]], "breaks"))
                   } else {
-                     list(border=TRUE,
+                     list(border=legend_border_color,
                         title_gp=legend_title_gp,
                         labels_gp=legend_labels_gp,
                         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
@@ -1012,7 +1022,7 @@ heatmap_se <- function
                   }
                } else {
                   if (subset_legend_colors) {
-                     list(border=TRUE,
+                     list(border=legend_border_color,
                         title_gp=legend_title_gp,
                         labels_gp=legend_labels_gp,
                         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
@@ -1020,7 +1030,7 @@ heatmap_se <- function
                         color_bar="discrete",
                         at=jamba::rmNA(names(top_color_list[[iname]])))
                   } else {
-                     list(border=TRUE,
+                     list(border=legend_border_color,
                         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                         grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                         title_gp=legend_title_gp,
@@ -1028,7 +1038,7 @@ heatmap_se <- function
                   }
                }
             } else {
-               list(border=TRUE,
+               list(border=legend_border_color,
                   grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                   grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                   title_gp=legend_title_gp,
@@ -1085,7 +1095,7 @@ heatmap_se <- function
                labels_gp=legend_labels_gp,
                grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                grid_width=grid::unit(4 * legend_grid_cex, "mm"),
-               border=TRUE,
+               border=legend_border_color,
                labels=c("down", "no change", "up"))),
             left_param_list);
       }
@@ -1111,7 +1121,7 @@ heatmap_se <- function
                labels_gp=legend_labels_gp,
                grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                grid_width=grid::unit(4 * legend_grid_cex, "mm"),
-               border=TRUE,
+               border=legend_border_color,
                labels=c("down", "no change", "up"))),
             left_param_list);
       }
@@ -1183,7 +1193,7 @@ heatmap_se <- function
                if (iname %in% names(left_color_list)) {
                   if (is.function(left_color_list[[iname]])) {
                      if ("breaks" %in% names(attributes(left_color_list[[iname]]))) {
-                        list(border=TRUE,
+                        list(border=legend_border_color,
                            color_bar="discrete",
                            title_gp=legend_title_gp,
                            labels_gp=legend_labels_gp,
@@ -1191,7 +1201,7 @@ heatmap_se <- function
                            grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                            at=attr(left_color_list[[iname]], "breaks"))
                      } else {
-                        list(border=TRUE,
+                        list(border=legend_border_color,
                            title_gp=legend_title_gp,
                            labels_gp=legend_labels_gp,
                            grid_height=grid::unit(4 * legend_grid_cex, "mm"),
@@ -1200,7 +1210,7 @@ heatmap_se <- function
                      }
                   } else {
                      if (subset_legend_colors) {
-                        list(border=TRUE,
+                        list(border=legend_border_color,
                            title_gp=legend_title_gp,
                            labels_gp=legend_labels_gp,
                            grid_height=grid::unit(4 * legend_grid_cex, "mm"),
@@ -1208,7 +1218,7 @@ heatmap_se <- function
                            color_bar="discrete",
                            at=jamba::rmNA(names(left_color_list[[iname]])))
                      } else {
-                        list(border=TRUE,
+                        list(border=legend_border_color,
                            grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                            grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                            title_gp=legend_title_gp,
@@ -1216,7 +1226,7 @@ heatmap_se <- function
                      }
                   }
                } else {
-                  list(border=TRUE,
+                  list(border=legend_border_color,
                      grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                      grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                      title_gp=legend_title_gp,
@@ -1240,7 +1250,8 @@ heatmap_se <- function
             show_annotation_name=show_left_annotation_name,
             annotation_name_rot=left_annotation_name_rot,
             annotation_name_gp=left_annotation_name_gp,
-            border=TRUE);
+            border=TRUE
+         );
          if (debug > 1) {
             jamba::printDebug("heatmap_se(): ",
                "left_alist:");
@@ -1591,7 +1602,7 @@ heatmap_se <- function
       left_annotation=left_annotation,
       right_annotation=right_annotation,
       heatmap_legend_param=list(
-         border=TRUE,
+         border=legend_border_color,
          color_bar="discrete",
          at=legend_at,
          labels=legend_labels,

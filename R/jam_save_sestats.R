@@ -5,6 +5,10 @@
 #'
 #' Save SE contrast stats output
 #'
+#' This function is intended as a convenient method to export
+#' a series of statistical tables into organized, formatted Excel
+#' worksheets.
+#'
 #' @param sestats `list` object output from `se_contrast_stats()`
 #' @param file `character` string indicating the filename to save.
 #' @param assay_names `character` string indicating which assay names
@@ -146,7 +150,12 @@ save_sestats <- function
 
    # quick function to ensure unique sheetName,
    # up to max_nchar_sheetname nchar length
-   validate_sheetNames <- function(sheetNames, max_nchar_sheetname=31, trim_n=3, ...) {
+   validate_sheetNames <- function
+   (sheetNames,
+    max_nchar_sheetname=31,
+    trim_n=3,
+    ...)
+   {
       sheetNames <- gsub("^[-.:_ ]+|[-.:_ ]+$", "", sheetNames);
       is_toolong <- (nchar(sheetNames) > max_nchar_sheetname);
       if (any(is_toolong)) {

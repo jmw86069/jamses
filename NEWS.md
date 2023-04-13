@@ -1,3 +1,17 @@
+# jamses 0.0.39.900
+
+## bug fixes
+
+* `heatmap_se()`
+
+   * visual glitch apparent in version R-4.2.3, the border color for
+   color legend boxes was not black, so new argument `legend_border_color`
+   was added, and is applied to all legends as relevant.
+
+* `se_normalize()` - Fixed minor issue with `if (class(x))` logic to avoid
+error when comparing multiple values in an `if()` statement.
+
+
 # jamses 0.0.38.900
 
 ## new functions

@@ -831,7 +831,7 @@ update_list_elements <- function
    if (length(update_list) == 0) {
       return(source_list);
    }
-   if (class(update_list) %in% c("list") && class(update_list[[1]]) %in% c("list")) {
+   if ("list" %in% class(update_list) && "list" %in% class(update_list[[1]])) {
       for (update_list_name in names(update_list)) {
          if (update_list_name %in% names(source_list)) {
             ## If the name already exists, we must update items within the list

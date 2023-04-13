@@ -81,3 +81,8 @@ colors.}
 \description{
 Save SE contrast stats output
 }
+\details{
+This function is intended as a convenient method to export
+a series of statistical tables into organized, formatted Excel
+worksheets.
+}

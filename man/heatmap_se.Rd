@@ -59,6 +59,7 @@ heatmap_se(
   show_heatmap_legend = TRUE,
   show_top_legend = TRUE,
   show_left_legend = TRUE,
+  legend_border_color = "black",
   show_top_annotation_name = TRUE,
   show_left_annotation_name = TRUE,
   row_label_colname = NULL,
@@ -430,6 +431,11 @@ In this way, individual columns can have the legend displayed or hidden.
 \item If \code{alt_sestats} is defined, the legend is always hidden, in favor
 of showing only the legend for \code{sestats} without duplicating this legend.
 }}
+
+\item{legend_border_color}{\code{character} color used as border color tofor
+be used as a border color for the various legend colors. Note this
+argument recognizes only the first color provided, and does not
+recycle different colors across the various legend borders.}
 
 \item{show_top_annotation_name, show_left_annotation_name}{\code{logical}
 indicating whether to display the annotation name beside the top and
