@@ -1,6 +1,18 @@
 
 # TODO for jamses
 
+## 05may2023
+
+* `se_contrast_stats()`
+
+   * add optional `rowData()` colnames to stat `data.frame` output,
+   for example adding `rowData_colnames=c("SYMBOL", "GENENAME")` would
+   keep gene symbol and gene name alongside microarray probe IDs.
+
+   * in future, optionally run DESeq2 equivalent steps to limma/limma-voom,
+   by replacing the `run_limma_replicate()` step with optional function
+   to wrapper DESeq2 steps.
+
 ## 05apr2023
 
 * use `testthat` unit testing

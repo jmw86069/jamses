@@ -25,6 +25,7 @@ ebayes2dfs(
   include_ave_expr = FALSE,
   include_group_means = TRUE,
   transform_means = c("none", "exp2signed", "10^"),
+  rowData_df = NULL,
   collapse_by_gene = FALSE,
   rename_contrasts = FALSE,
   sep = " ",
@@ -82,6 +83,11 @@ group mean along with the relevant contrast. These values are
 helpful, in that they should exactly represent the reported \code{logFC}
 value. Sometimes it is helpful and comforting to see the exact values
 used in that calculation.}
+
+\item{rowData_df}{\code{data.frame} representing optional rowData annotation
+to be retained in the resulting stat \code{data.frame}. This argument
+is usually defined using \code{rowData_colnames} in \code{se_contrast_stats()},
+which uses corresponding columns from \code{rowData(se)}.}
 
 \item{collapse_by_gene}{\code{logical} indicating whether to apply
 \code{collapse_stats_by_gene} which chooses one "best" exemplar per gene

@@ -29,7 +29,9 @@ se_contrast_stats(
   posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   weights = NULL,
   robust = FALSE,
-  handle_na = c("partial", "full", "none"),
+  handle_na = c("full1", "full", "partial", "all", "none"),
+  na_value = 0,
+  rowData_colnames = c("SYMBOL"),
   collapse_by_gene = FALSE,
   block = NULL,
   correlation = NULL,
@@ -40,20 +42,181 @@ se_contrast_stats(
 )
 }
 \arguments{
-\item{se}{\code{SummarizedExperiment} object}
+\item{se}{\code{SummarizedExperiment} object.
+\itemize{
+\item Note that \code{colnames(se)} should match the samples in \code{sedesign},
+or the \code{rownames(idesign)} when \code{sedesign} is not supplied.
+\item Data is subset by \code{colnames(se)} using \code{isamples} when supplied,
+and \code{rownames(se)} when \code{igenes} is supplied.
+\item Note argument \code{rowData_colnames} can be used to retain some
+\code{rowData(se)} columns in the stat \code{data.frame} summaries for
+convenience, particularly helpful when analyzing microarray data
+where the \code{rownames(se)} represent probe ID or assay ID.
+}}
 
 \item{assay_names}{\code{character} vector with one or more assay names
 from \code{names(assays(se))}.}
 
+\item{adjp_cutoff}{\code{numeric} value threshold with the adjusted P-value
+at or below which a contrast result can be considered a statistical
+hit.
+This threshold is applied in addition to other \code{cutoff} values.}
+
+\item{p_cutoff}{\code{numeric} value threshold with the unadjusted P-value
+at or below which a contrast result can be considered a statistical
+hit. This argument is not recommended, in favor of using \code{adjp_cutoff}.
+This threshold is applied in addition to other \code{cutoff} values.}
+
+\item{fold_cutoff}{\code{numeric} value threshold indicating the normal
+absolute fold change at or above which a contrast result can be
+considered a statistical hit. For clarity, this threshold is normal
+space fold change, for example 2-fold would be \code{fold_cutoff=2}.}
+
+\item{int_adjp_cutoff, int_p_cutoff, int_fold_cutoff}{optional thresholds
+used only when a two-way interaction style contrast is detected.
+These optional thresholds may be useful to apply more lenient criteria
+to interaction contrasts, but in that event are cautioned to be
+used for data mining exercises. Ideally, the thresholds are identical
+between pairwise and interaction contrasts, and ideally there are
+enough replicates in the data to support the interaction contrasts
+with sufficient confidence to make those comparisons.}
+
+\item{mgm_cutoff}{\code{numeric} value threshold of the maximum group mean
+value required in each contrast for the contrast to be considered
+a statistical hit.
+The "max group mean" logic requires only one
+group in a contrast to be above this threshold, while all other
+groups can have values below the threshold.
+This threshold is applied in addition to other \code{cutoff} values.}
+
+\item{ave_cutoff}{\code{numeric} value threshold of the average expression
+as reported by \code{limma::lmFit()}, within each normgroup if relevant,
+for the contrast to be considered a statistical hit.
+This threshold is applied in addition to other \code{cutoff} values.
+Typically the column "AvgExpr" is calculated as a row mean.}
+
+\item{confint}{\code{logical} passed to \code{limma::topTable()} indicating
+whether to calculate 95\% confidence intervals for log2 fold change
+\code{logFC} values. Alternatively it can be a \code{numeric} value between
+zero and one specifying a specific confidence interval.}
+
+\item{floor_min, floor_value}{\code{numeric} minimum value (floor_min) at
+or below which \code{numeric} values in the assay data matrix are
+reverted to \code{floor_value} as a replacement. This option is
+valuable to set all \code{numeric} values at or below zero to zero,
+or to set all values at or below zero to \code{NA} in circumstances
+where zero indicates "no measurement" and would be more accurately
+represented as a missing measurement than a measurement of \code{0}.}
+
+\item{sedesign}{\code{SEDesign} object as defined by \code{groups_to_sedesign()},
+with slotNames \code{"design"}, \code{"contrasts"}, and \code{"samples"}.
+The arguments \code{idesign} and \code{icontrasts} are ignored when this
+argument is defined.}
+
+\item{icontrasts, idesign}{\code{numeric} matrices representing statistical
+contrasts, and sample-group design matrices. These values are ignored
+when \code{sedesign} is defined.}
+
+\item{igenes}{\code{character} vector with optional subset of \code{rownames(se)},
+by default it uses all \code{rownames(se)}.}
+
+\item{isamples}{\code{character} vector with optional subset of \code{colnames(se)},
+by default it uses \code{colnames(se)} that are also defined in the design
+matrix.}
+
+\item{enforce_design}{\code{logical} (this option is not implemented).
+By default the design matrix is used to subset the input \code{colnames(se)}
+as needed, and \code{isamples} is used to subset the design matrix
+and corresponding contrasts as relevant.}
+
+\item{use_voom}{\code{logical} indicating whether to apply \code{limma-voom}
+analysis steps. When applied, data is not scaled using \code{limma:voom()},
+instead uses data as supplied.}
+
+\item{posthoc_test}{\code{character} string indicating an optional post-hoc
+test to apply.
+\itemize{
+\item \code{"none"}: applies \code{limma::eBayes()} by default, the moderated t-test.
+\item \code{"DEqMS"}: applies adjustment for proteomics measurements provided
+by the package \code{"DEqMS"}. See \code{posthoc_args}.
+}}
+
+\item{posthoc_args}{\code{list} named by the \code{posthoc_test} above.
+\code{"DEqMS"} recognizes two arguments, which are passed to
+\code{DEqMS::spectraCounteBayes()}:
+\itemize{
+\item \code{"PSM_counts"}: a \code{numeric} vector of peptide spectra matched, one
+per \code{igenes} or \code{rownames(se)}. These values are used by DEqMS to
+model variability based upon the number of spectra as the key
+measure of confidence.
+\item \code{"fit.method"}: \code{character} name of the model to use, default
+is \code{"loess"}.
+}}
+
+\item{weights}{\code{numeric} non-negative precision weights passed to
+\code{limma::lmFit()}, either as a matrix with nrow and ncol that
+match \code{igenes} and \code{isamples}, respectively, or matching one
+of \code{length(igenes)} or \code{length(isamples)}. When \code{igenes} or \code{isamples}
+are not supplied, it uses \code{nrow(se)} or \code{ncol(se)}, respectively.}
+
+\item{robust}{\code{logical} passed to \code{limma::eBayes()}, whether estimation
+of \code{df.prior} and \code{var.prior} should be robust against outlier
+sample variances.}
+
+\item{handle_na}{\code{character} string indicating how to handle \code{NA}
+values in the data matrix, passed to \code{handle_na_values()}.
+\itemize{
+\item \code{"partial"}: Replace \code{NA} values with \code{na_value},
+except when an entire group is \code{NA} the entire group is kept at \code{NA}.
+\item \code{"full"}: Retain \code{NA} values, except when an entire group is \code{NA}
+the replicate values are replaced with \code{na_value}. The option
+\code{"full1"} may be preferred, since it only replaces one value
+in the group, therefore does not misrepresent the variability
+of the group as zero.
+\item \code{"full1"}: Retain \code{NA} values, except when an entire group is \code{NA},
+one replicate value in the group is replaced with \code{na_value}. By
+replacing only one replicate with \code{na_value} the group does not
+have a variance/dispersion, forcing the variance to be determined by
+the other group in the contrast, while still allowing an approximate
+fold change to be calculated. This option is suitable when there
+is a noise floor above zero, as it retains an approximate
+fold change while estimating a P-value using only the variance
+derived from the non-\code{NA} group.
+\item \code{"all"}: replace all \code{NA} values with \code{na_value}.
+\item \code{"none"}: perform no replacement of \code{NA} values.
+}}
+
+\item{na_value}{\code{numeric} passed to \code{handle_na_values()}}
+
+\item{rowData_colnames}{\code{character} vector of colnames in \code{rowData(se)}
+that should be retained in each stat \code{data.frame} produced
+as output. The values in \code{rowData_colnames} are intersected
+with \code{colnames(rowData(se))} to determine which columns to keep.}
+
+\item{collapse_by_gene}{\code{logical} (not currently implemented).}
+
+\item{block}{\code{character}, \code{factor}, or \code{numeric} used as a blocking
+factor, using argument \code{block} in \code{limma::lmFit()} for example.
+Currently this argument must be supplied as a vector in order
+of \code{isamples}, or when \code{isamples} is not supplied \code{colnames(se)}.
+In future, \code{block} will accept \code{colnames(colData(se))}.}
+
+\item{correlation}{optional inter-duplicate or inter-technical
+correlation matrix passed to \code{limma::lmFit()}.}
+
 \item{normgroup}{\code{character} or \code{factor} vector with length
-\code{length(isamples)}, whose values define independent normalization
-groups, intended so that samples in \code{isamples} are analyzed only
-with samples that have the same \code{normgroup}. During limma model
-fit, all samples in all groups are used by default, however this
-technique allows subsets of samples to be analyzed independently.
+\code{ncol(se)} or \code{length(isamples)} when \code{isamples} is defined.
+Values define independent normalization groups, which performs
+independent analyses within each unique normalization group.
+This option is intended for convenience, enabling separate
+variance models for each normalization group, which is
+appropriate when analyzing very different sample types.
+During limma model fit, all samples in all groups are used by default,
+which may incorrectly estimate variance when the variability
+by row is not uniform across different sample types.
 When \code{normgroup=NULL} the default is to assume all samples are in
 the same \code{normgroup="bulk"}.
-Each subset of samples begins with the same \code{sestats}, \code{idesign},
+Each subset of samples begins with the same \code{sedesign}, \code{idesign},
 \code{icontrast}, however they are fed into \code{validate_sestats()} to
 subset the appropriate contrasts to use only samples within the
 current normgroup. As a result, any contrasts that span two
@@ -61,8 +224,12 @@ normgroups will be removed, and will not appear in the output.}
 
 \item{do_normgroups}{\code{logical} whether to enable normgroup processing,
 or to use the previous technique that kept all samples together.
+This argument may be removed in future, with recommendation to use
+\code{normgroup=NULL} to disable normalization group processing.
 Note that when \code{normgroup=NULL} the output should be identical
 with \code{do_normgroups=TRUE} and \code{do_normgroups=FALSE}.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
 }

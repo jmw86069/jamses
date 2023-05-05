@@ -1,3 +1,33 @@
+# jamses 0.0.40.900
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * MAJOR: default argument `handle_na="partial"` changed to
+   `handle_na="full1"`. This change is done to "recover" all comparisons
+   where one group has entirely `NA` values, by substituting one numeric
+   value for one replicate in the group in order to avoid mis-representing
+   the variability of the group. Meanwhile, groups with `numeric` and `NA`
+   values together will use only `numeric` values in the group, without
+   substituting a `numeric` replacement.
+   * New argument `rowData_colnames` to retain gene annotation columns
+   for `se` input where the rownames are not sufficient description
+   of each row. This argument removes the need to merge additional
+   annotation afterward.
+   * Arguments are now fully documented.
+   * handles empty `assay_name` by returning `NULL` for each empty assay.
+   Recovers when multiple `assay_name` values are supplied but some are
+   missing. It does not recover when no assays are found.
+   * Added minor `verbose` output indicating each `assay_name`.
+
+* `run_limma_replicate()`, `ebayes2dfs()`
+
+   * New argument `rowData_df` to support new argument `rowData_colnames`
+   in `se_contrast_stats()`. This argument merges annotations into the
+   resulting top tables so that gene annotations can be retained per row.
+
+
 # jamses 0.0.39.900
 
 ## bug fixes

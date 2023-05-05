@@ -22,6 +22,7 @@ run_limma_replicate(
   mgm_cutoff = NULL,
   ave_cutoff = NULL,
   block = NULL,
+  rowData_df = NULL,
   collapse_by_gene = FALSE,
   correlation = NULL,
   posthoc_test = c("none", "DEqMS"),
@@ -40,6 +41,11 @@ or \code{NULL} when a threshold should not be applied.}
 
 \item{int_adjp_cutoff, int_p_cutoff, int_fold_cutoff}{\code{numeric}
 thresholds to apply only to interaction contrasts.}
+
+\item{rowData_df}{\code{data.frame} representing optional rowData annotation
+to be retained in the resulting stat \code{data.frame}. This argument
+is usually defined using \code{rowData_colnames} in \code{se_contrast_stats()},
+which uses corresponding columns from \code{rowData(se)}.}
 
 \item{collapse_by_gene}{\code{logical} indicating whether to apply
 \code{collapse_stats_by_gene} which chooses one "best" exemplar per gene

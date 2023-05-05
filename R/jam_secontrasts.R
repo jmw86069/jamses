@@ -55,26 +55,158 @@
 #' A subset of genes (`rownames(se)`) or samples (`colnames(se)`) can
 #' be defined, to restrict calculations to use only the subset data.
 #'
-#' @param se `SummarizedExperiment` object
+#' @param se `SummarizedExperiment` object.
+#'    * Note that `colnames(se)` should match the samples in `sedesign`,
+#'    or the `rownames(idesign)` when `sedesign` is not supplied.
+#'    * Data is subset by `colnames(se)` using `isamples` when supplied,
+#'    and `rownames(se)` when `igenes` is supplied.
+#'    * Note argument `rowData_colnames` can be used to retain some
+#'    `rowData(se)` columns in the stat `data.frame` summaries for
+#'    convenience, particularly helpful when analyzing microarray data
+#'    where the `rownames(se)` represent probe ID or assay ID.
 #' @param assay_names `character` vector with one or more assay names
 #'    from `names(assays(se))`.
+#' @param adjp_cutoff `numeric` value threshold with the adjusted P-value
+#'    at or below which a contrast result can be considered a statistical
+#'    hit.
+#'    This threshold is applied in addition to other `cutoff` values.
+#' @param p_cutoff `numeric` value threshold with the unadjusted P-value
+#'    at or below which a contrast result can be considered a statistical
+#'    hit. This argument is not recommended, in favor of using `adjp_cutoff`.
+#'    This threshold is applied in addition to other `cutoff` values.
+#' @param fold_cutoff `numeric` value threshold indicating the normal
+#'    absolute fold change at or above which a contrast result can be
+#'    considered a statistical hit. For clarity, this threshold is normal
+#'    space fold change, for example 2-fold would be `fold_cutoff=2`.
+#' @param int_adjp_cutoff,int_p_cutoff,int_fold_cutoff optional thresholds
+#'    used only when a two-way interaction style contrast is detected.
+#'    These optional thresholds may be useful to apply more lenient criteria
+#'    to interaction contrasts, but in that event are cautioned to be
+#'    used for data mining exercises. Ideally, the thresholds are identical
+#'    between pairwise and interaction contrasts, and ideally there are
+#'    enough replicates in the data to support the interaction contrasts
+#'    with sufficient confidence to make those comparisons.
+#' @param mgm_cutoff `numeric` value threshold of the maximum group mean
+#'    value required in each contrast for the contrast to be considered
+#'    a statistical hit.
+#'    The "max group mean" logic requires only one
+#'    group in a contrast to be above this threshold, while all other
+#'    groups can have values below the threshold.
+#'    This threshold is applied in addition to other `cutoff` values.
+#' @param ave_cutoff `numeric` value threshold of the average expression
+#'    as reported by `limma::lmFit()`, within each normgroup if relevant,
+#'    for the contrast to be considered a statistical hit.
+#'    This threshold is applied in addition to other `cutoff` values.
+#'    Typically the column "AvgExpr" is calculated as a row mean.
+#' @param confint `logical` passed to `limma::topTable()` indicating
+#'    whether to calculate 95% confidence intervals for log2 fold change
+#'    `logFC` values. Alternatively it can be a `numeric` value between
+#'    zero and one specifying a specific confidence interval.
+#' @param floor_min,floor_value `numeric` minimum value (floor_min) at
+#'    or below which `numeric` values in the assay data matrix are
+#'    reverted to `floor_value` as a replacement. This option is
+#'    valuable to set all `numeric` values at or below zero to zero,
+#'    or to set all values at or below zero to `NA` in circumstances
+#'    where zero indicates "no measurement" and would be more accurately
+#'    represented as a missing measurement than a measurement of `0`.
+#' @param sedesign `SEDesign` object as defined by `groups_to_sedesign()`,
+#'    with slotNames `"design"`, `"contrasts"`, and `"samples"`.
+#'    The arguments `idesign` and `icontrasts` are ignored when this
+#'    argument is defined.
+#' @param icontrasts,idesign `numeric` matrices representing statistical
+#'    contrasts, and sample-group design matrices. These values are ignored
+#'    when `sedesign` is defined.
+#' @param isamples `character` vector with optional subset of `colnames(se)`,
+#'    by default it uses `colnames(se)` that are also defined in the design
+#'    matrix.
+#' @param igenes `character` vector with optional subset of `rownames(se)`,
+#'    by default it uses all `rownames(se)`.
+#' @param enforce_design `logical` (this option is not implemented).
+#'    By default the design matrix is used to subset the input `colnames(se)`
+#'    as needed, and `isamples` is used to subset the design matrix
+#'    and corresponding contrasts as relevant.
+#' @param use_voom `logical` indicating whether to apply `limma-voom`
+#'    analysis steps. When applied, data is not scaled using `limma:voom()`,
+#'    instead uses data as supplied.
+#' @param posthoc_test `character` string indicating an optional post-hoc
+#'    test to apply.
+#'    * `"none"`: applies `limma::eBayes()` by default, the moderated t-test.
+#'    * `"DEqMS"`: applies adjustment for proteomics measurements provided
+#'    by the package `"DEqMS"`. See `posthoc_args`.
+#' @param posthoc_args `list` named by the `posthoc_test` above.
+#'    `"DEqMS"` recognizes two arguments, which are passed to
+#'    `DEqMS::spectraCounteBayes()`:
+#'    * `"PSM_counts"`: a `numeric` vector of peptide spectra matched, one
+#'    per `igenes` or `rownames(se)`. These values are used by DEqMS to
+#'    model variability based upon the number of spectra as the key
+#'    measure of confidence.
+#'    * `"fit.method"`: `character` name of the model to use, default
+#'    is `"loess"`.
+#' @param weights `numeric` non-negative precision weights passed to
+#'    `limma::lmFit()`, either as a matrix with nrow and ncol that
+#'    match `igenes` and `isamples`, respectively, or matching one
+#'    of `length(igenes)` or `length(isamples)`. When `igenes` or `isamples`
+#'    are not supplied, it uses `nrow(se)` or `ncol(se)`, respectively.
+#' @param robust `logical` passed to `limma::eBayes()`, whether estimation
+#'    of `df.prior` and `var.prior` should be robust against outlier
+#'    sample variances.
+#' @param handle_na `character` string indicating how to handle `NA`
+#'    values in the data matrix, passed to `handle_na_values()`.
+#'    * `"partial"`: Replace `NA` values with `na_value`,
+#'    except when an entire group is `NA` the entire group is kept at `NA`.
+#'    * `"full"`: Retain `NA` values, except when an entire group is `NA`
+#'    the replicate values are replaced with `na_value`. The option
+#'    `"full1"` may be preferred, since it only replaces one value
+#'    in the group, therefore does not misrepresent the variability
+#'    of the group as zero.
+#'    * `"full1"`: Retain `NA` values, except when an entire group is `NA`,
+#'    one replicate value in the group is replaced with `na_value`. By
+#'    replacing only one replicate with `na_value` the group does not
+#'    have a variance/dispersion, forcing the variance to be determined by
+#'    the other group in the contrast, while still allowing an approximate
+#'    fold change to be calculated. This option is suitable when there
+#'    is a noise floor above zero, as it retains an approximate
+#'    fold change while estimating a P-value using only the variance
+#'    derived from the non-`NA` group.
+#'    * `"all"`: replace all `NA` values with `na_value`.
+#'    * `"none"`: perform no replacement of `NA` values.
+#' @param na_value `numeric` passed to `handle_na_values()`
+#' @param rowData_colnames `character` vector of colnames in `rowData(se)`
+#'    that should be retained in each stat `data.frame` produced
+#'    as output. The values in `rowData_colnames` are intersected
+#'    with `colnames(rowData(se))` to determine which columns to keep.
+#' @param collapse_by_gene `logical` (not currently implemented).
+#' @param block `character`, `factor`, or `numeric` used as a blocking
+#'    factor, using argument `block` in `limma::lmFit()` for example.
+#'    Currently this argument must be supplied as a vector in order
+#'    of `isamples`, or when `isamples` is not supplied `colnames(se)`.
+#'    In future, `block` will accept `colnames(colData(se))`.
+#' @param correlation optional inter-duplicate or inter-technical
+#'    correlation matrix passed to `limma::lmFit()`.
 #' @param normgroup `character` or `factor` vector with length
-#'    `length(isamples)`, whose values define independent normalization
-#'    groups, intended so that samples in `isamples` are analyzed only
-#'    with samples that have the same `normgroup`. During limma model
-#'    fit, all samples in all groups are used by default, however this
-#'    technique allows subsets of samples to be analyzed independently.
+#'    `ncol(se)` or `length(isamples)` when `isamples` is defined.
+#'    Values define independent normalization groups, which performs
+#'    independent analyses within each unique normalization group.
+#'    This option is intended for convenience, enabling separate
+#'    variance models for each normalization group, which is
+#'    appropriate when analyzing very different sample types.
+#'    During limma model fit, all samples in all groups are used by default,
+#'    which may incorrectly estimate variance when the variability
+#'    by row is not uniform across different sample types.
 #'    When `normgroup=NULL` the default is to assume all samples are in
 #'    the same `normgroup="bulk"`.
-#'    Each subset of samples begins with the same `sestats`, `idesign`,
+#'    Each subset of samples begins with the same `sedesign`, `idesign`,
 #'    `icontrast`, however they are fed into `validate_sestats()` to
 #'    subset the appropriate contrasts to use only samples within the
 #'    current normgroup. As a result, any contrasts that span two
 #'    normgroups will be removed, and will not appear in the output.
 #' @param do_normgroups `logical` whether to enable normgroup processing,
 #'    or to use the previous technique that kept all samples together.
+#'    This argument may be removed in future, with recommendation to use
+#'    `normgroup=NULL` to disable normalization group processing.
 #'    Note that when `normgroup=NULL` the output should be identical
 #'    with `do_normgroups=TRUE` and `do_normgroups=FALSE`.
+#' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
 #' @family jamses stats
@@ -108,7 +240,13 @@ se_contrast_stats <- function
     fit.method="loess")),
  weights=NULL,
  robust=FALSE,
- handle_na=c("partial", "full", "none"),
+ handle_na=c("full1",
+    "full",
+    "partial",
+    "all",
+    "none"),
+ na_value=0,
+ rowData_colnames=c("SYMBOL"),
  collapse_by_gene=FALSE,
  block=NULL,
  correlation=NULL,
@@ -176,11 +314,32 @@ se_contrast_stats <- function
    # each vector will be analyzed independently
    isamples_normgroup_list <- split(isamples, normgroup[isamples]);
 
+   ## prepare optional gene_df data.frame
+   rowData_df <- NULL;
+   rowData_colnames <- intersect(rowData_colnames,
+      colnames(SummarizedExperiment::rowData(se)));
+   if (length(rowData_colnames) > 0) {
+      rowData_df <- data.frame(check.names=FALSE,
+         stringsAsFactors=FALSE,
+         probes=igenes,
+         data.frame(check.names=FALSE,
+            SummarizedExperiment::rowData(
+               se[igenes, ])[, rowData_colnames, drop=FALSE])
+      )
+   }
+
    ## Iterate each assay_name
    ## Run statistical tests for gene data
    stats_hits_dfs1 <- lapply(jamba::nameVector(assay_names), function(signalSet) {
       retVals <- list();
       imatrix <- SummarizedExperiment::assays(se[igenes, isamples])[[signalSet]];
+      if (length(imatrix) == 0) {
+         return(NULL)
+      }
+      if (verbose) {
+         jamba::printDebug("se_contrast_stats(): ",
+            "Analyzing assay_name: ", signalSet);
+      }
 
       # iterate each normgroup independently
       if (TRUE %in% do_normgroups) {
@@ -202,7 +361,8 @@ se_contrast_stats <- function
             if (length(icontrasts_ng) == 0 || ncol(icontrasts_ng) == 0 || nrow(icontrasts_ng) == 0) {
                if (verbose) {
                   jamba::printDebug("se_contrast_stats(): ",
-                     "   No contrasts were defined for this normgroup_name.", fgText=c("darkorange2", "red"));
+                     "   No contrasts were defined for this normgroup_name.",
+                     fgText=c("darkorange2", "red3"));
                }
                return(NULL)
             }
@@ -210,7 +370,8 @@ se_contrast_stats <- function
             if (!"none" %in% handle_na && any(is.na(imatrix_ng))) {
                imatrix_ng <- handle_na_values(imatrix_ng,
                   idesign=idesign_ng,
-                  handle_na=handle_na);
+                  handle_na=handle_na,
+                  ...);
             }
             ## Optionally determine voom weights prior to running limma
             if (use_voom) {
@@ -235,7 +396,9 @@ se_contrast_stats <- function
 
             #######################################################
             ## Optionally convert zero (or less than zero) to NA
-            if (length(floor_min) == 1 && !is.na(floor_min) && any(imatrix_ng <= floor_min)) {
+            if (length(floor_min) == 1 &&
+                  !is.na(floor_min) &&
+                  any(imatrix_ng <= floor_min)) {
                if (verbose) {
                   jamba::printDebug("se_contrast_stats(): ",
                      c("Applying floor_min:",
@@ -247,7 +410,9 @@ se_contrast_stats <- function
                imatrix_ng[imatrix_ng <= floor_min] <- floor_value;
             }
 
+            #######################################################
             ## Run limma
+            ## - future option to call DESeq2 equivalent steps
             rlr_result_ng <- run_limma_replicate(imatrix=imatrix_ng,
                idesign=idesign_ng,
                icontrasts=icontrasts_ng,
@@ -262,6 +427,7 @@ se_contrast_stats <- function
                int_p_cutoff=int_p_cutoff,
                int_fold_cutoff=int_fold_cutoff,
                ave_cutoff=ave_cutoff,
+               rowData_df=rowData_df,
                collapse_by_gene=collapse_by_gene,
                block=block,
                correlation=correlation,
@@ -326,7 +492,9 @@ se_contrast_stats <- function
 
          #######################################################
          ## Optionally convert zero (or less than zero) to NA
-         if (length(floor_min) == 1 && !is.na(floor_min) && any(imatrix <= floor_min)) {
+         if (length(floor_min) == 1 &&
+               !is.na(floor_min) &&
+               any(imatrix <= floor_min)) {
             if (verbose) {
                jamba::printDebug("se_contrast_stats(): ",
                   c("Applying floor_min:",
@@ -338,7 +506,9 @@ se_contrast_stats <- function
             imatrix[imatrix <= floor_min] <- floor_value;
          }
 
+         #######################################################
          ## Run limma
+         ## - future option to call DESeq2 equivalent steps
          rlr_result <- run_limma_replicate(imatrix=imatrix,
             idesign=idesign,
             icontrasts=icontrasts,
@@ -353,6 +523,7 @@ se_contrast_stats <- function
             int_p_cutoff=int_p_cutoff,
             int_fold_cutoff=int_fold_cutoff,
             ave_cutoff=ave_cutoff,
+            rowData_df=rowData_df,
             collapse_by_gene=collapse_by_gene,
             block=block,
             correlation=correlation,
@@ -368,7 +539,7 @@ se_contrast_stats <- function
    });
 
    ## Assemble list of statsDF
-   stats_df <- lapply(stats_hits_dfs1, function(i){
+   stats_df <- lapply(jamba::rmNULL(stats_hits_dfs1), function(i){
       i$stats_df;
    });
    ret_list <- list(stats_df=stats_df);
@@ -503,7 +674,11 @@ se_contrast_stats <- function
 handle_na_values <- function
 (x,
  idesign,
- handle_na=c("full1", "full", "partial", "none", "all"),
+ handle_na=c("full1",
+    "full",
+    "partial",
+    "none",
+    "all"),
  na_value=0,
  na_weight=0,
  verbose=FALSE,
@@ -889,6 +1064,7 @@ run_limma_replicate <- function
  mgm_cutoff=NULL,
  ave_cutoff=NULL,
  block=NULL,
+ rowData_df=NULL,
  collapse_by_gene=FALSE,
  correlation=NULL,
  posthoc_test=c("none",
@@ -1017,6 +1193,7 @@ run_limma_replicate <- function
          mgm_cutoff=mgm_cutoff,
          ave_cutoff=ave_cutoff,
          posthoc_test=posthoc_test,
+         rowData_df=rowData_df,
          verbose=verbose,
          ...);
    } else {
@@ -1155,6 +1332,10 @@ run_limma_replicate <- function
 #'    helpful, in that they should exactly represent the reported `logFC`
 #'    value. Sometimes it is helpful and comforting to see the exact values
 #'    used in that calculation.
+#' @param rowData_df `data.frame` representing optional rowData annotation
+#'    to be retained in the resulting stat `data.frame`. This argument
+#'    is usually defined using `rowData_colnames` in `se_contrast_stats()`,
+#'    which uses corresponding columns from `rowData(se)`.
 #' @param collapse_by_gene `logical` indicating whether to apply
 #'    `collapse_stats_by_gene` which chooses one "best" exemplar per gene
 #'    when there are multiple rows that represent the same gene.
@@ -1190,6 +1371,7 @@ ebayes2dfs <- function
  include_ave_expr=FALSE,
  include_group_means=TRUE,
  transform_means=c("none", "exp2signed", "10^"),
+ rowData_df=NULL,
  collapse_by_gene=FALSE,
  rename_contrasts=FALSE,
  sep=" ",
@@ -1344,7 +1526,8 @@ ebayes2dfs <- function
    }
 
    ## assign rownames if not present in lmFit1$coefficients
-   if (length(lmFit1) > 0 && length(rownames(lmFit1$coefficients)) == 0) {
+   if (length(lmFit1) > 0 &&
+         length(rownames(lmFit1$coefficients)) == 0) {
       jamba::printDebug("ebayes2dfs(): ",
          c("Note there are no",
             " rownames(lmFit1$coefficients)"),
@@ -1354,6 +1537,8 @@ ebayes2dfs <- function
          rownames(lmFit1$coefficients) <- rownames(lmFit1$genes);
       }
    }
+
+   ## assign rownames if not present in lmFit3$coefficients
    if (length(rownames(lmFit3$coefficients)) == 0) {
       jamba::printDebug("ebayes2dfs(): ",
          c("Note there are no",
@@ -1368,7 +1553,7 @@ ebayes2dfs <- function
    ## TODO: handle cases with zero residual degrees of freedom,
    ## where we would not have a P-value but still have fold changes.
    ## Examples would be per-patient fold changes.
-   ##
+
    ## lmTopTables is a list:
    ## - named by contrastNames
    ## - containing elements "iTopTableDF"
@@ -1396,13 +1581,16 @@ ebayes2dfs <- function
          }
       }
       #if (rename_contrasts) {
-      #   iLabel <- renameTwoFactorComparisons(iLabel);
+      #   iLabel <- contrast2comp(iLabel);
       #}
 
       # confirm there is some data available in "genes" by using
       # rownames(coefficients) as a backup plan
       if (!"genes" %in% names(lmFit3)) {
-         lmFit3$genes <- rownames(lmFit3$coefficients);
+         lmFit3$genes <- data.frame(
+            check.names=FALSE,
+            stringsAsFactors=FALSE,
+            probes=rownames(lmFit3$coefficients));
       }
 
       ## Assemble top table, handling single replicate data in a specific way
@@ -1432,6 +1620,7 @@ ebayes2dfs <- function
                AveExpr=lmFit3$Amean);
          }
       } else {
+         # optional post-hoc test
          if (length(lmFit4) > 0) {
             if ("DEqMS" %in% posthoc_test) {
                if (verbose) {
@@ -1471,6 +1660,7 @@ ebayes2dfs <- function
                   confint=confint);
             }
          } else {
+            # post-hoc test was not used
             if (verbose) {
                jamba::printDebug("ebayes2dfs(): ",
                   c("limma::topTable(lmFit3) for contrast: ",
@@ -1487,7 +1677,9 @@ ebayes2dfs <- function
       }
       ## Optionally remove extraneous colnames
       if (length(trim_colnames) > 0) {
-         iTopTable <- iTopTable[,setdiff(colnames(iTopTable), trim_colnames), drop=FALSE];
+         trimmed_colnames <- setdiff(colnames(iTopTable),
+            trim_colnames)
+         iTopTable <- iTopTable[, trimmed_colnames, drop=FALSE];
       }
 
       ## Optionally include group mean and maxgroupmean values
@@ -1517,16 +1709,49 @@ ebayes2dfs <- function
          iTopTable[,"mgm"] <- mgm;
       }
 
-      ## Apply statistical thresholds
-      if (define_hits[i] || collapse_by_gene) {
+      ## Optionally merge rowData_df
+      gene_colnames <- head(colnames(iTopTable), 1);
+      if (length(rowData_df) > 0 &&
+            length(dim(rowData_df)) == 2 &&
+            ncol(rowData_df) > 1) {
          probe_colname <- head(colnames(iTopTable), 1);
-         if (collapse_by_gene) {
+         row_match <- match(iTopTable[[probe_colname]],
+            rowData_df$probes)
+         if (all(is.na(row_match))) {
+            if (verbose) {
+               jamba::printDebug("ebayes2dfs(): ",
+                  "adding rowData_df, no rows matched.");
+            }
+         } else {
+            if (verbose) {
+               jamba::printDebug("ebayes2dfs(): ",
+                  "adding rowData_df colnames:",
+                  colnames(rowData_df)[-1]);
+            }
+            iTopTable <- data.frame(check.names=FALSE,
+               stringsAsFactors=FALSE,
+               iTopTable[, 1, drop=FALSE],
+               rowData_df[row_match, -1, drop=FALSE],
+               iTopTable[, -1, drop=FALSE])
+            gene_colnames <- head(colnames(iTopTable),
+               ncol(rowData_df))
+         }
+      }
+
+      ## Apply statistical thresholds
+      if (TRUE %in% define_hits[i] || TRUE %in% collapse_by_gene) {
+         probe_colname <- head(colnames(iTopTable), 1);
+         if (TRUE %in% collapse_by_gene) {
             if (verbose) {
                jamba::printDebug("ebayes2dfs(): ",
                   "collapse_by_gene.");
             }
             gene_colname <- head(jamba::provigrep(
-               c("GeneName", "geneSymbol", "gene"),
+               c("^SYMBOL$",
+                  "SYMBOL",
+                  "GeneName",
+                  "geneSymbol",
+                  "gene"),
                colnames(iTopTable)), 1);
             isGenes <- nameVector(iTopTable[,gene_colname],
                rownames(iTopTable));
@@ -1623,22 +1848,25 @@ ebayes2dfs <- function
          }
       }
       ## Optionally convert log2 fold change to normal fold change
-      if (return_fold && !"fold" %in% colnames(iTopTable)) {
+      if (TRUE %in% return_fold && !"fold" %in% colnames(iTopTable)) {
          iTopTable[,"fold"] <- log2fold_to_fold(iTopTable[,"logFC"]);
       }
+
       ################################################
       ## Per-gene collapse:
-      ##
-      ## Note we ultimately define per-gene rows using the first stats hit criteria,
-      ## otherwise too many columns will be created.  E.g. changing the stats hit criteria
-      ## changes the prioritization of probes to include in the per-gene row, so it affects
-      ## the fold change, groupMean, P-Value, and adj-P-Val.
-      ## The current solution is to use only the first hit filters, so only one set of these
-      ## values is propagated downstream.
-      ## However, the "hit" columns can represent multiple stats hit criteria.
-      ##
-      ## TODO: implement the interaction P-value cutoffs here as well
-      if (collapse_by_gene) {
+      #
+      # Note we define per-gene rows using the first stats hit criteria,
+      # otherwise too many columns will be created.
+      # E.g. changing the stats hit criteria changes the prioritization
+      # of probes to include in the per-gene row, so it affects
+      # the fold change, groupMean, P-Value, and adj-P-Val.
+      # The current solution is to use only the first hit filters,
+      # so only one set of these values is propagated downstream.
+      # However, the "hit" columns can represent multiple stats hit criteria.
+      #
+      # TODO: implement the interaction P-value cutoffs here as well
+      # Disabled this section for now
+      if (FALSE && TRUE %in% collapse_by_gene) {
          if (verbose) {
             printDebug("collapseByGene iTopTable:");
             print(head(iTopTable));
@@ -1664,18 +1892,21 @@ ebayes2dfs <- function
       }
 
       ## Optionally rename column headers to include the contrast name
-      gene_colnames <- intersect(colnames(iTopTable),
-         c(colnames(lmFit3$genes),
-            "gene",
-            probe_colname));
+      # Note: gene_colnames is defined above, so that it can include
+      # colnames(rowData_df)
+      # gene_colnames <- intersect(colnames(iTopTable),
+      #    c(colnames(lmFit3$genes),
+      #       "gene",
+      #       probe_colname));
 
       # optionally remove AveExpr
-      if (!include_ave_expr) {
-         iTopTable <- iTopTable[,jamba::unvigrep("AveExpr", colnames(iTopTable)),drop=FALSE];
+      if (!TRUE %in% include_ave_expr) {
+         trimmed_colnames1 <- jamba::unvigrep("AveExpr", colnames(iTopTable))
+         iTopTable <- iTopTable[, trimmed_colnames1, drop=FALSE];
       }
 
       # rename headers to include the contrast name
-      if (rename_headers) {
+      if (TRUE %in% rename_headers) {
          ## Note we do rename maxGroupMean now,
          ## since we calculate it per each specific contrast
          #
@@ -1688,9 +1919,9 @@ ebayes2dfs <- function
          rename_to <- paste(rename_from,
             iLabel,
             sep=sep);
-         # remove repeat blank spaces
+         # remove repeat blank spaces, leading/trailing spaces
          rename_to <- gsub("^[ ]+|[ ]+$", "",
-            gsub("[ ]+", " ",
+            gsub("[ \t\r\n]+", " ",
                rename_to));
          if (verbose) {
             jamba::printDebug("ebayes2dfs(): ",
@@ -1718,24 +1949,8 @@ ebayes2dfs <- function
             paste0("^AveExpr", sep),
             "."),
             colnames(iTopTable));
-         # disable old logic for now, will remove in near future
-         if (FALSE) {
-            reorder_colnames <- jamba::vgrep("^(t|F|B|logFC|P.Value|adj.P.Val|fold|AveExpr)($| )",
-               colnames(iTopTable));
-            reorder_match <- match(reorder_colnames, colnames(iTopTable));
-            keep_colnames1 <- colnames(iTopTable)[seq_len(min(reorder_match) - 1)];
-            keep_colnames2 <- setdiff(colnames(iTopTable),
-               c(keep_colnames1, reorder_colnames));
-            reorder_sorted <- provigrep(c("logFC",
-               "fold",
-               "P.Value",
-               "adj.P.Val",
-               "."),
-               reorder_colnames);
-            neworder_colnames <- c(keep_colnames1,
-               reorder_sorted,
-               keep_colnames2);
-         }
+         neworder_colnames <- unique(c(gene_colnames,
+            neworder_colnames));
          iTopTable <- iTopTable[, neworder_colnames, drop=FALSE];
       }
       rownames(iTopTable) <- jamba::makeNames(iTopTable[,1]);
@@ -1745,25 +1960,27 @@ ebayes2dfs <- function
    });
 
    ## Now prepare the data to return
-   if (merge_df) {
+   if (TRUE %in% merge_df) {
       lmTopTablesAll <- jamba::mergeAllXY(lapply(lmTopTables, function(i){
          i$top_df;
       }));
-      if (collapse_by_gene) {
+      if (FALSE && TRUE %in% collapse_by_gene) {
          lmTopTablesAllG <- jamba::mergeAllXY(lapply(lmTopTables, function(i){
             i$top_bygene_df;
          }));
       }
       ## Re-order columns so the genes, then hits, appear first
-      colname_order <- jamba::provigrep(c(gene_colnames, "^hit", "."),
-         colnames(lmTopTablesAll));
-      lmTopTablesAll <- lmTopTablesAll[,colname_order, drop=FALSE];
-      rownames(lmTopTablesAll) <- jamba::makeNames(lmTopTablesAll[,head(gene_colnames, 1)]);
+      colname_order <- unique(c(gene_colnames,
+         jamba::provigrep(c("^hit", "."),
+            colnames(lmTopTablesAll))));
+      lmTopTablesAll <- lmTopTablesAll[, colname_order, drop=FALSE];
+      rownames(lmTopTablesAll) <- jamba::makeNames(
+         lmTopTablesAll[, 1]);
    } else {
       lmTopTablesAll <- lapply(lmTopTables, function(i){
          i$top_df;
       });
-      if (collapse_by_gene) {
+      if (FALSE && TRUE %in% collapse_by_gene) {
          lmTopTablesAllG <- lapply(lmTopTables, function(i){
             i$top_bygene_df;
          });
@@ -1778,7 +1995,7 @@ ebayes2dfs <- function
          attr(lmTopTablesAll, "int_cutoff_df") <- int_cutoff_df;
       }
    }
-   if (collapse_by_gene) {
+   if (FALSE && TRUE %in% collapse_by_gene) {
       if (any(define_hits)) {
          if (length(cutoff_df) > 0) {
             attr(lmTopTablesAllG, "cutoff_df") <- cutoff_df;
