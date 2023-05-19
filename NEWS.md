@@ -1,3 +1,31 @@
+# jamses 0.0.41.900
+
+## new functions
+
+* `heatmap_column_group_labels()`
+
+   * This function adds alternative labels at the top of a rendered `Heatmap`,
+   sometimes a cleaner alternative than using colored annotation boxes.
+   * The specific scenarios to use this function are described in the
+   help docs, and this function may be updated to be more efficient
+   in future.
+   * Although this function can only be applied after drawing a `Heatmap`,
+   and requires some blank whitespace inside that heatmap. Nonetheless,
+   this function does make remaining steps substantially more convenient
+   than otherwise possible, and the output looks quite nice for
+   a publication-quality final figure.
+
+* `detect_heatmap_components()`
+
+   * a helper function intended to be used with `heatmap_column_group_labels()`
+   to identify the `grid` layout elements defined by the drawn
+   `Heatmap` in the current display device.
+
+## changes to existing functions
+
+* `heatmap_se()` help docs were expanded and re-organized to improve
+clarity.
+
 # jamses 0.0.40.900
 
 ## changes to existing functions

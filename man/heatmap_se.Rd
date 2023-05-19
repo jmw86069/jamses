@@ -530,8 +530,7 @@ or centering of independent centering groups.
 By default rows are subsetted to show only statistical hits.
 \item Row and column split by \code{rowData(se)} and \code{colData(se)} annotations.
 }
-
-Additional features:
+\subsection{Additional Features}{
 \itemize{
 \item Data centering can be disabled with \code{centerby_colnames=FALSE}.
 \item Alternative hits can be displayed using \code{alt_sestats}. It does not
@@ -551,6 +550,9 @@ for drilling into a specific subcluster from hierarchical clustering
 without the manual effort to extract the subset of rows in that cluster
 then re-running a new \code{heatmap_se()}.
 }
+}
+
+\subsection{Data Centering}{
 
 The intent is to display expression values from \code{assays(se)},
 centered across all columns, or with customization defined by
@@ -563,46 +565,99 @@ define a subset of samples used as the baseline in centering.
 See \code{jamma::centerGeneData()} for more details.
 
 Note: data centering can be disabled with \code{centerby_colnames=FALSE}.
+}
+
+\subsection{Heatmap Title}{
+
+A heatmap title is returned as an attribute \code{attr(hm, "hm_title")},
+which describes:
+\itemize{
+\item total rows displayed, with \code{row_type} indicating the measured entity
+(gene, probe, DEGs, etc.)
+\item the \code{assay_name} for the data being displayed
+\item relevant options for data centering, for example
+\code{"global-centered"} (by default) or
+\code{"Centered within Cell Line, versus Wildtype"}
+}
+
+To include the heatmap title:
+
+\verb{ComplexHeatmap::draw(hm, column_title=attr(hm, "hm_title))}
+}
+
+\subsection{Top and Left Annotations}{
 
 The top heatmap annotations use \code{colData(se)} with user-supplied
 \code{top_colnames} or by auto-detecting those colnames that apply
 to multiple \code{colnames(se)}.
+Colors can be supplied using argument \code{sample_color_list}, as
+described below.
 
-The \code{hit_array} data is used to define an incidence matrix of up/down
-hits, which is displayed to the left of the heatmap. The contrasts
-can optionally be subset with \code{contrast_names}.
+The an incidence matrix of statistical hits can be displayed
+on the left of the heatmap, using arguments \code{sestats} and \code{alt_sestats}.
+These arguments can accept either the output of \code{se_contrast_stats()},
+or they can be a \code{numeric} matrix with values \code{c(-1, 0, 1)}, indicating
+statistical hits down, no change, and up, respectively.
+The contrasts can optionally be subset with \code{contrast_names},
+which corresponds to columns in the matrix if supplied in that format.
 
-The heatmap title is returned as an \code{attr(hm, "hm_title")} that
-describes the assay data used, data centering, and total rows
-displayed. Draw the resulting heatmap like this:
-
-\verb{ComplexHeatmap::draw(hm, column_title=attr(hm, "hm_title))}
+When \code{sestats} is supplied, it will subset all heatmap rows to include
+only rows with at least one non-zero value in the incidence matrix.
+If argument \code{rows} is supplied, then all \code{rownames(se)} matching
+\code{rows} are displayed, regardless of statistical hits.
 
 For comparison across other \code{sestats} results, argument \code{alt_sestats}
-allows supplying an alternative hit array. These hit arrays are placed
-as \code{left_annotation}, alongside optional data defined by \code{rowData_colnames}.
+is treated similar to \code{sestats} except that the heatmap is not subset
+based upon these values. That means the heatmap will be subset to
+match hits defined by \code{sestats} but not \code{alt_sestats}.
+The \code{alt_sestats} incidence matrix is displayed to the far left
+of the \code{sestats} incidence matrix. For clarity, it can be useful to
+add \code{alt_sestats_suffix} to add a suffix to each contrast label,
+for example if \code{sestats} represents limma hits, use
+\code{sestats_suffix=" limma"}, and if \code{alt_sestats} represents limma-voom
+hits, use \code{alt_sestats_suffix=" limmavoom"}.
 
-When \code{rowData_colnames} is supplied, data in the corresponding colnames
-of \code{rowData(se)} are also displayed in \code{left_annotation}. Colors can
-be defined in \code{sample_color_list}.
+Argument \code{rowData_colnames} can be supplied, which enables display of
+\code{rowData(se)} annotations in the \code{left_annotation} of the heatmap.
+Colors can be supplied using argument \code{sample_color_list}.
 
 Argument \code{sample_color_list} is a \code{list} named by each annotation column
-to be displayed as top or left annotation. Each list element is a vector
-of R colors named by \code{character} value, or for \code{numeric} columns is a
-color \code{function} as produced by \code{circlize::colorRamp2()}.
-The function \code{platjam::design2colors()} is intended to create
-\code{sample_color_list}, and will soon be moved into this package.
+to be displayed as top or left annotation. Each list element is either:
+\itemize{
+\item a \code{character} vector of R colors named by \code{character} value, or
+\item a \code{function} defined by \code{circlize::colorRamp2()} to be applied
+for \code{numeric} column values. In this case the \code{breaks} used to
+define the color function are used to define the color legend.
+}
+
+The function \code{platjam::design2colors()} can be used to create
+\code{sample_color_list} starting with a \code{data.frame} of annotations,
+and will soon be moved into this package.
 
 A custom \code{left_annotation} can be supplied, but this method currently
 prevents the other annotations described above from being displayed.
-Currently the best way to supply custom row annotations in addition
-to those described above, supply \code{right_annotation} to be displayed
-on the right side of the heatmap.
+To display automated annotations with \code{rowData_colnames} and custom
+row annotations, supply custom annotations with \code{right_annotation}.
+Note that annotations must be supplied in exact row order, which
+is usually easiest when supplying \code{rows} with specific set of rows.
+}
+
+\subsection{Compatible Input Formats}{
 
 Data provided in \code{se} is expected to be \code{SummarizedExperiment}, however
-it also accepts other Bioconductor data types that provide
-accessor functions \code{featureData()}, \code{phenoData()}, and \code{assayData()},
-including for example \code{"MethyLumiSet"} class.
+other Bioconductor data types are accepted that provide
+accessor functions: \code{featureData()}, \code{phenoData()}, and \code{assayData()},
+including for example the \code{"MethyLumiSet"} class.
+
+Note that \code{matrix} input is currently not supported, however it can
+be converted to \code{SummarizedExperiment} like this:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{se <- SummarizedExperiment::SummarizedExperiment(
+   assays=list(data=matrix),
+   rowData=data.frame(Gene=rownames(matrix)),
+   colData=data.frame(Sample=colnames(matrix)))
+}\if{html}{\out{</div>}}
+}
 }
 \examples{
 set.seed(123)

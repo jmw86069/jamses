@@ -1,11 +1,26 @@
 
 # TODO for jamses
 
+## 19may2023
+
+* DONE: add `heatmap_column_group_labels()`
+
+   * Custom function to augment `heatmap_se()` for a specific scenario,
+   but the scenario is used often enough to warrant making the
+   function available here.
+   * The function draws group labels above a rendered heatmap, with
+   underline drawn by default indicating the heatmap columns under each
+   label. It draws multiple levels of group labels when defined.
+   * It uses `grid` coordinates *after rendering* to determine where to
+   position labels, which requires drawing the heatmap first.
+   * Also the group labels cannot be included in the `Heatmap` object,
+   which is not ideal, but is also a known limitation.
+
 ## 05may2023
 
 * `se_contrast_stats()`
 
-   * add optional `rowData()` colnames to stat `data.frame` output,
+   * DONE: add optional `rowData()` colnames to stat `data.frame` output,
    for example adding `rowData_colnames=c("SYMBOL", "GENENAME")` would
    keep gene symbol and gene name alongside microarray probe IDs.
 
@@ -13,12 +28,15 @@
    by replacing the `run_limma_replicate()` step with optional function
    to wrapper DESeq2 steps.
 
+* tests for `se_contrast_stats()` with various `handle_na` values,
+and with/without `rowData_colnames`.
+
 ## 05apr2023
 
-* use `testthat` unit testing
+* DONE: use `testthat` unit testing
 * `sedesign` object
 
-   * add method `contrastNames()` (or `contrast_names()`)
+   * DONE: add method `contrastNames()` (or `contrast_names()`)
    * consider adding `comps()` as shortcut for `contrast2comp()`
 
 * `contrast2comp()`

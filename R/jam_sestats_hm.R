@@ -10,6 +10,7 @@
 #' given a `SummarizedExperiment` object.
 #'
 #' It attempts to enable:
+#'
 #' * selection of `assays(se)` to use in the heatmap
 #' * Use of `rowData(se)` or `colData(se)` to produce row and
 #' column annotations, respectively.
@@ -21,7 +22,7 @@
 #' By default rows are subsetted to show only statistical hits.
 #' * Row and column split by `rowData(se)` and `colData(se)` annotations.
 #'
-#' Additional features:
+#' ## Additional Features
 #'
 #' * Data centering can be disabled with `centerby_colnames=FALSE`.
 #' * Alternative hits can be displayed using `alt_sestats`. It does not
@@ -41,6 +42,8 @@
 #' without the manual effort to extract the subset of rows in that cluster
 #' then re-running a new `heatmap_se()`.
 #'
+#' ## Data Centering
+#'
 #' The intent is to display expression values from `assays(se)`,
 #' centered across all columns, or with customization defined by
 #' `centerby_colnames` and `normgroup_colnames`. The resulting centered
@@ -53,45 +56,93 @@
 #'
 #' Note: data centering can be disabled with `centerby_colnames=FALSE`.
 #'
-#' The top heatmap annotations use `colData(se)` with user-supplied
-#' `top_colnames` or by auto-detecting those colnames that apply
-#' to multiple `colnames(se)`.
+#' ## Heatmap Title
 #'
-#' The `hit_array` data is used to define an incidence matrix of up/down
-#' hits, which is displayed to the left of the heatmap. The contrasts
-#' can optionally be subset with `contrast_names`.
+#' A heatmap title is returned as an attribute `attr(hm, "hm_title")`,
+#' which describes:
 #'
-#' The heatmap title is returned as an `attr(hm, "hm_title")` that
-#' describes the assay data used, data centering, and total rows
-#' displayed. Draw the resulting heatmap like this:
+#' * total rows displayed, with `row_type` indicating the measured entity
+#' (gene, probe, DEGs, etc.)
+#' * the `assay_name` for the data being displayed
+#' * relevant options for data centering, for example
+#' `"global-centered"` (by default) or
+#' `"Centered within Cell Line, versus Wildtype"`
+#'
+#' To include the heatmap title:
 #'
 #' `ComplexHeatmap::draw(hm, column_title=attr(hm, "hm_title))`
 #'
-#' For comparison across other `sestats` results, argument `alt_sestats`
-#' allows supplying an alternative hit array. These hit arrays are placed
-#' as `left_annotation`, alongside optional data defined by `rowData_colnames`.
+#' ## Top and Left Annotations
 #'
-#' When `rowData_colnames` is supplied, data in the corresponding colnames
-#' of `rowData(se)` are also displayed in `left_annotation`. Colors can
-#' be defined in `sample_color_list`.
+#' The top heatmap annotations use `colData(se)` with user-supplied
+#' `top_colnames` or by auto-detecting those colnames that apply
+#' to multiple `colnames(se)`.
+#' Colors can be supplied using argument `sample_color_list`, as
+#' described below.
+#'
+#' The an incidence matrix of statistical hits can be displayed
+#' on the left of the heatmap, using arguments `sestats` and `alt_sestats`.
+#' These arguments can accept either the output of `se_contrast_stats()`,
+#' or they can be a `numeric` matrix with values `c(-1, 0, 1)`, indicating
+#' statistical hits down, no change, and up, respectively.
+#' The contrasts can optionally be subset with `contrast_names`,
+#' which corresponds to columns in the matrix if supplied in that format.
+#'
+#' When `sestats` is supplied, it will subset all heatmap rows to include
+#' only rows with at least one non-zero value in the incidence matrix.
+#' If argument `rows` is supplied, then all `rownames(se)` matching
+#' `rows` are displayed, regardless of statistical hits.
+#'
+#' For comparison across other `sestats` results, argument `alt_sestats`
+#' is treated similar to `sestats` except that the heatmap is not subset
+#' based upon these values. That means the heatmap will be subset to
+#' match hits defined by `sestats` but not `alt_sestats`.
+#' The `alt_sestats` incidence matrix is displayed to the far left
+#' of the `sestats` incidence matrix. For clarity, it can be useful to
+#' add `alt_sestats_suffix` to add a suffix to each contrast label,
+#' for example if `sestats` represents limma hits, use
+#' `sestats_suffix=" limma"`, and if `alt_sestats` represents limma-voom
+#' hits, use `alt_sestats_suffix=" limmavoom"`.
+#'
+#' Argument `rowData_colnames` can be supplied, which enables display of
+#' `rowData(se)` annotations in the `left_annotation` of the heatmap.
+#' Colors can be supplied using argument `sample_color_list`.
 #'
 #' Argument `sample_color_list` is a `list` named by each annotation column
-#' to be displayed as top or left annotation. Each list element is a vector
-#' of R colors named by `character` value, or for `numeric` columns is a
-#' color `function` as produced by `circlize::colorRamp2()`.
-#' The function `platjam::design2colors()` is intended to create
-#' `sample_color_list`, and will soon be moved into this package.
+#' to be displayed as top or left annotation. Each list element is either:
+#'
+#' * a `character` vector of R colors named by `character` value, or
+#' * a `function` defined by `circlize::colorRamp2()` to be applied
+#' for `numeric` column values. In this case the `breaks` used to
+#' define the color function are used to define the color legend.
+#'
+#' The function `platjam::design2colors()` can be used to create
+#' `sample_color_list` starting with a `data.frame` of annotations,
+#' and will soon be moved into this package.
 #'
 #' A custom `left_annotation` can be supplied, but this method currently
 #' prevents the other annotations described above from being displayed.
-#' Currently the best way to supply custom row annotations in addition
-#' to those described above, supply `right_annotation` to be displayed
-#' on the right side of the heatmap.
+#' To display automated annotations with `rowData_colnames` and custom
+#' row annotations, supply custom annotations with `right_annotation`.
+#' Note that annotations must be supplied in exact row order, which
+#' is usually easiest when supplying `rows` with specific set of rows.
+#'
+#' ## Compatible Input Formats
 #'
 #' Data provided in `se` is expected to be `SummarizedExperiment`, however
-#' it also accepts other Bioconductor data types that provide
-#' accessor functions `featureData()`, `phenoData()`, and `assayData()`,
-#' including for example `"MethyLumiSet"` class.
+#' other Bioconductor data types are accepted that provide
+#' accessor functions: `featureData()`, `phenoData()`, and `assayData()`,
+#' including for example the `"MethyLumiSet"` class.
+#'
+#' Note that `matrix` input is currently not supported, however it can
+#' be converted to `SummarizedExperiment` like this:
+#'
+#' ```r
+#' se <- SummarizedExperiment::SummarizedExperiment(
+#'    assays=list(data=matrix),
+#'    rowData=data.frame(Gene=rownames(matrix)),
+#'    colData=data.frame(Sample=colnames(matrix)))
+#' ```
 #'
 #' @param se `SummarizedExperiment` object with accessor functions:
 #'    `rowData()`, `colData()`, and `assays()`;
