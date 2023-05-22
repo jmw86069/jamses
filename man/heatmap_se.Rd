@@ -214,7 +214,12 @@ an appropriate label in the heatmap title.}
 
 \item{control_label}{\code{character} string used in heatmap title
 to describe the control used during data centering, relevant when
-\code{controlSamples} is also supplied.}
+\code{controlSamples} is also supplied. Recommended format:
+\code{"versus Wildtype"} or \code{"vs. Wildtype"}.
+The heatmap title will include data centering and \code{control_label}
+in this format:
+\code{"centered within {centerby_colnames}, {control_label}"}, for example
+\code{"centered within Genotype/Time, versus Vehicle"}.}
 
 \item{controlFloor, naControlAction, naControlFloor}{passed to
 \code{jamma::centerGeneData()} to customize data centering.

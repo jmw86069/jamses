@@ -266,7 +266,6 @@ heatmap_column_group_labels <- function
             se[,icolnames])[,c(icol)]
          bbv1 <- jamba::breaksByVector(gv1)
          bbvl1 <- bbv2seq(bbv1)
-         printDebug("bbvl1:");print(bbvl1);
          bbvl1num <- lapply(bbvl1, function(ibbvl1){
             unique(icolnames_list_num[ibbvl1])
          })

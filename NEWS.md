@@ -23,8 +23,11 @@
 
 ## changes to existing functions
 
-* `heatmap_se()` help docs were expanded and re-organized to improve
-clarity.
+* `heatmap_se()` 
+
+   * The heatmap title was altered so the centering label uses the pattern
+   `"centered within *centerby_colnames*, versus *control_label*"`
+   * help docs were expanded and re-organized to improve clarity.
 
 # jamses 0.0.40.900
 

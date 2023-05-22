@@ -251,7 +251,12 @@
 #'    an appropriate label in the heatmap title.
 #' @param control_label `character` string used in heatmap title
 #'    to describe the control used during data centering, relevant when
-#'    `controlSamples` is also supplied.
+#'    `controlSamples` is also supplied. Recommended format:
+#'    `"versus Wildtype"` or `"vs. Wildtype"`.
+#'    The heatmap title will include data centering and `control_label`
+#'    in this format:
+#'    `"centered within {centerby_colnames}, {control_label}"`, for example
+#'    `"centered within Genotype/Time, versus Vehicle"`.
 #' @param controlFloor,naControlAction,naControlFloor passed to
 #'    `jamma::centerGeneData()` to customize data centering.
 #'    * `controlFloor` imposes an optional noise floor to control group
@@ -1400,7 +1405,7 @@ heatmap_se <- function
       centerby_colnames <- intersect(centerby_colnames,
          colnames(colData_se));
       if (length(centerby_colnames) > 0) {
-         centerby_label <- paste0("centered by ",
+         centerby_label <- paste0("centered within ",
             jamba::cPaste(centerby_colnames,
                sep="/"));
          centerGroups <- jamba::pasteByRow(
@@ -1410,7 +1415,8 @@ heatmap_se <- function
          centerby_label <- "global-centered";
       }
       if (length(control_label) > 0 && any(nchar(control_label)) > 0) {
-         centerby_label <- paste(centerby_label,
+         centerby_label <- paste0(centerby_label,
+            ", ",
             control_label);
       }
    }
