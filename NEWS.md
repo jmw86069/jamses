@@ -29,6 +29,15 @@
    `"centered within *centerby_colnames*, versus *control_label*"`
    * help docs were expanded and re-organized to improve clarity.
 
+## bug fixes
+
+* `sestats_to_df()`
+
+   * fixed edge case where columns could be returned as `list` type, instead
+   of `character` vector. It resulted in the `data.frame` appearing
+   to have abbreviated counts, instead of including the full hits, with
+   up- and down-regulated numbers in parentheses.
+
 # jamses 0.0.40.900
 
 ## changes to existing functions
