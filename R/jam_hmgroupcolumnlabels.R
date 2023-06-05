@@ -118,8 +118,9 @@ detect_heatmap_components <- function
 #' * The arguments `hm_title_base` and `hm_body_base` should match the
 #' heatmap name, which is defined in `heatmap_se()` with `data_type`,
 #' usually prefixed `"centered\n"` when the data is centered by that
-#' function. For example, when `data_type="abundance" the corresponding
-#' argument value should be `hm_title_base="centered\nabundance_column_title_"`
+#' function. For example, when `data_type="abundance"`, the corresponding
+#' argument value should be
+#' `hm_title_base="centered\nabundance_column_title_"`.
 #' * use `detect_heatmap_components()` to help identify the appropriate
 #' `grid` elements available to be used by this function.
 #'

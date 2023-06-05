@@ -164,7 +164,9 @@ the adjustment can be done like this:
 \item The arguments \code{hm_title_base} and \code{hm_body_base} should match the
 heatmap name, which is defined in \code{heatmap_se()} with \code{data_type},
 usually prefixed \code{"centered\\n"} when the data is centered by that
-function. For example, when \verb{data_type="abundance" the corresponding argument value should be }hm_title_base="centered\nabundance_column_title_"`
+function. For example, when \code{data_type="abundance"}, the corresponding
+argument value should be
+\code{hm_title_base="centered\\nabundance_column_title_"}.
 \item use \code{detect_heatmap_components()} to help identify the appropriate
 \code{grid} elements available to be used by this function.
 }
