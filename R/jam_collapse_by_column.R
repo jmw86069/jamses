@@ -50,28 +50,40 @@
 #' @param groupFunc `function` used to perform row group calculations on a
 #'    `numeric` matrix. The default is passed to `jamba::rowGroupMeans()`,
 #'    but can be substituted with another row-based function.
-#'    It should accept arguments:
-#'    * `x` as a `numeric` matrix,
+#'    It must accept arguments `x` and `groups`, but the other arguments
+#'    are passed only if `groupFunc` permits these argument names, or `...`:
+#'    * `x` as a `numeric` matrix (required),
 #'    * `groups` as a `character` vector of column groups, in order of
-#'    `colnames(x)`
+#'    `colnames(x)` (required)
 #'    * `rmOutliers` a `logical` indicating whether to apply outlier removal,
-#'    though the function can ignore this value.
+#'    though the function can ignore this value (optional).
 #'    * `madFactor` a `numeric` value indicating the MAD threshold used when
-#'    `rmOutliers=TRUE`; though again the function can ignore this value.
-#'    * `...` additional arguments in `...` will be passed to this function.
+#'    `rmOutliers=TRUE`; though again the function can ignore this value
+#'    (optional).
+#'    * `useMedian=FALSE` is `logical` and when `useMedian=FALSE` it disables
+#'    calculating the `median()` value per group, and instead takes the
+#'    group `mean()` value.
+#'    * `...` additional arguments in `...` will be passed only if permitted
+#'    by `groupFunc`.
 #' @param noise_floor `numeric` value indicating the minimum numeric value
 #'    permitted, *at or below* this value will be replaced with
-#'    `noise_floor_value`. The intent is to recognize abnormally low
-#'    values such as zero `0` and replace them with `NA` so they are not
+#'    `noise_floor_value`.
+#'    The default value `noise_floor=0` will therefore change all values
+#'    at or below zero to `noise_floor_value=0` by default.
+#'    Another alternative is to change abnormally low
+#'    values such as zero `0` to `NA` so these values are not
 #'    treated as actual measurements during the group summary calculation.
-#'    Obviously, this value and the replacement should be adjusted
+#'    This value and the replacement should be adjusted
 #'    with caution. Use `noise_floor=NULL` or `noise_floor=-Inf` to disable
-#'    this process.
+#'    this step.
 #' @param noise_floor_value `numeric` or `NA` used as a replacement for
 #'    `numeric` values *at or below* `noise_floor`, which occurs prior to
 #'    calling the `groupFunc` summary calculation.
 #' @param rmOutliers,madFactor `logical` and `numeric`, respectively, passed
 #'    to `groupFunc` which by default is `jamba::rowGroupMeans()`.
+#' @param useMedian `logical` passed to argument `groupFunc()`, intended
+#'    to be used by `jamba::rowGroupMeans()` to specify taking the mean
+#'    and not the median value per row group.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed through `groupFunc`.
 #'
@@ -85,9 +97,10 @@ se_collapse_by_column <- function
  keepNULLlevels=FALSE,
  groupFunc=jamba::rowGroupMeans,
  noise_floor=0,
- noise_floor_value=NA,
+ noise_floor_value=0,
  rmOutliers=FALSE,
  madFactor=5,
+ useMedian=FALSE,
  verbose=FALSE,
  ...)
 {
@@ -152,9 +165,11 @@ se_collapse_by_column <- function
             iMatrix[noise_match] <- noise_floor_value;
          }
       }
-      iMatrixColGrp <- groupFunc(iMatrix,
+      iMatrixColGrp <- jamba::call_fn_ellipsis(groupFunc,
+         iMatrix,
          rmOutliers=rmOutliers,
          madFactor=madFactor,
+         useMedian=useMedian,
          groups=column_groups);
 
       ## Revert zero back to NA?
@@ -177,6 +192,22 @@ se_collapse_by_column <- function
       includeNumReps=TRUE,
       verbose=FALSE,
       ...);
+
+   # re-order rows to match levels(column_groups)
+   colDataShrunk <- colDataShrunk[colnames(assays_grouped_list[[1]]), ,
+      drop=FALSE]
+
+   if (verbose) {
+      printDebug("se_collapse_by_column(): ",
+         "head(colDataShrunk):");
+      print(head(colDataShrunk));
+      printDebug("se_collapse_by_column(): ",
+         "sdim(assays_grouped_list):");
+      print(sdim(assays_grouped_list));
+      printDebug("se_collapse_by_column(): ",
+         "head(assays_grouped_list[[1]]):");
+      print(head(assays_grouped_list[[1]]));
+   }
 
    se_shrunk <- SummarizedExperiment::SummarizedExperiment(
       assays=assays_grouped_list,

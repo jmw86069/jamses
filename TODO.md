@@ -1,6 +1,17 @@
 
 # TODO for jamses
 
+## 05jun2023
+
+* `se_collapse_by_column()`
+
+   * DONE: consider changing default `noise_floor_value=NA` to
+   `noise_floor_value=0`.
+   * DONE: consider new argument `useMedian=FALSE` so that the default
+   behavior is to take the mean and not the median value per group.
+   * DONE: change to use `jamba::call_fn_ellipse()` so that calls to row
+   group functions will only pass arguments accepted by that function.
+
 ## 19may2023
 
 * DONE: add `heatmap_column_group_labels()`

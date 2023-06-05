@@ -10,6 +10,19 @@
 #' across multiple rows in the source data. The output of this function
 #' should be measurements appropriately summarized to the gene level.
 #'
+#' The key arguments are `group_func_name`, and `data_transform`.
+#' Note that data is inverse-transformed based upon `data_transform`,
+#' prior to calculating group summary values defined by `group_func_name`.
+#' The reason is to enable using `group_func_name="sum"` on normal
+#' space abundance values, when input data has already been
+#' transformed with `log2(1 + x)` for example. In this case it is most
+#' appropriate to take the `sum` of normal space abundance values,
+#' then to re-apply the transformation afterwards.
+#'
+#' However, when using `group_func_name="mean"` it is usually
+#' recommended to use `data_transform="none"` so that data is maintained
+#' in appropriately transformed state.
+#'
 #' The driving use case is proteomics mass spectrometry data,
 #' where measurements are described in terms of peptide sequences,
 #' with or without optional post-translational modification (PTM),
@@ -81,6 +94,22 @@
 #'    use all `assays(se)`.
 #' @param group_func_name `character` name of function used to aggregate
 #'    measurement data within `row_groups`.
+#'    * `sum` - takes the `sum()` of each value in the group. This option
+#'    should be used together with `data_transform` when there has been
+#'    any data transformation, so that the data is inverse-transformed
+#'    prior to calculating the `sum()`, after which data is re-transformed
+#'    to its original state. This method is appropriate for log2p
+#'    `log2(1 + x)` transformed abundance measurements for example.
+#'    * `mean` - calculates the mean value per group. Note that in this
+#'    case is it usually recommended not to define `data_transform`
+#'    so that values are averaged in the appropriately transformed
+#'    numeric space.
+#'    * `weighted.mean` - calculates `weighted.mean()` where weights `w`
+#'    are defined by the values used. This method may be appropriate and
+#'    effective with normal space abundance values derived from
+#'    proteomics mass spec quantitation.
+#'    * `geomean` - calculates geometric mean of values in each group.
+#'    * `none` -
 #' @param rowStatsFunc `function` optional function used instead of
 #'    `group_func_name`.
 #' @param rowDataColnames `character` subset of colnames in `rowData(se)`
@@ -95,6 +124,12 @@
 #' @param data_transform `character` string indicating which
 #'    transformation was used when preparing the assay data. The
 #'    assumption is that all assays were transformed by this method.
+#'    During processing, data is inverse-transformed prior to applying
+#'    the `group_func_name` or `rowStatsFunc` if supplied. After that
+#'    function is applied, data is transformed using this function.
+#'    The purpose is to enable taking the `sum()` in proper measured
+#'    absolute units (in normal space for example) where relevant,
+#'    after which is original numeric transformation is re-applied.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `jamba::rowGroupMeans()`.
 #'
@@ -105,6 +140,7 @@ se_collapse_by_row <- function
  row_groups,
  assay_names=NULL,
  group_func_name=c("sum",
+    "mean",
     "weighted.mean",
     "geomean",
     "none"),
@@ -112,7 +148,11 @@ se_collapse_by_row <- function
  rowDataColnames=NULL,
  keepNULLlevels=FALSE,
  delim="[ ]*[;,]+[ ]*",
- data_transform=c("none", "log2p+sqrt", "log2+sqrt", "log2p", "log2"),
+ data_transform=c("none",
+    "log2p+sqrt",
+    "log2+sqrt",
+    "log2p",
+    "log2"),
  verbose=TRUE,
  ...)
 {
@@ -190,6 +230,7 @@ se_collapse_by_row <- function
 
    ## group_func_name will become a vector of text or NA values, named by signal
    group_func_args <- c("sum",
+      "mean",
       "weighted.mean",
       "geomean",
       "none");
@@ -215,11 +256,15 @@ se_collapse_by_row <- function
          if (length(group_func_name) == 0) {
             customSignal <- assay_names;
          } else {
-            customSignal <- assay_names[group_func_name %in% c(NA,"","none","NA")];
+            customSignal <- assay_names[group_func_name %in%
+                  c(NA, "", "none", "NA")];
          }
-         rowStatsFunc <- lapply(nameVector(customSignal), function(i){rowStatsFunc});
+         rowStatsFunc <- lapply(nameVector(customSignal), function(i){
+            rowStatsFunc
+         });
       } else if (!igrepHas("list", class(rowStatsFunc))) {
-         stop("se_collapse_by_row() rowStatsFunc must be NULL, a function, or a list of functions");
+         stop(paste0("rowStatsFunc must be NULL, a function,",
+            " or a list of functions"));
       }
       rowStatsFunc <- rowStatsFunc[assay_names];
       names(rowStatsFunc) <- assay_names;
@@ -241,13 +286,19 @@ se_collapse_by_row <- function
    ###############################################################
    ## if supplied group_func_name, define the relevant function
    ## sum
-   rowSum <- function(x,...,na.rm=TRUE){
+   rowSum <- function(x, ..., na.rm=TRUE){
       rowSums(x,
          ...,
          na.rm=na.rm)
    }
+   ## mean
+   rowMean <- function(x, ..., na.rm=TRUE){
+      rowMeans(x,
+         ...,
+         na.rm=na.rm)
+   }
    ## weighted.mean
-   rowWeightedMean <- function(x,w=x,...,na.rm=TRUE){
+   rowWeightedMean <- function(x, w=x, ..., na.rm=TRUE){
       #isNA <- is.na(x);
       #x <- x[!isNA];
       #w[is.na(w)] <- 0;
@@ -265,10 +316,10 @@ se_collapse_by_row <- function
    # custom function geomean()
    geomean <- function
    (x,
-      na.rm=TRUE,
-      naValue=NA,
-      offset=0,
-      ...)
+    na.rm=TRUE,
+    naValue=NA,
+    offset=0,
+    ...)
    {
       ## Purpose is to calculate the classical geometric mean
       if (na.rm && any(is.na(x))) {
@@ -280,9 +331,9 @@ se_collapse_by_row <- function
    # custom function rowGeomeans()
    rowGeomeans <- function
    (x,
-      na.rm=TRUE,
-      verbose=FALSE,
-      ...)
+    na.rm=TRUE,
+    verbose=FALSE,
+    ...)
    {
       ## Purpose is to provide a wrapper to geomean(x, matrixBy="row", ...)
       geomean(x=x,
@@ -308,6 +359,8 @@ se_collapse_by_row <- function
          } else {
             if ("sum" %in% statsFuncDF[iSignal,1]) {
                rowStatsFunc[[iSignal]] <- rowSum;
+            } else if ("mean" %in% statsFuncDF[iSignal,1]) {
+               rowStatsFunc[[iSignal]] <- rowMean;
             } else if ("weighted.mean" %in% statsFuncDF[iSignal,1]) {
                rowStatsFunc[[iSignal]] <- rowWeightedMean;
             } else if ("geomean" %in% statsFuncDF[iSignal,1]) {

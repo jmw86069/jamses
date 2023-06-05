@@ -9,7 +9,7 @@ se_collapse_by_row(
   rows = rownames(se),
   row_groups,
   assay_names = NULL,
-  group_func_name = c("sum", "weighted.mean", "geomean", "none"),
+  group_func_name = c("sum", "mean", "weighted.mean", "geomean", "none"),
   rowStatsFunc = NULL,
   rowDataColnames = NULL,
   keepNULLlevels = FALSE,
@@ -33,7 +33,25 @@ the collapse operation. When \code{assay_names=NULL} the default is to
 use all \code{assays(se)}.}
 
 \item{group_func_name}{\code{character} name of function used to aggregate
-measurement data within \code{row_groups}.}
+measurement data within \code{row_groups}.
+\itemize{
+\item \code{sum} - takes the \code{sum()} of each value in the group. This option
+should be used together with \code{data_transform} when there has been
+any data transformation, so that the data is inverse-transformed
+prior to calculating the \code{sum()}, after which data is re-transformed
+to its original state. This method is appropriate for log2p
+\code{log2(1 + x)} transformed abundance measurements for example.
+\item \code{mean} - calculates the mean value per group. Note that in this
+case is it usually recommended not to define \code{data_transform}
+so that values are averaged in the appropriately transformed
+numeric space.
+\item \code{weighted.mean} - calculates \code{weighted.mean()} where weights \code{w}
+are defined by the values used. This method may be appropriate and
+effective with normal space abundance values derived from
+proteomics mass spec quantitation.
+\item \code{geomean} - calculates geometric mean of values in each group.
+\item \code{none} -
+}}
 
 \item{rowStatsFunc}{\code{function} optional function used instead of
 \code{group_func_name}.}
@@ -52,7 +70,13 @@ factor levels in \code{row_groups}, this argument is passed to
 
 \item{data_transform}{\code{character} string indicating which
 transformation was used when preparing the assay data. The
-assumption is that all assays were transformed by this method.}
+assumption is that all assays were transformed by this method.
+During processing, data is inverse-transformed prior to applying
+the \code{group_func_name} or \code{rowStatsFunc} if supplied. After that
+function is applied, data is transformed using this function.
+The purpose is to enable taking the \code{sum()} in proper measured
+absolute units (in normal space for example) where relevant,
+after which is original numeric transformation is re-applied.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
@@ -78,6 +102,19 @@ Purpose is to collapse rows of a \code{SummarizedExperiment} object,
 where measurements for a given entity, usually a gene, are split
 across multiple rows in the source data. The output of this function
 should be measurements appropriately summarized to the gene level.
+
+The key arguments are \code{group_func_name}, and \code{data_transform}.
+Note that data is inverse-transformed based upon \code{data_transform},
+prior to calculating group summary values defined by \code{group_func_name}.
+The reason is to enable using \code{group_func_name="sum"} on normal
+space abundance values, when input data has already been
+transformed with \code{log2(1 + x)} for example. In this case it is most
+appropriate to take the \code{sum} of normal space abundance values,
+then to re-apply the transformation afterwards.
+
+However, when using \code{group_func_name="mean"} it is usually
+recommended to use \code{data_transform="none"} so that data is maintained
+in appropriately transformed state.
 
 The driving use case is proteomics mass spectrometry data,
 where measurements are described in terms of peptide sequences,

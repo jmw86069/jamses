@@ -13,9 +13,10 @@ se_collapse_by_column(
   keepNULLlevels = FALSE,
   groupFunc = jamba::rowGroupMeans,
   noise_floor = 0,
-  noise_floor_value = NA,
+  noise_floor_value = 0,
   rmOutliers = FALSE,
   madFactor = 5,
+  useMedian = FALSE,
   verbose = FALSE,
   ...
 )
@@ -50,26 +51,35 @@ values, which can be helpful for generating a consistent output.}
 \item{groupFunc}{\code{function} used to perform row group calculations on a
 \code{numeric} matrix. The default is passed to \code{jamba::rowGroupMeans()},
 but can be substituted with another row-based function.
-It should accept arguments:
+It must accept arguments \code{x} and \code{groups}, but the other arguments
+are passed only if \code{groupFunc} permits these argument names, or \code{...}:
 \itemize{
-\item \code{x} as a \code{numeric} matrix,
+\item \code{x} as a \code{numeric} matrix (required),
 \item \code{groups} as a \code{character} vector of column groups, in order of
-\code{colnames(x)}
+\code{colnames(x)} (required)
 \item \code{rmOutliers} a \code{logical} indicating whether to apply outlier removal,
-though the function can ignore this value.
+though the function can ignore this value (optional).
 \item \code{madFactor} a \code{numeric} value indicating the MAD threshold used when
-\code{rmOutliers=TRUE}; though again the function can ignore this value.
-\item \code{...} additional arguments in \code{...} will be passed to this function.
+\code{rmOutliers=TRUE}; though again the function can ignore this value
+(optional).
+\item \code{useMedian=FALSE} is \code{logical} and when \code{useMedian=FALSE} it disables
+calculating the \code{median()} value per group, and instead takes the
+group \code{mean()} value.
+\item \code{...} additional arguments in \code{...} will be passed only if permitted
+by \code{groupFunc}.
 }}
 
 \item{noise_floor}{\code{numeric} value indicating the minimum numeric value
 permitted, \emph{at or below} this value will be replaced with
-\code{noise_floor_value}. The intent is to recognize abnormally low
-values such as zero \code{0} and replace them with \code{NA} so they are not
+\code{noise_floor_value}.
+The default value \code{noise_floor=0} will therefore change all values
+at or below zero to \code{noise_floor_value=0} by default.
+Another alternative is to change abnormally low
+values such as zero \code{0} to \code{NA} so these values are not
 treated as actual measurements during the group summary calculation.
-Obviously, this value and the replacement should be adjusted
+This value and the replacement should be adjusted
 with caution. Use \code{noise_floor=NULL} or \code{noise_floor=-Inf} to disable
-this process.}
+this step.}
 
 \item{noise_floor_value}{\code{numeric} or \code{NA} used as a replacement for
 \code{numeric} values \emph{at or below} \code{noise_floor}, which occurs prior to
@@ -77,6 +87,10 @@ calling the \code{groupFunc} summary calculation.}
 
 \item{rmOutliers, madFactor}{\code{logical} and \code{numeric}, respectively, passed
 to \code{groupFunc} which by default is \code{jamba::rowGroupMeans()}.}
+
+\item{useMedian}{\code{logical} passed to argument \code{groupFunc()}, intended
+to be used by \code{jamba::rowGroupMeans()} to specify taking the mean
+and not the median value per row group.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

@@ -1,3 +1,28 @@
+# jamses 0.0.42.900
+
+## changes to existing functions
+
+* `se_collapse_by_column()`
+
+   * changed argument default `noise_floor_value=NA` to
+   `noise_floor_value=0` so that values are not lost during this
+   process by default. Rare change to default argument, intended to
+   be more consistent with "default" expectations of this function.
+   * new argument `useMedian=FALSE` ensures the default behavior is
+   to calculate row group mean and not median.
+   * the `groupFunc()` is now called using `jamba::call_fn_ellipse()`
+   which ensures that arguments are only passed when permitted by that
+   function, either by named argument, or by `...`. This change makes
+   it easier to use a custom function which may not have to accept
+   additional arguments.
+
+* `se_collapse_by_row()`
+
+   * new argument option `group_func_name="mean"` which enables basic
+   `mean()` across group values.
+   * help docs were reworded to clarify the `group_func_name` and
+   `data_transform` arguments.
+
 # jamses 0.0.41.900
 
 ## new functions
