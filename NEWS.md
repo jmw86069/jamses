@@ -1,3 +1,34 @@
+# jamses 0.0.43.900
+
+* Added `multienrichjam` to dependencies, since it is used by
+`handle_na_values()`.
+
+## bug fixes
+
+* `handle_na_values()`
+
+   * Error was thrown due to data returned in `list` form instead
+   of matrix form. Instead, optional weights are returned as an
+   attribute, so the data is always consistently returned in
+   `numeric` matrix form.
+   Frankly, it is unclear how this bug was tolerated except
+   calling `se_contrast_stats()` with `handle_na="none"`.
+   * The argument `na_value` was not being passed to `handle_na_values()`
+   which is important for certain types of data that have high
+   background noise floor values, for example proteomics SpectrumMill
+   has background around 20, also this is in log2 units.
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * now properly passes `na_value` to `handle_na_values()`
+
+* `handle_na_values()`
+
+   * Nnow returns only `numeric` matrix, and optionally includes
+   a weight matrix as an attribute named `"weights"`.
+
 # jamses 0.0.42.900
 
 ## changes to existing functions

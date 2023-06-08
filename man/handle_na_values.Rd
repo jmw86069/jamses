@@ -10,9 +10,35 @@ handle_na_values(
   handle_na = c("full1", "full", "partial", "none", "all"),
   na_value = 0,
   na_weight = 0,
+  return_weights = FALSE,
   verbose = FALSE,
   ...
 )
+}
+\arguments{
+\item{x}{\code{numeric} matrix}
+
+\item{idesign}{\code{numeric} matrix with \code{rownames(idesign)} equal to
+\code{colnames(x)}, containing \code{0} or \code{1} to fill the design matrix.}
+
+\item{handle_na}{\code{character} string to determine the method used
+to handle NA values in \code{x}.}
+
+\item{na_value}{\code{numeric} or \code{NA} used to handle NA values.}
+
+\item{na_weight}{\code{numeric} weight between \code{0} and \code{1} used for \code{NA}
+values in the weight matrix, used when \code{return_weights=TRUE}.}
+
+\item{return_weights}{\code{logical} indicating whether to include a
+weight matrix as an attribute with name \code{"weights"}.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
+}
+\value{
+\code{numeric} matrix with equal dimensions as input \code{x},
+where \code{NA} values have been handled as defined by \code{handle_na}.
 }
 \description{
 Handle NA values in a numeric matrix

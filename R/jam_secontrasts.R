@@ -368,9 +368,14 @@ se_contrast_stats <- function
             }
 
             if (!"none" %in% handle_na && any(is.na(imatrix_ng))) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   Performing handle_na: ", handle_na);
+               }
                imatrix_ng <- handle_na_values(imatrix_ng,
                   idesign=idesign_ng,
                   handle_na=handle_na,
+                  na_value=na_value,
                   ...);
             }
             ## Optionally determine voom weights prior to running limma
@@ -398,7 +403,8 @@ se_contrast_stats <- function
             ## Optionally convert zero (or less than zero) to NA
             if (length(floor_min) == 1 &&
                   !is.na(floor_min) &&
-                  any(imatrix_ng <= floor_min)) {
+                  any(!is.na(imatrix_ng) &
+                        imatrix_ng <= floor_min)) {
                if (verbose) {
                   jamba::printDebug("se_contrast_stats(): ",
                      c("Applying floor_min:",
@@ -407,7 +413,8 @@ se_contrast_stats <- function
                         floor_value),
                      sep="");
                }
-               imatrix_ng[imatrix_ng <= floor_min] <- floor_value;
+               to_replace <- (!is.na(imatrix_ng) & imatrix_ng <= floor_min)
+               imatrix_ng[to_replace] <- floor_value;
             }
 
             #######################################################
@@ -465,9 +472,15 @@ se_contrast_stats <- function
          )
       } else {
          if (!"none" %in% handle_na && any(is.na(imatrix))) {
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Performing handle_na: ", handle_na);
+            }
             imatrix <- handle_na_values(imatrix,
                idesign=idesign,
-               handle_na=handle_na);
+               handle_na=handle_na,
+               na_value=na_value,
+               ...);
          }
          ## Optionally determine voom weights prior to running limma
          if (use_voom) {
@@ -494,7 +507,8 @@ se_contrast_stats <- function
          ## Optionally convert zero (or less than zero) to NA
          if (length(floor_min) == 1 &&
                !is.na(floor_min) &&
-               any(imatrix <= floor_min)) {
+               any(!is.na(imatrix) &
+                     imatrix <= floor_min)) {
             if (verbose) {
                jamba::printDebug("se_contrast_stats(): ",
                   c("Applying floor_min:",
@@ -503,7 +517,8 @@ se_contrast_stats <- function
                      floor_value),
                   sep="");
             }
-            imatrix[imatrix <= floor_min] <- floor_value;
+            to_replace <- (!is.na(imatrix) & imatrix <= floor_min);
+            imatrix[to_replace] <- floor_value;
          }
 
          #######################################################
@@ -668,7 +683,24 @@ se_contrast_stats <- function
 #' * `"all"`: Replace all `NA` values with `na_value`.
 #' * `"none"`: Perform no replacement of `NA` values.
 #'
+#' @return `numeric` matrix with equal dimensions as input `x`,
+#'    where `NA` values have been handled as defined by `handle_na`.
+#'
 #' @family jamses stats
+#'
+#' @param x `numeric` matrix
+#' @param idesign `numeric` matrix with `rownames(idesign)` equal to
+#'    `colnames(x)`, containing `0` or `1` to fill the design matrix.
+#' @param handle_na `character` string to determine the method used
+#'    to handle NA values in `x`.
+#' @param na_value `numeric` or `NA` used to handle NA values.
+#' @param na_weight `numeric` weight between `0` and `1` used for `NA`
+#'    values in the weight matrix, used when `return_weights=TRUE`.
+#' @param return_weights `logical` indicating whether to include a
+#'    weight matrix as an attribute with name `"weights"`.
+#' @param verbose `logical` indicating whether to print verbose output.
+#' @param ... additional arguments are ignored.
+#'
 #'
 #' @export
 handle_na_values <- function
@@ -681,6 +713,7 @@ handle_na_values <- function
     "all"),
  na_value=0,
  na_weight=0,
+ return_weights=FALSE,
  verbose=FALSE,
  ...)
 {
@@ -759,10 +792,13 @@ handle_na_values <- function
       x[xNA] <- na_value;
    }
    ## define weight matrix
-   weights <- jamba::noiseFloor(1-(xNA),
-      minimum=na_weight);
+   if (TRUE %in% return_weights) {
+      weights <- jamba::noiseFloor(1-(xNA),
+         minimum=na_weight);
+      attr(x, "weights") <- weights
+   }
 
-   return(list(x=x, weights=weights));
+   return(x);
 }
 
 #' Limma-voom customized for Jam
