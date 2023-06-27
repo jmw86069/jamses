@@ -37,6 +37,7 @@ Remotes: github::jmw86069/jamba,
     github::jmw86069/jamma,
     github::jmw86069/genejam,
     github::jmw86069/venndir,
+    github::jmw86069/multienrichjam,
     github::jmw86069/farrisdata,
     github::jokergoo/ComplexHeatmap
 URL: http://github.com/jmw86069/jamses
