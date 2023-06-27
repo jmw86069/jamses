@@ -63,6 +63,8 @@
 #'
 #' * total rows displayed, with `row_type` indicating the measured entity
 #' (gene, probe, DEGs, etc.)
+#' * total columns displayed, with `column_type` indicating the sampled entity
+#' (samples, total replicates, etc.)
 #' * the `assay_name` for the data being displayed
 #' * relevant options for data centering, for example
 #' `"global-centered"` (by default) or
@@ -179,6 +181,13 @@
 #'    which indicates how many rows are displayed. For example
 #'    `"1,234 genes detected above background"` or
 #'    `"1,234 DEGs by limma-voom"`.
+#'    When `row_type=""` or `row_type=NULL` this information
+#'    is not included in the heatmap title.
+#' @param column_type `character` string used in the title of the heatmap
+#'    which indicates how many column are displayed. For example
+#'    `"12 samples"` or `"12 biological replicates"`.
+#'    When `column_type=""` or `column_type=NULL` this information
+#'    is not included in the heatmap title.
 #' @param data_type `character` string used as title of the heatmap
 #'    color gradient legend, for example `"expression"` indicates
 #'    the data contains gene expression measurements. Notes:
@@ -639,86 +648,87 @@
 #' @export
 heatmap_se <- function
 (se,
-   sestats=NULL,
-   rows=NULL,
-   row_type="rows",
-   data_type="expression",
-   correlation=FALSE,
-   assay_name=NULL,
-   contrast_names=NULL,
-   contrast_suffix="",
-   cutoff_name=NULL,
-   alt_sestats=NULL,
-   alt_assay_name=assay_name,
-   alt_contrast_names=NULL,
-   alt_contrast_suffix="",
-   alt_cutoff_name=NULL,
-   isamples=colnames(se),
-   normgroup_colname=NULL,
-   centerby_colnames=NULL,
-   controlSamples=NULL,
-   control_label="",
-   controlFloor=NA,
-   naControlAction=c("na",
-      "row",
-      "floor",
-      "min"),
-   naControlFloor=0,
-   top_colnames=NULL,
-   top_annotation=NULL,
-   top_annotation_name_gp=grid::gpar(),
-   rowData_colnames=NULL,
-   left_annotation=NULL,
-   left_annotation_name_gp=grid::gpar(),
-   left_annotation_name_rot=90,
-   right_annotation=NULL,
-   simple_anno_size=grid::unit(8, "mm"),
-   legend_title_gp=grid::gpar(fontsize=10),
-   legend_labels_gp=grid::gpar(fontsize=10),
-   legend_grid_cex=1,
-   row_names_gp=NULL,
-   row_split=NULL,
-   row_subcluster=NULL,
-   row_title_rot=0,
-   sample_color_list=NULL,
-   legend_at=NULL,
-   legend_labels=NULL,
-   subset_legend_colors=TRUE,
-   row_cex=0.8,
-   column_cex=1,
-   row_anno_fontsize=11,
-   useMedian=FALSE,
-   show_row_names=NULL,
-   show_row_dend=length(rows) < 2000,
-   mark_rows=NULL,
-   mark_labels_gp=grid::gpar(),
-   show_heatmap_legend=TRUE,
-   show_top_legend=TRUE,
-   show_left_legend=TRUE,
-   legend_border_color="black",
-   show_top_annotation_name=TRUE,
-   show_left_annotation_name=TRUE,
-   row_label_colname=NULL,
-   cluster_columns=FALSE,
-   cluster_column_slices=FALSE,
-   cluster_rows=function(x, ...){
-      amap::hcluster(jamba::rmNA(naValue=0, x),
-         ...,
-         method="euclidean",
-         link="ward")},
-   cluster_row_slices=FALSE,
-   column_names_gp=NULL,
-   column_split=NULL,
-   column_split_sep=",",
-   color_max=3,
-   color_floor=0,
-   lens=2,
-   rename_contrasts=TRUE,
-   rename_alt_contrasts=TRUE,
-   use_raster=TRUE,
-   verbose=FALSE,
-   debug=FALSE,
-   ...)
+ sestats=NULL,
+ rows=NULL,
+ row_type="rows",
+ column_type="samples",
+ data_type="expression",
+ correlation=FALSE,
+ assay_name=NULL,
+ contrast_names=NULL,
+ contrast_suffix="",
+ cutoff_name=NULL,
+ alt_sestats=NULL,
+ alt_assay_name=assay_name,
+ alt_contrast_names=NULL,
+ alt_contrast_suffix="",
+ alt_cutoff_name=NULL,
+ isamples=colnames(se),
+ normgroup_colname=NULL,
+ centerby_colnames=NULL,
+ controlSamples=NULL,
+ control_label="",
+ controlFloor=NA,
+ naControlAction=c("na",
+    "row",
+    "floor",
+    "min"),
+ naControlFloor=0,
+ top_colnames=NULL,
+ top_annotation=NULL,
+ top_annotation_name_gp=grid::gpar(),
+ rowData_colnames=NULL,
+ left_annotation=NULL,
+ left_annotation_name_gp=grid::gpar(),
+ left_annotation_name_rot=90,
+ right_annotation=NULL,
+ simple_anno_size=grid::unit(8, "mm"),
+ legend_title_gp=grid::gpar(fontsize=10),
+ legend_labels_gp=grid::gpar(fontsize=10),
+ legend_grid_cex=1,
+ row_names_gp=NULL,
+ row_split=NULL,
+ row_subcluster=NULL,
+ row_title_rot=0,
+ sample_color_list=NULL,
+ legend_at=NULL,
+ legend_labels=NULL,
+ subset_legend_colors=TRUE,
+ row_cex=0.8,
+ column_cex=1,
+ row_anno_fontsize=11,
+ useMedian=FALSE,
+ show_row_names=NULL,
+ show_row_dend=length(rows) < 2000,
+ mark_rows=NULL,
+ mark_labels_gp=grid::gpar(),
+ show_heatmap_legend=TRUE,
+ show_top_legend=TRUE,
+ show_left_legend=TRUE,
+ legend_border_color="black",
+ show_top_annotation_name=TRUE,
+ show_left_annotation_name=TRUE,
+ row_label_colname=NULL,
+ cluster_columns=FALSE,
+ cluster_column_slices=FALSE,
+ cluster_rows=function(x, ...){
+    amap::hcluster(jamba::rmNA(naValue=0, x),
+       ...,
+       method="euclidean",
+       link="ward")},
+ cluster_row_slices=FALSE,
+ column_names_gp=NULL,
+ column_split=NULL,
+ column_split_sep=",",
+ color_max=3,
+ color_floor=0,
+ lens=2,
+ rename_contrasts=TRUE,
+ rename_alt_contrasts=TRUE,
+ use_raster=TRUE,
+ verbose=FALSE,
+ debug=FALSE,
+ ...)
 {
    #
    if (!jamba::check_pkg_installed("ComplexHeatmap")) {
@@ -750,6 +760,7 @@ heatmap_se <- function
          sestats=sestats,
          rows=rows,
          row_type=row_type,
+         column_type=column_type,
          data_type=data_type,
          correlation=correlation,
          assay_name=assay_name,
@@ -1689,11 +1700,29 @@ heatmap_se <- function
       cluster_columns=cluster_columns,
       cluster_rows=cluster_rows,
       ...)
+
    # define heatmap title using relevant arguments
+   row_label <- NULL;
+   if (length(row_type) > 0 && nchar(head(row_type, 1)) > 0) {
+      row_label <- paste0(
+         jamba::formatInt(length(gene_hits)),
+         " ",
+         head(row_type, 1))
+   }
+   column_label <- NULL;
+   if (length(column_type) > 0 && nchar(head(column_type, 1)) > 0) {
+      column_label <- paste0(
+         jamba::formatInt(ncol(se_matrix)),
+         " ",
+         head(column_type, 1))
+   }
+   dim_label <- paste(c(row_label, column_label), collapse=", ")
+   if (any(nchar(dim_label) > 0)) {
+      dim_label <- paste0(dim_label, "\n")
+   }
    hm_title <- paste0(
-      jamba::formatInt(length(gene_hits)),
-      " ", row_type,
-      "\n", norm_label,
+      dim_label,
+      norm_label,
       ifelse(any(nchar(centerby_label) > 0),
          paste0(",\n", centerby_label),
          ""))

@@ -106,12 +106,15 @@ process_sestats_to_hitim <- function
 
    # optionally rename contrasts
    if (TRUE %in% rename_contrasts) {
-      colnames(gene_hits_im) <- tryCatch({
+      newcolnames <- tryCatch({
          contrast2comp(colnames(gene_hits_im),
             ...)
       }, error=function(e){
          colnames(gene_hits_im)
       });
+      if (length(newcolnames) == ncol(gene_hits_im)) {
+         colnames(gene_hits_im) <- newcolnames;
+      }
    }
 
    # optionally handle fixed rows

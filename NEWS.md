@@ -3,7 +3,36 @@
 * Added `multienrichjam` to dependencies, since it is used by
 `handle_na_values()`.
 
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * The default heatmap title now also includes the number of columns,
+   whose label is controlled by `column_type="samples"` by default.
+   * When `row_type` or `column_type` are `NULL` or `""` (empty) their
+   respective label is hidden from the heatmap title. When both
+   are hidden, the first line will be hidden completely.
+
+
 ## bug fixes
+
+* `contrast2comp()`
+
+   * Weird edge case when calling `heatmap_se()`, `sestats` contains
+   only one contrast, and the hit matrix annotation contrast is
+   in the form `"Group1-Group2"`. The output is correct inside RStudio,
+   the hit matrix name displays `"Group1-Group2"` as intended.
+   When the output is knitted inside an RMarkdown, the hit matrix name
+   is displayed `"1"`.
+   * Issue was avoided with argument `rename_contrasts=FALSE` when
+   calling `heatmap_se()`.
+   * User is using R-3.6.2, so the best guess is
+   a weird edge case where `options(stringsAsFactors=TRUE)`.
+   * The `contrast2comp()` was updated to impose `stringsAsFactors=FALSE` and
+   `check.names=FALSE` in two steps that converted `matrix` to `data.frame`.
+   * The `process_sestats_to_hitim()` was updated to check output
+   of `contrast2comp()` before assigning to `colnames()`.
+   
 
 * `handle_na_values()`
 

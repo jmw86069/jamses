@@ -1,9 +1,27 @@
 
 # TODO for jamses
 
+## 27jun2023
+
+* `heatmap_se()`
+
+   * Consider automating color assignment when `top_colnames` or
+   `rowData_colnames` have no colors assigned in `sample_color_list`.
+   It may involve calling `platjam::design2colors()` with empty
+   argument for `group_colnames`, which may involve moving that
+   function into `colorjam`.
+
+* DONE: `heatmap_se()`
+
+   * DONE: when `correlation=TRUE` the label with number of rows should
+   indicate number of columns? See below, both dimensions are indicated.
+   Or number of rows used to calculate correlation of N columns?
+   * DONE: Consider new argument `column_type="samples"` and default heatmap
+   title also indicates the number of columns (samples).
+
 ## 05jun2023
 
-* `se_collapse_by_column()`
+* DONE: `se_collapse_by_column()`
 
    * DONE: consider changing default `noise_floor_value=NA` to
    `noise_floor_value=0`.

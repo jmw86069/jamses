@@ -9,6 +9,7 @@ heatmap_se(
   sestats = NULL,
   rows = NULL,
   row_type = "rows",
+  column_type = "samples",
   data_type = "expression",
   correlation = FALSE,
   assay_name = NULL,
@@ -124,7 +125,15 @@ are dropped.}
 \item{row_type}{\code{character} string used in the title of the heatmap
 which indicates how many rows are displayed. For example
 \code{"1,234 genes detected above background"} or
-\code{"1,234 DEGs by limma-voom"}.}
+\code{"1,234 DEGs by limma-voom"}.
+When \code{row_type=""} or \code{row_type=NULL} this information
+is not included in the heatmap title.}
+
+\item{column_type}{\code{character} string used in the title of the heatmap
+which indicates how many column are displayed. For example
+\code{"12 samples"} or \code{"12 biological replicates"}.
+When \code{column_type=""} or \code{column_type=NULL} this information
+is not included in the heatmap title.}
 
 \item{data_type}{\code{character} string used as title of the heatmap
 color gradient legend, for example \code{"expression"} indicates
@@ -579,6 +588,8 @@ which describes:
 \itemize{
 \item total rows displayed, with \code{row_type} indicating the measured entity
 (gene, probe, DEGs, etc.)
+\item total columns displayed, with \code{column_type} indicating the sampled entity
+(samples, total replicates, etc.)
 \item the \code{assay_name} for the data being displayed
 \item relevant options for data centering, for example
 \code{"global-centered"} (by default) or

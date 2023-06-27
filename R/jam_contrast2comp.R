@@ -306,8 +306,14 @@ contrast2comp <- function
       ksplit <- rep(head(LETTERS, nrow(im)/2), each=2);
       # code below keeps contrast order intact
       if (verbose) {jamba::printDebug("im:");print(im);}
+      imdf_split <- split(
+         data.frame(
+            stringsAsFactors=FALSE,
+            check.names=FALSE,
+            im),
+         ksplit)
       imnew <- jamba::rbindList(
-         lapply(split(data.frame(im), ksplit), function(idf){
+         lapply(imdf_split, function(idf){
             do.call(cbind, lapply(seq_len(ncol(idf)), function(j){
                jamba::cPasteU(idf[,j],
                   sep=contrast_delim)
@@ -335,7 +341,12 @@ contrast2comp <- function
       } else {
          diff_split <- rep(1, nrow(imnew));
       }
-      imnew_split <- split(data.frame(imnew), diff_split);
+      imnew_split <- split(
+         data.frame(
+            stringsAsFactors=FALSE,
+            check.names=FALSE,
+            imnew),
+         diff_split);
       if (verbose > 1) {jamba::printDebug("imnew_split:");print(imnew_split);}
       imcontrasts <- unique(jamba::pasteByRow(sep=comp_factor_delim,
          jamba::rbindList(lapply(imnew_split, function(imnew1) {
