@@ -28,7 +28,8 @@ Suggests:
     genejam,
     venndir,
     farrisdata,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    statmod
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

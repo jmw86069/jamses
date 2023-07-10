@@ -2,6 +2,8 @@
 
 * Added `multienrichjam` to dependencies, since it is used by
 `handle_na_values()`.
+* Added `statmod` to `"Suggests"` since this package is required
+when using a blocking factor with `limma`.
 
 ## changes to existing functions
 
