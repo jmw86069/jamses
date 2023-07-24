@@ -1,6 +1,80 @@
 
 # TODO for jamses
 
+## 12jul2023
+
+* enhance `sedesign`
+
+   * Consider adding `factor_labels` to have design labels for each
+   factor in the group label.
+
+* DONE (initial implementation): new function `plot_sedesign()`
+
+   * Simplified version of `plotComparisonTable()` from past work.
+   * Factor levels should be "known".
+   * Layout should follow logic similar to (or directly extending)
+   `vcd::mosaic()` which defines factors on x-axis, y-axis, then
+   subdivides each axis in order with sub-factors.
+   * Layout should define every observed combination of factor levels.
+   * Then block arrows (or regular arrows) can be used to indicate each
+   pairwise contrast.
+   * Block arrows are "bumped" when they would overlap another block arrow.
+   * Bonus points: Block arrow labels can include the contrast name,
+   or comp name (shortened version of the contrast), and optionally
+   the number of statistical hits.
+   * Bonus points: Indicate the number of replicates per group.
+   * Two-way contrasts would indicate both one-way contrasts, with
+   a "ribbon" connecting the end of the first contrast to the
+   beginning of the next contrast. Something like a
+   beta-sheet in protein structure graphics.
+   * Most contrasts should only be vertical or horizontal, therefore
+   non-standard contrasts would be angled, indicating that they
+   are comparing more than one factor at a time.
+
+* Completed TODO for `plot_sedesign()`:
+
+   * DONE. Option to indicate "n=8" number of replicates per group.
+   * DONE. Provide or add custom label; option to hide labels.
+   * DONE. Show subset of contrasts based upon contrast name.
+   * DONE. Consider option to "flip" two-way contrasts:
+   (A-B)-(C-D) is equivalent to (A-C)-(B-D) and can be shown either way.
+   * DONE. Decide how to assign colors to contrasts. For now, colors
+   are assigned to one-way contrasts, then two-way contrasts inherit
+   two colors as a gradient.
+   * DONE. Adjust axis labels to be adjacent to the square boxes used per group.
+   This step used argument `pos` which places the axis at a fixed coordinate
+   inside the plot.
+   * DONE. Allow custom position for contrast labels, scaled from 0 to 1
+   indicating the position along each contrast (from-to) to place the
+   text label. This step also applies text justification, which helps
+   prevent text from spilling beyond the relevant end of the arrow.
+   * DONE. Add argument `sestats` to print the hits per contrast.
+
+      * DONE. Define how to handle multiple `assay_names`, `cutoff_names`.
+      It passes arguments to `hit_array_to_list()`.
+      Anything more complicated requires the user to pass argument
+      with custom labels.
+
+* Remaining TODO for `plot_sedesign()`:
+
+
+   * Consider making hit direction optional when `sestats` is used.
+   * Accept contrast_names as input, instead of requiring an `sedesign` object.
+   * Consider using grid graphics with
+   with the `units="snpc"` pattern to maintain fixed aspect ratio:
+    ```R
+    pushViewport(
+    viewport(
+       x=0.5, y=0.5,
+       width=unit(min(1, diff(xlim)/diff(ylim)), "snpc"),
+       height=unit(min(1, diff(ylim)/diff(xlim)), "snpc"),
+       xscale=xlim,
+       yscale=ylim))
+    ```
+   * Consider drawing boxes which reflect the `groupedAxis()` grouped
+   regions along each axis, which may involve slightly nested boxes.
+   It may be useful to shade the boxes light grey.
+
 ## 27jun2023
 
 * `heatmap_se()`

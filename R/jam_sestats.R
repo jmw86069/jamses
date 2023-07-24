@@ -181,7 +181,9 @@ sestats_to_df <- function
 #' @export
 format_hits <- function
 (hits,
- style=c("text", "integer", "vector"),
+ style=c("text",
+    "integer",
+    "vector"),
  ...) {
    # convert hit vector into integer values by hits,up,down
    # using NA values when all value are NA, which indicates the test

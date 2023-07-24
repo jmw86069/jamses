@@ -1,3 +1,65 @@
+# jamses 0.0.44.900
+
+
+## new functions
+
+This release adds `plot_sedesign()` and several helper functions.
+This function is still in development, released for more convenient
+testing for lots of edge cases.
+This function may be ported to use `grid` R graphics, but currently
+uses base R graphics with fixed aspect ratio `asp=1` to maintain
+proper visual proportions for block arrows, and group boxes.
+
+* `plot_sedesign()`
+
+   * It takes an `sedesign` object and plots the one-way
+   and two-way contrasts in block arrow format.
+   * Block arrows are "bumped" to reduce directly overlapping
+   arrows.
+   * The design factors can be repositioned along x- and y-axes,
+   at the bottom or top, with combinations of factors, or absence.
+   * It indicates the `n=3` number of replicates observed per group,
+   and draws shaded squares for groups present, and lack of
+   square for groups which are absent in the design.
+   * When `sestats` is also supplied, it adds labels with
+   the number of statistical hits per contrast.
+   * Labels can be positioned by one-way or two-way contrast type,
+   or by specific contrast name.
+   * Two-way contrasts can optionally be "flipped" to show the
+   equivalent two-way contrast with different group ordering.
+
+* `draw_oneway_contrast()`, `draw_twoway_contrast()` are both
+called by `plot_sedesign()`, and internally call `point_handedness()`
+and `make_block_arrow_polygon()`. These functions help make
+the process more component-oriented.
+* `make_block_arrow_polygon()` is a wrapper function to define
+block arrow polygons with consistent dimensions, where the arrow
+stem width also defines the relative size of the arrow head.
+When the stem has shorter length than the arrow head, the full
+arrow head is shown without the stem, avoiding the visual artifact
+of showing an inverted (negative length) arrow stem.
+* `point_handedness()` is a helper function which takes two points
+and a vector angle, then determines "which side" the first point is located
+along that vector angle relative to the second point.
+It is used for two-way contrasts to decide how to define
+intermediate control points between two parallel contrast arrows.
+The goal is to create an "S" shape, where control points are angled
+"toward each other".
+* `point_slope_intercept()` is a simple geometry helper function.
+
+   * Given a point and slope, it returns the intercept.
+   * However, when the slope is infinite (as with a vertical line) instead
+   of returning an infinite intercept, which is not helpful for describing
+   the line, it returns the x-axis intercept.
+   * The intercept is used by `point_handedness()` to determine the
+   "handedness" of two parallel lines.
+
+## changes to existing functions
+
+* The method `design()` now imports the Bioconductor `BiocGenerics` in
+order to extend (and thus be indexed alongside) the corresponding
+method `design()`.
+
 # jamses 0.0.43.900
 
 * Added `multienrichjam` to dependencies, since it is used by

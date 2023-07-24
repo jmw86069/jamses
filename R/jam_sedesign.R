@@ -503,6 +503,7 @@ setMethod("contrastnames<-",
 
 setGeneric("design", function(object) {standardGeneric("design")})
 
+#' @import BiocGenerics
 #' @export
 setMethod("design",
    signature=c(object="SEDesign"),
