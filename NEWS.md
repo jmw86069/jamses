@@ -1,5 +1,31 @@
-# jamses 0.0.44.900
+# jamses 0.0.45.900
 
+## updates to existing functions
+
+* `plot_sedesign()`
+
+   * So far, early testing is working quite well, minor aesthetic issues,
+   such as unexpected ordering of axis labels when changing the axis order,
+   since it followed the input order and did not re-sort based upon
+   axis label values.
+   Overlapping labels are already an issue. They can be manually adjusted,
+   but it would be nice to have that part automated. Sadly, I don't
+   think ggrepel accepts rotated text.
+   * change: contrasts are now sorted by axis to organize factor levels
+   * change: axis labels are now sorted by combined factor order
+   along x- and y-axes
+   * change: contrasts are sorted by axis length, so shorter contrasts
+   have less "bump"
+   * fixed bug with missing contrast labels when subsetting the overall
+   contrasts with argument `which_contrasts`
+
+
+* `draw_oneway_contrast()`, `draw_twoway_contrast()`
+
+   * default `label_font=2` for bold contrast labels
+
+
+# jamses 0.0.44.900
 
 ## new functions
 

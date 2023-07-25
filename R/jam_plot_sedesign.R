@@ -377,7 +377,11 @@ plot_sedesign <- function
    remaining_names <- setdiff(factor_names,
       axis_values)
    # add convenient label to align with axis labels
-   factors_df$label <- jamba::pasteByRow(factors_df[, axis_values, drop=FALSE])
+   factors_df$label <- jamba::pasteByRowOrdered(
+      factors_df[, axis_values, drop=FALSE])
+   # sort factors which helps axis1,axis3 ordering, not axis2,axis4
+   factors_df <- jamba::mixedSortDF(factors_df,
+      byCols=c("label", factor_names))
 
 
    if (verbose) {
@@ -430,14 +434,23 @@ plot_sedesign <- function
    }
 
    # bottom/top axis
-   axis13df <- unique(as.data.frame(jamba::rmNULL(nullValue=NA,
-      list(axis1=axis1values, axis3=axis3values))))
+   axis13df <- jamba::mixedSortDF(
+      unique(as.data.frame(jamba::rmNULL(nullValue=NA,
+         list(axis1=axis1values, axis3=axis3values)))))
    axis13df[,"x_coord"] <- seq_len(nrow(axis13df));
    # left/right axis
-   axis24df <- unique(as.data.frame(jamba::rmNULL(nullValue=NA,
-      list(axis2=axis2values, axis4=axis4values))))
+   axis24df <- jamba::mixedSortDF(
+      unique(as.data.frame(jamba::rmNULL(nullValue=NA,
+         list(axis2=axis2values, axis4=axis4values)))))
    axis24df[,"y_coord"] <- seq_len(nrow(axis24df));
    # axis24df
+   # jamba::printDebug("plot_sedesign(): ",
+   #    "axis13df:");
+   # print(axis13df);
+   # jamba::printDebug("plot_sedesign(): ",
+   #    "axis24df:");
+   # print(axis24df);
+
    axis_df <- data.frame(check.names=FALSE,
       stringsAsFactors=FALSE,
       axis13df,
@@ -645,6 +658,7 @@ plot_sedesign <- function
    contrast_group_dfs <- lapply(names(contrast_group_list), function(iname){
       i <- contrast_group_list[[iname]];
       if (is.list(i)) {
+         # two-way contrasts
          idf <- jamba::rbindList(lapply(i, function(j){
             jdf <- data.frame(check.names=FALSE,
                stringsAsFactors=FALSE,
@@ -677,6 +691,9 @@ plot_sedesign <- function
             }
             jdf$depth <- 2;
             jdf$oneway_contrast <- jamba::cPaste(j, sep=contrast_sep);
+            # Manhattan distance
+            jdf$distance <- abs(diff(range(jdf$x_coord))) +
+               abs(diff(range(jdf$y_coord)));
             jdf
          }))
       } else {
@@ -690,6 +707,7 @@ plot_sedesign <- function
                   x=diff(idf$x_coord)))
                islope <- diff(idf$y_coord) / diff(idf$x_coord)
                idf$intercept <- (islope * (-idf$x_coord[1])) + idf$y_coord;
+               # idf$distance <- sqrt(diff(idf$x_coord)^2 + diff(idf$y_coord)^2)
             } else {
                if (idf$x_coord[1] > idf$x_coord[2]) {
                   idf$angle <- 180
@@ -697,6 +715,7 @@ plot_sedesign <- function
                   idf$angle <- 0
                }
                idf$intercept <- idf$y_coord;
+               # idf$distance <- abs(diff(idf$x_coord))
             }
          } else if (length(unique(idf$y_coord)) > 1) {
             if (idf$y_coord[1] > idf$y_coord[2]) {
@@ -705,16 +724,25 @@ plot_sedesign <- function
                idf$angle <- 90;
             }
             idf$intercept <- idf$x_coord;
+            # idf$distance <- abs(diff(idf$y_coord))
          } else {
             idf$angle <- 0;
             idf$intercept <- idf$y_coord;
          }
          idf$depth <- 1;
          idf$oneway_contrast <- jamba::cPaste(i, sep=contrast_sep);
+         # Manhattan distance (x + y)
+         idf$distance <- abs(diff(idf$x_coord)) + abs(diff(idf$y_coord))
          idf;
       }
    })
    contrast_group_df <- jamba::rbindList(contrast_group_dfs)
+
+   # sort contrasts by increasing distance,
+   # so shorter contrasts are not bumped as much
+   contrast_group_df <- jamba::mixedSortDF(contrast_group_df,
+      byCols="distance");
+
 
    # determine which contrast should be labeled,
    # assuming a contrast may be present multiple times, and
@@ -723,7 +751,7 @@ plot_sedesign <- function
    oneway_render <- rep(rev(!duplicated(
       rev(contrast_group_df$oneway_contrast[oneway_seq]))), each=2);
    contrast_group_df$render_contrast <- oneway_render;
-   # jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
+   jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
    # if (nrow(contrast_group_df) == 48) {contrast_group_df <- contrast_group_df[-17:-24,]}
    # return(contrast_group_df);
 
@@ -1044,6 +1072,7 @@ plot_sedesign <- function
                label_cex=label_cex,
                label_position=use_position,
                twoway_label_position=use_twoway_position,
+               twoway_lwd=twoway_lwd,
                ...)
             # jamba::printDebug("contrast_position[idf$contrast[1]]:", contrast_position[idf$contrast[1]]);# debug
             # jamba::printDebug("contrast_position:");print(contrast_position);# debug

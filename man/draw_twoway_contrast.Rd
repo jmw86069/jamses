@@ -19,7 +19,7 @@ draw_twoway_contrast(
   na.rm = TRUE,
   label_color = "white",
   label_cex = 1,
-  label_font = 1,
+  label_font = 2,
   label_position = 0.5,
   twoway_label = NULL,
   twoway_label_color = label_color,

@@ -57,7 +57,16 @@
 
 * Remaining TODO for `plot_sedesign()`:
 
-
+   * Sort contrasts:
+   
+      * by axis display order; currently axes are ordered in the order
+      that factor levels appear in the contrasts.
+      * then by "distance" along each axis,
+      so longer contrasts are "bumped" consistently.
+   
+   * Consider refactoring the drawing order so that contrasts are drawn,
+   then all labels are (potentially) drawn atop the graphics so they are
+   more consistently visible.
    * Consider making hit direction optional when `sestats` is used.
    * Accept contrast_names as input, instead of requiring an `sedesign` object.
    * Consider using grid graphics with
