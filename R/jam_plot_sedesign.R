@@ -109,20 +109,18 @@
 #'    from `contrast_names(sedesign)`.
 #'    Note: When `sestats` is supplied, `contrast_labels` are populated
 #'    with the number of statistical hits for each contrast.
-#' @param label_position,twoway_label_position `numeric` value between 0 and 1,
+#' @param oneway_position,twoway_position `numeric` value between 0 and 1,
 #'    which define the default position of each contrast label for one-way
-#'    and two-way contrasts, respectively.
-#'    This adjustment can be helpful to minimize overlapping labels
-#'    on the resulting figure.
+#'    and two-way contrasts, respectively. These values are overridden
+#'    by optional argument `contrast_position` when supplied.
 #'    * `0` places the label toward the beginning of the arrow, which also
 #'    applies right/top justification of text at the start of the arrow.
 #'    * `1` places the label at the end of the arrow, which also
 #'    applies left/bottom justification of text at the end of the arrow.
 #' @param contrast_position `numeric` vector named by contrast, whose
-#'    values position the contrast label as described for `label_position`
-#'    and `twoway_label_position`. Any values not defined by this argument
-#'    will use the default values in `label_position` or
-#'    `twoway_label_position`.
+#'    values position each contrast label given. Default values are
+#'    defined by `oneway_position` and `twoway_position`, except
+#'    where defined by `contrast_position`.
 #' @param sestats `list` object that contains element `"hit_array"` as
 #'    produced by `se_contrast_stats()`, with statistical hits for
 #'    each contrast, after applying statistical cutoffs.
@@ -205,8 +203,8 @@ plot_sedesign <- function
     "contrast",
     "none"),
  contrast_labels=NULL,
- label_position=0.9,
- twoway_label_position=0.5,
+ oneway_position=0.9,
+ twoway_position=0.5,
  contrast_position=NULL,
  sestats=NULL,
  assay_names=NULL,
@@ -521,11 +519,11 @@ plot_sedesign <- function
    }
 
    # handle contrast_position
-   if (length(label_position) == 0) {
-      label_position <- 0.5;
+   if (length(oneway_position) == 0) {
+      oneway_position <- 0.5;
    }
-   if (length(twoway_label_position) == 0) {
-      twoway_label_position <- 0.5;
+   if (length(twoway_position) == 0) {
+      twoway_position <- 0.5;
    }
    is_twoway <- grepl("[(]", contrast_names)
    if (length(contrast_position) == 0) {
@@ -535,8 +533,8 @@ plot_sedesign <- function
       }
       contrast_position <- jamba::nameVector(
          ifelse(is_twoway,
-            twoway_label_position,
-            label_position),
+            twoway_position,
+            oneway_position),
          contrast_names)
    } else if (length(names(contrast_position)) == 0) {
       if (verbose) {
@@ -559,8 +557,8 @@ plot_sedesign <- function
       # define 0.5 for all contrasts
       use_contrast_position <- jamba::nameVector(
          ifelse(is_twoway,
-            twoway_label_position,
-            label_position),
+            twoway_position,
+            oneway_position),
          contrast_names)
       # substitute custom values where defined
       use_names <- setdiff(names(use_contrast_position),
@@ -625,7 +623,7 @@ plot_sedesign <- function
          names(contrast_position));
       if (length(new_oneway_contrast_position) > 0) {
          contrast_position[new_oneway_contrast_position] <- jamba::nameVector(
-            rep(label_position,
+            rep(oneway_position,
                length.out=length(new_oneway_contrast_position)),
             new_oneway_contrast_position)
       }
@@ -981,7 +979,7 @@ plot_sedesign <- function
                   color=colorset[i],
                   label=use_label,
                   label_cex=label_cex,
-                  label_position=contrast_position[idf$contrast[1]],
+                  oneway_position=contrast_position[idf$contrast[1]],
                   verbose=verbose,
                   ...);
             }
@@ -1070,14 +1068,14 @@ plot_sedesign <- function
                label=c(use_label1,
                   use_label2),
                label_cex=label_cex,
-               label_position=use_position,
-               twoway_label_position=use_twoway_position,
+               oneway_position=use_position,
+               twoway_position=use_twoway_position,
                twoway_lwd=twoway_lwd,
                ...)
             # jamba::printDebug("contrast_position[idf$contrast[1]]:", contrast_position[idf$contrast[1]]);# debug
             # jamba::printDebug("contrast_position:");print(contrast_position);# debug
             # jamba::printDebug("idf$contrast[1]:");print(idf$contrast[1]);
-            # jamba::printDebug("twoway_label_position:");print(contrast_position[idf$contrast[1]]);# debug
+            # jamba::printDebug("twoway_position:");print(contrast_position[idf$contrast[1]]);# debug
          }
       }
       attr(contrast_group_split, "max_x_bump") <- max_x_bump;

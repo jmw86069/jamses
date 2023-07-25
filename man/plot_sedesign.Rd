@@ -17,8 +17,8 @@ plot_sedesign(
   which_contrasts = NULL,
   contrast_style = c("comp", "contrast", "none"),
   contrast_labels = NULL,
-  label_position = 0.9,
-  twoway_label_position = 0.5,
+  oneway_position = 0.9,
+  twoway_position = 0.5,
   contrast_position = NULL,
   sestats = NULL,
   assay_names = NULL,
@@ -81,11 +81,10 @@ when provided
 
 \item{contrast_labels}{\code{character} vector of labels named by contrast}
 
-\item{label_position, twoway_label_position}{\code{numeric} value between 0 and 1,
+\item{oneway_position, twoway_position}{\code{numeric} value between 0 and 1,
 which define the default position of each contrast label for one-way
-and two-way contrasts, respectively.
-This adjustment can be helpful to minimize overlapping labels
-on the resulting figure.
+and two-way contrasts, respectively. These values are overridden
+by optional argument \code{contrast_position} when supplied.
 \itemize{
 \item \code{0} places the label toward the beginning of the arrow, which also
 applies right/top justification of text at the start of the arrow.
@@ -94,10 +93,9 @@ applies left/bottom justification of text at the end of the arrow.
 }}
 
 \item{contrast_position}{\code{numeric} vector named by contrast, whose
-values position the contrast label as described for \code{label_position}
-and \code{twoway_label_position}. Any values not defined by this argument
-will use the default values in \code{label_position} or
-\code{twoway_label_position}.}
+values position each contrast label given. Default values are
+defined by \code{oneway_position} and \code{twoway_position}, except
+where defined by \code{contrast_position}.}
 
 \item{sestats}{\code{list} object that contains element \code{"hit_array"} as
 produced by \code{se_contrast_stats()}, with statistical hits for

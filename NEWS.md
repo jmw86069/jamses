@@ -19,10 +19,14 @@
    * fixed bug with missing contrast labels when subsetting the overall
    contrasts with argument `which_contrasts`
 
-
 * `draw_oneway_contrast()`, `draw_twoway_contrast()`
 
    * default `label_font=2` for bold contrast labels
+
+* `plot_sedesign()`, `draw_oneway_contrast()`, `draw_twoway_contrast()`
+   * changed argument name from `label_position` to `oneway_position`
+   and from `twoway_label_position` to `twoway_position`,
+   before these functions are used
 
 
 # jamses 0.0.44.900

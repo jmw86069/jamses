@@ -18,7 +18,7 @@ draw_oneway_contrast(
   label_color = "white",
   label_cex = 1,
   label_font = 2,
-  label_position = 0.5,
+  oneway_position = 0.5,
   do_plot = TRUE,
   verbose = FALSE,
   debug = FALSE,

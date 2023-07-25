@@ -73,7 +73,7 @@ draw_oneway_contrast <- function
  label_color="white",
  label_cex=1,
  label_font=2,
- label_position=0.5,
+ oneway_position=0.5,
  do_plot=TRUE,
  verbose=FALSE,
  debug=FALSE,
@@ -137,8 +137,8 @@ draw_oneway_contrast <- function
       label_cex <- rep(label_cex, length.out=length(x0))
       label_color <- rep(label_color, length.out=length(x0))
       label_font <- rep(label_font, length.out=length(x0))
-      label_position <- rep(label_position, length.out=length(x0))
-      label_position <- jamba::noiseFloor(label_position,
+      oneway_position <- rep(oneway_position, length.out=length(x0))
+      oneway_position <- jamba::noiseFloor(oneway_position,
          minimum=0,
          ceiling=1);
 
@@ -167,25 +167,25 @@ draw_oneway_contrast <- function
          if (length(which_labels) > 0) {
             # k_list <- split(which_labels, label_angle[which_labels])
             label_split <- paste0(label_angle[which_labels], "_",
-               label_position[which_labels], "_",
+               oneway_position[which_labels], "_",
                as.character(angle_flip[which_labels]))
-            # print(data.frame(label_split, label_angle[which_labels], label_position[which_labels], which_labels));# debug
+            # print(data.frame(label_split, label_angle[which_labels], oneway_position[which_labels], which_labels));# debug
             k_list <- split(which_labels, label_split)
             # TODO: use jamba::drawLabels() with rotation and shadowText
             # or gridtext::richtext_grob() with rounded corners and styling
             for (k in k_list) {
-               use_label_position <- 1 - head(label_position[k], 1)
+               use_oneway_position <- 1 - head(oneway_position[k], 1)
                use_label_angle <- head(label_angle[k], 1);
                use_arrow_angle <- head(arrow_angle[k], 1);
                use_angle_flip <- head(angle_flip[k], 1);
                use_adj <- c(
                   ifelse(use_angle_flip,
-                     round(use_label_position * 2) / 2,
-                     1 - (round(use_label_position * 2) / 2)),
+                     round(use_oneway_position * 2) / 2,
+                     1 - (round(use_oneway_position * 2) / 2)),
                   0.5);
                jamba::shadowText(
-                  x=((x0 * ((1-label_position)*0.9 + 0.1) + x1 * (1 - ((1-label_position)*0.9 + 0.1))) )[k],
-                  y=((y0 * ((1-label_position)*0.9 + 0.1) + y1 * (1 - ((1-label_position)*0.9 + 0.1))) )[k],
+                  x=((x0 * ((1-oneway_position)*0.9 + 0.1) + x1 * (1 - ((1-oneway_position)*0.9 + 0.1))) )[k],
+                  y=((y0 * ((1-oneway_position)*0.9 + 0.1) + y1 * (1 - ((1-oneway_position)*0.9 + 0.1))) )[k],
                   col=label_color[k],
                   srt=use_label_angle,
                   cex=label_cex[k],
@@ -197,7 +197,7 @@ draw_oneway_contrast <- function
                   jamba::cPaste(label[k], sep="\n"))
                if (debug) {
                   jamba::printDebug("use_adj:", use_adj,
-                     ", use_label_position:", use_label_position,
+                     ", use_oneway_position:", use_oneway_position,
                      ", use_label_angle:", use_label_angle,
                      ", use_arrow_angle:", use_arrow_angle,
                      ", use_angle_flip:", use_angle_flip,
@@ -312,12 +312,12 @@ draw_twoway_contrast <- function
  label_color="white",
  label_cex=1,
  label_font=2,
- label_position=0.5,
+ oneway_position=0.5,
  twoway_label=NULL,
  twoway_label_color=label_color,
  twoway_label_cex=label_cex,
  twoway_label_font=label_font,
- twoway_label_position=0.5,
+ twoway_position=0.5,
  twoway_lwd=5,
  contingency=c("loop",
     "scrunch"),
@@ -577,7 +577,7 @@ draw_twoway_contrast <- function
          label_color=label_color,
          label_cex=label_cex,
          label_font=label_font,
-         label_position=label_position,
+         oneway_position=oneway_position,
          do_plot=do_plot,
          verbose=verbose,
          ...)
@@ -623,7 +623,7 @@ draw_twoway_contrast <- function
          label_color=label_color,
          label_cex=label_cex,
          label_font=label_font,
-         label_position=label_position,
+         oneway_position=oneway_position,
          do_plot=do_plot,
          verbose=verbose,
          ...)
@@ -674,7 +674,7 @@ draw_twoway_contrast <- function
          label_color=label_color,
          label_cex=label_cex,
          label_font=label_font,
-         label_position=label_position,
+         oneway_position=oneway_position,
          do_plot=do_plot,
          verbose=verbose,
          ...)
@@ -683,7 +683,7 @@ draw_twoway_contrast <- function
          bezier_points <- bezier_curves[[k]];
 
          # define where to place the label
-         kn <- floor(twoway_label_position * 50) + 25;
+         kn <- floor(twoway_position * 50) + 25;
          # grab points in the middle
          klen <- 7;
          kn_start <- min(c(max(c(kn - klen, 15)), 85 - klen * 2))
@@ -709,8 +709,8 @@ draw_twoway_contrast <- function
          use_angle_flip <- (twoway_label_angle != vector_angle)
          use_adj <- c(
             ifelse(use_angle_flip,
-               1 - (round(twoway_label_position * 8) / 8),
-               round(twoway_label_position * 8) / 8),
+               1 - (round(twoway_position * 8) / 8),
+               round(twoway_position * 8) / 8),
             0.5);
          jamba::shadowText(
             x=bezier_points[kn, 1],
