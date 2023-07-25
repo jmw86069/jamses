@@ -872,15 +872,32 @@ plot_sedesign <- function
             group_style="grouped")
       }
 
+      is_twoway <- grepl("[(]", contrast_names);
       if (length(colorset) == 0) {
          colorset <- colorjam::rainbowJam(
-            n=length(contrast_group_split),
+            n=sum(!is_twoway),
             Crange=c(60, 90),
             Lrange=c(44, 80))
+         names(colorset) <- contrast_names[!is_twoway];
       } else {
-         colorset <- rep(colorset,
-            length.out=length(contrast_group_split))
+         if (length(names(colorset)) > 0) {
+            missing_names <- setdiff(contrast_names[!is_twoway],
+               names(colorset))
+            if (length(missing_names) > 0) {
+               new_colorset <- colorjam::rainbowJam(
+                  n=length(missing_names),
+                  Crange=c(60, 90),
+                  Lrange=c(44, 80))
+               names(new_colorset) <- missing_names;
+               colorset[names(missing_names)] <- new_colorset;
+            }
+         } else {
+            colorset <- rep(colorset,
+               length.out=sum(!is_twoway))
+            names(colorset) <- contrast_names[!is_twoway];
+         }
       }
+      # jamba::printDebug(colorset, sep=",\n");# debug
 
       # iterate each group to draw a visible square around each group
       if (verbose > 1) {
@@ -913,24 +930,24 @@ plot_sedesign <- function
       contrast_summary_df <- jamba::rbindList(
          lapply(seq_along(contrast_group_split), function(i){
             idf <- contrast_group_split[[i]];
-            idf$color <- colorset[i];
+            idf$color <- colorset[as.character(idf$oneway_contrast)];
             if (nrow(idf) == 2) {
                data.frame(from=idf$label[1],
                   to=idf$label[2],
                   contrast=idf$contrast[1],
                   full_contrast=idf$contrast[1],
-                  color=idf$color[1],
+                  color=colorset[idf$contrast[1]],
                   depth="one-way")
             } else if (nrow(idf) == 4) {
                idf$group <- strsplit(gsub("[()]", "", idf$contrast[1]),
                   contrast_sep)[[1]];
-               # jamba::printDebug("contrast_group_split (idf):");print(idf);# debug
                data.frame(from=idf$label[c(1, 3)],
                   to=idf$label[c(2, 4)],
                   contrast=paste0(idf$group[c(1, 3)], "-",
                      idf$group[c(2, 4)]),
                   full_contrast=idf$contrast[1],
-                  color=idf$color[1],
+                  color=colorset[jamba::cPaste(
+                     list(idf$group[c(1, 3)], idf$group[c(2, 4)]), sep="-")],
                   depth="two-way")
             } else {
                data.frame(from="a",
@@ -964,7 +981,7 @@ plot_sedesign <- function
          if (nrow(idf) == 2) {
             if (TRUE %in% idf$render_contrast) {
                # assemble custom contrast label as relevant
-               # jamba::printDebug("idf$contrast[1]:");print(idf$contrast[1]);# debug
+               # jamba::printDebug("idf oneway contrast:");print(idf);# debug
                use_label <- handle_contrast_label(
                   contrast=idf$contrast[1],
                   contrast_labels=contrast_labels,
@@ -976,7 +993,7 @@ plot_sedesign <- function
                   y=idf$y_coord[1],
                   y1=idf$y_coord[2],
                   plot_type="base",
-                  color=colorset[i],
+                  color=colorset[idf$contrast[1]],
                   label=use_label,
                   label_cex=label_cex,
                   oneway_position=contrast_position[idf$contrast[1]],

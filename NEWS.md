@@ -18,6 +18,8 @@
    have less "bump"
    * fixed bug with missing contrast labels when subsetting the overall
    contrasts with argument `which_contrasts`
+   * fixed handling of `colorset` to match one-way `contrast_names` then
+   fill missing color assignments as needed.
 
 * `draw_oneway_contrast()`, `draw_twoway_contrast()`
 
