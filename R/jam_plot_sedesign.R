@@ -751,7 +751,7 @@ plot_sedesign <- function
    oneway_render <- rep(rev(!duplicated(
       rev(contrast_group_df$oneway_contrast[oneway_seq]))), each=2);
    contrast_group_df$render_contrast <- oneway_render;
-   jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
+   # jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
    # if (nrow(contrast_group_df) == 48) {contrast_group_df <- contrast_group_df[-17:-24,]}
    # return(contrast_group_df);
 
