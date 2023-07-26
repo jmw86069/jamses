@@ -200,6 +200,11 @@ of the group width in the diagram.}
 
 \item{contrast}{\code{character} contrast name}
 }
+\value{
+invisible \code{list} of \code{data.frame} representing individual
+contrasts to be rendered. Mainly useful for reviewing the
+data used to produce the figure.
+}
 \description{
 Plot contrasts from sedesign object (in development), showing
 one-way contrasts as block arrow, and two-way contrasts as
@@ -330,3 +335,11 @@ plot_sedesign(sedesign, which_contrasts=which(is_twoway),
    axis1=1, axis2=3, axis3=2)
 
 }
+\seealso{
+Other jam experiment design: 
+\code{\link{check_sedesign}()},
+\code{\link{contrast_colors_by_group}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{sedesign_to_factors}()}
+}
+\concept{jam experiment design}

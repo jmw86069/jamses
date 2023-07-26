@@ -264,6 +264,9 @@ groups_to_sedesign(df_test,
 }
 \seealso{
 Other jam experiment design: 
-\code{\link{check_sedesign}()}
+\code{\link{check_sedesign}()},
+\code{\link{contrast_colors_by_group}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()}
 }
 \concept{jam experiment design}

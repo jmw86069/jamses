@@ -55,15 +55,16 @@
       Anything more complicated requires the user to pass argument
       with custom labels.
 
-* Remaining TODO for `plot_sedesign()`:
-
-   * Sort contrasts:
+   * DONE. Sort contrasts:
    
       * by axis display order; currently axes are ordered in the order
       that factor levels appear in the contrasts.
       * then by "distance" along each axis,
       so longer contrasts are "bumped" consistently.
-   
+
+* Remaining TODO for `plot_sedesign()`:
+
+   * Call `sedesign_to_factors()` instead of calculating internally.
    * Consider refactoring the drawing order so that contrasts are drawn,
    then all labels are (potentially) drawn atop the graphics so they are
    more consistently visible.

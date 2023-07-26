@@ -39,6 +39,18 @@
    * Takes `sedesign` and `sample_color_list` and blends group colors
    into contrasts based upon the groups in each contrast.
 
+* `sedesign_to_factors()`
+
+   * Convenience function to convert `SEDesign` object into the associated
+   `data.frame` with one column per experimental design factor.
+   * The `data.frame` rownames match the `samples(sedesign)`.
+   * The colnames are matched with optional `se` object in order to
+   re-use `colnames(colData(se))` and, if present, factor levels.
+   Maintaining factor level order is useful for downstream applications.
+   * This function will be called by `plot_sedesign()` and should be useful
+   for `platjam::design2colors()` as well.
+
+
 # jamses 0.0.44.900
 
 ## new functions

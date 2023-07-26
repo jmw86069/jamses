@@ -42,6 +42,10 @@ the resulting contrast color.}
 \item{...}{additional arguments are passed to \code{colorjam::group2colors()}
 for any groups for which no colors are assigned.}
 }
+\value{
+\code{character} vector of R colors, with names defined
+by \code{contrast_names(sedesign)}.
+}
 \description{
 Define contrast colors by group colors
 }
@@ -58,3 +62,11 @@ these colors are used as appropriate.
 When \code{sample_color_list} is not supplied, categorical colors are
 defined for all observed group names using \code{colorjam::group2colors()}.
 }
+\seealso{
+Other jam experiment design: 
+\code{\link{check_sedesign}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()}
+}
+\concept{jam experiment design}

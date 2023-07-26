@@ -39,6 +39,9 @@ should confirm this order.
 }
 \seealso{
 Other jam experiment design: 
-\code{\link{groups_to_sedesign}()}
+\code{\link{contrast_colors_by_group}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()}
 }
 \concept{jam experiment design}

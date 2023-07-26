@@ -79,6 +79,12 @@
 #'       contrast (and its label) would only need to be rendered
 #'       once overall.
 #'
+#' @family jam experiment design
+#'
+#' @returns invisible `list` of `data.frame` representing individual
+#'    contrasts to be rendered. Mainly useful for reviewing the
+#'    data used to produce the figure.
+#'
 #' @param sedesign `SEDesign` object as returned by `groups_to_sedesign()`.
 #' @param se `SummarizedExperiment` (optional) and not yet used by this
 #'    function. In future this object may be used to assign factor level
@@ -284,7 +290,9 @@ plot_sedesign <- function
 {
    plot_type <- match.arg(plot_type);
    contrast_style <- match.arg(contrast_style);
+
    # convert group names to factor summary table
+   # TODO: call sedesign_to_factors()
    group_names <- groups(sedesign);
    factors_df <- data.frame(check.names=FALSE,
       stringsAsFactors=FALSE,

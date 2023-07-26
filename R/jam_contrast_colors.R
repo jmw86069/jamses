@@ -1,25 +1,4 @@
 
-# Convert sedesign to sample data.frame
-#
-# @export
-# sedesign_to_df <- function
-# (sedesign,
-#  se=NULL,
-#  factor_colnames=NULL,
-#    ...)
-# {
-   # convert sedesign to vector of group names
-
-   # split group names by "_" into data.frame of factor levels
-
-   # assign colnames using factor_colnames
-
-   # use factor_colnames to find corresponding columns in colData(se)
-   # (or detect factor_colnames by comparing to colData(se)
-
-   # assign rownames
-# }
-
 #' Define contrast colors by group colors
 #'
 #' Define contrast colors by group colors
@@ -35,6 +14,11 @@
 #'
 #' When `sample_color_list` is not supplied, categorical colors are
 #' defined for all observed group names using `colorjam::group2colors()`.
+#'
+#' @returns `character` vector of R colors, with names defined
+#'    by `contrast_names(sedesign)`.
+#'
+#' @family jam experiment design
 #'
 #' @param sedesign `SEDesign` object
 #' @param sample_color_list `list` of colors, with one list element with
