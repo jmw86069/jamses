@@ -65,8 +65,12 @@ factors to represent on each axis, with axes defined in order
 \code{1=bottom}, \code{2=left}, \code{3=top}, \code{4=right}. All factors in
 \code{factor_names} must be represented.}
 
-\item{which_contrasts}{\code{numeric} index of contrasts defined in \code{sedesign},
-or \code{character} vector of values present in \code{contrast_names(sedesign)}.
+\item{which_contrasts}{one of the following:
+\itemize{
+\item \code{numeric} index of contrasts defined in \code{sedesign}, or
+\item \code{character} vector of values present in \code{contrast_names(sedesign)}.
+}
+
 When a two-way contrast is defined, its component one-way
 contrasts are also included.}
 
@@ -113,20 +117,86 @@ use, otherwise hits from any applied cutoff are included.
 \item{assay_names, cutoff_names}{\code{character} values used with \code{sestats}
 to define the statistical hits to use when \code{sestats} is supplied.}
 
+\item{label_cex}{\code{numeric} expansion factor to adjust contrast label
+font sizes.}
+
+\item{flip_twoway}{\code{logical} indicating whether to flip the orientation
+of two-way contrasts, for example \code{"(A-B)-(C-D)"} would be flipped
+to equivalent form \code{"(A-C)-(B-D)"}, which will alter the orientation
+of the two-way contrast connection. Note that the individual one-way
+contrasts will be added if they did not already exist in the data.}
+
+\item{colorset}{\code{character} vector of colors used for one-way contrasts.
+When the vector contains names, they are assigned to
+\code{contrast_names(sedesign)}, and any missing colors are assigned
+using \code{colorjam::group2colors()}.
+When the vector does not contain names, it is recycled to
+the number of contrast names.}
+
+\item{twoway_lwd}{\code{numeric} line width for two-way contrasts,
+passed to \code{draw_twoway_contrast()}.}
+
+\item{extend_angle}{\code{numeric} angle in degrees to define control points
+for two-way contrasts, using this angle from the end of each one-way
+contrast toward the other one-way contrast in the set.
+\itemize{
+\item When the control point crosses the midpoint between the two contrasts,
+half the angle is used to re-define control points.
+\item When the control point crosses the other contrast in the set, the
+first control point is retained, and the second control point
+uses the opposite angle so the resulting bezier curve
+from the first contrast "loops around" the far side of the second
+contrast, then connects from the opposite side.
+}}
+
+\item{bump_factor}{\code{numeric} factor applied to the relative
+amount of "bump" used to adjust contrasts which would otherwise
+overlap on the same x- or y-axis intercept. Values higher than 1
+cause more adjustment, values below 1 reduce the bump adjustment,
+with 0 imposing no bump adjustment.}
+
+\item{group_buffer}{\code{numeric} value indicating the relative buffer used
+to draw each group square, as a fraction of total width (1).}
+
+\item{group_border, group_fill}{\code{character} color used for the border
+and fill colors, respectively, to draw a square
+for each experimental group defined in \code{sedesign}.
+These values can be supplied as a named vector, whose names match
+the group names defined in \code{sedesign}, and they will be applied
+to each group. Any missing groups will used recycled values.}
+
+\item{replicate_color}{\code{character} string with R color, used for
+the label in each group for the number of replicates as defined
+in \code{sedesign}.}
+
+\item{replicate_cex}{\code{numeric} expansion factor used to adjust the font
+size for the replicate label in each group defined by \code{sedesign}.}
+
 \item{do_plot}{\code{logical} indicating whether to render the plot,
 or when \code{do_plot=FALSE} only the underlying data is returned.}
+
+\item{plot_margins}{\code{numeric} value applied to \code{par("mar")} around the
+plot, to define minimal whitespace around the plot.}
 
 \item{plot_type}{\code{character} string (experimental) to define one of
 multiple plot output types:
 \itemize{
 \item \code{"base"} uses base R graphics.
-\item \code{"grid"} uses R grid graphics, specifically the \code{vwline} package
-for variable width lines.
+\item \code{"grid"} (not yet implemented) uses R grid graphics. This option
+is expected to enable more methods to reduce overlapping labels,
+and potentially labels with markdown markup.
 }}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
+\item{debug}{\code{logical} indicating whether to print very detailed
+debug output.}
+
 \item{...}{additional arguments are ignored.}
+
+\item{expend_ex}{\code{numeric} expansion factor to define control points
+for two-way contrasts, beyond each one-way contrast by this fraction
+of the group width in the diagram.}
 
 \item{contrast}{\code{character} contrast name}
 }

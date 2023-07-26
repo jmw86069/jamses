@@ -20,6 +20,8 @@
    contrasts with argument `which_contrasts`
    * fixed handling of `colorset` to match one-way `contrast_names` then
    fill missing color assignments as needed.
+   * arguments `group_color`,`group_border` accept named vectors to define
+   colors for each square drawn per experimental group.
 
 * `draw_oneway_contrast()`, `draw_twoway_contrast()`
 
@@ -30,6 +32,12 @@
    and from `twoway_label_position` to `twoway_position`,
    before these functions are used
 
+## new functions
+
+* `contrast_colors_by_group()`
+
+   * Takes `sedesign` and `sample_color_list` and blends group colors
+   into contrasts based upon the groups in each contrast.
 
 # jamses 0.0.44.900
 

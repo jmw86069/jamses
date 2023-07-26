@@ -94,8 +94,10 @@
 #'    factors to represent on each axis, with axes defined in order
 #'    `1=bottom`, `2=left`, `3=top`, `4=right`. All factors in
 #'    `factor_names` must be represented.
-#' @param which_contrasts `numeric` index of contrasts defined in `sedesign`,
-#'    or `character` vector of values present in `contrast_names(sedesign)`.
+#' @param which_contrasts one of the following:
+#'    * `numeric` index of contrasts defined in `sedesign`, or
+#'    * `character` vector of values present in `contrast_names(sedesign)`.
+#'
 #'    When a two-way contrast is defined, its component one-way
 #'    contrasts are also included.
 #' @param contrast_style `character` string indicating how to format
@@ -133,14 +135,65 @@
 #'    * `"contrast_name"`: this value uses argument `which_contrasts`
 #' @param assay_names,cutoff_names `character` values used with `sestats`
 #'    to define the statistical hits to use when `sestats` is supplied.
+#' @param label_cex `numeric` expansion factor to adjust contrast label
+#'    font sizes.
+#' @param flip_twoway `logical` indicating whether to flip the orientation
+#'    of two-way contrasts, for example `"(A-B)-(C-D)"` would be flipped
+#'    to equivalent form `"(A-C)-(B-D)"`, which will alter the orientation
+#'    of the two-way contrast connection. Note that the individual one-way
+#'    contrasts will be added if they did not already exist in the data.
+#' @param colorset `character` vector of colors used for one-way contrasts.
+#'    When the vector contains names, they are assigned to
+#'    `contrast_names(sedesign)`, and any missing colors are assigned
+#'    using `colorjam::group2colors()`.
+#'    When the vector does not contain names, it is recycled to
+#'    the number of contrast names.
+#' @param twoway_lwd `numeric` line width for two-way contrasts,
+#'    passed to `draw_twoway_contrast()`.
+#' @param expend_ex `numeric` expansion factor to define control points
+#'    for two-way contrasts, beyond each one-way contrast by this fraction
+#'    of the group width in the diagram.
+#' @param extend_angle `numeric` angle in degrees to define control points
+#'    for two-way contrasts, using this angle from the end of each one-way
+#'    contrast toward the other one-way contrast in the set.
+#'    * When the control point crosses the midpoint between the two contrasts,
+#'    half the angle is used to re-define control points.
+#'    * When the control point crosses the other contrast in the set, the
+#'    first control point is retained, and the second control point
+#'    uses the opposite angle so the resulting bezier curve
+#'    from the first contrast "loops around" the far side of the second
+#'    contrast, then connects from the opposite side.
+#' @param bump_factor `numeric` factor applied to the relative
+#'    amount of "bump" used to adjust contrasts which would otherwise
+#'    overlap on the same x- or y-axis intercept. Values higher than 1
+#'    cause more adjustment, values below 1 reduce the bump adjustment,
+#'    with 0 imposing no bump adjustment.
+#' @param group_buffer `numeric` value indicating the relative buffer used
+#'    to draw each group square, as a fraction of total width (1).
+#' @param group_border,group_fill `character` color used for the border
+#'    and fill colors, respectively, to draw a square
+#'    for each experimental group defined in `sedesign`.
+#'    These values can be supplied as a named vector, whose names match
+#'    the group names defined in `sedesign`, and they will be applied
+#'    to each group. Any missing groups will used recycled values.
+#' @param replicate_color `character` string with R color, used for
+#'    the label in each group for the number of replicates as defined
+#'    in `sedesign`.
+#' @param replicate_cex `numeric` expansion factor used to adjust the font
+#'    size for the replicate label in each group defined by `sedesign`.
 #' @param do_plot `logical` indicating whether to render the plot,
 #'    or when `do_plot=FALSE` only the underlying data is returned.
+#' @param plot_margins `numeric` value applied to `par("mar")` around the
+#'    plot, to define minimal whitespace around the plot.
 #' @param plot_type `character` string (experimental) to define one of
 #'    multiple plot output types:
 #'    * `"base"` uses base R graphics.
-#'    * `"grid"` uses R grid graphics, specifically the `vwline` package
-#'    for variable width lines.
+#'    * `"grid"` (not yet implemented) uses R grid graphics. This option
+#'    is expected to enable more methods to reduce overlapping labels,
+#'    and potentially labels with markdown markup.
 #' @param verbose `logical` indicating whether to print verbose output.
+#' @param debug `logical` indicating whether to print very detailed
+#'    debug output.
 #' @param ... additional arguments are ignored.
 #'
 #' @examples
@@ -464,6 +517,29 @@ plot_sedesign <- function
    # merge group counts into axis_df
    axis_match <- match(axis_df$label, factors_df$label);
    axis_df$n <- factors_df$n[axis_match];
+
+   # add group name to axis_df for convenience
+   fmatch <- match(as.character(axis_df$label),
+      as.character(factors_df$label))
+   axis_df$group <- rownames(factors_df)[fmatch];
+   if (names(group_fill) == 0 ||
+         !all(axis_df$group %in% names(group_fill))) {
+      missing_groups <- setdiff(axis_df$group, names(group_fill))
+      group_fill[missing_groups] <- rep(group_fill,
+         length.out=length(missing_groups));
+      group_fill <- rep(group_fill, length.out=length(axis_df$group));
+      names(group_fill) <- axis_df$group;
+   }
+   if (names(group_border) == 0 ||
+         !all(axis_df$group %in% names(group_border))) {
+      missing_groups <- setdiff(axis_df$group, names(group_border))
+      group_border[missing_groups] <- rep(group_border,
+         length.out=length(missing_groups));
+      group_border <- rep(group_border, length.out=length(axis_df$group));
+      names(group_border) <- axis_df$group;
+   }
+   # jamba::printDebug("factors_df:");print(factors_df);# debug
+   # jamba::printDebug("axis_df:");print(axis_df);# debug
 
    # layout is defined here
    if (verbose) {
@@ -901,7 +977,7 @@ plot_sedesign <- function
 
       # iterate each group to draw a visible square around each group
       if (verbose > 1) {
-         print("axis_df:");print(axis_df);
+         jamba::printDebug("axis_df:");print(axis_df);
          print(data.frame(xleft=axis_df$x_coord - use_group_buffer,
             xright=axis_df$x_coord + use_group_buffer,
             ybottom=axis_df$y_coord - use_group_buffer,
@@ -913,10 +989,10 @@ plot_sedesign <- function
          ytop=axis_df$y_coord + use_group_buffer,
          col=ifelse(is.na(axis_df$n),
             "transparent",
-            group_fill),
+            group_fill[axis_df$group]),
          border=ifelse(is.na(axis_df$n),
             "transparent",
-            group_border))
+            group_border[axis_df$group]))
       # optionally add number of replicates as labels
       text(x=axis_df$x_coord - 0.45,
          y=axis_df$y_coord + 0.45,
