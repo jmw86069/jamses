@@ -10,7 +10,10 @@ contrast_colors_by_group(
   group_name = "Group",
   contrast_sep = "-",
   C_min = 80,
+  C_max = 100,
+  L_min = 35,
   L_max = 70,
+  default_color_style = c("categorical", "navy"),
   verbose = FALSE,
   ...
 )
@@ -23,7 +26,8 @@ name defined by \code{group_name}, default \code{"Group"}, so the colors
 use \code{sample_color_list[[group_name]]}. This element should be
 a \code{character} vector of colors, whose names are group names
 used in the \code{contrast_names(sedesign)}.
-The \code{sample_color_list} is produced by \code{platjam::design2colors()}.}
+The \code{sample_color_list} is produced by \code{platjam::design2colors()}.
+Alternatively, a \code{character} vector of colors, named by contrast.}
 
 \item{group_name}{\code{character} string for the element in \code{sample_color_list}
 that contains group colors.}
@@ -31,16 +35,29 @@ that contains group colors.}
 \item{contrast_sep}{\code{character} string used as delimiter between
 group names in each contrast name, default is \code{"-"}.}
 
-\item{C_min}{\code{numeric} value to impose a minimum chroma (C) value for
-the resulting contrast color.}
+\item{C_min, C_max}{\code{numeric} value to impose a minimum and maximum
+chroma (C) value for the resulting contrast color.}
 
-\item{L_max}{\code{numeric} value to impose a maximum luminance (C) value for
-the resulting contrast color.}
+\item{L_min, L_max}{\code{numeric} value to impose a minimum and maximum
+luminance (C) value for the resulting contrast color.}
+
+\item{default_color_style}{\code{character} string indicating how to assign
+colors to groups without a color assignment.
+\itemize{
+\item \code{"categorical"}: calls \code{colorjam::group2colors()} which calls
+\code{colorjam::rainbowJam()} for rainbow categorical colors.
+\item any single R color: this one R color is applied to all other groups.
+\item any non-R color: assumed to be the name of a color gradient or set,
+and is resolved by calling \code{jamba::getColorRamp()}. It recognizes
+RColorBrewer and viridis color sets for example.
+\item vector of multiple colors: also resolved by calling
+\code{jamba::getColorRamp()} which creates a gradient across the colors.
+}}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
-\item{...}{additional arguments are passed to \code{colorjam::group2colors()}
-for any groups for which no colors are assigned.}
+\item{...}{additional arguments are passed to \code{colorjam::group2colors()},
+or \code{jamba::getColorRamp()} as needed.}
 }
 \value{
 \code{character} vector of R colors, with names defined

@@ -1,3 +1,31 @@
+# jamses 0.0.46.900
+
+## updates to existing functions
+
+* `plot_sedesign()`
+
+   * new argument `sestats_style` to customize how stat hits are labaled.
+   It allows including directionality, only the number of hits,
+   or only the number by itself.
+   * fixed error when any argument of `axis1,axis2,axis3,axis4` referred
+   to a non-existent column. The error was not a bug, but was avoidable.
+   Now the plot is drawn as if the corresponding argument were `NULL`.
+   
+* `draw_twoway_contrast()`
+
+   * new argument `contingency` to customize how two-way connectors
+   are drawn, based upon how close the two contrasts are to each other.
+   The "loop" option draws the connector to loop around the far side
+   of contrast 2, which is effective at avoiding overlaps.
+
+* `contrast_colors_by_group()` 
+
+   * `sample_color_list` now allows more flexibility
+   in defining colors, specifically allowing a `character` vector, or
+   single color to be used for all contrasts.
+   * new arguments `C_min` and `L_max` to complete the chroma (C) and
+   luminance (L) numerical limits with min/max.
+
 # jamses 0.0.45.900
 
 ## updates to existing functions

@@ -21,6 +21,7 @@ plot_sedesign(
   twoway_position = 0.5,
   contrast_position = NULL,
   sestats = NULL,
+  sestats_style = c("label", "number", "simple label"),
   assay_names = NULL,
   cutoff_names = NULL,
   label_cex = 1,
@@ -112,6 +113,15 @@ The three relevant optional values used to specify specific hits:
 \item \code{"cutoff_name"}: this argument defines a specific cutoff to
 use, otherwise hits from any applied cutoff are included.
 \item \code{"contrast_name"}: this value uses argument \code{which_contrasts}
+}}
+
+\item{sestats_style}{\code{character} string indicating how to present the
+number of hits for each contrast.
+\itemize{
+\item \code{"label"}: uses the full label: number hits (number up, number down)"
+\item \code{"number"}: uses only the number of hits "number"
+\item \code{"simple label"}: uses a simple label: "number hits" without
+the number of hits up and down.
 }}
 
 \item{assay_names, cutoff_names}{\code{character} values used with \code{sestats}

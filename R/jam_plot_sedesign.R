@@ -139,6 +139,12 @@
 #'    * `"cutoff_name"`: this argument defines a specific cutoff to
 #'    use, otherwise hits from any applied cutoff are included.
 #'    * `"contrast_name"`: this value uses argument `which_contrasts`
+#' @param sestats_style `character` string indicating how to present the
+#'    number of hits for each contrast.
+#'    * `"label"`: uses the full label: number hits (number up, number down)"
+#'    * `"number"`: uses only the number of hits "number"
+#'    * `"simple label"`: uses a simple label: "number hits" without
+#'    the number of hits up and down.
 #' @param assay_names,cutoff_names `character` values used with `sestats`
 #'    to define the statistical hits to use when `sestats` is supplied.
 #' @param label_cex `numeric` expansion factor to adjust contrast label
@@ -266,6 +272,9 @@ plot_sedesign <- function
  twoway_position=0.5,
  contrast_position=NULL,
  sestats=NULL,
+ sestats_style=c("label",
+    "number",
+    "simple label"),
  assay_names=NULL,
  cutoff_names=NULL,
  label_cex=1,
@@ -290,6 +299,7 @@ plot_sedesign <- function
 {
    plot_type <- match.arg(plot_type);
    contrast_style <- match.arg(contrast_style);
+   sestats_style <- match.arg(sestats_style);
 
    # convert group names to factor summary table
    # TODO: call sedesign_to_factors()
@@ -402,7 +412,7 @@ plot_sedesign <- function
       if (TRUE %in% assign_default && length(axisN) == 0) {
          axisN <- head(setdiff(factor_names, axis_values), 1)
       }
-      axisN <- setdiff(axisN, axis_values)
+      axisN <- setdiff(axisN, c(axis_values, NA));
       return(axisN)
    }
    axis_values <- character(0);
@@ -585,8 +595,23 @@ plot_sedesign <- function
          hit_list <- hit_array_to_list(sestats,
             assay_names=assay_names,
             cutoff_names=cutoff_names)
-         contrast_labels_hits <- format_hits(hits=hit_list,
-            style="text")
+         contrast_labels_hits <- NULL;
+         if (sestats_style %in% c("label", "simple label")) {
+            contrast_labels_hits <- format_hits(hits=hit_list,
+               style="text");
+            if (sestats_style %in% "simple label") {
+               # remove directional part of the label
+               contrast_labels_hits <- jamba::nameVector(
+                  gsub(" [(].+", "",
+                     contrast_labels_hits),
+                  names(contrast_labels_hits));
+            }
+         } else if (sestats_style %in% "number") {
+            # use only the number of hits
+            contrast_labels_hits <- jamba::nameVector(
+               jamba::formatInt(lengths(hit_list)),
+               names(hit_list));
+         }
          if (length(contrast_labels) == 0) {
             contrast_labels <- contrast_labels_hits;
          } else {

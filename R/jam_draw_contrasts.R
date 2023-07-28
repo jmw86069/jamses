@@ -262,11 +262,59 @@ draw_oneway_contrast <- function
 #'    * 2 = bold font
 #'    * 3 = italic font
 #'    * 4 = bold, italic font
+#' @param twoway_position `numeric` value between 0 and 1 that places
+#'    the twoway label at this relative position along the two-way connector.
+#' @param twoway_lwd `numeric` line width for the two-way connector.
+#' @param contingency `character` string used to determine how to handle
+#'    the two-way connector in three practical scenarios. This argument
+#'    is expected to have length 3 with the following names, and is recycled
+#'    to this length as necesary:
+#'    * `"none"`: the bezier control points are sufficiently distant
+#'    that they do not cross the halfway line between contrasts.
+#'    * `"half"`: the bezier control point crosses the halfway line between
+#'    contrasts, but not the opposing contrast line. "Respect the halfieway."
+#'    * `"full"`: the bezier control point crosses the opposing contrast line,
+#'    which usually occurs when the two contrasts are rendered close to
+#'    one another.
+#'
+#'    The value is used to define a contingency plan for each scenario above:
+#'    * `"none"`: the control points are used as-is with no contingency.
+#'    * `"scrunch"`: the `extend_angle` is reduced to 1/3, and the
+#'    control points are used as-is. This effectively makes the "S" swoop
+#'    narrower, so it fits between the two contrasts.
+#'    * `"loop"`: this option causes the two-way connector to loop from
+#'    contrast 1, around the far side of contrast 2.
+#'    The `extend_angle` and `extend_ex` is increased for contrast 1,
+#'    the `extend_angle` for contrast 2 is reversed, so the
+#'    bezier curve aims away from contrast 1.
+#'    When two contrasts are extremely close together, this technique
+#'    is the best method to make the line visible.
+#'    This option may provide suitable two-way labels which are not
+#'    obscured by intervening one-way conrasts.
+#' @param draw_oneway `logical` indicating whether the one-way contrast
+#'    should be rendered, for example if the one-way contrast was
+#'    already rendered as part of another two-way contrast.
+#' @param drawing_order `character` string indicating the overall order
+#'    for drawing plot features:
+#'    * `"two-two-one"`: draws the two-way border, two-way fill, then one-way
+#'    contrasts.
+#'    * `"one-two"`: draws the one-way contrasts, the two-way border,
+#'    then two-way fill.
+#'    * `"two-one-two"`: draws the two-way border, one-way contrasts, then
+#'    the two-way fill.
+#' @param do_plot `logical` indicating whether to render the results in
+#'    the active graphics device, or when `do_plot=FALSE` only the underlying
+#'    data is returned with no plotting.
 #'
 #'
 #' @examples
 #' plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
 #' draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
+#'    label=c("contrast one", "contrast two"))
+#'
+#' plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
+#' draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
+#'    contingency=c("loop"),
 #'    label=c("contrast one", "contrast two"))
 #'
 #' plot(NULL, xlim=c(0, 5), ylim=c(0, 6), asp=1, xlab="", ylab="")
@@ -319,8 +367,9 @@ draw_twoway_contrast <- function
  twoway_label_font=label_font,
  twoway_position=0.5,
  twoway_lwd=5,
- contingency=c("loop",
-    "scrunch"),
+ contingency=c(none="none",
+    half="scrunch",
+    full="loop"),
  draw_oneway=TRUE,
  drawing_order=c(
     "two-two-one",
@@ -332,7 +381,13 @@ draw_twoway_contrast <- function
 {
    # validate arguments
    plot_type <- match.arg(plot_type);
-   contingency <- match.arg(contingency);
+   contingency <- match.arg(contingency,
+      several.ok=TRUE);
+   contingency_names <- c("none", "half", "full");
+   if (!all(contingency_names %in% contingency)) {
+      contingency <- rep(contingency, length.out=3);
+      names(contingency) <- contingency_names;
+   }
    drawing_order <- match.arg(drawing_order);
 
    # ensure vectorized values are proper lengths
@@ -392,25 +447,17 @@ draw_twoway_contrast <- function
    contrast_lengths <- sqrt(
       (x1 - x0)^2 + (y1 - y0)^2)
 
-   # determine appropriate angle
-   angle_diff <- -(extend_angle);
-   angle_diff <- ifelse(rep(hand, each=2) %in% "right",
-      extend_angle,
-      -extend_angle)
-
-   new_contrast_angles <- contrast_angles + angle_diff;
-   if (verbose) {
-      jamba::printDebug("draw_twoway_contrast(): ",
-         "new_contrast_angles: ");
-      print(data.frame(contrast_angles, hand=rep(hand, each=2),
-         angle_diff, new_contrast_angles));
-   }
-
-   # make bezier control points
+   # helper function to make bezier control points
    make_bezier_lines_df <- function
-   (x0, x1, y0, y1, k1, k2, contrast_lengths, extend_ex, xadj, yadj)
+   (x0, x1, y0, y1,
+    k1, k2,
+    contrast_lengths,
+    extend_ex,
+    xadj,
+    yadj)
    {
       # Note: using length=1 instead of contrast_lengths[k1]
+      extend_ex <- rep(extend_ex, length.out=length(x0));
       # so the extension has consistent length.
       lines_df <- data.frame(
          x=c(
@@ -421,11 +468,11 @@ draw_twoway_contrast <- function
                   x1[k1]*3)/4,
             x1=x1[k1],
             `x1.2`=(x1[k1] +
-                  xadj[k1] * 1 * extend_ex),
+                  xadj[k1] * 1 * extend_ex[k1]),
             `x1.5`=(x1[k1] +
                   x0[k2])/2,
             `x1.8`=(x0[k2] +
-                  xadj[k2] * 1 * extend_ex),
+                  xadj[k2] * 1 * extend_ex[k2]),
             x2=x0[k2],
             `x2.25`=(x0[k2]*3 +
                   x1[k2])/4,
@@ -440,11 +487,11 @@ draw_twoway_contrast <- function
                   y0[k1]*3)/4,
             y1=y1[k1],
             `x1.2`=(y1[k1] +
-                  yadj[k1] * 1 * extend_ex),
+                  yadj[k1] * 1 * extend_ex[k1]),
             `y1.5`=(y1[k1] +
                   y0[k2])/2,
             `y1.8`=(y0[k2] +
-                  yadj[k2] * 1 * extend_ex),
+                  yadj[k2] * 1 * extend_ex[k2]),
             y2=y0[k2],
             `y2.25`=(y0[k2]*3 +
                   y1[k2])/4,
@@ -452,6 +499,20 @@ draw_twoway_contrast <- function
                   y1[k2])/2)
       );
       return(lines_df);
+   }
+
+   # determine appropriate angle
+   angle_diff <- -(extend_angle);
+   angle_diff <- ifelse(rep(hand, each=2) %in% "right",
+      extend_angle,
+      -extend_angle)
+
+   new_contrast_angles <- contrast_angles + angle_diff;
+   if (verbose) {
+      jamba::printDebug("draw_twoway_contrast(): ",
+         "new_contrast_angles: ");
+      print(data.frame(contrast_angles, hand=rep(hand, each=2),
+         angle_diff, new_contrast_angles));
    }
 
    # optionally mirror the angle when lines are too close?
@@ -468,11 +529,14 @@ draw_twoway_contrast <- function
    # define bezier control points for typical cases
    lines_df <- make_bezier_lines_df(x0, x1, y0, y1,
       k1, k2,
-      contrast_lengths, extend_ex,
+      contrast_lengths,
+      extend_ex=extend_ex,
       xadj, yadj);
 
    # check for weird cases:
-   # - when control point x1.2 crosses either the x1.5 or x2.5
+   # - when control point x1.2 crosses either the
+   #   x1.5 (midpoint) or
+   #   x2.5 (opposite contrast)
    # - test whether "handedness" changes relative to those points
    x12_rows <- jamba::igrep("^x1.2", rownames(lines_df));
    x15_rows <- jamba::igrep("^x1.5", rownames(lines_df));
@@ -489,17 +553,73 @@ draw_twoway_contrast <- function
    # if it crosses x15 but not x25, maybe we scrunch
    changed_hands_25 <- (hand != new_hand_25);
    changed_hands_15 <- (hand != new_hand_15);
-   if (any(c(changed_hands_25, changed_hands_15))) {
-      # mirror the second angle?
-      if (any(changed_hands_25)) {
-         k1_changed <- k1[changed_hands_25];
-         k2_changed <- k2[changed_hands_25];
-         new_contrast_angles[k2_changed] <- (360 -
-               new_contrast_angles[k2_changed]) %% 360;
+
+   ## summarize the contingency scenario, defined as:
+   # none - the control point does not cross the halfieway
+   # half - the control point crosses the halfieway, not the other contrast
+   # full - the control point crosses the other contrast
+   contingency_scenario <- ifelse(
+      !changed_hands_25 & !changed_hands_15, "none",
+      ifelse(changed_hands_25, "full", "half"))
+   contingency_output <- contingency[contingency_scenario]
+
+   # calculate two-way contrast distance between component one-way contrasts
+   calc_twoway_distance <- function
+   (x0, x1, y0, y1)
+   {
+      # calculate two-way distance
+      if (length(x1) < 2) {
+         return(NULL)
       }
-      if (any(changed_hands_15 & !changed_hands_25)) {
-         k1_changed <- k1[changed_hands_15 & !changed_hands_25];
-         k2_changed <- k2[changed_hands_15 & !changed_hands_25];
+      x1 <- rep(x1, length.out=length(x0));
+      y0 <- rep(y0, length.out=length(x0));
+      y1 <- rep(y1, length.out=length(x0));
+      xym <- cbind(c(x0, x1), c(y0, y1));
+      rownames(xym) <- jamba::makeNames(
+         rep(c("A", "B"), each=length(x0)),
+         suffix="_con")
+      xyseq <- rep(seq_along(x0), each=2) + c(0, length(x0))
+      xym1 <- xym[xyseq, , drop=FALSE]
+      xym1_split <- split(rownames(xym1),
+         rep(seq_len(length(x0)/2), each=4));
+      twoway_distances <- sapply(xym1_split, function(irows){
+         dm <- as.matrix(dist(xym1[irows, , drop=FALSE]))
+         acols <- grepl("con1", colnames(dm));
+         max(c(0.5,
+            min(dm[!acols, acols, drop=FALSE], na.rm=TRUE)))
+      })
+      return(twoway_distances)
+   }
+
+   # if (any(c(changed_hands_25, changed_hands_15))) {
+   twoway_distances <- calc_twoway_distance(x0, x1, y0, y1)
+   if (any(c("scrunch", "loop") %in% contingency_output)) {
+      # mirror the second angle?
+      # if (any(changed_hands_25)) {
+      extend_ex <- rep(extend_ex, length.out=length(contrast_angles))
+      do_loop <- ("loop" %in% contingency_output);
+      if (any(do_loop)) {
+         k1_changed <- k1[do_loop];
+         k2_changed <- k2[do_loop];
+         # extend_ex[k1_changed] <- extend_ex[k1_changed] * 5;
+         # extend_ex[k1_changed] <- 2;
+         extend_ex[k1_changed] <- twoway_distances[do_loop] + sqrt(twoway_distances[do_loop])/2;
+         # extend_ex[k2_changed] <- extend_ex[k2_changed] * 2;
+         extend_ex[k2_changed] <- sqrt(twoway_distances[do_loop]);
+         # extend_ex[k2_changed] <- twoway_distances[do_loop] / 1;
+         new_contrast_angles[k2_changed] <- (contrast_angles[k2_changed] -
+               # angle_diff) %% 360
+               angle_diff * sqrt(twoway_distances[do_loop])) %% 360
+         # new_contrast_angles[k2_changed] <- (360 -
+         #       new_contrast_angles[k2_changed]) %% 360;
+         new_contrast_angles[k1_changed] <- (contrast_angles[k1_changed] +
+               60 * sign(angle_diff)) %% 360
+      }
+      # if (any(changed_hands_15 & !changed_hands_25)) {
+      do_scrunch <- ("scrunch" %in% contingency_output)
+      if (any(do_scrunch)) {
+         k1_changed <- k1[do_scrunch];
+         k2_changed <- k2[do_scrunch];
          new_contrast_angles[k1_changed] <- (contrast_angles[k1_changed] +
                angle_diff / 3);
          new_contrast_angles[k2_changed] <- (contrast_angles[k2_changed] +
@@ -510,7 +630,8 @@ draw_twoway_contrast <- function
       # define bezier control points for typical cases
       lines_df <- make_bezier_lines_df(x0, x1, y0, y1,
          k1, k2,
-         contrast_lengths, extend_ex,
+         contrast_lengths,
+         extend_ex=extend_ex,
          xadj, yadj);
    }
 
@@ -703,6 +824,12 @@ draw_twoway_contrast <- function
          vector_angle <- jamba::rad2deg(atan2(
             y=(tail(bezier_use, 1)[, 2] - head(bezier_use, 1)[, 2]),
             x=(tail(bezier_use, 1)[, 1] - head(bezier_use, 1)[, 1]))) %% 360;
+         # discretize the angles so nearly parallel labels are
+         # likely to be parallel
+         # (most noticeable when one is 91 and the other is 89,
+         # and the labels are flipped left/right)
+         vector_angle <- round(vector_angle / 22.5) * 22.5;
+         # jamba::printDebug("vector_angle:", vector_angle);# debug
          # round to integer values
          twoway_label_angle <- round(
             ((vector_angle + 90) %% 180 - 90) %% 360);
@@ -725,7 +852,6 @@ draw_twoway_contrast <- function
             adj=use_adj,
             font=twoway_label_font,
             jamba::cPaste(twoway_label, sep="\n"))
-
       }
 
 

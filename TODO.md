@@ -1,6 +1,48 @@
 
 # TODO for jamses
 
+## 27jul2023
+
+* Remaining TODO for `plot_sedesign()`:
+
+   * Fix error when any of axis1,axis2,axis3,axis4 are assigned
+   empty values.
+   * Options for rendering two-way contrasts:
+   
+      * PARTIAL. Consider option to "loop" two-way contrasts around the one-way
+      contrast, similar to what happens when two contrasts are too
+      close to each other.
+   
+         * Loops are implemented but did not meet the favor of artistic review.
+         * For contrasts with very small gap between them, loop seems the best.
+         * For contrasts with room for an S-shaped swoop, that looks nicer.
+   
+      * Option to adjust the midpoint of S-shaped "swoop",
+      so the middle of the swoop would not be the diagonal
+      midpoint between the end of contrast 1 and start of contrast 2.
+      It  could be shifted closer to contrast 1 or contrast 2.
+      It could help when trying to avoid label overlaps.
+
+   * Call `sedesign_to_factors()` instead of calculating internally.
+   * Consider refactoring the drawing order so that contrasts are drawn,
+   then all labels are (potentially) drawn atop the graphics so they are
+   more consistently visible. (Could be done if porting to grid graphics.)
+   * Accept contrast_names as input, instead of requiring an `sedesign` object.
+   * Consider using grid graphics with
+   with the `units="snpc"` pattern to maintain fixed aspect ratio:
+    ```R
+    pushViewport(
+    viewport(
+       x=0.5, y=0.5,
+       width=unit(min(1, diff(xlim)/diff(ylim)), "snpc"),
+       height=unit(min(1, diff(ylim)/diff(xlim)), "snpc"),
+       xscale=xlim,
+       yscale=ylim))
+    ```
+   * Consider drawing boxes which reflect the `groupedAxis()` grouped
+   regions along each axis, which may involve slightly nested boxes.
+   It may be useful to shade the boxes light grey.
+
 ## 12jul2023
 
 * enhance `sedesign`
@@ -62,28 +104,7 @@
       * then by "distance" along each axis,
       so longer contrasts are "bumped" consistently.
 
-* Remaining TODO for `plot_sedesign()`:
-
-   * Call `sedesign_to_factors()` instead of calculating internally.
-   * Consider refactoring the drawing order so that contrasts are drawn,
-   then all labels are (potentially) drawn atop the graphics so they are
-   more consistently visible.
-   * Consider making hit direction optional when `sestats` is used.
-   * Accept contrast_names as input, instead of requiring an `sedesign` object.
-   * Consider using grid graphics with
-   with the `units="snpc"` pattern to maintain fixed aspect ratio:
-    ```R
-    pushViewport(
-    viewport(
-       x=0.5, y=0.5,
-       width=unit(min(1, diff(xlim)/diff(ylim)), "snpc"),
-       height=unit(min(1, diff(ylim)/diff(xlim)), "snpc"),
-       xscale=xlim,
-       yscale=ylim))
-    ```
-   * Consider drawing boxes which reflect the `groupedAxis()` grouped
-   regions along each axis, which may involve slightly nested boxes.
-   It may be useful to shade the boxes light grey.
+   * DONE. Consider making hit direction optional when `sestats` is used.
 
 ## 27jun2023
 

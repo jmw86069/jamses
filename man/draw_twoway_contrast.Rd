@@ -27,7 +27,7 @@ draw_twoway_contrast(
   twoway_label_font = label_font,
   twoway_position = 0.5,
   twoway_lwd = 5,
-  contingency = c("loop", "scrunch"),
+  contingency = c(none = "none", half = "scrunch", full = "loop"),
   draw_oneway = TRUE,
   drawing_order = c("two-two-one", "one-two", "two-one-two"),
   do_plot = TRUE,
@@ -125,7 +125,60 @@ the font size of the text label.}
 \item 4 = bold, italic font
 }}
 
-\item{do_plot}{\code{logical} indicating whether to draw the block arrow.}
+\item{twoway_position}{\code{numeric} value between 0 and 1 that places
+the twoway label at this relative position along the two-way connector.}
+
+\item{twoway_lwd}{\code{numeric} line width for the two-way connector.}
+
+\item{contingency}{\code{character} string used to determine how to handle
+the two-way connector in three practical scenarios. This argument
+is expected to have length 3 with the following names, and is recycled
+to this length as necesary:
+\itemize{
+\item \code{"none"}: the bezier control points are sufficiently distant
+that they do not cross the halfway line between contrasts.
+\item \code{"half"}: the bezier control point crosses the halfway line between
+contrasts, but not the opposing contrast line. "Respect the halfieway."
+\item \code{"full"}: the bezier control point crosses the opposing contrast line,
+which usually occurs when the two contrasts are rendered close to
+one another.
+}
+
+The value is used to define a contingency plan for each scenario above:
+\itemize{
+\item \code{"none"}: the control points are used as-is with no contingency.
+\item \code{"scrunch"}: the \code{extend_angle} is reduced to 1/3, and the
+control points are used as-is. This effectively makes the "S" swoop
+narrower, so it fits between the two contrasts.
+\item \code{"loop"}: this option causes the two-way connector to loop from
+contrast 1, around the far side of contrast 2.
+The \code{extend_angle} and \code{extend_ex} is increased for contrast 1,
+the \code{extend_angle} for contrast 2 is reversed, so the
+bezier curve aims away from contrast 1.
+When two contrasts are extremely close together, this technique
+is the best method to make the line visible.
+This option may provide suitable two-way labels which are not
+obscured by intervening one-way conrasts.
+}}
+
+\item{draw_oneway}{\code{logical} indicating whether the one-way contrast
+should be rendered, for example if the one-way contrast was
+already rendered as part of another two-way contrast.}
+
+\item{drawing_order}{\code{character} string indicating the overall order
+for drawing plot features:
+\itemize{
+\item \code{"two-two-one"}: draws the two-way border, two-way fill, then one-way
+contrasts.
+\item \code{"one-two"}: draws the one-way contrasts, the two-way border,
+then two-way fill.
+\item \code{"two-one-two"}: draws the two-way border, one-way contrasts, then
+the two-way fill.
+}}
+
+\item{do_plot}{\code{logical} indicating whether to render the results in
+the active graphics device, or when \code{do_plot=FALSE} only the underlying
+data is returned with no plotting.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
@@ -166,6 +219,11 @@ connect directly to the contrast at the ends of the block arrows.
 \examples{
 plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
 draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
+   label=c("contrast one", "contrast two"))
+
+plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
+draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
+   contingency=c("loop"),
    label=c("contrast one", "contrast two"))
 
 plot(NULL, xlim=c(0, 5), ylim=c(0, 6), asp=1, xlab="", ylab="")
