@@ -1,3 +1,41 @@
+# jamses 0.0.47.900
+
+## updates to existing functions
+
+* `se_contrast_stats()`
+
+   * New argument `max_correlation_rows` with a maximum number of rows
+   to use when calculating `limma::duplicateCorrelation()`.
+   
+      * This process is only relevant when `block` is defined, and
+      `correlation=NULL`. In this case, `limma::lmFit() by default
+      already calls `limma::duplicateCorrelation()` to calculate
+      `correlation`. However, when there are more than 10k rows of data,
+      the process is non-linearly slow (they said quadratic) although
+      increasing number of rows does not substantially change the
+      calculated `correlation`.
+      * Therefore `max_correlation_rows=10000` limits the calculation
+      to 10,000 rows by default, substantially improving speed
+      from 10 minutes in 500k rows, down to 10 seconds.
+      
+   * New argument `voom_block_twostep=TRUE` which enables a
+   **change to previous behavior**.
+   
+      * Only relevant when `use_voom=TRUE` and `block` is defined,
+      but `correlation` is not defined.
+      * Previous behavior was to perform "one-step voom" which
+      calculated weights without the blocking factor, then calculated
+      correlation by `limma::duplicateCorrelation()` with Voom weights,
+      and blocking factor.
+      * Recommendation by `limma` authors is to run these steps twice, so
+      the second time running `voom()` will use the `block` and `correlation`
+      arguments to empower a better model fit, and more accurate `weights`
+      used subsequently by `lmFit()`. This change should improve output,
+      but will change previous results, only for count data with a blocking
+      factor, which has been fairly rare.
+      * Previous behavior can be re-enabled with `voom_block_twostep=FALSE`.
+   * Hid some verbose output.
+
 # jamses 0.0.46.900
 
 ## updates to existing functions

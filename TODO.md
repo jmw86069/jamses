@@ -1,6 +1,105 @@
 
 # TODO for jamses
 
+## 22aug2023
+
+* `se_contrast_stats()`
+
+   * For very large data volume, the method seems to take more memory than
+   absolutely necessary and could be trimmed:
+   
+      * Remove `rownames()` for `stats_dfs` and `stats_df`.
+      Row identifiers are roughly 50% the size of each `data.frame`,
+      so they should not be stored in a column and as rownames. The
+      rownames are less "safe" to R manipulation, so values will be
+      retained in a specific column (first column).
+      Other functions that utilize `data.frame` objects must use column
+      values and not rely upon rownames, in theory should already be true.
+      * Option to omit `stats_df`, roughly 25% overall object size.
+      Matter of fact, this object could be replaced by a function that
+      converted `stats_dfs` into `stats_df` dynamically.
+      * option to omit `stats_dfs`, roughly 75% overall object size,
+      but used to create volcano plots, and to review specific results.
+   
+   * When using `block` the process becomes substantially slower with large
+   data.
+      
+      * Description of the scenario, and supporting evidence:
+      
+         * The slow step occurs during `limma::lmFit()` when supplied with `block`
+         and when `correlation=NULL`, so it is calculated inside `lmFit()`.
+         * The actual rate-limiting step is `limma::duplicateCorrelation()`
+         which is run to determine `correlation`.
+         * In one test case with 220k rows, 30 columns, this step took 7 minutes.
+         * A subset with a random 10k rows took 15 seconds, and estimated
+         the same summary correlation value.
+         * When provided the pre-calculated `correlation` the `lmFit()` using
+         220k rows took 1.5 seconds.
+
+      * Potential workarounds:
+      
+         1. When `block` is defined, and `correlation` is not supplied,
+         calculate `correlation` using a subset of up to N rows (e.g. 10000).
+         The correlation could even be calculated 10 times using random
+         subsets of 1000 rows, then take the average.
+         The max rows could be a new argument `max_correlation_rows=10000`
+         to make this process explicit, and customizable.
+         2. The process above could be "pushed back" to any functions calling
+         `se_contrast_stats()` to avoid having an invisible difference
+         between using this function, and using `limma::lmFit()`
+   
+   * Need to store arguments such as `correlation`, and `block` alongside
+   the returned `sestats` object.
+
+* Debug why loading `jamses` causes the warning to the effect:
+`"design() has already been defined"`.
+
+## 14aug2023
+
+* `plot_sedesign()`
+
+   * Option to size block arrows by the relative number of hits?
+   * Option to define block arrow sizes as a vector, one per arrow,
+   which probably means one per contrast name.
+
+* `heatmap_se()`
+
+   * Consider option to cluster rows by stats hit matrix data. Unclear how,
+   but would be useful to sub-group hits.
+
+* `se_normalize()`: use `mcols(assays(se))`:
+
+   * Driving use case:
+   
+      * somewhere to store parameters used during analysis.
+      * `metadata(assays(se)[[1]])` cannot be used, since metadata on
+      the matrix itself is easily lost upon any sort of manipulation,
+      subsetting of the matrix.
+      * secondary use case: ability to filter for normalized data
+      
+   * upon creating a new entry in `assays(se)` it should also populate
+   `mcols(assays(se))` with columns of annotation. These are optional
+   annotations, but could be convenient for including things like
+   arguments to the methods used.
+   * Consider updating `platjam` data import methods similarly.
+   * Suggested annotation names:
+   
+      * `"method"`: name of the normalization method applied
+      * `"params"`: `list` of parameters for the given method,
+      obtained from the argument with `params[[method]]`
+      * `"parent_assay_name"`: may not be practical. The `assay_name`
+      can be edited, which would invalidate the relationship.
+      * `preferred`: optional flag to indicate the preferred `assay_name`
+      for downstream analysis?
+
+* `se_normalize()`: change default `output_sep="_"` to `output_sep="."`?
+
+   * benefit is that method names (containing underscores) are more
+   easily distinguished when concatenated:
+   
+      * `"jammanorm.limma_batch_adjust.totalIntensity"` versus
+      * `"jammanorm_limma_batch_adjust_totalIntensity"`
+
 ## 27jul2023
 
 * Remaining TODO for `plot_sedesign()`:

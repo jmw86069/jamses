@@ -25,6 +25,7 @@ se_contrast_stats(
   isamples = NULL,
   enforce_design = TRUE,
   use_voom = FALSE,
+  voom_block_twostep = TRUE,
   posthoc_test = c("none", "DEqMS"),
   posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   weights = NULL,
@@ -35,8 +36,10 @@ se_contrast_stats(
   collapse_by_gene = FALSE,
   block = NULL,
   correlation = NULL,
+  max_correlation_rows = 10000,
   normgroup = NULL,
   do_normgroups = TRUE,
+  seed = 123,
   verbose = FALSE,
   ...
 )
@@ -133,6 +136,22 @@ and corresponding contrasts as relevant.}
 analysis steps. When applied, data is not scaled using \code{limma:voom()},
 instead uses data as supplied.}
 
+\item{voom_block_twostep}{\code{logical} indicating whether to perform the
+"two-step" voom methodology when \code{block} is also supplied.
+This workflow is recommended by voom authors:
+\itemize{
+\item call \code{voom()} first without \code{block} to determine overall \code{weights}
+\item call \code{duplicateCorrelation()} if necessary, using the voom \code{weights},
+and the \code{block} argument, to calculate \code{correlation}.
+\item call \code{voom()} again using the \code{correlation}, \code{weights}, and \code{block}
+arguments. This produces improved \code{weights}.
+\item call \code{duplicateCorrelation()} again with the updated \code{weights},
+and \code{block} in order to calculate improved \code{correlation}.
+\item Then proceed with \code{lmFit()} using appropriate \code{weights} using
+\code{block}; and appropriate \code{correlation} also using the proper \code{weights}
+and \code{block}.
+}}
+
 \item{posthoc_test}{\code{character} string indicating an optional post-hoc
 test to apply.
 \itemize{
@@ -204,6 +223,17 @@ In future, \code{block} will accept \code{colnames(colData(se))}.}
 \item{correlation}{optional inter-duplicate or inter-technical
 correlation matrix passed to \code{limma::lmFit()}.}
 
+\item{max_correlation_rows}{\code{numeric} maximum number of rows in
+\code{imatrix} to use when calling \code{limma::duplicateCorrelation()}.
+This process only occurs when \code{block} is defined, \code{correlation=NULL}
+and \code{nrow(imatrix) > max_correlation_rows}. In this scenario,
+a random subset of rows are used to calculate \code{correlation},
+then that \code{correlation} is used for \code{limma::lmFit()}. This
+process is intended to help very large data volumes, where
+the speed of \code{limma::duplicateCorrelation()} is impacted in
+quadratic manner by increasing number of rows, while also not
+improving the summary correlation value.}
+
 \item{normgroup}{\code{character} or \code{factor} vector with length
 \code{ncol(se)} or \code{length(isamples)} when \code{isamples} is defined.
 Values define independent normalization groups, which performs
@@ -228,6 +258,11 @@ This argument may be removed in future, with recommendation to use
 \code{normgroup=NULL} to disable normalization group processing.
 Note that when \code{normgroup=NULL} the output should be identical
 with \code{do_normgroups=TRUE} and \code{do_normgroups=FALSE}.}
+
+\item{seed}{\code{numeric} used to set a random seed with \code{set.seed()} for
+reproducibility. Use \code{seed=NULL} to avoid setting a random seed.
+Note this action will only affect downstream functions that
+employ some form of randomization.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

@@ -128,6 +128,19 @@
 #' @param use_voom `logical` indicating whether to apply `limma-voom`
 #'    analysis steps. When applied, data is not scaled using `limma:voom()`,
 #'    instead uses data as supplied.
+#' @param voom_block_twostep `logical` indicating whether to perform the
+#'    "two-step" voom methodology when `block` is also supplied.
+#'    This workflow is recommended by voom authors:
+#'    * call `voom()` first without `block` to determine overall `weights`
+#'    * call `duplicateCorrelation()` if necessary, using the voom `weights`,
+#'    and the `block` argument, to calculate `correlation`.
+#'    * call `voom()` again using the `correlation`, `weights`, and `block`
+#'    arguments. This produces improved `weights`.
+#'    * call `duplicateCorrelation()` again with the updated `weights`,
+#'    and `block` in order to calculate improved `correlation`.
+#'    * Then proceed with `lmFit()` using appropriate `weights` using
+#'    `block`; and appropriate `correlation` also using the proper `weights`
+#'    and `block`.
 #' @param posthoc_test `character` string indicating an optional post-hoc
 #'    test to apply.
 #'    * `"none"`: applies `limma::eBayes()` by default, the moderated t-test.
@@ -183,6 +196,16 @@
 #'    In future, `block` will accept `colnames(colData(se))`.
 #' @param correlation optional inter-duplicate or inter-technical
 #'    correlation matrix passed to `limma::lmFit()`.
+#' @param max_correlation_rows `numeric` maximum number of rows in
+#'    `imatrix` to use when calling `limma::duplicateCorrelation()`.
+#'    This process only occurs when `block` is defined, `correlation=NULL`
+#'    and `nrow(imatrix) > max_correlation_rows`. In this scenario,
+#'    a random subset of rows are used to calculate `correlation`,
+#'    then that `correlation` is used for `limma::lmFit()`. This
+#'    process is intended to help very large data volumes, where
+#'    the speed of `limma::duplicateCorrelation()` is impacted in
+#'    quadratic manner by increasing number of rows, while also not
+#'    improving the summary correlation value.
 #' @param normgroup `character` or `factor` vector with length
 #'    `ncol(se)` or `length(isamples)` when `isamples` is defined.
 #'    Values define independent normalization groups, which performs
@@ -206,6 +229,10 @@
 #'    `normgroup=NULL` to disable normalization group processing.
 #'    Note that when `normgroup=NULL` the output should be identical
 #'    with `do_normgroups=TRUE` and `do_normgroups=FALSE`.
+#' @param seed `numeric` used to set a random seed with `set.seed()` for
+#'    reproducibility. Use `seed=NULL` to avoid setting a random seed.
+#'    Note this action will only affect downstream functions that
+#'    employ some form of randomization.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
@@ -233,6 +260,7 @@ se_contrast_stats <- function
  isamples=NULL,
  enforce_design=TRUE,
  use_voom=FALSE,
+ voom_block_twostep=TRUE,
  posthoc_test=c("none",
     "DEqMS"),
  posthoc_args=list(DEqMS=list(
@@ -250,8 +278,10 @@ se_contrast_stats <- function
  collapse_by_gene=FALSE,
  block=NULL,
  correlation=NULL,
+ max_correlation_rows=10000,
  normgroup=NULL,
  do_normgroups=TRUE,
+ seed=123,
  verbose=FALSE,
  ...)
 {
@@ -400,7 +430,100 @@ se_contrast_stats <- function
             }
 
             #######################################################
+            ## Calculate correlation when necessary
+            ## - block is defined but not correlation, calculate correlation
+            ## - Note that voom weights are included here if they were calculated
+            calculate_correlation <- FALSE;
+            if (length(block) > 0 &&
+                  length(correlation) == 0) {
+               calculate_correlation <- TRUE;
+            }
+            if (TRUE %in% calculate_correlation) {
+               # use a random subset of rows to calculate correlation
+               if (length(max_correlation_rows) == 1 &&
+                     max_correlation_rows > 0 &&
+                     nrow(imatrix_ng) > max_correlation_rows) {
+                  if (length(seed) > 0) {
+                     set.seed(head(seed, 1))
+                  }
+                  k <- sample(seq_len(nrow(imatrix_ng)),
+                     size=max_correlation_rows)
+               } else {
+                  k <- seq_len(nrow(imatrix_ng))
+               }
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "Calculating correlation using ",
+                     jamba::formatInt(length(k)),
+                     " rows.");
+               }
+               dupcor <- limma::duplicateCorrelation(
+                  object=imatrix_ng[k, , drop=FALSE],
+                  design=idesign,
+                  weights=weights[k, , drop=FALSE],
+                  block=block)
+               correlation <- dupcor$consensus;
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "correlation: ", correlation);
+               }
+            }
+
+            #######################################################
+            ## Re-calculate voom weights only when block is defined
+            ## - Note it uses voom weights, and correlation
+            if (length(unique(block)) > 1 &&
+                  length(correlation) > 0 &&
+                  TRUE %in% voom_block_twostep &&
+                  TRUE %in% use_voom) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   Re-calculating Voom weight matrix (with block).");
+               }
+               imatrix_v <- voom_jam((2^imatrix_ng)-1,
+                  design=idesign,
+                  normalize.method="none",
+                  plot=FALSE,
+                  block=block,
+                  correlation=correlation,
+                  weights=weights,
+                  verbose=verbose,
+                  ...);
+               weights <- imatrix_v$weights;
+               rownames(weights) <- rownames(imatrix_ng);
+               colnames(weights) <- colnames(imatrix_ng);
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "   Determined Voom weight matrix.");
+               }
+               # Now optionally re-calculate correlation
+               if (TRUE %in% calculate_correlation) {
+                  if (verbose) {
+                     jamba::printDebug("se_contrast_stats(): ",
+                        "Re-calculating correlation using updated Voom weights, ",
+                        jamba::formatInt(length(k)),
+                        " rows.");
+                  }
+                  dupcor <- jamba::call_fn_ellipsis(
+                     limma::duplicateCorrelation,
+                     object=imatrix_ng[k, , drop=FALSE],
+                     design=idesign,
+                     weights=weights[k, , drop=FALSE],
+                     block=block,
+                     ...)
+                  correlation <- dupcor$consensus;
+                  if (verbose) {
+                     jamba::printDebug("se_contrast_stats(): ",
+                        "Updated correlation: ", correlation);
+                  }
+               }
+            }
+
+            #######################################################
             ## Optionally convert zero (or less than zero) to NA
+            # - TODO: Stress test this section with sparse data
+            #   to ensure this section does not break two-step Voom
+            #   by creating missing data.
             if (length(floor_min) == 1 &&
                   !is.na(floor_min) &&
                   any(!is.na(imatrix_ng) &
@@ -450,18 +573,18 @@ se_contrast_stats <- function
                rlr <- normgroup_stats[[rlr_name]];
                rlr$stats_dfs;
             }));
-         if (verbose) {
+         if (verbose > 1) {
             jamba::printDebug("se_contrast_stats(): ",
                "ssdim(normgroup_stats):");
             print(jamba::ssdim(normgroup_stats));
          }
          rlr_result_stats_df_colnames <- unique(unlist(lapply(rlr_result_stats_dfs, colnames)));
-         if (verbose) {
+         if (verbose > 1) {
             jamba::printDebug("se_contrast_stats(): ",
                "sdim(rlr_result_stats_dfs):");
             print(jamba::sdim(rlr_result_stats_dfs));
-            print(head(head(se_contrast_stats, 1)[[1]], 3));
-            print(head(tail(se_contrast_stats, 1)[[1]], 3));
+            # print(head(head(se_contrast_stats, 1)[[1]], 3));
+            # print(head(tail(se_contrast_stats, 1)[[1]], 3));
          }
          rlr_result_stats_df <- jamba::mergeAllXY(rlr_result_stats_dfs)
          # rlr_result_stats_df <- rlr_result_stats_df[,rlr_result_stats_df_colnames, drop=FALSE];
@@ -482,7 +605,10 @@ se_contrast_stats <- function
                na_value=na_value,
                ...);
          }
-         ## Optionally determine voom weights prior to running limma
+
+         #######################################################
+         ## Determine voom weights prior to running limma
+         ## - note no blocking factor is included here
          if (use_voom) {
             if (verbose) {
                jamba::printDebug("se_contrast_stats(): ",
@@ -505,6 +631,9 @@ se_contrast_stats <- function
 
          #######################################################
          ## Optionally convert zero (or less than zero) to NA
+         # - TODO: Stress test this section with sparse data
+         #   to ensure this section does not break two-step Voom
+         #   by creating missing data.
          if (length(floor_min) == 1 &&
                !is.na(floor_min) &&
                any(!is.na(imatrix) &
@@ -519,6 +648,89 @@ se_contrast_stats <- function
             }
             to_replace <- (!is.na(imatrix) & imatrix <= floor_min);
             imatrix[to_replace] <- floor_value;
+         }
+
+         #######################################################
+         ## Calculate correlation when necessary
+         ## - block is defined but not correlation, calculate correlation
+         ## - Note that voom weights are included here if they were calculated
+         calculate_correlation <- FALSE;
+         if (length(block) > 0 &&
+               length(correlation) == 0) {
+            calculate_correlation <- TRUE;
+         }
+         if (TRUE %in% calculate_correlation) {
+            # use a random subset of rows to calculate correlation
+            if (length(max_correlation_rows) == 1 &&
+                  max_correlation_rows > 0 &&
+                  nrow(imatrix) > max_correlation_rows) {
+               if (length(seed) > 0) {
+                  set.seed(head(seed, 1))
+               }
+               k <- sample(seq_len(nrow(imatrix)),
+                  size=max_correlation_rows)
+            } else {
+               k <- seq_len(nrow(imatrix))
+            }
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "Calculating correlation using ",
+                  jamba::formatInt(length(k)),
+                  " rows.");
+            }
+            dupcor <- jamba::call_fn_ellipsis(
+               limma::duplicateCorrelation,
+               object=imatrix[k, , drop=FALSE],
+               design=design,
+               weights=weights[k, , drop=FALSE],
+               block=block,
+               ...)
+            correlation <- dupcor$consensus;
+         }
+
+         #######################################################
+         ## Re-calculate voom weights only when block is defined
+         ## - Note it uses voom weights, and correlation
+         if (length(unique(block)) > 1 &&
+               TRUE %in% voom_block_twostep &&
+               TRUE %in% use_voom) {
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Re-calculating Voom weight matrix (with block).");
+            }
+            imatrix_v <- voom_jam((2^imatrix)-1,
+               design=idesign,
+               normalize.method="none",
+               plot=FALSE,
+               block=block,
+               correlation=correlation,
+               weights=weights,
+               verbose=verbose,
+               ...);
+            weights <- imatrix_v$weights;
+            rownames(weights) <- rownames(imatrix);
+            colnames(weights) <- colnames(imatrix);
+            if (verbose) {
+               jamba::printDebug("se_contrast_stats(): ",
+                  "   Determined Voom weight matrix.");
+            }
+            # Now optionally re-calculate correlation
+            if (TRUE %in% calculate_correlation) {
+               if (verbose) {
+                  jamba::printDebug("se_contrast_stats(): ",
+                     "Re-calculating correlation using updated Voom weights, ",
+                     jamba::formatInt(length(k)),
+                     " rows.");
+               }
+               dupcor <- jamba::call_fn_ellipsis(
+                  limma::duplicateCorrelation,
+                  object=imatrix[k, , drop=FALSE],
+                  design=design,
+                  weights=weights[k, , drop=FALSE],
+                  block=block,
+                  ...)
+               correlation <- dupcor$consensus;
+            }
          }
 
          #######################################################
@@ -582,7 +794,7 @@ se_contrast_stats <- function
          });
       });
    });
-   if (verbose) {
+   if (verbose > 1) {
       jamba::printDebug("se_contrast_stats(): ",
          "ssdim(stats_hits[[1]]):");
       print(jamba::ssdim(stats_hits[[1]]));
@@ -593,11 +805,9 @@ se_contrast_stats <- function
       gsub("[ ]+[^ ]+$", "", names(i))
    })
    all_cutoffs <- unique(unlist(all_cutoffs_list));
-   #arrayDim <- c(length(stats_hits[[1]][[1]]),
    arrayDim <- c(length(all_cutoffs),
       length(stats_hits[[1]]),
       length(stats_hits));
-   #arrayDimnames <- list(gsub("[ ]+[^ ]+$", "", names(stats_hits[[1]][[1]])),
    arrayDimnames <- list(all_cutoffs,
       names(stats_hits[[1]]),
       names(stats_hits));
@@ -608,9 +818,6 @@ se_contrast_stats <- function
       jamba::printDebug("se_contrast_stats(): ",
          "arrayDim:",
          arrayDim);
-      jamba::printDebug("se_contrast_stats(): ",
-         "arrayDimnames:");
-      print(arrayDimnames);
    }
 
    # assemble hit_array
@@ -1075,6 +1282,12 @@ voom_jam <- function
 #'    upon whether limma, limma-voom, or limma-DEqMS were used.
 #'
 #' @inheritParams ebayes2dfs
+#' @param correlation `numeric` or `NULL` passed to `limma::lmFit()`.
+#'    Note that when `block` is defined (and non-empty), and when
+#'    `correlation=NULL`, the correlation will be calculated by
+#'    calling `limma::duplicateCorrelation()`.
+#' @param seed `numeric` value used to define `set.seed()` for reproducibility.
+#'    To avoid setting seed, use `seed=NULL`.
 #'
 #' @family jamses stats
 #'
@@ -1108,6 +1321,7 @@ run_limma_replicate <- function
  posthoc_args=list(DEqMS=list(
     PSM_counts=NULL,
     fit.method="loess")),
+ seed=123,
  verbose=FALSE,
  ...)
 {
@@ -1115,6 +1329,10 @@ run_limma_replicate <- function
    posthoc_test <- match.arg(posthoc_test);
 
    # prepate ExpressionSet
+   if (verbose) {
+      jamba::printDebug("run_limma_replicate(): ",
+         "Creating ExpressionSet object.");
+   }
    imatrixES <- Biobase::ExpressionSet(assayData=imatrix,
       featureData=new("AnnotatedDataFrame",
          data=data.frame(
@@ -1125,6 +1343,10 @@ run_limma_replicate <- function
    );
 
    ## lmFit
+   if (verbose) {
+      jamba::printDebug("run_limma_replicate(): ",
+         "Performing model fit with limma::lmFit().");
+   }
    subFit1 <- limma::lmFit(imatrixES,
       design=idesign,
       weights=weights,
@@ -1135,15 +1357,15 @@ run_limma_replicate <- function
       rownames(subFit1$coefficients) <- rownames(subFit1$genes);
    }
 
-   ## Add back in the Amean values (probe means)
+   ## Add Amean values if not calculated (probe means)
    if (length(subFit1$Amean) == 0) {
+      if (verbose) {
+         jamba::printDebug("run_limma_replicate(): ",
+            "Adding Amean values since lmFit did not.");
+      }
       subFit1$Amean <- jamba::nameVector(
          rowMeans(imatrix, na.rm=TRUE),
          rownames(imatrix));
-      if (verbose) {
-         jamba::printDebug("run_limma_replicate(): ",
-            "Added Amean values since lmFit did not.");
-      }
    }
 
    ## run contrasts on the limma model
@@ -1151,8 +1373,8 @@ run_limma_replicate <- function
       jamba::printDebug("run_limma_replicate(): ",
          "Running contrasts.fit on subFit1");
    }
-   subFit2 <- limma::contrasts.fit(subFit1,
-      icontrasts);
+   subFit2 <- limma::contrasts.fit(fit=subFit1,
+      contrasts=icontrasts);
 
    ## eBayes adjustment for signal-based noise
    if (verbose) {
@@ -1260,11 +1482,12 @@ run_limma_replicate <- function
    # stats_df <- jamba::mergeAllXY(stats_dfs);
    stats_df_colnames <- unique(
       unlist(lapply(stats_dfs, colnames)));
-   stats_df <- jamba::mergeAllXY(stats_dfs);
-   stats_df <- stats_df[, stats_df_colnames, drop=FALSE];
-
-   if (length(jamba::tcount(stats_df[,1], minCount=2)) == 0) {
-      rownames(stats_df) <- stats_df[,1];
+   if (verbose) {
+      stats_df <- jamba::mergeAllXY(stats_dfs);
+      stats_df <- stats_df[, stats_df_colnames, drop=FALSE];
+      # if (length(jamba::tcount(stats_df[,1], minCount=2)) == 0) {
+      #    rownames(stats_df) <- stats_df[,1];
+      # }
    }
    # subFit4 is included below, but removed by jamba::rmNULL() when empty
    return(
@@ -1539,21 +1762,21 @@ ebayes2dfs <- function
          }
       }
       if (verbose) {
-         jamba::printDebug("ebayes2dfs(): ",
-            "cutoff_df:");
-         print(cutoff_df);
-         jamba::printDebug("ebayes2dfs(): ",
-            "int_cutoff_df:");
-         print(int_cutoff_df);
-         jamba::printDebug("ebayes2dfs(): ",
-            "cutoff_string_df:");
-         print(cutoff_string_df);
+         # jamba::printDebug("ebayes2dfs(): ",
+         #    "cutoff_df:");
+         # print(cutoff_df);
+         # jamba::printDebug("ebayes2dfs(): ",
+         #    "int_cutoff_df:");
+         # print(int_cutoff_df);
+         # jamba::printDebug("ebayes2dfs(): ",
+         #    "cutoff_string_df:");
+         # print(cutoff_string_df);
          jamba::printDebug("ebayes2dfs(): ",
             "cutoff_string:",
             cutoff_string);
-         jamba::printDebug("ebayes2dfs(): ",
-            "int_cutoff_string_df:");
-         print(int_cutoff_string_df);
+         # jamba::printDebug("ebayes2dfs(): ",
+         #    "int_cutoff_string_df:");
+         # print(int_cutoff_string_df);
          jamba::printDebug("ebayes2dfs(): ",
             "int_cutoff_string:",
             int_cutoff_string);
@@ -1959,7 +2182,7 @@ ebayes2dfs <- function
          rename_to <- gsub("^[ ]+|[ ]+$", "",
             gsub("[ \t\r\n]+", " ",
                rename_to));
-         if (verbose) {
+         if (verbose > 1) {
             jamba::printDebug("ebayes2dfs(): ",
                "rename stat columns:");
             print(data.frame(rename_from, rename_to));

@@ -27,6 +27,7 @@ run_limma_replicate(
   correlation = NULL,
   posthoc_test = c("none", "DEqMS"),
   posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
+  seed = 123,
   verbose = FALSE,
   ...
 )
@@ -50,6 +51,14 @@ which uses corresponding columns from \code{rowData(se)}.}
 \item{collapse_by_gene}{\code{logical} indicating whether to apply
 \code{collapse_stats_by_gene} which chooses one "best" exemplar per gene
 when there are multiple rows that represent the same gene.}
+
+\item{correlation}{\code{numeric} or \code{NULL} passed to \code{limma::lmFit()}.
+Note that when \code{block} is defined (and non-empty), and when
+\code{correlation=NULL}, the correlation will be calculated by
+calling \code{limma::duplicateCorrelation()}.}
+
+\item{seed}{\code{numeric} value used to define \code{set.seed()} for reproducibility.
+To avoid setting seed, use \code{seed=NULL}.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 }
