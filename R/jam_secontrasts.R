@@ -1479,16 +1479,19 @@ run_limma_replicate <- function
       } );
    }
 
-   # stats_df <- jamba::mergeAllXY(stats_dfs);
+   # produce stats_df for a merged data.frame
+   # TODO: make this section optional, it is time-consuming,
+   # and potentially more appropriate in a separate function.
    stats_df_colnames <- unique(
       unlist(lapply(stats_dfs, colnames)));
-   if (verbose) {
-      stats_df <- jamba::mergeAllXY(stats_dfs);
-      stats_df <- stats_df[, stats_df_colnames, drop=FALSE];
-      # if (length(jamba::tcount(stats_df[,1], minCount=2)) == 0) {
-      #    rownames(stats_df) <- stats_df[,1];
-      # }
-   }
+   stats_df <- NULL;
+   stats_df <- jamba::mergeAllXY(stats_dfs);
+   stats_df <- stats_df[, stats_df_colnames, drop=FALSE];
+   # 0.0.47.900: do not define rownames() since they add object.size
+   # and are not trustworthy identifiers as rownames.
+   # if (length(jamba::tcount(stats_df[,1], minCount=2)) == 0) {
+   #    rownames(stats_df) <- stats_df[,1];
+   # }
    # subFit4 is included below, but removed by jamba::rmNULL() when empty
    return(
       list(stats_df=stats_df,
