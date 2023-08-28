@@ -8,6 +8,7 @@ sedesign_to_factors(
   sedesign,
   se = NULL,
   factor_names = NULL,
+  factor_sep = "_",
   default_order = c("appearance", "mixedSort"),
   verbose = FALSE,
   ...
@@ -26,6 +27,9 @@ when the values are matched.}
 
 \item{factor_names}{\code{character} vector of colnames to use for the resulting
 design factor colnames.}
+
+\item{factor_sep}{\code{character} string with expected delimiter between
+factors, default "_", for example "WT_Treated".}
 
 \item{default_order}{\code{character} string indicating how to order factor
 levels when a colname in the factor \code{data.frame} is not a \code{factor}
@@ -73,13 +77,15 @@ idf <- data.frame(jamba::rbindList(strsplit(isamples_1, "_")))[,1:3]
 rownames(idf) <- isamples_1;
 # convert to sedesign
 sedesign <- groups_to_sedesign(idf)
+plot_sedesign(sedesign, axis1=2, axis2=3, axis3=1, label_cex=0.5)
 
 # prepare colData data.frame
 cdf <- data.frame(check.names=FALSE, stringsAsFactors=FALSE,
    jamba::rbindList(strsplit(isamples_1, "_")))
 colnames(cdf) <- c("Treatment", "Flag", "Genotype", "Rep")
-rownames(cdf) <- samples(sedesign);
+rownames(cdf) <- sedesign@samples;
 cdf
+
 # prepare assay matrix
 imatrix <- matrix(data=seq_len(nrow(cdf) * 10), ncol=nrow(cdf));
 colnames(imatrix) <- rownames(cdf);
@@ -90,22 +96,34 @@ se <- SummarizedExperiment::SummarizedExperiment(
    colData=cdf)
 
 sedesign_to_factors(sedesign, se=se)
+
+# confirm first column contains proper factor order
 sedesign_to_factors(sedesign, se=se)[,1]
 
+# demonstrate reverse order of Treatment column levels
 SummarizedExperiment::colData(se)$Treatment <- factor(
    SummarizedExperiment::colData(se)$Treatment,
    levels=c("Etop", "DMSO"))
 sedesign_to_factors(sedesign, se=se)[,1]
 
+# define Treatment column levels again
 SummarizedExperiment::colData(se)$Treatment <- factor(
    SummarizedExperiment::colData(se)$Treatment,
    levels=c("DMSO", "Etop"))
 sedesign_to_factors(sedesign, se=se)[,1]
 
-sedesign_to_factors(sedesign, factor_names=c("Treatment", "Flag", "Genotyoe"), se=se)
-sedesign_to_factors(sedesign, factor_names=c("Treatment", "Flag", "Genotyoe"), se=se)[,1]
+# provide specific colnames to use from se object
+sedesign_to_factors(sedesign,
+   se=se,
+   factor_names=c("Treatment", "Flag", "Genotyoe"))
+sedesign_to_factors(sedesign,
+   se=se,
+   factor_names=c("Treatment", "Flag", "Genotyoe"))[,1]
 
-sedesign_to_factors(sedesign, factor_names=c("Treat", "Flag", "Genotyoe"), se=se)[,1]
+# substring of colnames(colData(se)) is acceptable
+sedesign_to_factors(sedesign,
+   factor_names=c("Treat", "Flag", "Genotyoe"),
+   se=se)[,1]
 
 }
 \seealso{

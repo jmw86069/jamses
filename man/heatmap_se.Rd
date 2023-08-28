@@ -696,8 +696,9 @@ se <- SummarizedExperiment::SummarizedExperiment(
       Group=rep(c("WildType", "Dex", "MG132", "DEX+MG132"), each=nc/4)))
 
 # optionally define factor levels to force the order of labels
-colData(se)$Group <- factor(colData(se)$Group,
-   levels=unique(colData(se)$Group))
+SummarizedExperiment::colData(se)$Group <- factor(
+   SummarizedExperiment::colData(se)$Group,
+   levels=unique(SummarizedExperiment::colData(se)$Group))
 
 # basic heatmap
 hm <- heatmap_se(se)
@@ -709,8 +710,10 @@ ComplexHeatmap::draw(hm,
 
 # add specific colors
 sample_color_list <- list(
-   Group=colorjam::group2colors(unique(colData(se)$Group)),
-   Class=colorjam::group2colors(unique(rowData(se)$Class)))
+   Group=colorjam::group2colors(
+   unique(SummarizedExperiment::colData(se)$Group)),
+   Class=colorjam::group2colors(
+   unique(SummarizedExperiment::rowData(se)$Class)))
 
 heatmap_se(se,
    sample_color_list=sample_color_list)
@@ -728,7 +731,8 @@ heatmap_se(se,
 # - controlSamples
 # - control_label
 hm2 <- heatmap_se(se,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(subset(
+      SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
    column_split=c("Group"),
    column_title_rot=90,
@@ -745,7 +749,8 @@ mark_rows <- c(sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=5),
    sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=3));
 hm3 <- heatmap_se(se,
    mark_rows=mark_rows,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(
+      subset(SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
    column_split=c("Group"),
    column_title_rot=90,
@@ -764,7 +769,8 @@ sestats_list <- list(
    contrast2=setNames(sample(c(1, -1), replace=TRUE, size=50),
       sample(rownames(se), size=50)))
 hm4 <- heatmap_se(se,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(
+      subset(SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
    sestats=sestats_list,
    column_split=c("Group"),
@@ -780,7 +786,8 @@ ComplexHeatmap::draw(hm4,
 # - automatically subsets rows unless rows is defined
 sestats_im <- venndir::list2im_value(sestats_list, do_sparse=FALSE)
 hm5 <- heatmap_se(se,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(
+      subset(SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
    sestats=sestats_im,
    column_split=c("Group"),
@@ -794,9 +801,11 @@ ComplexHeatmap::draw(hm5,
 
 # custom column_names_gp
 hm6 <- heatmap_se(se,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(
+      subset(SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
-   column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+   column_names_gp=grid::gpar(col=sample_color_list$Group[
+      as.character(SummarizedExperiment::colData(se)$Group)],
       font=rep(c(1, 2, 1), c(3, 5, 24))),
    column_split=c("Group"),
    row_split=c("Class"),
@@ -810,9 +819,11 @@ ComplexHeatmap::draw(hm6,
 # correlation heatmap
 hm6corr <- heatmap_se(se,
    correlation=TRUE,
-   controlSamples=rownames(subset(colData(se), Group \%in\% "WildType")),
+   controlSamples=rownames(
+      subset(SummarizedExperiment::colData(se), Group \%in\% "WildType")),
    control_label="vs WildType",
-   column_names_gp=grid::gpar(col=sample_color_list$Group[as.character(colData(se)$Group)],
+   column_names_gp=grid::gpar(col=sample_color_list$Group[
+      as.character(SummarizedExperiment::colData(se)$Group)],
       font=rep(c(1, 2, 1), c(3, 5, 24))),
    column_split=c("Group"),
    sample_color_list=sample_color_list)

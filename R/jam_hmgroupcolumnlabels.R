@@ -422,10 +422,10 @@ heatmap_column_group_labels <- function
                lwd=group_line_lwd,
                col="black"),
             default.units="native",
-            x=unit.c(
+            x=grid::unit.c(
                loc1_l$x + group_line_buffer,
                loc1_r$x - group_line_buffer),
-            y=unit.c(loc2_t$y, loc2_b$y) + grid::unit(2, "mm"))
+            y=grid::unit.c(loc2_t$y, loc2_b$y) + grid::unit(2, "mm"))
       }
 
       # box around heatmap

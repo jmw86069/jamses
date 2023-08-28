@@ -501,38 +501,44 @@ setMethod("contrastnames<-",
    }
 )
 
-setGeneric("design", function(object) {standardGeneric("design")})
+# setGeneric("design", function(object) {standardGeneric("design")})
+# setGeneric("design", function(object, ...) {standardGeneric("design")})
 
 #' @import BiocGenerics
 #' @export
 setMethod("design",
    signature=c(object="SEDesign"),
-   definition=function(object) {
+   definition=function(object, ...) {
       object@design;
    }
 )
 
 #setGeneric("design<-", function(object) {standardGeneric("design<-")})
 
-#' @import BiocGenerics
+#' @importFrom BiocGenerics design
 #' @export
 setMethod("design<-",
    signature=c(object="SEDesign",
       value="matrix"),
-   definition=function(object, value) {
+   definition=function(object, ..., value) {
       object@design <- value;
       validate_sedesign(object);
    }
 )
 
+# S4 generic to dispatch S3 classes
+setGeneric("contrasts")
 
 #' @export
 setMethod("contrasts",
    signature=c(x="SEDesign"),
-   definition=function(x) {
+   definition=function(x, contrasts=TRUE, sparse=FALSE) {
       x@contrasts;
    }
 )
+
+# S4 generic to dispatch S3 classes
+setGeneric("contrasts<-")
 
 #' @export
 setMethod("contrasts<-",

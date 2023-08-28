@@ -326,6 +326,169 @@ applicable.
 A subset of genes (\code{rownames(se)}) or samples (\code{colnames(se)}) can
 be defined, to restrict calculations to use only the subset data.
 }
+\examples{
+set.seed(123)
+expr <- rnorm(20) + 7;
+noise <- rnorm(120) / 5;
+fold <- rnorm(20) / 2.5;
+m <- matrix(expr + noise, ncol=6);
+for (i in 4:6) {
+   m[,i] <- m[,i] + fold;
+}
+# m <- matrix(rnorm(120)/2 + 5, ncol=6);
+colnames(m) <- paste0(rep(c("Vehicle", "Treated"), each=3), 1:3)
+rownames(m) <- paste0("row", seq_len(20))
+# simulate some "hits"
+m[1, 4:6] <- m[1, 4:6] + 2
+m[2, 4:6] <- m[2, 4:6] + 1.5
+m[3, 4:6] <- m[3, 4:6] - 1.3
+# create SummarizedExperiment
+se <- SummarizedExperiment::SummarizedExperiment(
+   assays=list(counts=m),
+   colData=data.frame(sample=colnames(m),
+   group=factor(rep(c("Vehicle", "Treated"), each=3),
+      c("Vehicle", "Treated"))),
+   rowData=data.frame(measurement=rownames(m)))
+
+# assign colors
+sample_color_list <- platjam::design2colors(se)
+
+# heatmap
+heatmap_se(se, sample_color_list=sample_color_list)
+
+# create SEDesign
+sedesign <- groups_to_sedesign(se, group_colnames="group")
+
+# plot the design and contrasts
+plot_sedesign(sedesign)
+
+# limma contrasts
+sestats <- se_contrast_stats(se=se,
+   sedesign=sedesign,
+   assay_names="counts")
+
+# print data.frame summary of hits
+sestats_to_df(sestats)
+
+# plot the design with number of hits labeled
+plot_sedesign(sedesign, sestats=sestats)
+
+# heatmap with hits
+heatmap_se(se,
+   sample_color_list=sample_color_list,
+   sestats=sestats)
+
+# review stats table
+stats_df <- sestats$stats_dfs$counts[["Treated-Vehicle"]]
+head(stats_df)
+
+# volcano plot for one contrast
+jamma::volcano_plot(stats_df)
+
+###############################
+# simulate a two-way model
+adjust <- rnorm(20);
+new_fold <- rnorm(20);
+se2 <- cbind(se, se)
+groups2 <- paste0(rep(c("WT", "KO"), each=6),
+   "_",
+   SummarizedExperiment::colData(se)$group)
+groups2 <- factor(groups2, levels=unique(groups2))
+colnames(se2) <- paste0(groups2, 1:3)
+SummarizedExperiment::colData(se2)$sample <- colnames(se2);
+SummarizedExperiment::colData(se2)$group <- groups2;
+SummarizedExperiment::colData(se2)$genotype <- jamba::gsubOrdered("_.+", "",
+   SummarizedExperiment::colData(se2)$group)
+SummarizedExperiment::colData(se2)$treatment <- jamba::gsubOrdered("^.+_", "",
+   SummarizedExperiment::colData(se2)$group)
+SummarizedExperiment::assays(se2)$counts[,7:12] <- (
+   SummarizedExperiment::assays(se2)$counts[,7:12] + adjust)
+SummarizedExperiment::assays(se2)$counts[,10:12] <- (
+   SummarizedExperiment::assays(se2)$counts[,10:12] + new_fold)
+
+# assign colors
+sample_color_list2 <- platjam::design2colors(se2,
+   class_colnames="genotype",
+   color_sub=c(
+      Vehicle="palegoldenrod",
+      Treated="firebrick4"),
+   group_colnames="group")
+
+# heatmap
+hm2a <- heatmap_se(se2,
+   sample_color_list=sample_color_list2,
+   controlSamples=1:3,
+   center_label="versus WT_Vehicle",
+   column_title_rot=60,
+   row_cex=0.4,
+   column_cex=0.5,
+   column_title_gp=grid::gpar(fontsize=8),
+   column_split="group")
+ComplexHeatmap::draw(hm2a, column_title=attr(hm2a, "hm_title"), merge_legends=TRUE)
+
+# heatmap centered by genotype
+hm2b <- heatmap_se(se2,
+   sample_color_list=sample_color_list2,
+   controlSamples=c(1:3, 7:9),
+   control_label="versus vehicle",
+   column_gap=grid::unit(c(1, 3, 1), "mm"),
+   centerby_colnames="genotype",
+   column_title_rot=60,
+   row_cex=0.4,
+   column_cex=0.5,
+   column_title_gp=grid::gpar(fontsize=8),
+   column_split="group")
+ComplexHeatmap::draw(hm2b, column_title=attr(hm2b, "hm_title"), merge_legends=TRUE)
+
+# create SEDesign
+sedesign2 <- groups_to_sedesign(se2, group_colnames="group")
+
+# plot the design and contrasts
+plot_sedesign(sedesign2, label_cex=0.7)
+# note the two-way contrast can be flipped
+plot_sedesign(sedesign2, flip_twoway=TRUE, label_cex=0.7)
+
+# limma contrasts
+sestats2 <- se_contrast_stats(se=se2,
+   sedesign=sedesign2,
+   assay_names="counts")
+
+# print data.frame summary of hits
+sestats_to_df(sestats2)
+
+# plot the design with number of hits labeled
+plot_sedesign(sedesign2, sestats=sestats2, label_cex=0.7)
+
+# heatmap with hits
+hm2hits <- heatmap_se(se2,
+   sample_color_list=sample_color_list2,
+   sestats=sestats2,
+   controlSamples=c(1:3, 7:9),
+   column_gap=grid::unit(c(1, 3, 1), "mm"),
+   control_label="versus vehicle",
+   centerby_colnames="genotype",
+   row_split=3,
+   row_cex=0.4,
+   column_title_rot=60,
+   column_cex=0.5,
+   column_title_gp=grid::gpar(fontsize=8),
+   column_split="group")
+ComplexHeatmap::draw(hm2hits,
+   column_title=attr(hm2hits, "hm_title"),
+   merge_legends=TRUE)
+
+# venn diagram
+hit_list <- hit_array_to_list(sestats2,
+   contrast_names=c(1:2))
+jamba::sdim(hit_list);
+# names(hit_list) <- gsub(":", ",<br>\n", contrast2comp(names(hit_list)))
+# vo <- venndir::venndir(hit_list, expand_fraction=0.1)
+# venndir::venndir_legender(venndir_out=vo, setlist=hit_list)
+
+# vo <- venndir::venndir(hit_list, expand_fraction=0.1, proportional=TRUE)
+# venndir::venndir_legender(venndir_out=vo, setlist=hit_list)
+
+}
 \seealso{
 Other jamses stats: 
 \code{\link{ebayes2dfs}()},

@@ -154,59 +154,92 @@
 #' igroups <- factor(igroups, levels=unique(igroups));
 #' igroups;
 #'
-#' condes <- groups_to_sedesign(igroups);
-#' design(condes);
-#' contrasts(condes);
+#' sedesign <- groups_to_sedesign(igroups);
+#' design(sedesign);
+#' contrasts(sedesign);
 #'
-#' # now you can visualize the samples used in each contrast
-#' iDesignL$idesign %*%  iDesignL$icontrasts;
+#' # plot the design and contrasts
+#' plot_sedesign(sedesign)
 #'
-#' # you can adjust the order of factor levels per comparison
-#' groups_to_sedesign(as.character(iGroups))$contrastName
+#' # the two-way contrasts can be visibly flipped, since they are equivalent
+#' plot_sedesign(sedesign, flip_twoway=TRUE)
 #'
-#' # make "WT" the first control term
-#' groups_to_sedesign(as.character(iGroups), pre_control_terms=c("WT"), factor_order=2:1)$contrastName
+#' # the design can be subset by sample
+#' all_samples <- samples(sedesign)
+#' subset_samples1 <- all_samples[-1:-3];
+#' plot_sedesign(sedesign[subset_samples1, ])
+#'
+#' # the group n=# replicates are updated
+#' subset_samples2 <- all_samples[c(-1, -6, -11)];
+#' plot_sedesign(sedesign[subset_samples2, ])
+#'
+#' # The design * contrast matrix can be displayed in full
+#' design(sedesign) %*%  contrasts(sedesign);
+#'
+#' # make "KO" the control term instead of "WT"
+#' contrast_names(groups_to_sedesign(igroups, pre_control_terms=c("KO")))
+#'
+#' # change the order of factors compared
+#' contrast_names(groups_to_sedesign(igroups, factor_order=2:1))
 #'
 #' # prevent comparisons of WT to WT, or KO to KO
-#' groups_to_sedesign(as.character(iGroups),
+#' sedesign_2 <- groups_to_sedesign(as.character(igroups),
 #'    remove_pairs=list(c("WT"), c("KO")))
+#' contrast_names(sedesign_2)
+#' plot_sedesign(sedesign_2)
+#'
+#' # prevent comparisons of Treated to Treated, or Control to Control
+#' sedesign_3 <- groups_to_sedesign(as.character(igroups),
+#'    remove_pairs=list(c("Treated"), c("Control")))
+#' contrast_names(sedesign_3)
+#' plot_sedesign(sedesign_3)
 #'
 #' # input as a data.frame with ordered factor levels
 #' ifactors <- data.frame(Genotype=factor(c("WT","WT","KO","KO"),
 #'    levels=c("WT","KO")),
 #'    Treatment=factor(c("Treated","Control"),
 #'       levels=c("Control","Treated")))
+#' # not necessary, but define rownames
+#' rownames(ifactors) <- jamba::pasteByRow(ifactors);
 #' ifactors;
-#' groups_to_sedesign(ifactors)
+#' contrast_names(groups_to_sedesign(ifactors))
+#' plot_sedesign(groups_to_sedesign(ifactors))
 #'
+#' # you can still override factor levels with pre_control_terms
+#' plot_sedesign(groups_to_sedesign(ifactors, pre_control_terms=c("KO")))
 #'
-#' # Again remove WT-WT and KO-KO contrasts
-#' groups_to_sedesign(ifactors,
-#'    remove_pairs=list(c("WT"), c("KO")))
+#' # input as design matrix
+#' design_matrix <- design(groups_to_sedesign(ifactors))
+#' design_matrix
+#' contrast_names(groups_to_sedesign(design_matrix))
 #'
-#' # demonstrating default_order "asis"
+#' # again the "KO" group can be the control by using pre_control_terms
+#' contrast_names(groups_to_sedesign(design_matrix, pre_control_terms="KO"))
+#'
+#' # default_order="asis"
 #' # contrasts show A-B, because B appears fist
 #' # contrasts show Untreated-Treated because Treated appears first
 #' df_test <- data.frame(
 #'    set=c("B", "B", "A", "A"),
 #'    treat=c("Treated", "Untreated"))
-#' groups_to_sedesign(df_test)
-#' groups_to_sedesign(jamba::pasteByRow(df_test))
+#' plot_sedesign(groups_to_sedesign(df_test))
+#' plot_sedesign(groups_to_sedesign(jamba::pasteByRow(df_test)))
 #'
-#' # demonstrating default_order "sort_samples"
+#' # default_order="sort_samples"
 #' # contrasts show B-A, because A is sorted first
 #' # contrasts show Treated-Untreated because sort_samples()
 #' #    determines "Untreated" is a preferred control term
-#' groups_to_sedesign(df_test,
-#'    default_order="sort_samples")
-#' groups_to_sedesign(jamba::pasteByRow(df_test),
-#'    default_order="sort_samples")
+#' plot_sedesign(groups_to_sedesign(df_test,
+#'    default_order="sort_samples"))
 #'
-#' # demonstrating default_order "mixedSort"
+#' # default_order="mixedSort"
 #' # contrasts show B-A, because A is sorted first
 #' # contrasts show Untreated-Treated because Treated is sorted first
-#' groups_to_sedesign(df_test,
-#'    default_order="mixedSort")
+#' plot_sedesign(groups_to_sedesign(df_test,
+#'    default_order="mixedSort"))
+#' plot_sedesign(groups_to_sedesign(df_test,
+#'    default_order="mixedSort",
+#'    pre_control_terms=c("Untreated")))
 #'
 #' @export
 groups_to_sedesign <- function
@@ -322,15 +355,16 @@ groups_to_sedesign <- function
             "ifactors from SummarizedExperiment input:");
          print(ifactors);
       }
-   } else if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
+   }
+   if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
          ncol(ifactors) == 1) {
       ifactors <- jamba::nameVector(ifactors[,1], rownames(ifactors));
    }
 
    if (jamba::igrepHas("factor|character", class(ifactors))) {
       #####################################################
-      ## Vector input
-      ##
+      # Vector input
+      #
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
             indent=(current_depth-1)*5,
@@ -362,9 +396,9 @@ groups_to_sedesign <- function
          }
       }
       if (jamba::igrepHas("factor", class(ifactors))) {
-         ## Convert factor to a data.frame where each column
-         ## is a factor with ordered levels that match the order
-         ## the factor levels appear in the original factor.
+         # Convert factor to a data.frame where each column
+         # is a factor with ordered levels that match the order
+         # the factor levels appear in the original factor.
          iFactorsL <- strsplitOrdered(ifactors, factor_sep);
          names(iFactorsL) <- names(ifactors);
          iFactorsLevels <- levels(iFactorsL[[1]]);
@@ -375,29 +409,56 @@ groups_to_sedesign <- function
                   factor_sep)));
          rownames(ifactors) <- names(iFactorsL);
          for (i in seq_len(ncol(ifactors))) {
+            factor_levels <- intersect(iFactorsLevels, ifactors[,i]);
+            if (length(pre_control_terms) > 0) {
+               # when pre_control_terms are supplied, sort them first
+               factor_levels <- unique(c(
+                  intersect(pre_control_terms, factor_levels),
+                  factor_levels))
+            }
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "factor_levels (", i, "): ", factor_levels);
+            }
             ifactors[,i] <- factor(ifactors[,i],
-               levels=intersect(iFactorsLevels, ifactors[,i]));
+               levels=factor_levels);
          }
       } else {
-         ## Convert to data.frame
+         # split into data.frame
          ifactors <- data.frame(check.names=FALSE,
             stringsAsFactors=FALSE,
             jamba::rbindList(strsplit(ifactors, factor_sep)));
-         ## Convert each column to factor for proper sort order
+         # Convert each column to factor for proper sort order
          for (iCol in seq_len(ncol(ifactors))) {
             if ("asis" %in% default_order) {
-               ifactors[,iCol] <- factor(ifactors[,iCol],
-                  levels=unique(ifactors[,iCol]));
+               factor_levels <- unique(ifactors[,iCol]);
+               if (length(pre_control_terms) > 0) {
+                  # when pre_control_terms are supplied, sort them first
+                  factor_levels <- unique(c(
+                     intersect(pre_control_terms, factor_levels),
+                     factor_levels))
+               }
             } else if ("sort_samples" %in% default_order) {
-               ifactors[,iCol] <- factor(ifactors[,iCol],
-                  levels=sort_samples(unique(ifactors[,iCol]),
-                     pre_control_terms=pre_control_terms,
-                     ...));
+               factor_levels <- sort_samples(unique(ifactors[[iCol]]),
+                  pre_control_terms=pre_control_terms,
+                  ...)
             } else {
-               ifactors[,iCol] <- factor(ifactors[,iCol],
-                  levels=jamba::mixedSort(unique(ifactors[,iCol]),
-                     ...));
+               factor_levels <- jamba::mixedSort(unique(ifactors[[iCol]]),
+                  ...);
+               if (length(pre_control_terms) > 0) {
+                  factor_levels <- unique(c(
+                     intersect(pre_control_terms, factor_levels),
+                     factor_levels));
+               }
             }
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "factor_levels (", iCol, "): ", factor_levels);
+            }
+            ifactors[,iCol] <- factor(ifactors[,iCol],
+               levels=factor_levels);
          }
       }
       if (length(group_colnames) > 0) {
@@ -418,7 +479,7 @@ groups_to_sedesign <- function
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
             indent=(current_depth-1)*5,
-            "ifactors:");
+            "head(ifactors, 40) as recognized:");
          print(head(ifactors, 40));
       }
 
@@ -426,12 +487,14 @@ groups_to_sedesign <- function
       rowGroups <- jamba::pasteByRowOrdered(ifactors, sep=factor_sep);
       sample2group <- split(rownames(ifactors), rowGroups);
       if (length(idesign) == 0) {
-         idesign <- list2im_opt(sample2group, do_sparse=FALSE)[rownames(ifactors),levels(rowGroups),drop=FALSE];
+         idesign <- list2im_opt(sample2group, do_sparse=FALSE)[
+            rownames(ifactors), levels(rowGroups),drop=FALSE];
       }
-   } else if (jamba::igrepHas("data.frame|dataframe|matrix", class(ifactors))) {
+   } else if (jamba::igrepHas("data.frame|dataframe|tbl", class(ifactors)) ||
+         ("matrix" %in% class(ifactors) & !is.numeric(ifactors))) {
       #####################################################
-      ## data.frame input
-      ##
+      # data.frame input, or matrix with non-numeric data
+      #
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
             indent=(current_depth-1)*5,
@@ -439,7 +502,7 @@ groups_to_sedesign <- function
       }
       if (length(rownames(ifactors)) == 0) {
          if (length(isamples) == 0) {
-            ## Create isamples
+            # Create isamples
             isamples <- jamba::makeNames(rep("sample", nrow(ifactors)));
          } else if (length(isamples) == nrow(ifactors)) {
             # use isamples as-is
@@ -496,9 +559,9 @@ groups_to_sedesign <- function
          #ifactors <- ifactors[,group_colnames,drop=FALSE];
       }
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "Specifying ifactors[,group_colnames,drop=FALSE]");
+         # jamba::printDebug("groups_to_sedesign(): ",
+         #    indent=(current_depth-1)*5,
+         #    "Specifying ifactors[, group_colnames, drop=FALSE]");
          jamba::printDebug("groups_to_sedesign(): ",
             indent=(current_depth-1)*5,
             "group_colnames:",
@@ -508,36 +571,65 @@ groups_to_sedesign <- function
       # default_order == "asis" will convert character columns to factor
       #    using the observed order of terms as factor levels
       for (icol in group_colnames) {
-         if (!"factor" %in% class(ifactors[,icol])) {
+         if ("factor" %in% class(ifactors[, icol])) {
+            factor_levels <- levels(ifactors[, icol]);
+            if (length(pre_control_terms) > 0) {
+               factor_levels <- unique(c(
+                  intersect(pre_control_terms, factor_levels),
+                  factor_levels));
+               ifactors[, icol] <- factor(ifactors[, icol],
+                  levels=factor_levels,
+                  exclude=NULL);
+            }
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "factor_levels (", icol, "): ", factor_levels);
+            }
+         } else {
             if ("asis" %in% default_order) {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
                      indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "asis");
                }
-               ifactors[,icol] <- factor(ifactors[,icol],
-                  levels=unique(ifactors[,icol]),
-                  exclude=NULL);
+               factor_levels <- unique(ifactors[,icol]);
+               if (length(pre_control_terms) > 0) {
+                  factor_levels <- unique(c(
+                     intersect(pre_control_terms, factor_levels),
+                     factor_levels));
+               }
             } else if ("sort_samples" %in% default_order) {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
                      indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "sort_samples");
                }
-               ifactors[,icol] <- factor(ifactors[,icol],
-                  levels=sort_samples(unique(ifactors[,icol]),
-                     pre_control_terms=pre_control_terms,
-                     ...));
+               factor_levels <- sort_samples(unique(ifactors[,icol]),
+                  pre_control_terms=pre_control_terms,
+                  ...);
             } else {
                if (verbose) {
                   jamba::printDebug("groups_to_sedesign(): ",
                      indent=(current_depth-1)*5,
                      "Converting '", icol, "' to factor using default_order: ", "mixedSort");
                }
-               ifactors[,icol] <- factor(ifactors[,icol],
-                  levels=jamba::mixedSort(unique(ifactors[,icol]),
-                     ...));
+               factor_levels <- jamba::mixedSort(unique(ifactors[, icol]),
+                  ...);
+               if (length(pre_control_terms) > 0) {
+                  factor_levels <- unique(c(
+                     intersect(pre_control_terms, factor_levels),
+                     factor_levels));
+               }
             }
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "factor_levels (", icol, "): ", factor_levels);
+            }
+            ifactors[, icol] <- factor(ifactors[, icol],
+               levels=factor_levels,
+               exclude=NULL);
          }
       }
       # default_order == "mixedSort" will use alphanumeric sort
@@ -580,24 +672,29 @@ groups_to_sedesign <- function
             idesign <- idesign[match(isamples, rownames(idesign)),,drop=FALSE];
          }
       }
-   } else if (jamba::igrepHas("matrix", class(ifactors)) && all(c(0,1) %in% ifactors)) {
+   } else if ("matrix" %in% class(ifactors) && all(c(0,1) %in% ifactors)) {
       ##################################
-      ## idesign input
-      ##
+      # design matrix input
+      #
       if (verbose) {
          jamba::printDebug("groups_to_sedesign(): ",
             indent=(current_depth-1)*5,
             "converting idesign into ifactors data.frame");
       }
       ## Assume for now, idesign matrix with sample rows and group columns
-      sample2group <- split(rownames(ifactors), sapply(seq_len(nrow(ifactors)), function(i){
-         colnames(ifactors)[which(ifactors[i,] != 0)];
-      }));
-      idesign <- list2im_opt(sample2group, do_sparse=FALSE)[rownames(ifactors),names(sample2group)];
+      sample2group <- split(rownames(ifactors),
+         sapply(seq_len(nrow(ifactors)), function(i){
+            colnames(ifactors)[which(ifactors[i,] != 0)];
+         }));
+      idesign <- list2im_opt(sample2group, do_sparse=FALSE)[
+         rownames(ifactors),names(sample2group)];
       iFactorsCols <- colnames(ifactors);
-      ifactors <- jamba::rbindList(strsplit(iFactorsCols, factor_sep));
+      ifactors <- data.frame(check.names=FALSE,
+         stringsAsFactors=FALSE,
+         jamba::rbindList(strsplit(iFactorsCols, factor_sep)));
       if (!is.null(group_colnames)) {
-         colnames(ifactors) <- jamba::makeNames(rep(group_colnames, length.out=ncol(ifactors)),
+         colnames(ifactors) <- jamba::makeNames(
+            rep(group_colnames, length.out=ncol(ifactors)),
             renameFirst=FALSE);
       } else {
          colnames(ifactors) <- jamba::makeNames(
@@ -606,7 +703,57 @@ groups_to_sedesign <- function
             renameOnes=TRUE,
             suffix="_");
       }
-      rownames(ifactors) <- unname(jamba::pasteByRow(ifactors, sep=factor_sep));
+      group_colnames <- colnames(ifactors);
+      rownames(ifactors) <- unname(
+         jamba::pasteByRow(ifactors, sep=factor_sep));
+
+      # define factor order
+      for (icol in group_colnames) {
+         if ("asis" %in% default_order) {
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "Converting '", icol, "' to factor using default_order: ", "asis");
+            }
+            factor_levels <- unique(ifactors[,icol]);
+            if (length(pre_control_terms) > 0) {
+               factor_levels <- unique(c(
+                  intersect(pre_control_terms, factor_levels),
+                  factor_levels));
+            }
+         } else if ("sort_samples" %in% default_order) {
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "Converting '", icol, "' to factor using default_order: ", "sort_samples");
+            }
+            factor_levels <- sort_samples(unique(ifactors[,icol]),
+               pre_control_terms=pre_control_terms,
+               ...);
+         } else {
+            if (verbose) {
+               jamba::printDebug("groups_to_sedesign(): ",
+                  indent=(current_depth-1)*5,
+                  "Converting '", icol, "' to factor using default_order: ", "mixedSort");
+            }
+            factor_levels <- jamba::mixedSort(unique(ifactors[, icol]),
+               ...);
+            if (length(pre_control_terms) > 0) {
+               factor_levels <- unique(c(
+                  intersect(pre_control_terms, factor_levels),
+                  factor_levels));
+            }
+         }
+         if (verbose) {
+            jamba::printDebug("groups_to_sedesign(): ",
+               indent=(current_depth-1)*5,
+               "factor_levels (", icol, "): ", factor_levels);
+         }
+         ifactors[, icol] <- factor(ifactors[, icol],
+            levels=factor_levels,
+            exclude=NULL);
+      }
+
       if (verbose) {
          jamba::printDebug("ifactors:",
             indent=(current_depth-1)*5)

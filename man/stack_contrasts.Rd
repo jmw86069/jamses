@@ -37,7 +37,21 @@ For example:
 stack_contrasts(head(LETTERS, 2))
 stack_contrasts(head(LETTERS, 4))
 stack_contrasts(head(LETTERS, 8))
-stack_contrasts(head(LETTERS, 16))
+contrast2comp(stack_contrasts(head(LETTERS, 16)))
+
+# more typical case
+stacked <- stack_contrasts(c("KO_Treated", "KO_Control",
+   "WT_Treated", "WT_Control"))
+stacked
+
+# this contrast can be rewritten as a "comp"
+stacked_comp <- contrast2comp(stacked)
+stacked_comp
+
+# of course the "comp" can be converted back to full contrast name
+comp2contrast(stacked_comp)
+
+# note when the contrast cannot be stacked, an error is thrown
 tryCatch({
    stack_contrasts(head(LETTERS, 5))
 }, error=function(e){

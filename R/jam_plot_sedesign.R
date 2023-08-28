@@ -512,16 +512,10 @@ plot_sedesign <- function
       unique(as.data.frame(jamba::rmNULL(nullValue=NA,
          list(axis2=axis2values, axis4=axis4values)))))
    axis24df[,"y_coord"] <- seq_len(nrow(axis24df));
-   # axis24df
-   # jamba::printDebug("plot_sedesign(): ",
-   #    "axis13df:");
-   # print(axis13df);
-   # jamba::printDebug("plot_sedesign(): ",
-   #    "axis24df:");
-   # print(axis24df);
 
    axis_df <- data.frame(check.names=FALSE,
       stringsAsFactors=FALSE,
+      row.names=NULL,
       axis13df,
       axis24df[rep(axis24df$y_coord, each=nrow(axis13df)), , drop=FALSE])
    # if (length(remaining_values) > 0) {
@@ -869,9 +863,11 @@ plot_sedesign <- function
    for (ibump in unique(contrast_group_df$bump_set)) {
       ibump_rows <- which(contrast_group_df$bump_set %in% ibump &
             !grepl("[(]", contrast_group_df$contrast))
-      ibump_values <- seq_len(length(ibump_rows)/2)
-      ibump_values <- ibump_values - mean(ibump_values)
-      contrast_group_df[ibump_rows, "bump"] <- rep(ibump_values, each=2);
+      if (length(ibump_rows) > 1) {
+         ibump_values <- seq_len(length(ibump_rows)/2)
+         ibump_values <- ibump_values - mean(ibump_values)
+         contrast_group_df[ibump_rows, "bump"] <- rep(ibump_values, each=2);
+      }
    }
 
    contrast_group_split <- split(contrast_group_df,

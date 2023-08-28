@@ -1,3 +1,19 @@
+# jamses 0.0.48.900
+
+## silenced messages when loading jamses
+
+* `design`, `design<-` `contrasts`, `contrasts<-`
+
+   * Previously when loading `jamses`, a message indicate that
+   new generic methods were defined, which was caused either by
+   creating methods for an existing function or S4 method that
+   did not have the same signature.
+   * `design` now imports and matches the arguments of `BiocGenerics::design`
+   * `contrasts` now sets generic functions matching `stats::contrasts()`
+   then adds S4 generics for object `SEDesign`.
+   * Now, no more warning message when loading `jamses`!
+
+
 # jamses 0.0.47.900
 
 ## updates to existing functions

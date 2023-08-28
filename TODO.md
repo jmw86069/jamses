@@ -1,6 +1,56 @@
 
 # TODO for jamses
 
+## 25aug2023
+
+* Create `SEStats` object as more formal S4 object output `se_contrast_stats`()
+
+   * slotNames
+
+      * `stats_dfs`: each `data.frame` from each `contrast_name`, `assay_name`
+      * `hit_array`: N-dimensional array of stat hits with direction:
+
+         * `assay_name`
+         * `contrast_name`
+         * `cutoff_name`
+         * `method_name`? (to compare limmavoom, limma, DESeq2, edgeR?) adding
+         this dimension could be fairly invisible
+
+      * `stats_df`: **omit** - separate function to merge `data.frame`
+      * `metadata`: method, parameters, etc.
+   
+   * methods
+   
+      * `hit_list()`:       calls `hit_array_to_list()`
+      * `to_df()`:          calls `sestats_to_df()` to create table summary of counts
+      * `hits()`:           converts `hit_list()` into incidence matrix?
+      * `contrast_names()`: extracts `contrast_name` vector
+      * `assay_names()`:    extracts `assay_name` vector
+      * `reapply_cutoffs()`: (new) re-calculate `hit_array`,
+      by iterating `stats_dfs` and applying stat cutoffs.
+      * `rbind_sestats()`:  combines multiple `SEStats` objects
+   
+   * Other related todo:
+
+      * consider backward compatibility?
+
+         * `SEStats_to_list()` to convert `SEStats` to previous `list` format
+         * `list_to_SEStats()` to convert previous format to new `SEStats`
+      
+      * `heatmap_se()` should accept `SEStats` input
+      * `hit_array_to_list()` should accept `SEStats` input
+      * `sestats_to_df()` should accept `SEStats` input
+
+* `heatmap_se()`
+
+   * use new `SEStats` object input
+   * consider expanding `sestats` to show separate `cutoff_name` and
+   `method_name` entries as distinct stripes in the incidence matrix,
+   rather than including hits across `cutoff_name` entries together.
+   The labels could become quite long.
+
+* Expand `se_contrast_stats()` to call corresponding DESeq2 methods.
+
 ## 22aug2023
 
 * `se_contrast_stats()`

@@ -207,59 +207,92 @@ igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
 igroups <- factor(igroups, levels=unique(igroups));
 igroups;
 
-condes <- groups_to_sedesign(igroups);
-design(condes);
-contrasts(condes);
+sedesign <- groups_to_sedesign(igroups);
+design(sedesign);
+contrasts(sedesign);
 
-# now you can visualize the samples used in each contrast
-iDesignL$idesign \%*\%  iDesignL$icontrasts;
+# plot the design and contrasts
+plot_sedesign(sedesign)
 
-# you can adjust the order of factor levels per comparison
-groups_to_sedesign(as.character(iGroups))$contrastName
+# the two-way contrasts can be visibly flipped, since they are equivalent
+plot_sedesign(sedesign, flip_twoway=TRUE)
 
-# make "WT" the first control term
-groups_to_sedesign(as.character(iGroups), pre_control_terms=c("WT"), factor_order=2:1)$contrastName
+# the design can be subset by sample
+all_samples <- samples(sedesign)
+subset_samples1 <- all_samples[-1:-3];
+plot_sedesign(sedesign[subset_samples1, ])
+
+# the group n=# replicates are updated
+subset_samples2 <- all_samples[c(-1, -6, -11)];
+plot_sedesign(sedesign[subset_samples2, ])
+
+# The design * contrast matrix can be displayed in full
+design(sedesign) \%*\%  contrasts(sedesign);
+
+# make "KO" the control term instead of "WT"
+contrast_names(groups_to_sedesign(igroups, pre_control_terms=c("KO")))
+
+# change the order of factors compared
+contrast_names(groups_to_sedesign(igroups, factor_order=2:1))
 
 # prevent comparisons of WT to WT, or KO to KO
-groups_to_sedesign(as.character(iGroups),
+sedesign_2 <- groups_to_sedesign(as.character(igroups),
    remove_pairs=list(c("WT"), c("KO")))
+contrast_names(sedesign_2)
+plot_sedesign(sedesign_2)
+
+# prevent comparisons of Treated to Treated, or Control to Control
+sedesign_3 <- groups_to_sedesign(as.character(igroups),
+   remove_pairs=list(c("Treated"), c("Control")))
+contrast_names(sedesign_3)
+plot_sedesign(sedesign_3)
 
 # input as a data.frame with ordered factor levels
 ifactors <- data.frame(Genotype=factor(c("WT","WT","KO","KO"),
    levels=c("WT","KO")),
    Treatment=factor(c("Treated","Control"),
       levels=c("Control","Treated")))
+# not necessary, but define rownames
+rownames(ifactors) <- jamba::pasteByRow(ifactors);
 ifactors;
-groups_to_sedesign(ifactors)
+contrast_names(groups_to_sedesign(ifactors))
+plot_sedesign(groups_to_sedesign(ifactors))
 
+# you can still override factor levels with pre_control_terms
+plot_sedesign(groups_to_sedesign(ifactors, pre_control_terms=c("KO")))
 
-# Again remove WT-WT and KO-KO contrasts
-groups_to_sedesign(ifactors,
-   remove_pairs=list(c("WT"), c("KO")))
+# input as design matrix
+design_matrix <- design(groups_to_sedesign(ifactors))
+design_matrix
+contrast_names(groups_to_sedesign(design_matrix))
 
-# demonstrating default_order "asis"
+# again the "KO" group can be the control by using pre_control_terms
+contrast_names(groups_to_sedesign(design_matrix, pre_control_terms="KO"))
+
+# default_order="asis"
 # contrasts show A-B, because B appears fist
 # contrasts show Untreated-Treated because Treated appears first
 df_test <- data.frame(
    set=c("B", "B", "A", "A"),
    treat=c("Treated", "Untreated"))
-groups_to_sedesign(df_test)
-groups_to_sedesign(jamba::pasteByRow(df_test))
+plot_sedesign(groups_to_sedesign(df_test))
+plot_sedesign(groups_to_sedesign(jamba::pasteByRow(df_test)))
 
-# demonstrating default_order "sort_samples"
+# default_order="sort_samples"
 # contrasts show B-A, because A is sorted first
 # contrasts show Treated-Untreated because sort_samples()
 #    determines "Untreated" is a preferred control term
-groups_to_sedesign(df_test,
-   default_order="sort_samples")
-groups_to_sedesign(jamba::pasteByRow(df_test),
-   default_order="sort_samples")
+plot_sedesign(groups_to_sedesign(df_test,
+   default_order="sort_samples"))
 
-# demonstrating default_order "mixedSort"
+# default_order="mixedSort"
 # contrasts show B-A, because A is sorted first
 # contrasts show Untreated-Treated because Treated is sorted first
-groups_to_sedesign(df_test,
-   default_order="mixedSort")
+plot_sedesign(groups_to_sedesign(df_test,
+   default_order="mixedSort"))
+plot_sedesign(groups_to_sedesign(df_test,
+   default_order="mixedSort",
+   pre_control_terms=c("Untreated")))
 
 }
 \seealso{
