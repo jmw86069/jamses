@@ -1,6 +1,18 @@
 
 # TODO for jamses
 
+## 31aug2023
+
+* Method to `rbind()` or `cbind()` SummarizedExperiment objects.
+
+   * Main goal is to automate the process of aligning samples
+   * Keep or remove metadata columns that do not match
+   * When metadata does not match:
+   
+      1. Remove the metadata column altogether (easiest option), or
+      2. Keep metadata, but "combine" values by comma-delimiting (easiest),
+      or by some numerical operation (complex to design R function interface).
+
 ## 25aug2023
 
 * Create `SEStats` object as more formal S4 object output `se_contrast_stats`()

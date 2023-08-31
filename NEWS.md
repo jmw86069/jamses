@@ -1,3 +1,28 @@
+# jamses 0.0.49.900
+
+## new function
+
+* `se_rbind()`
+
+   * Wrapper function to automate steps required for
+   `SummarizedExperiment::rbind()`
+   * Confirms that no `rownames()` are shared across `se_list`.
+   * Optionally edits `colnames()` for each object, so they can be compared.
+   * Determines shared `colnames()`, discarding other columns.
+   * Optionally subsets `colnames()` by `colnames_keep`.
+   * Adjusts `colData()` in one of two ways:
+   
+      1. `colData_action="identical"`: keeps only colData columns which
+      have identical values across `se_list`, discarding other columns.
+      This option is default, since it retains common annotations.
+      2. `colData_action="all"`: keeps all colData columns, using a
+      delimiter between multiple values whenever the values differ across
+      `se_list`. This option is useful for detailed record-keeping, but
+      the annotations are not likely to be useful otherwise.
+   
+   * finally it calls `SummarizedExperiment::rbind()` returning one valid
+   `SummarizedExperiment` object.
+
 # jamses 0.0.48.900
 
 ## silenced messages when loading jamses

@@ -37,6 +37,7 @@ Other jamses utilities:
 \code{\link{mark_stat_hits}()},
 \code{\link{se_collapse_by_column}()},
 \code{\link{se_collapse_by_row}()},
+\code{\link{se_rbind}()},
 \code{\link{shrink_df}()},
 \code{\link{strsplitOrdered}()},
 \code{\link{update_function_params}()},
