@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">jamses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.48.900</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.50.900</span>
       </span>
     </div>
 
@@ -74,11 +74,11 @@ approach to improve speed.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Note: this function fails when contrasts are not balanced</span></span></span>
 <span class="r-in"><span><span class="fu">contrast2comp_dev</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"(A_c-B_c)-(A_d-C_d)"</span><span class="op">)</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">ilist:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">ilist:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`(A_c-B_c)-(A_d-C_d)`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] ""    "A_c" "B_c" "A_d" "C_d"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                        C                   B A.1 A.2 split1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)2 (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d)   A   c      1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)3 (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d)   B   c      1</span>
@@ -89,21 +89,21 @@ approach to improve speed.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)3           A</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)4           B</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)5           B</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_new:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_new:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     C                   B A.1 A.2 split2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B   c      1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> B (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-C   d      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                       C                   B     A.1 A.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B-A-C c-d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">two-way imbalance:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">two-way imbalance:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   A.1   A.2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  TRUE FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         C                      B A.1 A.2                newB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         C                      B A.1 A.2                newB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)</span>
@@ -112,20 +112,20 @@ approach to improve speed.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v2 A-C:d</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "(A-B:c)-(A-C:d)"</span>
 <span class="r-in"><span><span class="fu"><a href="contrast2comp.html">contrast2comp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"(A_c-B_c)-(A_d-C_d)"</span><span class="op">)</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">im:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">im:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,] "A"  "c" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,] "B"  "c" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3,] "A"  "d" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [4,] "C"  "d" </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">imnew:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">imnew:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      [,1]  [,2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,] "A-B" "c" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,] "A-C" "d" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "(A-B:c)-(A-C:d)"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">contrast2comp_dev</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">contrast_names1</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="st">"(A_c-B_c)-(A_d-C_d)"</span><span class="op">)</span>, verbose<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">ilist:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">ilist:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`(A_c-B_c)-(A_d-B_d)`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] ""    "A_c" "B_c" "A_d" "B_d"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -135,7 +135,7 @@ approach to improve speed.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`(A_c-B_c)-(A_d-C_d)`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] ""    "A_c" "B_c" "A_d" "C_d"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                        C                   B A.1 A.2 split1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-B_d)2 (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)   A   c      1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-B_d)3 (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)   B   c      1</span>
@@ -158,30 +158,30 @@ approach to improve speed.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)3           D</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)4           E</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)5           E</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_new:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:39:59</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_new:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     C                   B A.1 A.2 split2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) A-B   c      1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> B (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) A-B   d      1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> C             A_c-B_c             A_c-B_c A-B   c      2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> D (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B   c      3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> E (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-C   d      3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:00</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                       C                   B     A.1 A.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)     A-B c-d</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A_c-B_c                         A_c-B_c             A_c-B_c     A-B   c</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B-A-C c-d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">two-way imbalance:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:00</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">two-way imbalance:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        A.1   A.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,] FALSE FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,] FALSE FALSE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3,]  TRUE FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:00</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         C                      B A.1 A.2                newB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-B_d)          (A_c-B_c)-(A_d-B_d) A-B c-d (A_c-B_c)-(A_d-B_d)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A_c-B_c                                  A_c-B_c A-B   c             A_c-B_c</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">11:52:50</span>) 28Aug2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:00</span>) 02Oct2023:   <span style="color: #FF8700;">contrast2comp_dev(): </span><span style="color: #00AFFF;">idf_newer:</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                         C                      B A.1 A.2                newB</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (A_c-B_c)-(A_d-B_d)          (A_c-B_c)-(A_d-B_d) A-B c-d (A_c-B_c)-(A_d-B_d)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A_c-B_c                                  A_c-B_c A-B   c             A_c-B_c</span>

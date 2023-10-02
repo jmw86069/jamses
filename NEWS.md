@@ -1,3 +1,27 @@
+# jamses 0.0.50.900
+
+## bug fixes
+
+* `plot_sedesign()`
+
+   * Fixed error when plotting a twoway contrast and one of the oneway
+   contrast components in the opposite orientation of the twoway contrast
+   components. Only observed in unique cases with a subset of contrasts.
+   * Fixed errors ultimately caused by having duplicated `contrast_names`
+   in the `SEDesign` object. Updated `contrast_names<-` method to throw
+   an error with clear message.
+
+## new functions
+
+* `filter_contrast_names()`
+
+   * Experimental function intended to help reduce "all-vs-all" style contrasts
+   to those with one specific control factor level, per design factor.
+   * Driven by `slicejam` design with 5 treatments, 3 genotypes, which produced
+   75 total oneway and twoway contrasts. Yike. Instead this function
+   produces 30 total contrasts, only 22 oneway contrasts versus the baseline
+   level per factor.
+
 # jamses 0.0.49.900
 
 ## new function

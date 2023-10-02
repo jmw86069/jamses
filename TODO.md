@@ -1,6 +1,94 @@
 
 # TODO for jamses
 
+## 02oct2023
+
+* `plot_sedesign()`
+
+   * consider easy filter to hide two-way contrasts
+   * consider scaling the arrow width (decreased) when there is
+   a large number of contrasts to display, especially when large number
+   are "bumped" per factor level.
+   * consider making `arrow_ex`,`head_ex` arguments to `make_block_arrow()`
+   visible in `plot_sedesign()`. Perhaps change `twoway_lwd` to `twoway_cex`,
+   then applying some global `cex` to all contrast arrows and connectors.
+   * Done. Fix bug with custom contrasts, two-way contrast color `NA` throws error.
+
+* `validate_sedesign()`
+
+   * argument `contrasts` is not properly subsetting contrasts by name,
+   however `contrast_names()<-` appears to be working fine. Same mechanism.
+
+* Done. `filter_contrast_names()`
+
+   * new function: take long list of "all versus all" contrasts and subset
+   for specific control factor levels.
+
+## 20sep2023
+
+* `heatmap_se()`
+
+   * consider indicating `controlSamples` when a subset of samples are used,
+   as opposed to relying upon `control_label`. Especially useful when
+   a subset of potential samples are used, or when there are multiple
+   normgroups displayed, each with their own `controlSamples`.
+   * consider option to apply `hm_title` to `column_title` which may
+   help when adding two heatmaps together, they would have the
+   column_title defined within each heatmap itself.
+   Downside: no column titles defined by `column_split`.
+
+* `SEDesign`: consider associating blocking factor to one or more contrasts
+
+   * Unclear how: blocking factor is per-sample annotation
+   * `se_contrast_stats()` does not indicate blocking factor - this is the
+   real need, so output represents the comparison.
+
+* `SEDesign`: consider associating factor name with each contrast
+
+   * Background: Each contrast compares one or more factors.
+   It would be useful to "know" the factors being compared during
+   automated analysis.
+   
+      * Contrasts could be subset by factor(s) being compared
+      * Center data using other factors in the design:
+      when showing Treatment contrasts, could center by Time or Genotype
+      * Venn diagrams make the most sense when comparing within factor:
+      Treatment contrasts to compare across time points or genotypes.
+      Gene knockout comparisons across treatments (Vehicle, DEX, Etoposide)
+
+   * Proposed changes to `SEDesign`
+   
+      * new slot: `"contrast_factors"`, `list` named by `colnames(contrasts)`
+      values contain zero or more `colnames(factors)`
+      * new slot: `"factors"`, `data.frame`
+      
+         * `colnames(factors)` are experimental factors (Treatment, Time)
+         * values are factor levels inferred during `groups_to_sedesign()`
+         * rows are samples, `rownames(factors) == rownames(design)`
+
+      * subsetting SEDesign
+
+         * by sample would also subset `factors`
+         * by group would also subset `contrasts` and `contrast_factors`
+
+* `SEDesign`: consider supporting `~Treatment + Time` style design matrix
+
+   * Current design and contrast matrices use `~ 0 + Treatment + Time`,
+   so that contrasts indicate distinct experiment groups.
+   * `~Treatment + Time` format changes:
+   
+      * `design` includes `"(Intercept)"` then factor levels
+      * instead of groupA-groupB contrasts, it encodes coefficients
+      using factor levels.
+
+   * `plot_sedesign()` needs to handle this format differently,
+   visualizing factor comparisons differently as well.
+   * Two-factor designs might compare one factor, which implies using
+   the other factor as a covariate term, equivalent to modeling
+   one factor with the second factor as a blocking factor.
+   * Unclear how to represent a specific interaction term if encoded as
+   `~Treatment + Time + Treatment:Time`
+
 ## 31aug2023
 
 * Method to `rbind()` or `cbind()` SummarizedExperiment objects.

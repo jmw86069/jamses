@@ -82,6 +82,7 @@ defined for all observed group names using \code{colorjam::group2colors()}.
 \seealso{
 Other jam experiment design: 
 \code{\link{check_sedesign}()},
+\code{\link{filter_contrast_names}()},
 \code{\link{groups_to_sedesign}()},
 \code{\link{plot_sedesign}()},
 \code{\link{sedesign_to_factors}()}

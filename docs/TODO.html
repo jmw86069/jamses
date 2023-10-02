@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">jamses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.48.900</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.50.900</span>
       </span>
     </div>
 
@@ -48,6 +48,93 @@
 
 <div id="todo-for-jamses" class="section level1">
 
+<div class="section level2">
+<h2 id="id_02oct2023">02oct2023<a class="anchor" aria-label="anchor" href="#id_02oct2023"></a></h2>
+<ul><li>
+<p><code><a href="reference/plot_sedesign.html">plot_sedesign()</a></code></p>
+<ul><li>consider easy filter to hide two-way contrasts</li>
+<li>consider scaling the arrow width (decreased) when there is a large number of contrasts to display, especially when large number are “bumped” per factor level.</li>
+<li>consider making <code>arrow_ex</code>,<code>head_ex</code> arguments to <code>make_block_arrow()</code> visible in <code><a href="reference/plot_sedesign.html">plot_sedesign()</a></code>. Perhaps change <code>twoway_lwd</code> to <code>twoway_cex</code>, then applying some global <code>cex</code> to all contrast arrows and connectors.</li>
+<li>Done. Fix bug with custom contrasts, two-way contrast color <code>NA</code> throws error.</li>
+</ul></li>
+<li>
+<p><code><a href="reference/validate_sedesign.html">validate_sedesign()</a></code></p>
+<ul><li>argument <code>contrasts</code> is not properly subsetting contrasts by name, however <code>contrast_names()&lt;-</code> appears to be working fine. Same mechanism.</li>
+</ul></li>
+<li>
+<p>Done. <code><a href="reference/filter_contrast_names.html">filter_contrast_names()</a></code></p>
+<ul><li>new function: take long list of “all versus all” contrasts and subset for specific control factor levels.</li>
+</ul></li>
+</ul></div>
+<div class="section level2">
+<h2 id="id_20sep2023">20sep2023<a class="anchor" aria-label="anchor" href="#id_20sep2023"></a></h2>
+<ul><li>
+<p><code><a href="reference/heatmap_se.html">heatmap_se()</a></code></p>
+<ul><li>consider indicating <code>controlSamples</code> when a subset of samples are used, as opposed to relying upon <code>control_label</code>. Especially useful when a subset of potential samples are used, or when there are multiple normgroups displayed, each with their own <code>controlSamples</code>.</li>
+<li>consider option to apply <code>hm_title</code> to <code>column_title</code> which may help when adding two heatmaps together, they would have the column_title defined within each heatmap itself. Downside: no column titles defined by <code>column_split</code>.</li>
+</ul></li>
+<li>
+<p><code>SEDesign</code>: consider associating blocking factor to one or more contrasts</p>
+<ul><li>Unclear how: blocking factor is per-sample annotation</li>
+<li>
+<code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code> does not indicate blocking factor - this is the real need, so output represents the comparison.</li>
+</ul></li>
+<li>
+<p><code>SEDesign</code>: consider associating factor name with each contrast</p>
+<ul><li>
+<p>Background: Each contrast compares one or more factors. It would be useful to “know” the factors being compared during automated analysis.</p>
+<ul><li>Contrasts could be subset by factor(s) being compared</li>
+<li>Center data using other factors in the design: when showing Treatment contrasts, could center by Time or Genotype</li>
+<li>Venn diagrams make the most sense when comparing within factor: Treatment contrasts to compare across time points or genotypes. Gene knockout comparisons across treatments (Vehicle, DEX, Etoposide)</li>
+</ul></li>
+<li>
+<p>Proposed changes to <code>SEDesign</code></p>
+<ul><li><p>new slot: <code>"contrast_factors"</code>, <code>list</code> named by <code>colnames(contrasts)</code> values contain zero or more <code>colnames(factors)</code></p></li>
+<li>
+<p>new slot: <code>"factors"</code>, <code>data.frame</code></p>
+<ul><li>
+<code>colnames(factors)</code> are experimental factors (Treatment, Time)</li>
+<li>values are factor levels inferred during <code><a href="reference/groups_to_sedesign.html">groups_to_sedesign()</a></code>
+</li>
+<li>rows are samples, <code>rownames(factors) == rownames(design)</code>
+</li>
+</ul></li>
+<li>
+<p>subsetting SEDesign</p>
+<ul><li>by sample would also subset <code>factors</code>
+</li>
+<li>by group would also subset <code>contrasts</code> and <code>contrast_factors</code>
+</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>
+<p><code>SEDesign</code>: consider supporting <code>~Treatment + Time</code> style design matrix</p>
+<ul><li><p>Current design and contrast matrices use <code>~ 0 + Treatment + Time</code>, so that contrasts indicate distinct experiment groups.</p></li>
+<li>
+<p><code>~Treatment + Time</code> format changes:</p>
+<ul><li>
+<code>design</code> includes <code>"(Intercept)"</code> then factor levels</li>
+<li>instead of groupA-groupB contrasts, it encodes coefficients using factor levels.</li>
+</ul></li>
+<li><p><code><a href="reference/plot_sedesign.html">plot_sedesign()</a></code> needs to handle this format differently, visualizing factor comparisons differently as well.</p></li>
+<li><p>Two-factor designs might compare one factor, which implies using the other factor as a covariate term, equivalent to modeling one factor with the second factor as a blocking factor.</p></li>
+<li><p>Unclear how to represent a specific interaction term if encoded as <code>~Treatment + Time + Treatment:Time</code></p></li>
+</ul></li>
+</ul></div>
+<div class="section level2">
+<h2 id="id_31aug2023">31aug2023<a class="anchor" aria-label="anchor" href="#id_31aug2023"></a></h2>
+<ul><li>
+<p>Method to <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> or <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code> SummarizedExperiment objects.</p>
+<ul><li><p>Main goal is to automate the process of aligning samples</p></li>
+<li><p>Keep or remove metadata columns that do not match</p></li>
+<li>
+<p>When metadata does not match:</p>
+<ol style="list-style-type: decimal"><li>Remove the metadata column altogether (easiest option), or</li>
+<li>Keep metadata, but “combine” values by comma-delimiting (easiest), or by some numerical operation (complex to design R function interface).</li>
+</ol></li>
+</ul></li>
+</ul></div>
 <div class="section level2">
 <h2 id="id_25aug2023">25aug2023<a class="anchor" aria-label="anchor" href="#id_25aug2023"></a></h2>
 <ul><li>

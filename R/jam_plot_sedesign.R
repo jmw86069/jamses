@@ -561,7 +561,7 @@ plot_sedesign <- function
    }
 
    # define contrasts
-   contrast_names <- contrast_names(sedesign)
+   contrast_names <- unique(contrast_names(sedesign))
    contrast_numbers <- jamba::nameVector(seq_along(contrast_names),
       contrast_names);
    if (length(which_contrasts) > 0) {
@@ -1046,13 +1046,19 @@ plot_sedesign <- function
             } else if (nrow(idf) == 4) {
                idf$group <- strsplit(gsub("[()]", "", idf$contrast[1]),
                   contrast_sep)[[1]];
+               colorset_key <- jamba::cPaste(
+                  list(idf$group[c(1, 3)],
+                     idf$group[c(2, 4)]),
+                  sep="-");
+               use_colors <- jamba::rmNA(colorset[colorset_key],
+                  naValue="grey");
+               names(use_colors) <- colorset_key;
                data.frame(from=idf$label[c(1, 3)],
                   to=idf$label[c(2, 4)],
                   contrast=paste0(idf$group[c(1, 3)], "-",
                      idf$group[c(2, 4)]),
                   full_contrast=idf$contrast[1],
-                  color=colorset[jamba::cPaste(
-                     list(idf$group[c(1, 3)], idf$group[c(2, 4)]), sep="-")],
+                  color=use_colors,
                   depth="two-way")
             } else {
                data.frame(from="a",
@@ -1063,13 +1069,13 @@ plot_sedesign <- function
                   depth="a")[0,]
             }
          }));
-      # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df); # debug
 
       # iterate each contrast
       use_contrasts <- seq_along(contrast_group_split)
 
       if (debug) {
-         jamba::printDebug("contrast_group_split:");#print(contrast_group_split);# debug
+         jamba::printDebug("contrast_group_split cgs_df:");
+         # print(contrast_group_split);# debug
          cgs_df <- jamba::rbindList(contrast_group_split);
          rownames(cgs_df) <- NULL;
          cgs_df$num <- as.numeric(factor(cgs_df$contrast,
@@ -1107,14 +1113,28 @@ plot_sedesign <- function
             }
          } else if (nrow(idf) == 4) {
             # match with each pairwise contrast
+            # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
             summary_df1 <- subset(contrast_summary_df,
                full_contrast %in% idf$contrast[1])
+            # jamba::printDebug("summary_df1:");print(summary_df1);# debug
             summary_df <- subset(contrast_summary_df,
                contrast %in% summary_df1$contrast &
                depth %in% "one-way")
+            if (nrow(summary_df) == 0) {
+               summary_df <- subset(contrast_summary_df,
+                  contrast %in% summary_df1$contrast &
+                     depth %in% "two-way")
+            }
+            # jamba::printDebug("summary_df:");print(summary_df);# debug
             summary_df <- summary_df[match(summary_df1$contrast,
                summary_df$contrast), , drop=FALSE];
             colorset_twoway <- summary_df$color;
+            if (any("grey" %in% colorset_twoway) && TRUE %in% debug) {
+               jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
+               jamba::printDebug("idf:");print(idf);# debug
+               jamba::printDebug("summary_df1:");print(summary_df1);# debug
+               jamba::printDebug("summary_df:");print(summary_df);# debug
+            }
             contrast_dfs <- lapply(jamba::nameVector(as.character(summary_df1$contrast)), function(jname){
                jdf <- contrast_group_split[[jname]];
                if (debug && length(jdf) == 0) {
@@ -1168,6 +1188,18 @@ plot_sedesign <- function
             # jamba::printDebug("use_twoway_label:", use_twoway_label);# debug
             # jamba::printDebug("contrast_dfs[[1]]$contrast[1]:");print(contrast_dfs[[1]]$contrast[1]);# debug
             # jamba::printDebug("contrast_position:");print(contrast_position);# debug
+            # jamba::printDebug("contrast_dfs[[1]]:");print(contrast_dfs[[1]]);# debug
+            # jamba::printDebug("contrast_dfs[[2]]:");print(contrast_dfs[[2]]);# debug
+            # print(list(
+            #    x0=c(contrast_dfs[[1]]$x_coord[1],
+            #       contrast_dfs[[2]]$x_coord[1]),
+            #    x1=c(contrast_dfs[[1]]$x_coord[2],
+            #       contrast_dfs[[2]]$x_coord[2]),
+            #    y0=c(contrast_dfs[[1]]$y_coord[1],
+            #       contrast_dfs[[2]]$y_coord[1]),
+            #    y1=c(contrast_dfs[[1]]$y_coord[2],
+            #       contrast_dfs[[2]]$y_coord[2]),
+            #    color=colorset_twoway))
             use_position <- contrast_position[c(
                contrast_dfs[[1]]$contrast[1],
                contrast_dfs[[2]]$contrast[1])];

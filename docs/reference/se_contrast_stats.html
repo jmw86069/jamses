@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">jamses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.48.900</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.50.900</span>
       </span>
     </div>
 
@@ -491,31 +491,31 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span><span class="va">stats_df</span> <span class="op">&lt;-</span> <span class="va">sestats</span><span class="op">$</span><span class="va">stats_dfs</span><span class="op">$</span><span class="va">counts</span><span class="op">[[</span><span class="st">"Treated-Vehicle"</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">stats_df</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      probes hit adjp0.05 fc1.5 Treated-Vehicle logFC Treated-Vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row1   row1                                  1                2.3338</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row2   row2                                  1                1.4366</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row3   row3                                 -1               -1.8277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row4   row4                                 -1               -0.6313</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row5   row5                                  0               -0.5632</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row6   row6                                  0               -0.0696</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row1   row1                                  1             2.3337734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row2   row2                                  1             1.4366480</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row3   row3                                 -1            -1.8277444</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row4   row4                                 -1            -0.6312502</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row5   row5                                  0            -0.5632394</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row6   row6                                  0            -0.0696241</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      fold Treated-Vehicle P.Value Treated-Vehicle adj.P.Val Treated-Vehicle</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row1                 5.04                6.41e-17                  1.28e-15</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row2                 2.71                2.13e-11                  1.42e-10</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row3                -3.55                3.10e-14                  3.10e-13</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row4                -1.55                3.75e-04                  9.14e-04</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row5                -1.48                1.29e-03                  2.57e-03</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row6                -1.05                6.39e-01                  7.10e-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row1             5.041222            6.410602e-17              1.282120e-15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row2             2.706912            2.127696e-11              1.418464e-10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row3            -3.549816            3.099395e-14              3.099395e-13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row4            -1.548907            3.752311e-04              9.143257e-04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row5            -1.477583            1.285519e-03              2.571038e-03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row6            -1.049443            6.392157e-01              7.102397e-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      mgm Treated-Vehicle Vehicle mean Treated mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row1                8.68         6.35         8.68</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row2                8.14         6.71         8.14</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row3                8.38         8.38         6.56</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row4                7.10         7.10         6.47</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row5                7.10         7.10         6.53</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> row6                8.55         8.55         8.48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row1            8.681105     6.347332     8.681105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row2            8.144589     6.707941     8.144589</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row3            8.383734     8.383734     6.555990</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row4            7.098608     7.098608     6.467357</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row5            7.096697     7.096697     6.533457</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> row6            8.547980     8.547980     8.478356</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># volcano plot for one contrast</span></span></span>
 <span class="r-in"><span><span class="fu">jamma</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamma/man/volcano_plot.html" class="external-link">volcano_plot</a></span><span class="op">(</span><span class="va">stats_df</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">12:04:51</span>) 28Aug2023:   <span style="color: #FF8700;">volcano_plot(): </span><span style="color: #00AFFF;">sig_colname: </span><span style="color: #FF8700;">adj.P.Val Treated-Vehicle</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">12:04:51</span>) 28Aug2023:   <span style="color: #FF8700;">volcano_plot(): </span><span style="color: #00AFFF;">lfc_colname: </span><span style="color: #FF8700;">logFC Treated-Vehicle</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:42</span>) 02Oct2023:   <span style="color: #FF8700;">volcano_plot(): </span><span style="color: #00AFFF;">sig_colname: </span><span style="color: #FF8700;">adj.P.Val Treated-Vehicle</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ##  (<span style="color: #00FFFF; font-weight: bold;">16:40:42</span>) 02Oct2023:   <span style="color: #FF8700;">volcano_plot(): </span><span style="color: #00AFFF;">lfc_colname: </span><span style="color: #FF8700;">logFC Treated-Vehicle</span> </span>
 <span class="r-plt img"><img src="se_contrast_stats-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">###############################</span></span></span>

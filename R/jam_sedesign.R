@@ -573,6 +573,9 @@ setMethod("contrast_names<-",
    signature=c(object="SEDesign",
       value="ANY"),
    definition=function(object, value) {
+      if (any(duplicated(value))) {
+         stop("contrast_names cannot be duplicated.")
+      }
       contrast_matrix <- limma::makeContrasts(
          contrasts=value,
          levels=object@design)

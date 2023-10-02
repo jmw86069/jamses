@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">jamses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.48.900</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.50.900</span>
       </span>
     </div>
 
@@ -47,6 +47,47 @@
       <small>Source: <a href="http://github.com/jmw86069/jamses/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.0.50.900" id="jamses-0050900">jamses 0.0.50.900<a class="anchor" aria-label="anchor" href="#jamses-0050900"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-0-50-900">bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-50-900"></a></h3>
+<ul><li>
+<p><code><a href="../reference/plot_sedesign.html">plot_sedesign()</a></code></p>
+<ul><li>Fixed error when plotting a twoway contrast and one of the oneway contrast components in the opposite orientation of the twoway contrast components. Only observed in unique cases with a subset of contrasts.</li>
+<li>Fixed errors ultimately caused by having duplicated <code>contrast_names</code> in the <code>SEDesign</code> object. Updated <code>contrast_names&lt;-</code> method to throw an error with clear message.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-functions-0-0-50-900">new functions<a class="anchor" aria-label="anchor" href="#new-functions-0-0-50-900"></a></h3>
+<ul><li>
+<p><code><a href="../reference/filter_contrast_names.html">filter_contrast_names()</a></code></p>
+<ul><li>Experimental function intended to help reduce “all-vs-all” style contrasts to those with one specific control factor level, per design factor.</li>
+<li>Driven by <code>slicejam</code> design with 5 treatments, 3 genotypes, which produced 75 total oneway and twoway contrasts. Yike. Instead this function produces 30 total contrasts, only 22 oneway contrasts versus the baseline level per factor.</li>
+</ul></li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.0.49.900" id="jamses-0049900">jamses 0.0.49.900<a class="anchor" aria-label="anchor" href="#jamses-0049900"></a></h2>
+<div class="section level3">
+<h3 id="new-function-0-0-49-900">new function<a class="anchor" aria-label="anchor" href="#new-function-0-0-49-900"></a></h3>
+<ul><li>
+<p><code><a href="../reference/se_rbind.html">se_rbind()</a></code></p>
+<ul><li><p>Wrapper function to automate steps required for <code>SummarizedExperiment::rbind()</code></p></li>
+<li><p>Confirms that no <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames()</a></code> are shared across <code>se_list</code>.</p></li>
+<li><p>Optionally edits <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> for each object, so they can be compared.</p></li>
+<li><p>Determines shared <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code>, discarding other columns.</p></li>
+<li><p>Optionally subsets <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> by <code>colnames_keep</code>.</p></li>
+<li>
+<p>Adjusts <code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData()</a></code> in one of two ways:</p>
+<ol style="list-style-type: decimal"><li>
+<code>colData_action="identical"</code>: keeps only colData columns which have identical values across <code>se_list</code>, discarding other columns. This option is default, since it retains common annotations.</li>
+<li>
+<code>colData_action="all"</code>: keeps all colData columns, using a delimiter between multiple values whenever the values differ across <code>se_list</code>. This option is useful for detailed record-keeping, but the annotations are not likely to be useful otherwise.</li>
+</ol></li>
+<li><p>finally it calls <code>SummarizedExperiment::rbind()</code> returning one valid <code>SummarizedExperiment</code> object.</p></li>
+</ul></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.0.48.900" id="jamses-0048900">jamses 0.0.48.900<a class="anchor" aria-label="anchor" href="#jamses-0048900"></a></h2>
 <div class="section level3">
