@@ -272,3 +272,92 @@ sedesign_to_factors <- function
    # colnames(samples_df) <- factor_names;
    return(samples_df)
 }
+
+#' Convert SEDesign contrasts to data.frame of design factors
+#'
+#' Convert SEDesign contrasts to data.frame of design factors
+#'
+#' @family jam experiment design
+#'
+#' @returns `data.frame` with factors in each column, and values
+#'    indicating either individual factor levels, or comparison
+#'    of two factor levels.
+#'
+#' @param contrast_names `character` vector of contrast names
+#' @param sedesign `SEDesign` object, used when `contrast_names` is
+#'    not supplied.
+#' @param factor_sep `character` string delimited between factors
+#'    used in each group name. It is passed to `contrast2comp()`
+#'    as `contrast_factor_delim`.
+#' @param factor_names `character` vector of colnames to use for the resulting
+#'    `data.frame`, typically the name of each experimental factor.
+#' @param verbose `logical` indicating whether to print verbose output.
+#' @param ... additional arguments are passed to `contrast2comp()`
+#'    as relevant.
+#'
+#' @examples
+#' group_names <- paste0(
+#'    rep(c("UL3", "dH1A", "dH1B"), each=5), "_",
+#'    c("Veh", "DEX", "PMA", "SF", "Ins"))
+#' sedesign <- groups_to_sedesign(group_names)
+#' contrasts_to_factors(sedesign)
+#'
+#' @export
+contrasts_to_factors <- function
+(contrast_names=NULL,
+ sedesign=NULL,
+ factor_names=NULL,
+ factor_sep="_",
+ rowname=c("contrast", "comp"),
+ verbose=FALSE,
+ ...)
+{
+   # validate input data
+   rowname <- match.arg(rowname);
+   if (length(contrast_names) == 1 && "SEDesign" %in% class(contrast_names)) {
+      if (verbose) {
+         jamba::printDebug("contrasts_to_factors(): ",
+            "Accepting SEDesign input in contrast_names.")
+      }
+      sedesign <- contrast_names;
+      contrast_names <- NULL;
+   }
+   if (length(contrast_names) == 0) {
+      if (length(sedesign) == 0) {
+         stop("You must supply either contrast_names or sedesign.")
+      }
+      if (!"SEDesign" %in% class(sedesign)) {
+         stop("sedesign must be class 'SEDesign'.")
+      }
+      if (verbose) {
+         jamba::printDebug("contrasts_to_factors(): ",
+            "Extracting contrast_names from SEDesign.")
+      }
+      contrast_names <- contrast_names(sedesign);
+   }
+
+   # ensure contrast_names are unique
+   contrast_names <- unique(contrast_names);
+
+   # determine comps
+   if (verbose) {
+      jamba::printDebug("contrasts_to_factors(): ",
+         "Converting contrasts to comps.")
+   }
+   comps <- contrast2comp(contrast_names,
+      contrast_factor_delim=factor_sep,
+      ...)
+   comps_df <- data.frame(jamba::rbindList(
+      strsplit(comps, ":")))
+   if (length(factor_names) == ncol(comps_df)) {
+      colnames(comps_df) <- factor_names;
+   }
+   # assign contrast_names as rownames
+   if ("contrast" %in% rowname) {
+      rownames(comps_df) <- contrast_names;
+   } else {
+      rownames(comps_df) <- comps;
+   }
+   return(comps_df);
+}
+

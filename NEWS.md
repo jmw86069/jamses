@@ -1,3 +1,20 @@
+# jamses 0.0.51.900
+
+## new functions
+
+* `contrasts_to_factors()`
+
+   * simple function to convert contrasts to a `data.frame` where each
+   column is an experimental factor, and in the case of contrasts,
+   at least one column per row should represent a comparison of
+   two factor levels.
+
+* `contrasts_to_venn_setlists()`
+
+   * Convenience function to subset an overall set of contrasts to something
+   meaningful to use in Venn diagrams. Mainly intended for RMarkdown use
+   where the set of contrasts is not always known upfront.
+
 # jamses 0.0.50.900
 
 ## bug fixes

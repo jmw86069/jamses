@@ -349,6 +349,7 @@ plot_sedesign(sedesign, which_contrasts=which(is_twoway),
 Other jam experiment design: 
 \code{\link{check_sedesign}()},
 \code{\link{contrast_colors_by_group}()},
+\code{\link{contrasts_to_factors}()},
 \code{\link{filter_contrast_names}()},
 \code{\link{groups_to_sedesign}()},
 \code{\link{sedesign_to_factors}()}
