@@ -16,6 +16,7 @@
    * Convenience function to subset an overall set of contrasts to something
    meaningful to use in Venn diagrams. Mainly intended for RMarkdown use
    where the set of contrasts is not always known upfront.
+   * Fixed early issue where certain sets of Venn results were not created.
 
 ## changes to existing functions
 

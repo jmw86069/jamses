@@ -95,7 +95,9 @@ contrasts_to_venn_setlists <- function
    # extract subsets of contrasts by shared factors
    venn_setlist_comps <- unlist(recursive=FALSE, jamba::rmNULL(
       lapply(jamba::nameVector(colnames(comps_df)), function(icol){
-         # jamba::printDebug("icol: ", icol);# debug
+         if (verbose) {
+            jamba::printDebug("icol: ", icol);# debug
+         }
          xcols <- setdiff(colnames(comps_df), icol);
          subcomps_df <- subset(comps_df, grepl("-", comps_df[[icol]]))
          if (!TRUE %in% include_singlefactor) {
@@ -116,14 +118,33 @@ contrasts_to_venn_setlists <- function
             subcomps_df[[icol1]] <- factor(subcomps_df[[icol1]],
                levels=unique(subcomps_df[[icol1]]));
          }
+         if (verbose) {
+            jamba::printDebug("subcomps_df:");print(subcomps_df);# debug
+         }
          if (length(xcols) == 0) {
             return(list(subcomps_df))
          }
+         splitlist <- lapply(xcols, function(xcol){
+            subcomps_df[[xcol]]
+         })
+         # split by oneway or multiway
+         m1 <- jamba::pasteByRow(do.call(cbind, lapply(xcols, function(xcol){
+            grepl("-", subcomps_df[[xcol]])*1 + 1
+         })))
+         splitlist <- c(splitlist,
+            list(depth=m1))
+         print(m1);
          splitcomps_dfs <- unlist(recursive=FALSE,
-            lapply(xcols, function(xcol){
-               # jamba::printDebug("xcol: ", xcol);# debug
-               splitcomps_df <- split(subcomps_df, subcomps_df[[xcol]]);
-               # print(splitcomps_df);# debug
+            lapply(splitlist, function(splitvector){
+               # if (verbose) {
+               #    jamba::printDebug("xcol: ", xcol);# debug
+               # }
+               splitcomps_df <- split(subcomps_df, splitvector);
+               splitcomps_df <- splitcomps_df[
+                  jamba::sdim(splitcomps_df)$rows > 1];
+               if (verbose) {
+                  print(splitcomps_df);# debug
+               }
                # optionally sub-split again
                splitcomps_df2 <- jamba::rmNULL(unlist(recursive=FALSE,
                   lapply(splitcomps_df, function(splitcomp_df){
@@ -152,5 +173,9 @@ contrasts_to_venn_setlists <- function
          rownames(idf)
       }
    })
+
+   # remove duplicates
+   setlist_names <- setlist_names[!duplicated(setlist_names)];
+
    return(setlist_names);
 }
