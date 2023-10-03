@@ -3,6 +3,10 @@
 
 ## 02oct2023
 
+* `contrast_names()<-`
+
+   * validate the supplied `value` and print error message when incompatible.
+
 * `plot_sedesign()`
 
    * consider easy filter to hide two-way contrasts

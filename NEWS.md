@@ -1,5 +1,7 @@
 # jamses 0.0.51.900
 
+* added `cli` to package dependencies, to use messaging.
+
 ## new functions
 
 * `contrasts_to_factors()`
@@ -14,6 +16,13 @@
    * Convenience function to subset an overall set of contrasts to something
    meaningful to use in Venn diagrams. Mainly intended for RMarkdown use
    where the set of contrasts is not always known upfront.
+
+## changes to existing functions
+
+* `contrast_names<-`
+
+   * now catches errors, printing an informative message, and returns
+   the original data without subsetting.
 
 # jamses 0.0.50.900
 

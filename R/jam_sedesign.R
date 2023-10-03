@@ -576,10 +576,20 @@ setMethod("contrast_names<-",
       if (any(duplicated(value))) {
          stop("contrast_names cannot be duplicated.")
       }
-      contrast_matrix <- limma::makeContrasts(
-         contrasts=value,
-         levels=object@design)
-      object@contrasts <- contrast_matrix;
-      validate_sedesign(object);
+      object <- tryCatch({
+         object@contrasts <- limma::makeContrasts(
+            contrasts=value,
+            levels=object@design)
+         validate_sedesign(object);
+      }, error=function(e){
+         cli::cli_alert_danger(paste(
+            "{.field contrast_names} were not compatible with",
+            "{.field design(sedesign)}.",
+            "No subsetting was performed."))
+         cli::cli_alert_danger(
+            cli::format_error(e))
+         object
+      })
+      object
    }
 )

@@ -23,7 +23,8 @@ Imports: jamba(>= 0.0.95.900),
    limma,
    ComplexHeatmap (>= 2.13.4),
    multienrichjam,
-   amap
+   amap,
+   cli
 Suggests:
     genejam,
     venndir,
