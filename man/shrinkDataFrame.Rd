@@ -40,6 +40,7 @@ Other jamses utilities:
 \code{\link{se_rbind}()},
 \code{\link{shrink_df}()},
 \code{\link{strsplitOrdered}()},
+\code{\link{sub_split_vector}()},
 \code{\link{update_function_params}()},
 \code{\link{update_list_elements}()}
 }

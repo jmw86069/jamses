@@ -1,3 +1,25 @@
+# jamses 0.0.52.900
+
+## updates to existing functions
+
+* `contrasts_to_venn_setlists()`
+
+   * fixed missing contrasts in certain designs
+   * added method to split "equivalent" subset of contrasts using
+   `max_venn_size` which simply subdivides remaining contrasts into
+   subsets when needed.
+   * Removed splitting contrasts solely by depth, because it produced
+   too much nonsense.
+   * Added example showing how to plot the resulting contrasts with
+   `plot_sedesign()`, which might become a useful "you are here" type
+   of schematic to accompany a Venn diagram. Ideally, the `contrast_colors`
+   should match the `set_colors` in `venndir()` for consistency.
+
+## new functions
+
+* `sub_split_vector()` is an internal function, used to split venn sets
+by `max_venn_size`, but in its own function because it may get some tweaks.
+
 # jamses 0.0.51.900
 
 * added `cli` to package dependencies, to use messaging.

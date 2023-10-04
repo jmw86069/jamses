@@ -10,7 +10,9 @@ contrasts_to_venn_setlists(
   sedesign = NULL,
   include_multifactor = TRUE,
   include_singlefactor = TRUE,
+  factor_names = NULL,
   contrast_style = c("contrast", "comp", "factors"),
+  max_venn_size = 4,
   verbose = FALSE,
   ...
 )
@@ -38,6 +40,27 @@ single-factor contrasts in the Venn diagram logic.
 Note: One of \code{include_multifactor} and \code{include_singlefactor}
 must be true.}
 
+\item{contrast_style}{\code{character} string indicating how to return
+the resulting Venn set lists:
+\itemize{
+\item \code{"contrast"} (default) returns a \code{list} with contrast names
+\item \code{"comp"} returns a \code{list} with comp names from \code{contrast2comp()}
+\item \code{"factors"} returns a \code{data.frame} from \code{contrasts_to_factors()}
+with one column per design factor. In this case it may be useful
+to pass \code{factor_names} in order to assign column names to
+the factor columns.
+}}
+
+\item{max_venn_size}{\code{numeric} maximum number of groups to include
+per Venn diagram. When the number of contrasts to be included
+in a Venn set contains one extra contrast, the last two sets will
+be adjusted to accomodate the extra set:
+\itemize{
+\item when \code{max_venn_size=2} the last set will contain 3 members;
+\item when \code{max_venn_size=3} (or higher) the last set will contain 2 members,
+and the previous set will contain \code{(max_venn_size - 1)} members.
+}}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are passed to \code{contrasts_to_factors()}.}
@@ -59,6 +82,29 @@ experimental "factors" may themselves involve a comparison.
 The process is currently being tested for two-factor design
 scenarios, and will be extended to handle higher factor
 designs in future.
+\subsection{The process}{
+\itemize{
+\item Contrasts are converted to \code{data.frame} with \code{contrasts_to_factors()}
+\item Each factor column is iterated to produce sets of contrasts as follows:
+\itemize{
+\item The factor \code{data.frame} is subset for rows with a comparison
+in the factor column.
+\item When \code{include_multifactor=FALSE} (not default) then data is
+filtered to remove rows with comparisons in any other factor columns.
+\item When \code{include_singlefactor=FALSE} (not default) then data is
+filtered to remove rows with single values in any other factor columns.
+\item The remaining rows are iteratively split using values in the other
+factor columns.
+\item Remaining rows are also iteratively split by the depth of the contrast,
+oneway comparisons, and twoway comparisons.
+\item If any subset contains more than \code{max_venn_size} rows, it is first
+split by the control factor level in the factor comparison, then
+it is split by the depth of the comparison.
+\item In all cases, the resulting sets are split into subsets with
+size \code{max_venn_size}.
+}
+}
+}
 }
 \examples{
 group_names <- paste0(
@@ -68,8 +114,18 @@ sedesign <- groups_to_sedesign(group_names)
 
 # by default it returns contrast names
 venn_setlists <- contrasts_to_venn_setlists(sedesign=sedesign,
+   include_multifactor=FALSE,
    factor_names=c("Genotype", "Treatment"))
-venn_setlists
+jamba::sdim(venn_setlists)
+
+# plot the contrasts included in one particular Venn setlist
+par("mfrow"=c(2, 2));
+for (n in 1:4) {
+setest <- sedesign;
+contrast_names(setest) <- venn_setlists[[n]];
+plot_sedesign(setest, contrast_style="none")
+}
+par("mfrow"=c(1, 1))
 
 venn_set_comps <- contrasts_to_venn_setlists(sedesign=sedesign,
    contrast_style="comp",

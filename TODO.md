@@ -1,6 +1,13 @@
 
 # TODO for jamses
 
+## 04oct2023
+
+* Done. fix bug in `contrasts_to_venn_setlists()` resulting in some sets with
+>4 entries.
+* Consider integrating `sestats` with `contrasts_to_venn_setlists()` so that
+the output is actually a `list` suitable for `venndir::venndir()`.
+
 ## 02oct2023
 
 * `contrast_names()<-`
