@@ -979,7 +979,7 @@ heatmap_se <- function
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
    # Note: This process does not subset by `rows` or `isamples` yet
-   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+   if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
       rowData_se <- data.frame(check.names=FALSE,
          rowData(se));
       colData_se <- data.frame(check.names=FALSE,
@@ -1507,7 +1507,7 @@ heatmap_se <- function
    # pull assay data separately so we can tolerate other object types
    # Note columns are not subset here so they can be used during centering.
    # After centering, isamples is used to subset columns as needed.
-   if (grepl("SummarizedExperiment", ignore.case=TRUE, class(se))) {
+   if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
       se_matrix <- assays(se[gene_hits, ])[[assay_name]];
    } else {
       se_matrix <- assayData(se[gene_hits, ])[[assay_name]];

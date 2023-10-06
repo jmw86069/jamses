@@ -413,7 +413,7 @@ comp2contrast <- function
    comps1 <- strsplit(comps, comp_factor_delim_pattern)
    contrast_names <- sapply(seq_along(comps1), function(i){
       # if input contains parentheses, try to re-build piecewise
-      if (grepl("[()]", comps[[i]])) {
+      if (any(grepl("[()]", comps[[i]]))) {
          comppar <- comps[[i]];
          comppar1 <- strsplit(
             gsub("^[()]+|[()]+$", "", comppar),
