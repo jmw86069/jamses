@@ -16,8 +16,10 @@ heatmap_column_group_labels(
   group_box_lwd = 2,
   group_box_outer = TRUE,
   font_cex = 1,
-  hm_title_base = "centered\\nexpression_column_title_",
-  hm_body_base = "centered\\nexpression_heatmap_body_1_",
+  hm_title_base = NULL,
+  hm_body_base = NULL,
+  hm_title_base_default = "centered\\nexpression_column_title_",
+  hm_body_base_default = "centered\\nexpression_heatmap_body_1_",
   y_offset_lines = 0,
   endlines = 1,
   verbose = FALSE,
@@ -71,14 +73,17 @@ the heatmap contents. This option is only active when
 
 \item{hm_title_base}{\code{character} string used to search for matching
 heatmap column title grid layout regions. It is derived from the
-\code{Heatmap} argument \code{name}, usually followed by \verb{"_column_title_". The grid layout regions can be summarized with }detect_heatmap_components()`.}
+\code{Heatmap} argument \code{name}, usually followed by \verb{"_column_title_". When }NULL\verb{the default values are defined by}detect_heatmap_components()\code{element}column_title_components`.}
 
-\item{hm_body_base}{\code{character} string ussed to search for matching
+\item{hm_body_base}{\code{character} string used to search for matching
 heatmap body grid layout regions.  It is derived from the
-\code{Heatmap} argument \code{name}, usually followed by \verb{"_body_1_". The grid layout regions can be summarized with }detect_heatmap_components()`.
+\code{Heatmap} argument \code{name}, usually followed by \verb{"_body_1_". When }NULL\verb{the default values are defined by}detect_heatmap_components()\code{element}heatmap_body_components`.
 Note: Currently the group box only includes the first row_split,
 although it is intended to include the entire set of heatmap
 rows in future iterations.}
+
+\item{hm_title_base_default, hm_body_base_default}{\code{character} string
+used as reference for hm_title_base,hm_body_base.}
 
 \item{y_offset_lines}{\code{numeric} adjustment used to shift the text
 label and underline by this many lines of character height.
@@ -145,7 +150,7 @@ or when the column slice groups need to be customized in some way.
 
 \subsection{Additional requirements}{
 \itemize{
-\item The Heatmap \code{column_title} should be empty, so that no text
+\item The Heatmap \code{column_title} should (usually) be empty, so that no text
 labels are drawn which may overlap the labels drawn by this function.
 Use \code{column_title=" "} (with a whitespace character) to prevent
 \code{ComplexHeatmap::Heatmap()} from using its internal default text label.
@@ -170,6 +175,17 @@ argument value should be
 \item use \code{detect_heatmap_components()} to help identify the appropriate
 \code{grid} elements available to be used by this function.
 }
+
+When the heatmap contains \code{"column_title"} elements defined in
+\code{ComplexHeatmap::list_components()}, and there is no element
+\code{"global_column_title"}, the \code{y_offset_lines} is adjusted down so that
+the position is inside the column_title region, typically below the
+column_title when using trailing whitespace (see argument
+\code{hm_title_buffer} in \code{heatmap_se()}). However, when element
+\code{"global_column_title"} is present, the \code{y_offset_lines} are not adjusted,
+so that the position is above the column_title region. In this case, to
+position the labels below the column_title, you can adjust
+\code{y_offset_lines} down manually like this: \code{y_offset_lines=-9}.
 }
 
 \subsection{Todo}{

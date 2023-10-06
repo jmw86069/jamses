@@ -1,3 +1,40 @@
+# jamses 0.0.53.900
+
+## updates to existing functions
+
+* `heatmap_se()`
+
+   * new argument: `column_title` mainly used for convenience alongside
+   the next new argument:
+   * new argument: `apply_hm_column_title=FALSE` will optionally hide any
+   existing `column_title` and instead applies the heatmap title `hm_title`
+   to the `column_title`. This option is convenient when adding two heatmaps
+   together, since it ensures each heatmap has its own individual title.
+   The downside is that the usual `column_title` defined by `column_split`
+   will not be shown.
+   * new argument: `hm_title_buffer` adds an optional number of whitespace
+   lines to the end of the heatmap title `hm_title`. This whitespace is
+   useful when calling `heatmap_column_group_labels()` which draws additional
+   text above the heatmap.
+
+* `heatmap_column_group_labels()`
+
+   * arguments `hm_title_base`,`hm_body_base` are now auto-detected using
+   `detect_heatmap_components()` by default.
+   * when there is no `global_column_title` in the drawn heatmap, it means
+   the heatmap itself did not have `column_title`, and therefore the output
+   of this function is shifted down so it appears on the bottom of the
+   `column_title` elements. This behavior is intended when using the new
+   `heatmap_se()` argument `apply_hm_column_title=TRUE` to draw the heatmap
+   title in the `column_title` region. It is recommended to use
+   `hm_title_buffer=4` to add sufficient whitespace below the column title
+   to allow room for the column group labels.
+   In principle, the column group labels should behave the same as before
+   when there is a `hm_title` included above the heatmap.
+   And if both `global_column_title` and `column_title` elements are present,
+   by default the labels from this function are placed above the `column_title`
+   and below the `global_column_title`. **whew**
+
 # jamses 0.0.52.900
 
 ## updates to existing functions

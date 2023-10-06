@@ -2,7 +2,7 @@
 % Please edit documentation in R/jam_sestats_hm.R
 \name{heatmap_se}
 \alias{heatmap_se}
-\title{Expression heatmap of sestats hits}
+\title{Heatmap for SummarizedExperiment data}
 \usage{
 heatmap_se(
   se,
@@ -57,6 +57,9 @@ heatmap_se(
   show_row_dend = length(rows) < 2000,
   mark_rows = NULL,
   mark_labels_gp = grid::gpar(),
+  column_title = character(0),
+  apply_hm_column_title = FALSE,
+  hm_title_buffer = 0,
   show_heatmap_legend = TRUE,
   show_top_legend = TRUE,
   show_left_legend = TRUE,
@@ -425,6 +428,31 @@ matching entries will be labeled.}
 \item{mark_labels_gp}{\code{grid::gpar} to customize the font used by labels
 when \code{mark_rows} is supplied.}
 
+\item{column_title}{\code{character} optional title to include at the top
+of the heatmap. It can include a single value, or multiple values
+representing each \code{column_split} in the order they appear.
+\itemize{
+\item Note: This argument is ignored when \code{apply_hm_column_title=TRUE}.
+\item When \code{column_title=character(0)} (default) or \code{column_title=""},
+the \code{ComplexHeatmap::Heatmap()} uses its usual default behavior,
+which is to assign \code{column_title} using \code{column_split} values
+when they are being used.
+}}
+
+\item{apply_hm_column_title}{\code{logical} (default FALSE) whether to
+apply the heatmap title to \code{column_title}. This option makes it
+convenient to display the title atop the heatmap without additional
+effort, however it hides any other \code{column_title} created by
+using \code{column_split}.
+When using both \code{column_split} and \code{apply_hm_column_title=TRUE}
+it may be useful to call \code{heatmap_column_group_labels()}.}
+
+\item{hm_title_buffer}{\code{numeric} number of whitespace lines to add
+to the heatmap title \verb{(attr(hm, "hm_title")} between the title
+and the heatmap below it. This whitespace can be useful when also
+calling \code{heatmap_column_group_labels()}, to provide enough space
+to draw the additional annotations.}
+
 \item{show_heatmap_legend, show_left_legend, show_top_legend}{\code{logical}
 indicating whether each legend should be displayed. Sometimes there
 are too many annotations, and the color legends can overwhelm the
@@ -490,7 +518,7 @@ values below the \code{color_floor} which can be useful in some circumstances.}
 \item{lens}{\code{numeric} value passed to \code{colorjam::col_div_xf()} to control
 the intensity of color gradient applied to the numeric range.}
 
-\item{rename_contrasts, rename_alt_contrasts}{\code{logical} indicating
+\item{rename_contrasts, rename_alt_contrasts}{\code{logical} (default TRUE)
 whether to rename long contrast names in \code{sestats} and \code{alt_sestats}
 using \code{contrast2comp()}.}
 
@@ -522,10 +550,11 @@ reflect the actual size of each pixel.}
 \item{...}{additional arguments are passed to supporting functions.}
 }
 \description{
-Expression heatmap of sestats hits
+Heatmap for SummarizedExperiment data
 }
 \details{
-Note: Still a work in progress.
+Note: Still a work in progress. This function is the basis
+for the majority of heatmaps created for Omics data.
 
 This function is a bold attempt to simplify the intricate task
 of creating an expression heatmap, using \code{ComplexHeatmap::Heatmap()},
@@ -534,35 +563,32 @@ given a \code{SummarizedExperiment} object.
 It attempts to enable:
 \itemize{
 \item selection of \code{assays(se)} to use in the heatmap
-\item Use of \code{rowData(se)} or \code{colData(se)} to produce row and
+\item use of \code{rowData(se)} or \code{colData(se)} to produce row and
 column annotations, respectively.
-\item Re-use of defined colors for annotations.
-\item Use of color gradient and numeric default for typical heatmaps.
-\item Convenient row data centering, versus all columns, or controls,
-or centering of independent centering groups.
-\item Convenient display of statistical hits beside the heatmap.
-By default rows are subsetted to show only statistical hits.
-\item Row and column split by \code{rowData(se)} and \code{colData(se)} annotations.
+\item re-use of defined colors for annotations, see \code{platjam::design2colors()}
+\item define and adjust heatmap color gradient and scale
+\item data centering by row: versus all columns, or specific controls,
+optionally within independent centering groups
+\item filtering rows to show only the statistical hits
+\item display annotation of statistical hits beside the heatmap
+\item split rows or columns using \code{rowData(se)} and \code{colData(se)}, respectively
+\item heatmap title to display key options used, for easy reference
 }
 \subsection{Additional Features}{
 \itemize{
-\item Data centering can be disabled with \code{centerby_colnames=FALSE}.
-\item Alternative hits can be displayed using \code{alt_sestats}. It does not
+\item data centering can be disabled with \code{centerby_colnames=FALSE}.
+\item alternative hits can be displayed using \code{alt_sestats}. It does not
 subset heatmap rows, it inherits rows from \code{sestats}.
-\item Display a subset of columns after centering, useful to hide
+\item display a subset of columns after row centering, useful to hide
 the control group for certain figures.
-\item Option to display sample correlation heatmap, which re-uses the same data
+\item option to display correlation heatmap, using the same data
 centering, then calculates Pearson correlation across sample columns.
-\item Various labels and legend grids can be customized to exact sizes
-based upon \code{grid::gpar()} and \code{grid::unit()} definitions, useful
-for publication figures.
-\item Row mark annotations can be used to label only a subset of rows,
-useful when the heatmap includes far too many labels to read them all.
-\item Specific row split subclusters can be visualized using
-\code{row_subcluster} to define the specific \code{row_split} entry, useful
-for drilling into a specific subcluster from hierarchical clustering
-without the manual effort to extract the subset of rows in that cluster
-then re-running a new \code{heatmap_se()}.
+\item labels and legend grids can be customized to exact sizes
+with \code{grid::gpar()} and \code{grid::unit()} definitions, for manuscript figures.
+\item mark annotations option to label a subset of rows
+\item row subclusters can be visualized using \code{row_subcluster} to drill down
+into specific subclusters from hierarchical clustering, k-means clustering,
+or any \code{row_split}.
 }
 }
 
@@ -577,6 +603,16 @@ of resulting data. To subset samples involved in centering itself,
 either subset the input \code{se} data, or supply \code{controlSamples} to
 define a subset of samples used as the baseline in centering.
 See \code{jamma::centerGeneData()} for more details.
+
+Paired data, also called repeated measures data, can be visualized
+by including the pairing as \code{centerby_colnames} so that centering
+is calculated within each pairing subgroup. In this case if also using
+\code{controlSamples} to define a "time zero" or "baseline", then all
+baseline samples will have exactly zero, if there is only one replicate
+per pairing group at the baseline. In this case, it may be useful
+to create the full heatmap once to confirm the centering is performing
+as intended, then create a second heatmap using \code{isamples} to show only
+the non-baseline samples - thus removing the large chunk of values with 0.
 
 Note: data centering can be disabled with \code{centerby_colnames=FALSE}.
 }

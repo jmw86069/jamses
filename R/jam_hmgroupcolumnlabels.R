@@ -100,7 +100,7 @@ detect_heatmap_components <- function
 #'
 #' ## Additional requirements
 #'
-#' * The Heatmap `column_title` should be empty, so that no text
+#' * The Heatmap `column_title` should (usually) be empty, so that no text
 #' labels are drawn which may overlap the labels drawn by this function.
 #' Use `column_title=" "` (with a whitespace character) to prevent
 #' `ComplexHeatmap::Heatmap()` from using its internal default text label.
@@ -123,6 +123,17 @@ detect_heatmap_components <- function
 #' `hm_title_base="centered\nabundance_column_title_"`.
 #' * use `detect_heatmap_components()` to help identify the appropriate
 #' `grid` elements available to be used by this function.
+#'
+#' When the heatmap contains `"column_title"` elements defined in
+#' `ComplexHeatmap::list_components()`, and there is no element
+#' `"global_column_title"`, the `y_offset_lines` is adjusted down so that
+#' the position is inside the column_title region, typically below the
+#' column_title when using trailing whitespace (see argument
+#' `hm_title_buffer` in `heatmap_se()`). However, when element
+#' `"global_column_title"` is present, the `y_offset_lines` are not adjusted,
+#' so that the position is above the column_title region. In this case, to
+#' position the labels below the column_title, you can adjust
+#' `y_offset_lines` down manually like this: `y_offset_lines=-9`.
 #'
 #' ## Todo
 #'
@@ -172,16 +183,18 @@ detect_heatmap_components <- function
 #' @param hm_title_base `character` string used to search for matching
 #'    heatmap column title grid layout regions. It is derived from the
 #'    `Heatmap` argument `name`, usually followed by `"_column_title_".
-#'    The grid layout regions can be summarized with
-#'    `detect_heatmap_components()`.
-#' @param hm_body_base `character` string ussed to search for matching
+#'    When `NULL` the default values are defined by
+#'    `detect_heatmap_components()` element `column_title_components`.
+#' @param hm_body_base `character` string used to search for matching
 #'    heatmap body grid layout regions.  It is derived from the
 #'    `Heatmap` argument `name`, usually followed by `"_body_1_".
-#'    The grid layout regions can be summarized with
-#'    `detect_heatmap_components()`.
+#'    When `NULL` the default values are defined by
+#'    `detect_heatmap_components()` element `heatmap_body_components`.
 #'    Note: Currently the group box only includes the first row_split,
 #'    although it is intended to include the entire set of heatmap
 #'    rows in future iterations.
+#' @param hm_title_base_default,hm_body_base_default `character` string
+#'    used as reference for hm_title_base,hm_body_base.
 #' @param y_offset_lines `numeric` adjustment used to shift the text
 #'    label and underline by this many lines of character height.
 #'    It is mainly used internally for iterative calls, when `hm_group_list`
@@ -207,8 +220,10 @@ heatmap_column_group_labels <- function
  group_box_lwd=2,
  group_box_outer=TRUE,
  font_cex=1,
- hm_title_base="centered\nexpression_column_title_",
- hm_body_base="centered\nexpression_heatmap_body_1_",
+ hm_title_base=NULL,
+ hm_body_base=NULL,
+ hm_title_base_default="centered\nexpression_column_title_",
+ hm_body_base_default="centered\nexpression_heatmap_body_1_",
  y_offset_lines=0,
  endlines=1,
  verbose=FALSE,
@@ -229,6 +244,34 @@ heatmap_column_group_labels <- function
    }
    if (is.logical(group_box_outer)) {
       group_box_outer <- group_box_outer * 1;
+   }
+
+   # try to detect heatmap components when possible
+   dhc <- detect_heatmap_components();
+   if (length(hm_title_base) == 0 || length(hm_body_base) == 0) {
+      if (length(hm_title_base) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_column_group_labels(): ",
+               "Assigning hm_title_base using detect_heatmap_components(): '",
+               dhc$column_title_components, "'")
+         }
+         hm_title_base <- dhc$column_title_components;
+      }
+      if (length(hm_body_base) == 0) {
+         if (verbose) {
+            jamba::printDebug("heatmap_column_group_labels(): ",
+               "Assigning hm_body_base using detect_heatmap_components(): '",
+               dhc$heatmap_body_components, "'")
+         }
+         hm_body_base <- dhc$heatmap_body_components;
+      }
+   }
+
+   # determine whether there is also a "global_column_title"
+   # - if no global title, assume the hm_title is applied to column_title
+   hlc <- ComplexHeatmap::list_components();
+   if (!jamba::igrepHas("global_column_title", hlc)) {
+      y_offset_lines <- y_offset_lines - 4;
    }
 
    # small helper function
@@ -311,7 +354,7 @@ heatmap_column_group_labels <- function
          hm_body_base_t <- use_hm_body_components;
          hm_body_base_b1 <- tail(unique(gsub("_[0-9]+$", "_",
             setdiff(
-               vigrep(gsub("_1_", "_[0-9]+_", hm_body_base), all_hm_components),
+               jamba::vigrep(gsub("_1_", "_[0-9]+_", hm_body_base), all_hm_components),
                use_hm_body_components))), 1)
          hm_body_base_b <- paste0(hm_body_base_b1, seq_along(hm_group_list))
       } else {

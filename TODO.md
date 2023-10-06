@@ -1,6 +1,17 @@
 
 # TODO for jamses
 
+## 06oct2023
+
+* `heatmap_se()`
+
+   * Add optional argument to apply heatmap title to `column_title`,
+   so that it appears above the heatmap automatically.
+   **It will override showing `column_split` titles.** So it may be best
+   practice to use `heatmap_column_group_labels()`
+   * Consider argument to add whitespace padding to the heatmap title,
+   to make it more convenient to use `heatmap_column_group_labels()`.
+
 ## 04oct2023
 
 * Done. fix bug in `contrasts_to_venn_setlists()` resulting in some sets with

@@ -1,9 +1,10 @@
 
-#' Expression heatmap of sestats hits
+#' Heatmap for SummarizedExperiment data
 #'
-#' Expression heatmap of sestats hits
+#' Heatmap for SummarizedExperiment data
 #'
-#' Note: Still a work in progress.
+#' Note: Still a work in progress. This function is the basis
+#' for the majority of heatmaps created for Omics data.
 #'
 #' This function is a bold attempt to simplify the intricate task
 #' of creating an expression heatmap, using `ComplexHeatmap::Heatmap()`,
@@ -12,35 +13,32 @@
 #' It attempts to enable:
 #'
 #' * selection of `assays(se)` to use in the heatmap
-#' * Use of `rowData(se)` or `colData(se)` to produce row and
+#' * use of `rowData(se)` or `colData(se)` to produce row and
 #' column annotations, respectively.
-#' * Re-use of defined colors for annotations.
-#' * Use of color gradient and numeric default for typical heatmaps.
-#' * Convenient row data centering, versus all columns, or controls,
-#' or centering of independent centering groups.
-#' * Convenient display of statistical hits beside the heatmap.
-#' By default rows are subsetted to show only statistical hits.
-#' * Row and column split by `rowData(se)` and `colData(se)` annotations.
+#' * re-use of defined colors for annotations, see `platjam::design2colors()`
+#' * define and adjust heatmap color gradient and scale
+#' * data centering by row: versus all columns, or specific controls,
+#' optionally within independent centering groups
+#' * filtering rows to show only the statistical hits
+#' * display annotation of statistical hits beside the heatmap
+#' * split rows or columns using `rowData(se)` and `colData(se)`, respectively
+#' * heatmap title to display key options used, for easy reference
 #'
 #' ## Additional Features
 #'
-#' * Data centering can be disabled with `centerby_colnames=FALSE`.
-#' * Alternative hits can be displayed using `alt_sestats`. It does not
+#' * data centering can be disabled with `centerby_colnames=FALSE`.
+#' * alternative hits can be displayed using `alt_sestats`. It does not
 #' subset heatmap rows, it inherits rows from `sestats`.
-#' * Display a subset of columns after centering, useful to hide
+#' * display a subset of columns after row centering, useful to hide
 #' the control group for certain figures.
-#' * Option to display sample correlation heatmap, which re-uses the same data
+#' * option to display correlation heatmap, using the same data
 #' centering, then calculates Pearson correlation across sample columns.
-#' * Various labels and legend grids can be customized to exact sizes
-#' based upon `grid::gpar()` and `grid::unit()` definitions, useful
-#' for publication figures.
-#' * Row mark annotations can be used to label only a subset of rows,
-#' useful when the heatmap includes far too many labels to read them all.
-#' * Specific row split subclusters can be visualized using
-#' `row_subcluster` to define the specific `row_split` entry, useful
-#' for drilling into a specific subcluster from hierarchical clustering
-#' without the manual effort to extract the subset of rows in that cluster
-#' then re-running a new `heatmap_se()`.
+#' * labels and legend grids can be customized to exact sizes
+#' with `grid::gpar()` and `grid::unit()` definitions, for manuscript figures.
+#' * mark annotations option to label a subset of rows
+#' * row subclusters can be visualized using `row_subcluster` to drill down
+#' into specific subclusters from hierarchical clustering, k-means clustering,
+#' or any `row_split`.
 #'
 #' ## Data Centering
 #'
@@ -53,6 +51,16 @@
 #' either subset the input `se` data, or supply `controlSamples` to
 #' define a subset of samples used as the baseline in centering.
 #' See `jamma::centerGeneData()` for more details.
+#'
+#' Paired data, also called repeated measures data, can be visualized
+#' by including the pairing as `centerby_colnames` so that centering
+#' is calculated within each pairing subgroup. In this case if also using
+#' `controlSamples` to define a "time zero" or "baseline", then all
+#' baseline samples will have exactly zero, if there is only one replicate
+#' per pairing group at the baseline. In this case, it may be useful
+#' to create the full heatmap once to confirm the centering is performing
+#' as intended, then create a second heatmap using `isamples` to show only
+#' the non-baseline samples - thus removing the large chunk of values with 0.
 #'
 #' Note: data centering can be disabled with `centerby_colnames=FALSE`.
 #'
@@ -423,6 +431,26 @@
 #'    matching entries will be labeled.
 #' @param mark_labels_gp `grid::gpar` to customize the font used by labels
 #'    when `mark_rows` is supplied.
+#' @param column_title `character` optional title to include at the top
+#'    of the heatmap. It can include a single value, or multiple values
+#'    representing each `column_split` in the order they appear.
+#'    * Note: This argument is ignored when `apply_hm_column_title=TRUE`.
+#'    * When `column_title=character(0)` (default) or `column_title=""`,
+#'    the `ComplexHeatmap::Heatmap()` uses its usual default behavior,
+#'    which is to assign `column_title` using `column_split` values
+#'    when they are being used.
+#' @param apply_hm_column_title `logical` (default FALSE) whether to
+#'    apply the heatmap title to `column_title`. This option makes it
+#'    convenient to display the title atop the heatmap without additional
+#'    effort, however it hides any other `column_title` created by
+#'    using `column_split`.
+#'    When using both `column_split` and `apply_hm_column_title=TRUE`
+#'    it may be useful to call `heatmap_column_group_labels()`.
+#' @param hm_title_buffer `numeric` number of whitespace lines to add
+#'    to the heatmap title `(attr(hm, "hm_title")` between the title
+#'    and the heatmap below it. This whitespace can be useful when also
+#'    calling `heatmap_column_group_labels()`, to provide enough space
+#'    to draw the additional annotations.
 #' @param show_heatmap_legend,show_left_legend,show_top_legend `logical`
 #'    indicating whether each legend should be displayed. Sometimes there
 #'    are too many annotations, and the color legends can overwhelm the
@@ -475,7 +503,7 @@
 #'    values below the `color_floor` which can be useful in some circumstances.
 #' @param lens `numeric` value passed to `colorjam::col_div_xf()` to control
 #'    the intensity of color gradient applied to the numeric range.
-#' @param rename_contrasts,rename_alt_contrasts `logical` indicating
+#' @param rename_contrasts,rename_alt_contrasts `logical` (default TRUE)
 #'    whether to rename long contrast names in `sestats` and `alt_sestats`
 #'    using `contrast2comp()`.
 #' @param use_raster `logical` passed to `ComplexHeatmap::Heatmap()` to
@@ -713,6 +741,9 @@ heatmap_se <- function
  show_row_dend=length(rows) < 2000,
  mark_rows=NULL,
  mark_labels_gp=grid::gpar(),
+ column_title=character(0),
+ apply_hm_column_title=FALSE,
+ hm_title_buffer=0,
  show_heatmap_legend=TRUE,
  show_top_legend=TRUE,
  show_left_legend=TRUE,
@@ -1667,51 +1698,6 @@ heatmap_se <- function
       }
    }
 
-
-   # define heatmap
-   if (verbose && length(row_split) > 0) {
-      jamba::printDebug("heatmap_se(): ",
-         "row_split (pre-heatmap):");print(head(row_split, 20));
-   }
-
-   hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
-      matrix=se_matrix,
-      use_raster=use_raster,
-      top_annotation=top_annotation,
-      left_annotation=left_annotation,
-      right_annotation=right_annotation,
-      heatmap_legend_param=list(
-         border=legend_border_color,
-         color_bar="discrete",
-         at=legend_at,
-         labels=legend_labels,
-         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
-         grid_width=grid::unit(4 * legend_grid_cex, "mm"),
-         title_gp=legend_title_gp,
-         labels_gp=legend_labels_gp
-      ),
-      clustering_method_rows="ward.D",
-      column_split=column_split,
-      row_split=row_split,
-      row_title_rot=row_title_rot,
-      cluster_column_slices=cluster_column_slices,
-      cluster_row_slices=cluster_row_slices,
-      border=TRUE,
-      name=hm_name,
-      show_row_names=show_row_names,
-      show_row_dend=show_row_dend,
-      show_heatmap_legend=show_heatmap_legend,
-      row_labels=row_labels,
-      row_names_gp=row_names_gp,
-      column_names_gp=column_names_gp,
-      col=colorjam::col_div_xf(color_max,
-         lens=lens,
-         floor=color_floor,
-         ...),
-      cluster_columns=cluster_columns,
-      cluster_rows=cluster_rows,
-      ...)
-
    # define heatmap title using relevant arguments
    row_label <- NULL;
    if (length(row_type) > 0 && nchar(head(row_type, 1)) > 0) {
@@ -1737,7 +1723,68 @@ heatmap_se <- function
       ifelse(any(nchar(centerby_label) > 0),
          paste0(",\n", centerby_label),
          ""))
+   # optionally add whitespace buffer after the title
+   if (length(hm_title_buffer) == 1 && hm_title_buffer > 0) {
+      hm_title_buffer <- ceiling(hm_title_buffer);
+      hm_title <- paste0(hm_title,
+         paste0(rep("\n", hm_title_buffer),
+            collapse=""))
+   }
+   # optionally apply heatmap title to column_title
+   if (TRUE %in% apply_hm_column_title) {
+      column_title <- hm_title;
+      hm_title <- "";
+   }
+
+   # define heatmap
+   if (verbose && length(row_split) > 0) {
+      jamba::printDebug("heatmap_se(): ",
+         "row_split (pre-heatmap):");print(head(row_split, 20));
+   }
+   hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
+      matrix=se_matrix,
+      use_raster=use_raster,
+      top_annotation=top_annotation,
+      left_annotation=left_annotation,
+      right_annotation=right_annotation,
+      heatmap_legend_param=list(
+         border=legend_border_color,
+         color_bar="discrete",
+         at=legend_at,
+         labels=legend_labels,
+         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
+         grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+         title_gp=legend_title_gp,
+         labels_gp=legend_labels_gp
+      ),
+      clustering_method_rows="ward.D",
+      column_split=column_split,
+      column_title=column_title,
+      row_split=row_split,
+      row_title_rot=row_title_rot,
+      cluster_column_slices=cluster_column_slices,
+      cluster_row_slices=cluster_row_slices,
+      border=TRUE,
+      name=hm_name,
+      show_row_names=show_row_names,
+      show_row_dend=show_row_dend,
+      show_heatmap_legend=show_heatmap_legend,
+      row_labels=row_labels,
+      row_names_gp=row_names_gp,
+      column_names_gp=column_names_gp,
+      col=colorjam::col_div_xf(color_max,
+         lens=lens,
+         floor=color_floor,
+         ...),
+      cluster_columns=cluster_columns,
+      cluster_rows=cluster_rows,
+      ...)
+
+   # optionally apply heatmap title to column_title
    attr(hm_hits, "hm_title") <- hm_title;
+   if (length(column_title) > 0) {
+      attr(hm_hits, "column_title") <- column_title;
+   }
    if (debug) {
       ret_list <- list(
          hm=hm_hits,
