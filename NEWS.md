@@ -1,3 +1,17 @@
+# jamses 0.0.54.900
+
+## updates to existing functions
+
+* `plot_sedesign()`
+
+   * when `group_buffer` is adjusted, it also adjusts placement
+   of replicate labels `"n=3"` proportionally inside the group box.
+   * new argument `arrow_ex` where `NULL` is adjusted based upon the number
+   of contrast bumps per axis, so more parallel contrasts would cause
+   proportionally smaller arrow sizes.
+   * New argument `contrast_depths` to filter contrasts based upon depth:
+   1=oneway, 2=twoway. More convenient than filtering contrasts upfront.
+
 # jamses 0.0.53.900
 
 ## updates to existing functions

@@ -1,6 +1,116 @@
 
 # TODO for jamses
 
+## 11dec2023
+
+* `plot_sedesign()`
+
+   * When `contrast_depths=2` and supplying `sestats` it labels the one-way
+   and two-way contrasts, but should only label one-way contrasts.
+   The workaround is to alter `sestats$hit_array` to include only the
+   contrasts being displayed.
+
+* `heatmap_se()`
+
+   * consider some method to "group" the `sestats` contrasts, for example
+   sub-grouping them by which factor(s) are being compared.
+   Use `contrasts_to_factors()` to generate a table, then split by which
+   factors have comparisons (with delimiter `"-"`).
+
+## 04dec2023
+
+* `contrast2comp()` and `comp2contrast()`
+
+   * consider method that can convert contrasts inside stat colnames:
+   
+      * `"logFC factorA_factorB-factorC-factorB"` to
+      `"logFC factorA-factorD:factorB"`
+      * `"hit mgm5 adjp0.05 fc1 PNU_Control_Nano147car1-Veh_Control_Nano147car1"`
+      to `"hit mgm5 adjp0.05 fc1 PNU-Veh:Control:Nano147car1"`
+      * It therefore needs to detect the location of the contrast or comp,
+      convert that substring, then replace with the new value.
+
+* migrate `platjam::design2colors()`
+
+   * Consider adding SE-specific method
+   
+      * assign colors to `rowData()` and `colData()` in one step
+      * bonus points for sharing color assignments for shared terms 
+
+## 09nov2023
+
+* add documentation for generic methods, `contrasts()`, `contrast_names()`,
+`groups()`, `samples()`, etc.
+* consider DESeq2 support
+
+   * Research the equivalent design model, contrasts model for equivalent
+   comparisons in DESeq2 as used with limma-voom. Often people seem to
+   include only groups relevant to each contrast in the DESeq2 workflow,
+   unclear if this is recommended guidance.
+   
+      * Guidance is similar to limma-voom, include each sample group as
+      relevant to the overall comparisons, using `normgroup` to separate
+      subsets that are expected to differ substantially by sample type,
+      or where each subset may represent different variabilities.
+      * Therefore, this option would initially follow the limma-voom default
+      with user-defined, optional use of `normgroup` which can define
+      independent subsets of sample groups.
+      * There should probably be an option to perform each contrast in
+      its own independent subset, which would not be equivalent to `normgroup`,
+      for example "untreated", "treated1", "treated2" would imply three
+      one-way contrasts, and each contrast would be performed in its own
+      unique group-to-group analysis.
+   
+   * Include options specific to DESeq2:
+   
+      * lfcShrink method
+      * normalization method (or none)
+      * optional outlier removal (e.g. Cook's distance method)
+
+   * Decide how to handle stats column headers which differ from limma,
+   so they are easily used in downstream methods: `"P.Value"`, `"adj.P.Val"`,
+   `"logFC"`, etc.
+   * Consider returning dispersion data sufficient to produce the dispersion
+   QC plot to review. (Consider doing similar for `voom()` internals.)
+   * Consider including "method" as a dimension in `hit_array`,
+   so that limma-voom, DESeq2 could both be used and directly compared.
+   Similarly the `posthoc_method="DEqMS"` may be included so that
+   its effects can be compared to limma without the custom posthoc adjustment.
+
+* Create proper S4 `SEStats` object with methods
+
+   * `hit_array()` - access to the array of statistical hits by dimensions:
+   
+      * `cutoff_name`
+      * `contrast_name`
+      * `assay_name`
+      * `method_name` - Add this dimension to enable alternative methods
+   
+   * `hit_im()` - incidence `matrix` for specific dimensions in `hit_array`
+   * `hit_list()` - `list` of stat hit direction, named by entity
+   * `sestats_to_df()` - `data.frame` suitable for RMarkdown and `kable()`
+   * accessors: `assay_names()`, `contrast_names()`, `cutoff_names()`,
+   `method_names()`
+
+## 18oct2023
+
+* `plot_sedesign()`
+
+   * Option to filter by `max_depth` (to show only oneway contrasts)
+   or `contrast_depths` (to show only oneway, or only twoway contrasts).
+   * When `group_buffer` is adjusted, the replicate `"n=3"` labels are
+   not shifted, so they can appear outside the square.
+   * Consider option to adjust aspect ratio.
+   * Consider option to adjust the offset between contrasts.
+
+* `filter_contrast_names()`
+
+   * Consider option to enable sequential comparisons, for example:
+   Time1-Time0, Time2-Time1, Time3-Time2. This option may be more useful
+   when enabled only for certain factors. Not as useful for something
+   like "Treatment" where each treatment usually does not have a sequential
+   order.
+
 ## 06oct2023
 
 * `heatmap_se()`

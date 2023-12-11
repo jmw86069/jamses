@@ -129,6 +129,9 @@
 #'    values position each contrast label given. Default values are
 #'    defined by `oneway_position` and `twoway_position`, except
 #'    where defined by `contrast_position`.
+#' @param contrast_depths `numeric` with one or more values used to
+#'    display only contrasts of the given depth: 1=oneway, 2=twoway.
+#'    When `NULL` all contrasts are displayed.
 #' @param sestats `list` object that contains element `"hit_array"` as
 #'    produced by `se_contrast_stats()`, with statistical hits for
 #'    each contrast, after applying statistical cutoffs.
@@ -149,6 +152,11 @@
 #'    to define the statistical hits to use when `sestats` is supplied.
 #' @param label_cex `numeric` expansion factor to adjust contrast label
 #'    font sizes.
+#' @param arrow_ex `numeric` (default NULL) to adjust arrow width and
+#'    arrow head size together. When `NULL` it is adjusted starting at
+#'    `arrow_ex=1` and reduced proportional to the number of contrast
+#'    bumps (parallel contrasts that would otherwise overlap). When
+#'    provided as a numeric value, it is used without adjustment
 #' @param flip_twoway `logical` indicating whether to flip the orientation
 #'    of two-way contrasts, for example `"(A-B)-(C-D)"` would be flipped
 #'    to equivalent form `"(A-C)-(B-D)"`, which will alter the orientation
@@ -162,7 +170,7 @@
 #'    the number of contrast names.
 #' @param twoway_lwd `numeric` line width for two-way contrasts,
 #'    passed to `draw_twoway_contrast()`.
-#' @param expend_ex `numeric` expansion factor to define control points
+#' @param extend_ex `numeric` expansion factor to define control points
 #'    for two-way contrasts, beyond each one-way contrast by this fraction
 #'    of the group width in the diagram.
 #' @param extend_angle `numeric` angle in degrees to define control points
@@ -177,11 +185,16 @@
 #'    contrast, then connects from the opposite side.
 #' @param bump_factor `numeric` factor applied to the relative
 #'    amount of "bump" used to adjust contrasts which would otherwise
-#'    overlap on the same x- or y-axis intercept. Values higher than 1
-#'    cause more adjustment, values below 1 reduce the bump adjustment,
-#'    with 0 imposing no bump adjustment.
-#' @param group_buffer `numeric` value indicating the relative buffer used
-#'    to draw each group square, as a fraction of total width (1).
+#'    overlap on the same x- or y-axis intercept. It can optionally accept
+#'    two values, applied to the y-axis, then x-axis bump. Values
+#'    range from 0 (no bump) to 1.5 (expands to full width of each group),
+#'    with default 1 covering roughly 80% the size of each group box.
+#'    This value is also adjusted by `group_buffer`.
+#' @param group_buffer `numeric` value (default 0.02) indicating the
+#'    relative buffer in between each group square, as a fraction of
+#'    total width. The range is restricted to minimum 0 (no buffer) to
+#'    0.5 (groups are drawn as a point) with recommended values between 0
+#'    and 0.1,
 #' @param group_border,group_fill `character` color used for the border
 #'    and fill colors, respectively, to draw a square
 #'    for each experimental group defined in `sedesign`.
@@ -271,6 +284,7 @@ plot_sedesign <- function
  oneway_position=0.9,
  twoway_position=0.5,
  contrast_position=NULL,
+ contrast_depths=NULL,
  sestats=NULL,
  sestats_style=c("label",
     "number",
@@ -278,6 +292,7 @@ plot_sedesign <- function
  assay_names=NULL,
  cutoff_names=NULL,
  label_cex=1,
+ arrow_ex=NULL,
  flip_twoway=FALSE,
  colorset=NULL,
  twoway_lwd=5,
@@ -878,10 +893,39 @@ plot_sedesign <- function
    xlim <- range(axis_df$x_coord, na.rm=TRUE)
    ylim <- range(axis_df$y_coord, na.rm=TRUE)
 
-   max_x_bump <- (1.5 / bump_factor) * (2 + max(subset(contrast_group_df,
+   # define buffer between groups
+   group_buffer <- jamba::noiseFloor(group_buffer,
+      minimum=0,
+      ceiling=0.5);
+   use_group_buffer <- 0.5 - group_buffer;
+
+   # adjust bump_factor proportional to group_buffer
+   if (length(bump_factor) == 0) {
+      bump_factor <- 1;
+   }
+   bump_factor <- rep(bump_factor, length.out=2);
+   use_bump_factor <- jamba::noiseFloor(bump_factor,
+      minimum=0,
+      ceiling=1.5) * (use_group_buffer * 2)
+   max_x_bump <- (1.5 / use_bump_factor[2]) * (2 + max(subset(contrast_group_df,
       !angle %in% c(0, 180))$bump));
-   max_y_bump <- (1.5 / bump_factor) * (2 + max(subset(contrast_group_df,
+   max_y_bump <- (1.5 / use_bump_factor[1]) * (2 + max(subset(contrast_group_df,
       angle %in% c(0, 180))$bump));
+   # define arrow_ex
+   if (length(arrow_ex) == 0 || !is.numeric(arrow_ex)) {
+      max_x_bumps <- jamba::noiseFloor(
+         2 * (0.5 + max(subset(contrast_group_df, !angle %in% c(0, 180))$bump)),
+         minimum=1,
+         ceiling=20);
+      max_y_bumps <- jamba::noiseFloor(
+         2 * (0.5 + max(subset(contrast_group_df, angle %in% c(0, 180))$bump)),
+         minimum=1,
+         ceiling=20);
+      use_arrow_ex <- 1 / sqrt(jamba::rmNA(naValue=1,
+         max(c(max_x_bumps, max_y_bumps), na.rm=TRUE)))
+   } else {
+      use_arrow_ex <- arrow_ex;
+   }
    # return(invisible(contrast_group_list));
    if (debug) {
       jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
@@ -934,8 +978,6 @@ plot_sedesign <- function
          ylim=ylim + c(-1, 1),
          doBoxes=FALSE,
          asp=1)
-      # define buffer between groups
-      use_group_buffer <- 0.5 - group_buffer;
 
       # jamba::printDebug("axis_df:");print(axis_df);# debug
       if (any(!is.na(axis_df$axis1))) {
@@ -1023,8 +1065,9 @@ plot_sedesign <- function
             "transparent",
             group_border[axis_df$group]))
       # optionally add number of replicates as labels
-      text(x=axis_df$x_coord - 0.45,
-         y=axis_df$y_coord + 0.45,
+      text(
+         x=axis_df$x_coord - use_group_buffer + 0.04,
+         y=axis_df$y_coord + use_group_buffer - 0.04,
          adj=c(0, 1),
          labels=ifelse(is.na(axis_df$n), "",
             paste0("n=", axis_df$n)),
@@ -1042,7 +1085,8 @@ plot_sedesign <- function
                   contrast=idf$contrast[1],
                   full_contrast=idf$contrast[1],
                   color=colorset[idf$contrast[1]],
-                  depth="one-way")
+                  depth="one-way",
+                  contrast_depth=1)
             } else if (nrow(idf) == 4) {
                idf$group <- strsplit(gsub("[()]", "", idf$contrast[1]),
                   contrast_sep)[[1]];
@@ -1059,20 +1103,23 @@ plot_sedesign <- function
                      idf$group[c(2, 4)]),
                   full_contrast=idf$contrast[1],
                   color=use_colors,
-                  depth="two-way")
+                  depth="two-way",
+                  contrast_depth=2)
             } else {
                data.frame(from="a",
                   to="a",
                   contrast="a",
                   full_contrast="a",
                   color="a",
-                  depth="a")[0,]
+                  depth="a",
+                  contrast_depth=0)[0,]
             }
          }));
 
       # iterate each contrast
       use_contrasts <- seq_along(contrast_group_split)
-
+      # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
+      # jamba::printDebug("contrast_group_split:");print(contrast_group_split);# debug
       if (debug) {
          jamba::printDebug("contrast_group_split cgs_df:");
          # print(contrast_group_split);# debug
@@ -1084,6 +1131,15 @@ plot_sedesign <- function
       }
       for (i in seq_along(contrast_group_split)[use_contrasts]) {
          idf <- contrast_group_split[[i]];
+         if (length(contrast_depths) > 0 && is.numeric(contrast_depths)) {
+            if (!contrast_depths %in% idf$depth) {
+               if (verbose) {
+                  jamba::printDebug("plot_sedesign(): ",
+                     "Skipping contrast with depth=", head(idf$depth, 1));
+               }
+               next;
+            }
+         }
          if (idf$angle[1] %in% c(0, 180)) {
             idf$y_coord <- idf$y_coord + idf$bump / max_y_bump;
          } else if (idf$angle[1] %in% c(90, 270)) {
@@ -1108,6 +1164,7 @@ plot_sedesign <- function
                   label=use_label,
                   label_cex=label_cex,
                   oneway_position=contrast_position[idf$contrast[1]],
+                  arrow_ex=use_arrow_ex,
                   verbose=verbose,
                   ...);
             }
@@ -1218,6 +1275,7 @@ plot_sedesign <- function
                draw_oneway=TRUE,
                twoway_label=use_twoway_label,
                extend_ex=extend_ex,
+               arrow_ex=use_arrow_ex,
                extend_angle=extend_angle,
                label=c(use_label1,
                   use_label2),

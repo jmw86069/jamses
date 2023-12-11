@@ -20,11 +20,13 @@ plot_sedesign(
   oneway_position = 0.9,
   twoway_position = 0.5,
   contrast_position = NULL,
+  contrast_depths = NULL,
   sestats = NULL,
   sestats_style = c("label", "number", "simple label"),
   assay_names = NULL,
   cutoff_names = NULL,
   label_cex = 1,
+  arrow_ex = NULL,
   flip_twoway = FALSE,
   colorset = NULL,
   twoway_lwd = 5,
@@ -102,6 +104,10 @@ values position each contrast label given. Default values are
 defined by \code{oneway_position} and \code{twoway_position}, except
 where defined by \code{contrast_position}.}
 
+\item{contrast_depths}{\code{numeric} with one or more values used to
+display only contrasts of the given depth: 1=oneway, 2=twoway.
+When \code{NULL} all contrasts are displayed.}
+
 \item{sestats}{\code{list} object that contains element \code{"hit_array"} as
 produced by \code{se_contrast_stats()}, with statistical hits for
 each contrast, after applying statistical cutoffs.
@@ -130,6 +136,12 @@ to define the statistical hits to use when \code{sestats} is supplied.}
 \item{label_cex}{\code{numeric} expansion factor to adjust contrast label
 font sizes.}
 
+\item{arrow_ex}{\code{numeric} (default NULL) to adjust arrow width and
+arrow head size together. When \code{NULL} it is adjusted starting at
+\code{arrow_ex=1} and reduced proportional to the number of contrast
+bumps (parallel contrasts that would otherwise overlap). When
+provided as a numeric value, it is used without adjustment}
+
 \item{flip_twoway}{\code{logical} indicating whether to flip the orientation
 of two-way contrasts, for example \code{"(A-B)-(C-D)"} would be flipped
 to equivalent form \code{"(A-C)-(B-D)"}, which will alter the orientation
@@ -146,6 +158,10 @@ the number of contrast names.}
 \item{twoway_lwd}{\code{numeric} line width for two-way contrasts,
 passed to \code{draw_twoway_contrast()}.}
 
+\item{extend_ex}{\code{numeric} expansion factor to define control points
+for two-way contrasts, beyond each one-way contrast by this fraction
+of the group width in the diagram.}
+
 \item{extend_angle}{\code{numeric} angle in degrees to define control points
 for two-way contrasts, using this angle from the end of each one-way
 contrast toward the other one-way contrast in the set.
@@ -161,12 +177,17 @@ contrast, then connects from the opposite side.
 
 \item{bump_factor}{\code{numeric} factor applied to the relative
 amount of "bump" used to adjust contrasts which would otherwise
-overlap on the same x- or y-axis intercept. Values higher than 1
-cause more adjustment, values below 1 reduce the bump adjustment,
-with 0 imposing no bump adjustment.}
+overlap on the same x- or y-axis intercept. It can optionally accept
+two values, applied to the y-axis, then x-axis bump. Values
+range from 0 (no bump) to 1.5 (expands to full width of each group),
+with default 1 covering roughly 80\% the size of each group box.
+This value is also adjusted by \code{group_buffer}.}
 
-\item{group_buffer}{\code{numeric} value indicating the relative buffer used
-to draw each group square, as a fraction of total width (1).}
+\item{group_buffer}{\code{numeric} value (default 0.02) indicating the
+relative buffer in between each group square, as a fraction of
+total width. The range is restricted to minimum 0 (no buffer) to
+0.5 (groups are drawn as a point) with recommended values between 0
+and 0.1,}
 
 \item{group_border, group_fill}{\code{character} color used for the border
 and fill colors, respectively, to draw a square
@@ -203,10 +224,6 @@ and potentially labels with markdown markup.
 debug output.}
 
 \item{...}{additional arguments are ignored.}
-
-\item{expend_ex}{\code{numeric} expansion factor to define control points
-for two-way contrasts, beyond each one-way contrast by this fraction
-of the group width in the diagram.}
 
 \item{contrast}{\code{character} contrast name}
 }
