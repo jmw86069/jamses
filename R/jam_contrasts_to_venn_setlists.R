@@ -240,6 +240,21 @@ contrasts_to_venn_setlists <- function
    # remove duplicates
    setlist_names <- setlist_names[!duplicated(setlist_names)];
 
+   # assign user-friendly names
+   names(setlist_names) <- tryCatch({
+      venn_complists <- lapply(setlist_names, contrast2comp)
+      venn_compnames <- sapply(venn_complists, function(i){
+         idf <- data.frame(jamba::rbindList(strsplit(i, ":")));
+         jamba::cPaste(
+            jamba::cPasteU(
+               as.list(idf)),
+            sep=" : ")
+      })
+      jamba::makeNames(venn_compnames)
+   }, error=function(e){
+      names(setlist_names)
+   })
+
    return(setlist_names);
 }
 

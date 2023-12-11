@@ -3,6 +3,11 @@
 
 ## 11dec2023
 
+* `contrasts_to_venn_setlists()`
+
+   * Assign list names based upon the contents of each Venn setlist,
+   instead of the default names that are not user-friendly.
+
 * `plot_sedesign()`
 
    * When `contrast_depths=2` and supplying `sestats` it labels the one-way

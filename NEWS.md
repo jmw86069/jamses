@@ -12,6 +12,11 @@
    * New argument `contrast_depths` to filter contrasts based upon depth:
    1=oneway, 2=twoway. More convenient than filtering contrasts upfront.
 
+* `contrasts_to_venn_setlists()`
+
+   * Names are now user-friendly to indicate the contents of each Venn set
+   list.
+
 # jamses 0.0.53.900
 
 ## updates to existing functions
