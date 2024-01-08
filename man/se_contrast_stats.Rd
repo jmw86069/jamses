@@ -109,7 +109,12 @@ reverted to \code{floor_value} as a replacement. This option is
 valuable to set all \code{numeric} values at or below zero to zero,
 or to set all values at or below zero to \code{NA} in circumstances
 where zero indicates "no measurement" and would be more accurately
-represented as a missing measurement than a measurement of \code{0}.}
+represented as a missing measurement than a measurement of \code{0}.
+\itemize{
+\item Note: \code{floor_min} is applied before \code{handle_na}, so that this step
+is able to create \code{NA} values which will be handled appropriately
+based upon the option \code{handle_na}.
+}}
 
 \item{sedesign}{\code{SEDesign} object as defined by \code{groups_to_sedesign()},
 with slotNames \code{"design"}, \code{"contrasts"}, and \code{"samples"}.

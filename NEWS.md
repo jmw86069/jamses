@@ -1,3 +1,11 @@
+# jamses 0.0.55.900
+
+* `se_contrast_stats()`
+
+   * `floor_min` is now appropriately applied before `handle_na`
+   specifically for the case where values may be filtered to `NA`
+   then handled by `handle_na` using further logic.
+
 # jamses 0.0.54.900
 
 ## updates to existing functions

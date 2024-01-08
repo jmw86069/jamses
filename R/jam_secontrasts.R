@@ -109,6 +109,9 @@
 #'    or to set all values at or below zero to `NA` in circumstances
 #'    where zero indicates "no measurement" and would be more accurately
 #'    represented as a missing measurement than a measurement of `0`.
+#'    * Note: `floor_min` is applied before `handle_na`, so that this step
+#'    is able to create `NA` values which will be handled appropriately
+#'    based upon the option `handle_na`.
 #' @param sedesign `SEDesign` object as defined by `groups_to_sedesign()`,
 #'    with slotNames `"design"`, `"contrasts"`, and `"samples"`.
 #'    The arguments `idesign` and `icontrasts` are ignored when this
@@ -531,6 +534,28 @@ se_contrast_stats <- function
       if (verbose) {
          jamba::printDebug("se_contrast_stats(): ",
             "Analyzing assay_name: ", signalSet);
+      }
+
+      #######################################################
+      ## Optionally convert values at or below floor_min
+      ## to floor_value.
+      # - TODO: Stress test this section with sparse data
+      #   to ensure this section does not break two-step Voom
+      #   by creating missing data.
+      if (length(floor_min) == 1 &&
+            !is.na(floor_min) &&
+            any(!is.na(imatrix) &
+                  imatrix <= floor_min)) {
+         if (verbose) {
+            jamba::printDebug("se_contrast_stats(): ",
+               c("Applying floor_min:",
+                  floor_min,
+                  ", replacing with floor_value:",
+                  floor_value),
+               sep="");
+         }
+         to_replace <- (!is.na(imatrix) & imatrix <= floor_min)
+         imatrix[to_replace] <- floor_value;
       }
 
       # iterate each normgroup independently

@@ -1,12 +1,19 @@
 
 # TODO for jamses
 
+## 08jan2024
+
+* debug `se_contrast_stats()` with `handle_na="full1"`
+
 ## 11dec2023
 
 * `contrasts_to_venn_setlists()`
 
-   * Assign list names based upon the contents of each Venn setlist,
+   * DONE. Assign list names based upon the contents of each Venn setlist,
    instead of the default names that are not user-friendly.
+   * Consider "two-way" Venn subsets that include:
+   two-way contrast,
+   corresponding one-way contrasts.
 
 * `plot_sedesign()`
 
