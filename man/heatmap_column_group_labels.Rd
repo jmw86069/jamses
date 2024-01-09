@@ -22,6 +22,7 @@ heatmap_column_group_labels(
   hm_body_base_default = "centered\\nexpression_heatmap_body_1_",
   y_offset_lines = 0,
   endlines = 1,
+  use_gridtext = TRUE,
   verbose = FALSE,
   ...
 )
@@ -95,6 +96,10 @@ can be used to make manual adjustments.}
 \item{endlines}{\code{integer} number of blank lines to append to the end
 of each group label, which has the effect of shifting the group
 label upwards slightly.}
+
+\item{use_gridtext}{\code{logical} (default TRUE) whether to render text using
+\code{gridtext::richtext_grob()} in order to enable markdown and
+limited HTML-based formatting.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

@@ -204,6 +204,9 @@ detect_heatmap_components <- function
 #' @param endlines `integer` number of blank lines to append to the end
 #'    of each group label, which has the effect of shifting the group
 #'    label upwards slightly.
+#' @param use_gridtext `logical` (default TRUE) whether to render text using
+#'    `gridtext::richtext_grob()` in order to enable markdown and
+#'    limited HTML-based formatting.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
@@ -226,6 +229,7 @@ heatmap_column_group_labels <- function
  hm_body_base_default="centered\nexpression_heatmap_body_1_",
  y_offset_lines=0,
  endlines=1,
+ use_gridtext=TRUE,
  verbose=FALSE,
  ...)
 {
@@ -306,9 +310,11 @@ heatmap_column_group_labels <- function
       # iterate through each colData column
       # hm_group_list <- c("Treatment", "IP")
       for (icol in hm_group_list) {
+         # get column values
          gv1 <- SummarizedExperiment::colData(
             se[,icolnames])[,c(icol)]
-         bbv1 <- jamba::breaksByVector(gv1)
+         # convert values to character at this step
+         bbv1 <- jamba::breaksByVector(as.character(gv1))
          bbvl1 <- bbv2seq(bbv1)
          bbvl1num <- lapply(bbvl1, function(ibbvl1){
             unique(icolnames_list_num[ibbvl1])
@@ -447,16 +453,29 @@ heatmap_column_group_labels <- function
       grid::seekViewport("global")
       # label above each group
       if (add_group_label) {
-         grid::grid.text(i,
-            just="bottom",
-            gp=grid::gpar(
-               fontsize=10 * font_cex,
-               col="black",
-               family="Arial"),
-            x=(loc1_l$x + loc1_r$x)*0.5,
-            y=(loc2_t$y + loc2_b$y)*0.5)
-         # x=(loc1$x + loc2$x)*0.5,
-         # y=(loc1$y + loc2$y)*0.5)
+         if (TRUE %in% use_gridtext) {
+            gtg <- gridtext::richtext_grob(text=i,
+               gp=grid::gpar(
+                  fontsize=10 * font_cex,
+                  col="black",
+                  family="Arial"),
+               hjust=0.5,
+               vjust=-0.8,
+               # halign=0.5,
+               # valign=0,
+               x=(loc1_l$x + loc1_r$x)*0.5,
+               y=(loc2_t$y + loc2_b$y)*0.5)
+            grid::grid.draw(gtg);
+         } else {
+            grid::grid.text(i,
+               just="bottom",
+               gp=grid::gpar(
+                  fontsize=10 * font_cex,
+                  col="red",
+                  family="Arial"),
+               x=(loc1_l$x + loc1_r$x)*0.5,
+               y=(loc2_t$y + loc2_b$y)*0.5)
+         }
       }
       # line below group label
       if (TRUE %in% add_group_line) {

@@ -6,6 +6,12 @@
    specifically for the case where values may be filtered to `NA`
    then handled by `handle_na` using further logic.
 
+* `heatmap_column_group_labels()`
+
+   * new argument `use_gridtext=TRUE` which by default enables markdown
+   and limited HTML output, such as superscripts and subscripts.
+   Implemented to render 37 degrees C using superscript `o`.
+
 # jamses 0.0.54.900
 
 ## updates to existing functions

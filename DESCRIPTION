@@ -24,13 +24,14 @@ Imports: jamba(>= 0.0.95.900),
    ComplexHeatmap (>= 2.13.4),
    multienrichjam,
    amap,
-   cli
+   cli,
+   gridtext
 Suggests:
-    genejam,
-    venndir,
-    farrisdata,
-    testthat (>= 3.0.0),
-    statmod
+   genejam,
+   venndir,
+   farrisdata,
+   testthat (>= 3.0.0),
+   statmod
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
