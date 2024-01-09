@@ -12,6 +12,11 @@
    and limited HTML output, such as superscripts and subscripts.
    Implemented to render 37 degrees C using superscript `o`.
 
+* `heatmap_se()`
+
+   * subtle change to limit `rowData_colnames` to those values
+   present in `colnames(rowData(se))`.
+
 # jamses 0.0.54.900
 
 ## updates to existing functions

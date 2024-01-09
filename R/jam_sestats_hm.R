@@ -1236,6 +1236,10 @@ heatmap_se <- function
       }
       # rowData annotations
       if (length(rowData_colnames) > 0) {
+         rowData_colnames <- intersect(rowData_colnames,
+            colnames(rowData_se));
+      }
+      if (length(rowData_colnames) > 0) {
          if (verbose) {
             jamba::printDebug("heatmap_se(): ",
                "preparing left_annotation for rowData_colnames: ",
