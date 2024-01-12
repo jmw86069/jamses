@@ -1,9 +1,25 @@
 
 # TODO for jamses
 
+## 10jan2024
+
+* `heatmap_se()`
+
+   * Consider using `"legend_title"` instead of `"name"` as the heatmap
+   legend title, so that `"name"` can be defined with a specific value.
+   The driving need is when adding two heatmaps together, if they both
+   have the same `"name"` the name appears twice when calling
+   `ComplexHeatmap::list_components()`. Instead, we should allow `name`
+   to be defined uniquely for each heatmap, even while both heatmaps
+   share the same legend title.
+   * Consider convenient method and default to add separation between
+   heatmap and annotations, e.g. `ht_opt(ROW_ANNO_PADDING=grid::unit(4, "mm"))`
+   and `ht_opt(COLUMN_ANNO_PADDING=grid::unit(4, "mm"))`.
+   It should set the value, then revert to previous value afterward.
+
 ## 08jan2024
 
-* debug `se_contrast_stats()` with `handle_na="full1"`
+* DONE: debug `se_contrast_stats()` with `handle_na="full1"`
 
 ## 11dec2023
 

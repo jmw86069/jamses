@@ -16,6 +16,11 @@
 
    * subtle change to limit `rowData_colnames` to those values
    present in `colnames(rowData(se))`.
+   * new argument `hm_name` which defaults to the same legend title,
+   derived from `data_type`. However, the heatmap `name` appears in
+   grid graphical components `ComplexHeatmap::list_components()` and
+   sometimes needs to be specified in order for multiple heatmaps
+   to have unique grid names.
 
 # jamses 0.0.54.900
 

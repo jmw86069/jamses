@@ -7,6 +7,7 @@
 heatmap_se(
   se,
   sestats = NULL,
+  hm_name = NULL,
   rows = NULL,
   row_type = "rows",
   column_type = "samples",
@@ -118,6 +119,17 @@ matrix rows and \code{rows} is displayed in the heatmap.
 \item Note that \code{alt_sestats} does not subset rows displayed in the
 heatmap.
 }}
+
+\item{hm_name}{\code{character} string, or \code{NULL} (default) which uses the
+\code{data_type} value. Note that the legend title uses the \code{data_type},
+and is also used for \code{hm_name} when \code{hm_name=NULL}.
+The \code{hm_name} is most useful to customize because this string is used
+as the prefix for grid graphical components, for example seen with
+\code{ComplexHeatmap::list_components()}. When two heatmaps or a
+\code{HeatmapList} is drawn, the names can be used to define specific
+grid regions of each heatmap. If the heatmaps share the same
+\code{hm_name} then the regions will also have identical name and cannot
+be addressed distinctly.}
 
 \item{rows}{\code{character} vector of \code{rownames(se)} to define a specific
 set of rows to display. When \code{sestats} is supplied, then the

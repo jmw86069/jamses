@@ -180,6 +180,16 @@
 #'    matrix rows and `rows` is displayed in the heatmap.
 #'    * Note that `alt_sestats` does not subset rows displayed in the
 #'    heatmap.
+#' @param hm_name `character` string, or `NULL` (default) which uses the
+#'    `data_type` value. Note that the legend title uses the `data_type`,
+#'    and is also used for `hm_name` when `hm_name=NULL`.
+#'    The `hm_name` is most useful to customize because this string is used
+#'    as the prefix for grid graphical components, for example seen with
+#'    `ComplexHeatmap::list_components()`. When two heatmaps or a
+#'    `HeatmapList` is drawn, the names can be used to define specific
+#'    grid regions of each heatmap. If the heatmaps share the same
+#'    `hm_name` then the regions will also have identical name and cannot
+#'    be addressed distinctly.
 #' @param rows `character` vector of `rownames(se)` to define a specific
 #'    set of rows to display. When `sestats` is supplied, then the
 #'    intersection of `rows` with genes defined by `sestats` is displayed.
@@ -688,6 +698,7 @@
 heatmap_se <- function
 (se,
  sestats=NULL,
+ hm_name=NULL,
  rows=NULL,
  row_type="rows",
  column_type="samples",
@@ -800,6 +811,7 @@ heatmap_se <- function
       hm_total <- heatmap_se(
          se=se,
          sestats=sestats,
+         hm_name=hm_name,
          rows=rows,
          row_type=row_type,
          column_type=column_type,
@@ -1589,7 +1601,10 @@ heatmap_se <- function
             "Not centering data.");
       }
       se_matrix <- se_matrix[, isamples, drop=FALSE];
-      hm_name <- data_type;
+      legend_title <- data_type;
+      if (length(hm_name) == 0) {
+         hm_name <- legend_title;
+      }
    } else {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
@@ -1604,7 +1619,7 @@ heatmap_se <- function
          naControlAction=naControlAction,
          naControlFloor=naControlFloor,
          ...)[, isamples, drop=FALSE];
-      hm_name <- paste0("centered\n", data_type);
+      legend_title <- paste0("centered\n", data_type);
    }
    if (correlation) {
       # call correlation function cor()
@@ -1614,10 +1629,13 @@ heatmap_se <- function
          ...);
       cluster_rows <- cluster_columns;
       if (length(centerGroups) > 0 && any(centerGroups %in% FALSE)) {
-         hm_name <- paste0("correlation of\n", data_type);
+         legend_title <- paste0("correlation of\n", data_type);
       } else {
-         hm_name <- paste0("correlation of\ncentered\n", data_type);
+         legend_title <- paste0("correlation of\ncentered\n", data_type);
       }
+   }
+   if (length(hm_name) == 0) {
+      hm_name <- legend_title;
    }
 
    # optional mark_rows
@@ -1758,6 +1776,7 @@ heatmap_se <- function
          labels=legend_labels,
          grid_height=grid::unit(4 * legend_grid_cex, "mm"),
          grid_width=grid::unit(4 * legend_grid_cex, "mm"),
+         title=legend_title,
          title_gp=legend_title_gp,
          labels_gp=legend_labels_gp
       ),
