@@ -8,6 +8,7 @@ heatmap_se(
   se,
   sestats = NULL,
   hm_name = NULL,
+  hm_title = NULL,
   rows = NULL,
   row_type = "rows",
   column_type = "samples",
@@ -130,6 +131,12 @@ as the prefix for grid graphical components, for example seen with
 grid regions of each heatmap. If the heatmaps share the same
 \code{hm_name} then the regions will also have identical name and cannot
 be addressed distinctly.}
+
+\item{hm_title}{\code{character} string, or \code{NULL} (default) which generates
+a heatmap title using the dimensions, \code{assay_name}, \code{data_type},
+and a string which describes the data centering.
+When provided as a \code{character} string, it is used as-is.
+(In future this value may accept variable names.)}
 
 \item{rows}{\code{character} vector of \code{rownames(se)} to define a specific
 set of rows to display. When \code{sestats} is supplied, then the

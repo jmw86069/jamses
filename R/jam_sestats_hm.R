@@ -190,6 +190,11 @@
 #'    grid regions of each heatmap. If the heatmaps share the same
 #'    `hm_name` then the regions will also have identical name and cannot
 #'    be addressed distinctly.
+#' @param hm_title `character` string, or `NULL` (default) which generates
+#'    a heatmap title using the dimensions, `assay_name`, `data_type`,
+#'    and a string which describes the data centering.
+#'    When provided as a `character` string, it is used as-is.
+#'    (In future this value may accept variable names.)
 #' @param rows `character` vector of `rownames(se)` to define a specific
 #'    set of rows to display. When `sestats` is supplied, then the
 #'    intersection of `rows` with genes defined by `sestats` is displayed.
@@ -699,6 +704,7 @@ heatmap_se <- function
 (se,
  sestats=NULL,
  hm_name=NULL,
+ hm_title=NULL,
  rows=NULL,
  row_type="rows",
  column_type="samples",
@@ -1739,12 +1745,14 @@ heatmap_se <- function
    if (any(nchar(dim_label) > 0)) {
       dim_label <- paste0(dim_label, "\n")
    }
-   hm_title <- paste0(
-      dim_label,
-      norm_label,
-      ifelse(any(nchar(centerby_label) > 0),
-         paste0(",\n", centerby_label),
-         ""))
+   if (length(hm_title) == 0) {
+      hm_title <- paste0(
+         dim_label,
+         norm_label,
+         ifelse(any(nchar(centerby_label) > 0),
+            paste0(",\n", centerby_label),
+            ""))
+   }
    # optionally add whitespace buffer after the title
    if (length(hm_title_buffer) == 1 && hm_title_buffer > 0) {
       hm_title_buffer <- ceiling(hm_title_buffer);

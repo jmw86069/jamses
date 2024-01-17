@@ -21,6 +21,8 @@
    grid graphical components `ComplexHeatmap::list_components()` and
    sometimes needs to be specified in order for multiple heatmaps
    to have unique grid names.
+   * new argument `hm_title` to provide a completely custom heatmap title.
+   This argument is useful especially when using `apply_hm_column_title=TRUE`.
 
 # jamses 0.0.54.900
 
