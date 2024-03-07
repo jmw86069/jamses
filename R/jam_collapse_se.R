@@ -259,7 +259,7 @@ se_collapse_by_row <- function
             customSignal <- assay_names[group_func_name %in%
                   c(NA, "", "none", "NA")];
          }
-         rowStatsFunc <- lapply(nameVector(customSignal), function(i){
+         rowStatsFunc <- lapply(jamba::nameVector(customSignal), function(i){
             rowStatsFunc
          });
       } else if (!igrepHas("list", class(rowStatsFunc))) {
@@ -349,7 +349,7 @@ se_collapse_by_row <- function
       if (statsFuncDF[iSignal,2] %in% "NULL") {
          if (is.na(statsFuncDF[iSignal,1])) {
             if (verbose) {
-               printDebug("se_collapse_by_row(): ",
+               jamba::printDebug("se_collapse_by_row(): ",
                   "Dropping assay_names:",
                   iSignal,
                   " which has no stats function defined.",
@@ -367,7 +367,7 @@ se_collapse_by_row <- function
                rowStatsFunc[[iSignal]] <- rowGeomeans;
             } else {
                if (verbose) {
-                  printDebug("se_collapse_by_row(): ",
+                  jamba::printDebug("se_collapse_by_row(): ",
                      "Dropping assay_names:",
                      iSignal,
                      " unrecognized group_func_name:",
@@ -427,7 +427,7 @@ se_collapse_by_row <- function
    #################################################################
    ## Iterate each signal and perform the collapse
    ## Any signals not included will be dropped from the resulting object
-   assaysGroupedL <- lapply(nameVector(assay_names), function(iSignal){
+   assaysGroupedL <- lapply(jamba::nameVector(assay_names), function(iSignal){
       if (verbose) {
          jamba::printDebug("se_collapse_by_row(): ",
             "Collapsing assay_names:",
@@ -435,7 +435,7 @@ se_collapse_by_row <- function
       }
       useStatsFunc <- rowStatsFunc[[iSignal]];
 
-      iMatrix <- assays(se[rows,])[[iSignal]];
+      iMatrix <- SummarizedExperiment::assays(se[rows,])[[iSignal]];
       if (data_transform %in% "log2p+sqrt") {
          if (verbose) {
             jamba::printDebug("se_collapse_by_row():",
@@ -546,7 +546,7 @@ se_collapse_by_row <- function
          if (igrepHas("character", class(rowDataShrunk[[iCol]])) &&
                igrepHas(delim, rowDataShrunk[[iCol]])) {
             if (verbose) {
-               printDebug("se_collapse_by_row(): ",
+               jamba::printDebug("se_collapse_by_row(): ",
                   "Re-delimiting unique values in column:",
                   iCol);
             }
@@ -559,11 +559,11 @@ se_collapse_by_row <- function
       }
    }
    if (verbose) {
-      printDebug("se_collapse_by_row(): ",
+      jamba::printDebug("se_collapse_by_row(): ",
          "Re-creating SummarizedExperiment");
    }
 
-   se_shrunk <- SummarizedExperiment(
+   se_shrunk <- SummarizedExperiment::SummarizedExperiment(
       assays=assaysGroupedL,
       rowData=rowDataShrunk,
       colData=colData(se),

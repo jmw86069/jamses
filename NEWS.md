@@ -1,3 +1,58 @@
+# jamses 0.0.56.900
+
+* Added `edgeR` to Suggests, in order to enable new normalization
+methods `"TMM"`, `"TMMwsp"`, and `"RLE"`.
+
+## Bug fixes
+
+* `se_detected_rows()` - fixed missing package prefix with `jamba::tcount()`.
+* Added more package prefixes, most of which are used only with `verbose=TRUE`.
+
+## changes to existing functions
+
+* `se_normalize()`, `matrix_normalize()` gained new normalization methods:
+
+   * `edgeR::calcNormFactors()` for methods: `"TMM"`, `"TMMwsp"`, `"RLE"`
+
+      * the methods perform very similarly to `jamma::jammanorm()`, log-ratio
+      normalization, with some subtle differences in how they filter the
+      features to be used during normalization. TMM,TMMwsp perform nearly
+      identical to each other. RLE also performs more closely to both TMM
+      than to jammanorm.
+      * Ultimately this effort was not time well spent, the new methods
+      appear to work well when data is high quality, but appear to produce
+      questionable output when data is not consistent across samples.
+      Meanwhile, `"jammanorm"` appears to work consistently, at least
+      producing output that can be reasonably explained.
+      * Data should be reviewed with `jamma::jammaplot()` MA-plots to visualize
+      whether assumptions are met and are valid. For example, when the
+      distribution of signal is inconsistent across samples, it appears
+      as non-horizontal signal on MA-plots, and ultimately either the
+      signal should be filtered prior to downstream statistics (so that
+      the horizontal range of signal is analyzed) or another normalization
+      method should be used in order to adjust the signal to horizontal,
+      for example `"quantile"` normalization is intended for such purposes.
+      In future, "LOESS" normalization may also fit this purpose.
+
+* `se_normalize()`
+
+   * New argument `output_method_prefix` to customize the method name used
+   to formulate the output `assay_name`.
+   * New argument `output_assay_names` to customize the full `assay_name`
+   used for each output. When supplied, it overrides New argument.
+   * `mcols(assays(se))` is now populated with a `S4Vectors::DataFrame`
+   containing the `normalization_method`, `source_assay_name`, and
+   associated `params` converted to column values. Currently experimental,
+   but enabled by default to test the utility.
+   * Converted `stop()` to `cli::cli_abort()` for improved message handling.
+
+* `heatmap_column_group_labels()`
+
+   * New argument `group_line_requires_label=TRUE` will hide the group line
+   when the associated label contains only whitespace or is `NA`.
+   This defines new behavior, although for a rare scenario where there exists
+   an empty (whitespace) group label.
+
 # jamses 0.0.55.900
 
 * `se_contrast_stats()`

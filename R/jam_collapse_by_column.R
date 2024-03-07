@@ -154,11 +154,12 @@ se_collapse_by_column <- function
    # Any assay_names not included will be dropped from the resulting object
    assays_grouped_list <- lapply(jamba::nameVector(assay_names), function(assay_name){
       if (verbose) {
-         printDebug("se_collapse_by_column(): ",
+         jamba::printDebug("se_collapse_by_column(): ",
             "Collapsing assay_name:",
             assay_name);
       }
-      iMatrix <- SummarizedExperiment::assays(se[,columns, drop=FALSE])[[assay_name]];
+      iMatrix <- SummarizedExperiment::assays(
+         se[,columns, drop=FALSE])[[assay_name]];
       if (length(noise_floor) > 0) {
          noise_match <- (!is.na(iMatrix) & iMatrix <= noise_floor);
          if (any(noise_match)) {
@@ -183,7 +184,7 @@ se_collapse_by_column <- function
    ## Now try to be clever and create a new colData() which indicates
    ## the column groupings
    if (verbose) {
-      printDebug("se_collapse_by_column(): ",
+      jamba::printDebug("se_collapse_by_column(): ",
          "Collapsing colData(se)");
    }
    colDataShrunk <- shrinkDataFrame(
@@ -198,13 +199,13 @@ se_collapse_by_column <- function
       drop=FALSE]
 
    if (verbose) {
-      printDebug("se_collapse_by_column(): ",
+      jamba::printDebug("se_collapse_by_column(): ",
          "head(colDataShrunk):");
       print(head(colDataShrunk));
-      printDebug("se_collapse_by_column(): ",
+      jamba::printDebug("se_collapse_by_column(): ",
          "sdim(assays_grouped_list):");
-      print(sdim(assays_grouped_list));
-      printDebug("se_collapse_by_column(): ",
+      print(jamba::sdim(assays_grouped_list));
+      jamba::printDebug("se_collapse_by_column(): ",
          "head(assays_grouped_list[[1]]):");
       print(head(assays_grouped_list[[1]]));
    }

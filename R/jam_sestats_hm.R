@@ -904,7 +904,7 @@ heatmap_se <- function
       # set new argument values for the drill-down heatmap
       rows <- unlist(unname(row_order_use));
       cluster_rows <- FALSE;
-      row_split <- nameVector(rep(names(row_order_use),
+      row_split <- jamba::nameVector(rep(names(row_order_use),
          lengths(row_order_use)),
          rows);
       # subset the se data?
@@ -1386,11 +1386,11 @@ heatmap_se <- function
          if (debug > 1) {
             jamba::printDebug("heatmap_se(): ",
                "left_alist:");
-            print(sdim(left_alist));
+            print(jamba::sdim(left_alist));
             print(left_alist);
             jamba::printDebug("heatmap_se(): ",
                "left_anno_list:");
-            print(sdim(left_anno_list));
+            print(jamba::sdim(left_anno_list));
             print(left_anno_list);
          }
          left_arglist <- c(
@@ -1399,7 +1399,7 @@ heatmap_se <- function
          left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
             left_arglist);
          if (debug > 1) {
-            print(sdim(left_annotation@anno_list))
+            print(jamba::sdim(left_annotation@anno_list))
             for (i in left_annotation@anno_list){
                print(i@show_legend)
             }
@@ -1455,7 +1455,7 @@ heatmap_se <- function
    }
 
    assay_name <- head(intersect(assay_name,
-      names(assays(se))), 1);
+      names(SummarizedExperiment::assays(se))), 1);
    if (length(assay_name) == 0) {
       if (length(SummarizedExperiment::assays(se)) == 1) {
          assay_name <- head(names(SummarizedExperiment::assays(se)), 1);
@@ -1530,9 +1530,9 @@ heatmap_se <- function
    # Note columns are not subset here so they can be used during centering.
    # After centering, isamples is used to subset columns as needed.
    if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
-      se_matrix <- assays(se[gene_hits, ])[[assay_name]];
+      se_matrix <- SummarizedExperiment::assays(se[gene_hits, ])[[assay_name]];
    } else {
-      se_matrix <- assayData(se[gene_hits, ])[[assay_name]];
+      se_matrix <- Biobase::assayData(se[gene_hits, ])[[assay_name]];
    }
 
    # heatmap legend labels

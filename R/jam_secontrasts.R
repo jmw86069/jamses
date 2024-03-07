@@ -2202,7 +2202,7 @@ ebayes2dfs <- function
                   "geneSymbol",
                   "gene"),
                colnames(iTopTable)), 1);
-            isGenes <- nameVector(iTopTable[,gene_colname],
+            isGenes <- jamba::nameVector(iTopTable[,gene_colname],
                rownames(iTopTable));
          }
          pcol <- "p";
@@ -2317,9 +2317,9 @@ ebayes2dfs <- function
       # Disabled this section for now
       if (FALSE && TRUE %in% collapse_by_gene) {
          if (verbose) {
-            printDebug("collapseByGene iTopTable:");
+            jamba::printDebug("collapseByGene iTopTable:");
             print(head(iTopTable));
-            printDebug("geneColname:", geneColname);
+            jamba::printDebug("geneColname:", geneColname);
          }
          # Note that DEqMS should not ever proceed here since the
          # method is inherently based upon per-gene logic.

@@ -39,14 +39,46 @@
 #' @param se `SummarizedExperiment` object
 #' @param method `character` vector indicating which normalization method(s)
 #'    to apply.
+#'    * `"quantile"`: quantile normalization via `limma::normalizeQuantiles()`
+#'    * `"jammanorm"`: log-ratio normalization via `jamma::jammanorm()`
+#'    * `"limma_batch_adjust"`: batch adjustment via
+#'    `limma::removeBatchEffect()`, recommended for data visualization,
+#'    but not recommended for downstream statistical comparisons.
+#'    * `"TMM"`: trimmed mean of M-values via `edgeR::calcNormFactors()`
+#'    * `"TMMwsp"`: TMM with singleton pairing via `edgeR::calcNormFactors()`
+#'    * `"RLE"`: relative log expression via `edgeR::calcNormFactors()`
 #' @param assay_names `character` vector or one or more `names(assays(se))`
 #'    that indicates which numeric matrix to use during normalization. When
 #'    multiple values are provided, each matrix is normalized independently
 #'    by each `method`.
+#' @param output_method_prefix `character` vector (optional) with custom
+#'    method prefix values to use when creating the new `assay_name` for
+#'    each normalization. It must have length equal to `length(method)`,
+#'    to be applied to each method in order.
+#'    Note that `output_assay_names` takes priority, and when it is defined
+#'    the `output_method_prefix` entries are ignored.
+#'
+#'    Consider these arguments:
+#'    ```R
+#'    assay_name="counts",
+#'    method="limma_batch_adjust",
+#'    output_method_prefix="lba"
+#'    ```
+#'    The assay_name created during normalization will be `"lba_counts"`.
+#' @param output_assay_names `character` vector (optional) which overrides
+#'    the default method for defining assay names for normalized data.
+#'    This vector length must equal `length(method) * length(assay_names)`,
+#'    and will be applied in the order data is normalized:
+#'    1. `assay_names` are iterated.
+#'    2. For each value in `assay_names`, each normalization in `method`
+#'    is applied.
+#'
+#'    Therefore the order of `output_assay_names` could follow this order:
+#'    `method1_assay1`, `method1_assay2`, `method2_assay1`, `method2_assay2`.
 #' @param genes `character` vector (optional) used to define a subset of
 #'    gene rows in `se` to use for normalization.
 #'    Values must match `rownames(se)`.
-#' @param samples `character vector (optional) used to define a subset of
+#' @param samples `character` vector (optional) used to define a subset of
 #'    sample columns in `se` to use for normalization.
 #'    Values must match `colnames(se)`.
 #' @param params `list` (optional) parameters specific to each
@@ -69,6 +101,11 @@
 #'    matrix values with the same output assay name. When `override=FALSE`
 #'    and the output assay name already exists, the normalization will
 #'    not be performed.
+#' @param populate_mcols `logical` indicating whether to populate
+#'    normalization details into `mcols(assays(se))`, including
+#'    the normalization `method`,
+#'    the source `assay_name` used during normalization, and
+#'    values from `params`.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `matrix_normalize()`.
 #'
@@ -76,7 +113,7 @@
 #' if (jamba::check_pkg_installed("farrisdata")) {
 #'
 #'    # se_normalize
-#'    suppressPackageStartupMessages(library(SummarizedExperiment))
+#'    # suppressPackageStartupMessages(library(SummarizedExperiment))
 #'    GeneSE <- farrisdata::farrisGeneSE;
 #'    samples <- colnames(GeneSE);
 #'    genes <- rownames(GeneSE);
@@ -87,17 +124,21 @@
 #'       assay_names=c("raw_counts", "counts"),
 #'       method="jammanorm",
 #'       params=list(jammanorm=list(minimum_mean=5)))
-#'    names(assays(GeneSE))
+#'    SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
+#'    names(SummarizedExperiment::assays(GeneSE))
 #'
 #'    # review normalization factor values
-#'    round(digits=3, attr(assays(GeneSE)$jammanorm_raw_counts, "nf"))
+#'    round(digits=3, attr(
+#'       SummarizedExperiment::assays(GeneSE)$jammanorm_raw_counts, "nf"))
 #'
 #'    # the data in "counts" was already normalized
 #'    # so the normalization factors are very near 0 as expected
-#'    round(digits=3, attr(assays(GeneSE)$jammanorm_counts, "nf"))
+#'    round(digits=3,
+#'       attr(SummarizedExperiment::assays(GeneSE)$jammanorm_counts, "nf"))
 #'
 #'
 #'    # note that housekeeper genes are supplied in params
+#'    # also this demonstrates output_method_prefix
 #'    set.seed(123);
 #'    hkgenes <- sample(rownames(GeneSE), 1000)
 #'    GeneSE <- se_normalize(GeneSE,
@@ -105,52 +146,107 @@
 #'       samples=samples,
 #'       assay_names=c("raw_counts"),
 #'       method="jammanorm",
+#'       output_method_prefix="hkjammanorm",
 #'       params=list(jammanorm=list(minimum_mean=5,
 #'          controlGenes=hkgenes)))
-#'    round(digits=3, attr(assays(GeneSE)$jammanorm_raw_counts, "nf"))
+#'    SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
 #'
 #'    # example showing quantile normalization
 #'    GeneSE <- se_normalize(GeneSE,
 #'       assay_names=c("raw_counts"),
+#'       method="quantile")
+#'    SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
+#'
+#'    # example showing quantile normalization with custom output_assay_names
+#'    GeneSE <- se_normalize(GeneSE,
+#'       assay_names=c("raw_counts"),
 #'       method="quantile",
-#'       params=list(jammanorm=list(min_mean=5)))
+#'       output_assay_names="newquantile_raw_counts")
+#'    SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
 #' }
 #'
 #'
 #' @export
 se_normalize <- function
 (se,
-   method=c("quantile",
-      "jammanorm",
-      "limma_batch_adjust"),
-   assay_names=NULL,
-   genes=NULL,
-   samples=NULL,
-   params=list(
-      `quantile`=list(
-         ties=TRUE),
-      `jammanorm`=list(controlGenes=NULL,
-         minimum_mean=0,
-         controlSamples=NULL,
-         centerGroups=NULL,
-         useMedian=FALSE,
-         noise_floor=NULL,
-         noise_floor_value=NULL),
-      `limma_batch_adjust`=list(
-         batch=NULL,
-         group=NULL)),
-   normgroup=NULL,
-   output_sep="_",
-   override=TRUE,
-   verbose=FALSE,
-   ...)
+ method=c("quantile",
+    "jammanorm",
+    "limma_batch_adjust",
+    "TMM",
+    "TMMwsp",
+    "RLE"),
+ assay_names=NULL,
+ output_method_prefix=NULL,
+ output_assay_names=NULL,
+ genes=NULL,
+ samples=NULL,
+ params=list(
+    `quantile`=list(
+       ties=TRUE),
+    `jammanorm`=list(controlGenes=NULL,
+       minimum_mean=0,
+       controlSamples=NULL,
+       centerGroups=NULL,
+       useMedian=FALSE,
+       noise_floor=NULL,
+       noise_floor_value=NULL),
+    `limma_batch_adjust`=list(
+       batch=NULL,
+       group=NULL),
+    `TMM`=list(
+       refColumn=NULL,
+       logratioTrim=0.3,
+       sumTrim=0.05,
+       doWeighting=TRUE,
+       Acutoff=NULL),
+    `TMMwsp`=list(
+       refColumn=NULL,
+       logratioTrim=0.3,
+       sumTrim=0.05,
+       doWeighting=TRUE,
+       Acutoff=NULL),
+    `RLE`=list(
+       refColumn=NULL,
+       logratioTrim=0.3,
+       sumTrim=0.05,
+       doWeighting=TRUE,
+       Acutoff=NULL)),
+ normgroup=NULL,
+ floor=0,
+ enforce_norm_floor=TRUE,
+ output_sep="_",
+ override=TRUE,
+ populate_mcols=TRUE,
+ verbose=FALSE,
+ ...)
 {
-   assay_names <- intersect(assay_names, names(SummarizedExperiment::assays(se)));
+   assay_names <- intersect(assay_names,
+      names(SummarizedExperiment::assays(se)));
    if (length(assay_names) == 0) {
+      cli::cli_abort(paste0(
+         "{.var assay_names} must be supplied."));
       stop("assay_names must be supplied.");
    }
    method <- match.arg(method,
       several.ok=TRUE);
+
+   if (length(output_method_prefix) > 0) {
+      if (!length(output_method_prefix) == length(method)) {
+         cli::cli_abort(paste0(
+            "{.var length(method)}={length(method)}",
+            " must equal {.var length(output_method_prefix)}=",
+            "{length(output_method_prefix)}. ",
+            "Cannot continue."))
+      }
+   } else {
+      output_method_prefix <- method;
+   }
+
+   # validate output_sep
+   if (length(output_sep) == 0) {
+      output_sep <- "";
+   }
+   output_sep <- head(output_sep, 1);
 
    allgenes <- rownames(se);
    allsamples <- colnames(se);
@@ -165,6 +261,11 @@ se_normalize <- function
       samples <- intersect(samples, allsamples);
    }
    if (length(genes) == 0 || length(samples) == 0) {
+      cli::cli_abort(paste0(
+         "Only recognized {.var length(genes)}={length(genes)}",
+         " and {.var length(samples)}={length(samples)} ",
+         "in the input {.var se}. ",
+         "Cannot continue."))
       stop(paste0("Only recognized ",
          length(genes),
          " genes, and ",
@@ -175,6 +276,11 @@ se_normalize <- function
    if (length(normgroup) > 0) {
       if (length(names(normgroup)) > 0) {
          if (!all(samples %in% names(normgroup))) {
+            cli::cli_abort(paste0(
+               "When {.var names(normgroup)} is defined ",
+               "all {.var samples} must be present in ",
+               "{.var names(normgroup)}, ",
+               "and this requirement was not met."));
             stop(paste(
                "When names(normgroup) is defined,",
                "all samples must be present in names(normgroup).",
@@ -183,6 +289,13 @@ se_normalize <- function
          normgroup <- normgroup[match(samples, names(normgroup))];
       } else {
          if (length(normgroup) != length(samples)) {
+            cli::cli_abort(paste0(
+               "When {.var names(normgroup)} is not defined ",
+               "length(normgroup)=",
+               "{length(normgroup)}",
+               ", must equal ",
+               "length(samples)=",
+               "{length(samples)}."))
             stop(paste(
                "When names(normgroup) are not defined,",
                "length(normgroup) must equal length(samples).",
@@ -191,13 +304,41 @@ se_normalize <- function
       }
    }
 
+   # define output_assay_names
+   expected_output_length <- length(assay_names) * length(method);
+   # define output_assay_names when none are supplied
+   if (length(output_assay_names) == 0) {
+      output_assay_names <- paste0(
+         rep(output_method_prefix, length(assay_names)),
+         output_sep,
+         rep(assay_names, each=length(method)));
+   }
+   # define names(output_assay_names)
+   if (length(output_assay_names) == expected_output_length) {
+      names(output_assay_names) <- paste0(
+         rep(assay_names, each=length(method)),
+         "_",
+         rep(method, length(assay_names)));
+   } else {
+      if (length(output_assay_names) > 0) {
+         cli::cli_abort(paste0(
+            "length(output_assay_names)=",
+            "{length(output_assay_names)}",
+            ", must equal ",
+            "( length(assay_names) * length(method) )=",
+            "{length(assay_names) * length(method)}."))
+         stop(paste0("length(output_assay_names) must equal ",
+            "length(assay_names) * length(method)"))
+      }
+   }
+
+   # iterate assay_names, within which iterate method
    for (assay_name in assay_names) {
       for (imethod in method) {
-         output_assay_name <- paste0(
-            imethod,
-            output_sep,
-            assay_name);
-         if (output_assay_name %in% names(SummarizedExperiment::assays(se)) && !override) {
+         output_assay_name <- unname(output_assay_names[
+            paste0(assay_name, "_", imethod)]);
+         if (output_assay_name %in% names(SummarizedExperiment::assays(se)) &&
+               !TRUE %in% override) {
             if (verbose) {
                jamba::printDebug("se_normalize(): ",
                   sep="",
@@ -209,17 +350,21 @@ se_normalize <- function
          }
          if (verbose) {
             jamba::printDebug("se_normalize(): ",
-               c("Applying method for '",
+               c("Applying '", imethod, "' to '",
+                  assay_name, "' to store in '",
                   output_assay_name,
                   "'"),
                sep="");
          }
-         imatrix <- SummarizedExperiment::assays(se[genes, samples])[[assay_name]];
+         imatrix <- SummarizedExperiment::assays(
+            se[genes, samples])[[assay_name]];
          inorm <- matrix_normalize(imatrix,
             method=imethod,
             params=params,
             normgroup=normgroup,
             verbose=(verbose - 1) > 0,
+            floor=floor,
+            enforce_norm_floor=enforce_norm_floor,
             ...);
 
          # generate matrix of NA values to fill for normalized genes, samples
@@ -238,8 +383,9 @@ se_normalize <- function
          na_attrnames <- names(attributes(namatrix));
          new_attrs <- setdiff(names(attributes(inorm)), na_attrnames);
          if (length(new_attrs) > 0) {
-            if (verbose) {
-               jamba::printDebug("   re-assign new_attrs: ",
+            if (verbose > 1) {
+               jamba::printDebug("se_normalize(): ",
+                  "re-assigning new_attrs: ",
                   sep=", ",
                   new_attrs);
             }
@@ -250,6 +396,55 @@ se_normalize <- function
 
          # assign namatrix to se
          SummarizedExperiment::assays(se)[[output_assay_name]] <- namatrix;
+
+         # Bonus points: populate mcols() with normalization details
+         if (TRUE %in% populate_mcols) {
+            # create default DataFrame if it does not exist
+            if (length(SummarizedExperiment::mcols(
+               SummarizedExperiment::assays(se))) == 0) {
+               SummarizedExperiment::mcols(
+                  SummarizedExperiment::assays(se)) <- S4Vectors::DataFrame(
+                  assay_name=SummarizedExperiment::assayNames(se),
+                  row.names=SummarizedExperiment::assayNames(se))
+            }
+            # define list to update mcols()
+            mcol_list <- jamba::rmNULL(c(
+               list(
+                  assay_name=output_assay_name,
+                  normalization_method=imethod,
+                  source_assay_name=assay_name),
+               params[[imethod]]));
+            if (verbose > 1) {
+               jamba::printDebug("se_normalize(): ",
+                  "Populating mcol_list into mcols(assays(se)):");
+               for (mname in names(mcol_list)) {
+                  jamba::printDebug(paste0(mname, ": "),
+                     indent=6,
+                     mcol_list[[mname]])
+               }
+            }
+            mcolnames <- colnames(SummarizedExperiment::mcols(
+               SummarizedExperiment::assays(se)));
+            for (newcolname in names(mcol_list)) {
+               mvalues <- mcol_list[[newcolname]];
+               mna <- head(c(NA, mvalues), 1);
+               if (!newcolname %in% mcolnames) {
+                  SummarizedExperiment::mcols(
+                     SummarizedExperiment::assays(se))[,newcolname] <- mna;
+               }
+               if (length(mvalues) == 1) {
+                  SummarizedExperiment::mcols(
+                     SummarizedExperiment::assays(se))[
+                        output_assay_name, newcolname] <- mvalues;
+               } else if (length(mvalues) > 1) {
+                  SummarizedExperiment::mcols(
+                     SummarizedExperiment::assays(se))[
+                        output_assay_name, newcolname] <- I(list(mvalues));
+               }
+            }
+            # end names(mcol_list)
+         }
+         # end mcols(assays(se))
       }
    }
    return(se);
@@ -403,12 +598,14 @@ se_normalize <- function
 #' In this case, only non-NA values will be used during
 #' normalization according to the `method` being used.
 #'
-#' @return `numeric` matrix with the same dimensions as the
-#'    input matrix `x`. Some normalization methods return
-#'    additional information in `attributes(x)`, for example
-#'    `method="jammanorm"` will return the vector of housekeeper
-#'    genes used in `attr(x, "hk")` for normalization of each sample
-#'    when supplied with `controlGenes` values.
+#' @returns `numeric` matrix with the same dimensions as the
+#'    input matrix `x`.
+#'    Additional information may be returned as `attributes(x)`:
+#'    * `"norm_method"`: a `character` string with the method used.
+#'    * `"nf"`: a `numeric` vector with normalization factors, returned
+#'    only by `"jammanorm"`, `"TMM"`, and `"TMMwsp"`.
+#'    * `"hk"`: a `character` vector of `rownames(x)` used as housekeeper
+#'    `controlGenes` by `"jammanorm"`.
 #'
 #' @family jamses stats
 #'
@@ -417,6 +614,14 @@ se_normalize <- function
 #'    of the method.
 #' @param method `character` string indicating which normalization
 #'    method to apply.
+#'    * `"quantile"`: quantile normalization via `limma::normalizeQuantiles()`
+#'    * `"jammanorm"`: log-ratio normalization via `jamma::jammanorm()`
+#'    * `"limma_batch_adjust"`: batch adjustment via
+#'    `limma::removeBatchEffect()`, recommended for data visualization,
+#'    but not recommended for downstream statistical comparisons.
+#'    * `"TMM"`: trimmed mean of M-values via `edgeR::calcNormFactors()`
+#'    * `"TMMwsp"`: TMM with singleton pairing via `edgeR::calcNormFactors()`
+#'    * `"RLE"`: relative log expression via `edgeR::calcNormFactors()`
 #' @param apply_log2 `character` string indicating whether to apply
 #'    log2 transformation: `"ifneeded"` will apply log2 transform
 #'    when any absolute value is greater than 40; `"no"` will not
@@ -430,6 +635,10 @@ se_normalize <- function
 #'    `floor=0` requires all values are `0`, and any values below `0` are
 #'    assigned `0`. Note that the `floor` is applied after log2 transform,
 #'    when the log2 transform is performed.
+#' @param floor_value `numeric` or `NA` used to replace values in `x`
+#'    when they are at or below `floor`, default `floor_value=floor`,
+#'    however it can be useful to assign `NA` to replace zero in
+#'    circumstances when that is preferable.
 #' @param enforce_norm_floor `logical` indicating whether to enforce the
 #'    `floor` for the normalized results, default is `TRUE`. For example,
 #'    when `floor=0` any values at or below `0` are set to `0` before
@@ -558,33 +767,53 @@ se_normalize <- function
 #' @export
 matrix_normalize <- function
 (x,
-   method=c("quantile", "jammanorm", "limma_batch_adjust"),
-   apply_log2=c("ifneeded", "no", "always"),
-   floor=0,
-   enforce_norm_floor=TRUE,
-   params=list(
-      #`vsn`=list(lts.quantile=0.5),
-      #`rsn`=list(excludeFold=2,
-      #   span=0.03),
-      #cyclicLoess=list(method="default",
-      #   span=0.8),
-      `quantile`=list(
-         ties=TRUE),
-      `jammanorm`=list(controlGenes=NULL,
-         minimum_mean=0,
-         controlSamples=NULL,
-         centerGroups=NULL,
-         useMedian=FALSE,
-         noise_floor=NULL,
-         noise_floor_value=NULL),
-      `limma_batch_adjust`=list(
-         batch=NULL,
-         group=NULL)),
-   normgroup=NULL,
-   subset_columns=NULL,
-   debug=FALSE,
-   verbose=TRUE,
-   ...)
+ method=c("quantile",
+    "jammanorm",
+    "limma_batch_adjust",
+    "TMM",
+    "TMMwsp",
+    "RLE"),
+ apply_log2=c("ifneeded",
+    "no",
+    "always"),
+ floor=0,
+ floor_value=floor,
+ enforce_norm_floor=TRUE,
+ params=list(
+    #`vsn`=list(lts.quantile=0.5),
+    #`rsn`=list(excludeFold=2,
+    #   span=0.03),
+    #cyclicLoess=list(method="default",
+    #   span=0.8),
+    `quantile`=list(
+       ties=TRUE),
+    `jammanorm`=list(controlGenes=NULL,
+       minimum_mean=0,
+       controlSamples=NULL,
+       centerGroups=NULL,
+       useMedian=FALSE,
+       noise_floor=NULL,
+       noise_floor_value=NULL),
+    `limma_batch_adjust`=list(
+       batch=NULL,
+       group=NULL),
+    `TMM`=list(
+       refColumn=NULL,
+       logratioTrim=0.3,
+       sumTrim=0.05,
+       doWeighting=TRUE,
+       Acutoff=NULL),
+    `TMMwsp`=list(
+       refColumn=NULL,
+       logratioTrim=0.3,
+       sumTrim=0.05,
+       doWeighting=TRUE,
+       Acutoff=NULL)),
+ normgroup=NULL,
+ subset_columns=NULL,
+ debug=FALSE,
+ verbose=TRUE,
+ ...)
 {
    method <- match.arg(method);
    apply_log2 <- match.arg(apply_log2);
@@ -610,6 +839,7 @@ matrix_normalize <- function
             method=method,
             apply_log2=apply_log2,
             floor=floor,
+            floor_value=floor_value,
             enforce_norm_floor=enforce_norm_floor,
             params=params,
             normgroup=NULL,
@@ -671,11 +901,15 @@ matrix_normalize <- function
 
    # apply optional floor
    if (length(floor) > 0 && any(x <= floor & !is.na(x))) {
+      if (length(floor_value) == 0) {
+         floor_value <- floor;
+      }
       x_floored <- (x <= floor & !is.na(x));
-      x[x_floored] <- floor;
+      x[x_floored] <- floor_value;
       if (verbose) {
          jamba::printDebug("matrix_normalize(): ",
-            c("Applied floor:", floor),
+            c("Applied floor:", floor,
+               ", replacing with:", floor_value),
             sep="");
       }
    } else {
@@ -689,6 +923,7 @@ matrix_normalize <- function
       }
       inorm <- limma::normalizeQuantiles(A=x,
          ties=ties);
+      attr(inorm, "norm_method") <- "quantile";
    } else if ("jammanorm" %in% method) {
       controlGenes <- params$jammanorm$controlGenes;
       minimum_mean <- params$jammanorm$minimum_mean;
@@ -733,6 +968,7 @@ matrix_normalize <- function
       # if (nrow(inorm) == nrow(x) && length(x_rownames) == 0) {
       #    rownames(inorm) <- x_rownames;
       # }
+      attr(inorm, "norm_method") <- "jammanorm";
    } else if ("limma_batch_adjust" %in% method) {
       batch <- params$limma_batch_adjust$batch;
       group <- params$limma_batch_adjust$group;
@@ -748,11 +984,60 @@ matrix_normalize <- function
       inorm <- limma::removeBatchEffect(x,
          batch=batch,
          design=designBatchGroup);
+      attr(inorm, "norm_method") <- "limma_batch_adjust";
+   } else if (any(c("TMMwsp", "TMM", "RLE") %in% method)) {
+      if (!jamba::check_pkg_installed("edgeR")) {
+         stop("The edgeR package is required to normalize by 'TMM'");
+      }
+      # method parameters
+      refColumn <- params$TMM$refColumn;
+      logratioTrim <- params$TMM$logratioTrim;
+      if (length(logratioTrim) == 0) {
+         logratioTrim <- 0.3;
+      }
+      sumTrim <- params$TMM$sumTrim;
+      if (length(sumTrim) == 0) {
+         sumTrim <- 0.05;
+      }
+      doWeighting <- params$TMM$doWeighting;
+      if (length(doWeighting) == 0) {
+         doWeighting <- TRUE;
+      }
+      Acutoff <- params$TMM$Acutoff;
+      if (length(Acutoff) == 0) {
+         Acutoff <- -1e10;
+      }
+      # TMM disallows NA values, so we must replace with zero
+      if (any(is.na(x))) {
+         x[is.na(x)] <- 0;
+      }
+      # obtain normalization factors
+      normFactors <- edgeR::calcNormFactors(
+         object=2^x - 1,
+         method=method,
+         refColumn=refColumn,
+         logratioTrim=logratioTrim,
+         sumTrim=sumTrim,
+         doWeighting=doWeighting,
+         Acutoff=Acutoff);
+      # apply normalization factors
+      nfs <- log2(normFactors)
+      inorm <- x + rep(nfs, each=nrow(x));
+      # inorm <- x / rep(normFactors, each=nrow(x));
+
+      # store normalization factors as attributes
+      attr(inorm, "nf") <- nfs;
+      attr(inorm, "normFactors") <- normFactors;
+      attr(inorm, "logratioTrim") <- logratioTrim;
+      attr(inorm, "sumTrim") <- sumTrim;
+      attr(inorm, "doWeighting") <- doWeighting;
+      attr(inorm, "Acutoff") <- Acutoff;
+      attr(inorm, "norm_method") <- method;
    }
 
    # enforce the floor for output matrix
    if (enforce_norm_floor && any(x_floored)) {
-      inorm[x_floored | inorm <= floor] <- floor;
+      inorm[(x_floored | inorm <= floor) & !is.na(inorm)] <- floor_value;
    }
 
    return(inorm);

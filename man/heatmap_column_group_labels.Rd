@@ -13,6 +13,7 @@ heatmap_column_group_labels(
   add_group_box = FALSE,
   group_line_buffer = grid::unit(1, "mm"),
   group_line_lwd = 2,
+  group_line_requires_label = TRUE,
   group_box_lwd = 2,
   group_box_outer = TRUE,
   font_cex = 1,
@@ -61,6 +62,17 @@ The default enforces 1-mm white space between lines so they
 do not touch.}
 
 \item{group_line_lwd}{\code{numeric} line width when \code{add_group_line=TRUE}.}
+
+\item{group_line_requires_label}{\code{logical} whether to require
+the associated group label to contain non-whitespace visible
+text.
+\itemize{
+\item \code{group_line_requires_label=TRUE} (default) requires group label
+to have visible characters, which means the presence of an
+empty labels will cause the group line not to be drawn.
+\item \code{group_line_requires_label=FALSE} does not require a group label,
+therefore all group lines are drawn.
+}}
 
 \item{group_box_lwd}{\code{numeric} line width when \code{add_group_box=TRUE}.}
 
@@ -205,6 +217,8 @@ instead of the column_title region.
 \item When \code{add_group_box=TRUE}, and \code{row_split} indicates multiple row
 groups, it should calculate the y-axis coordinate values (top and bottom
 boundaries) using the full set of row groups.
+\item Enable blank annotations, either by passing a subset \code{se}, or by
+annotations with no associated label.
 }
 }
 }

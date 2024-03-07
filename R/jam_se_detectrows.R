@@ -120,7 +120,7 @@ se_detected_rows <- function
          rowStatsFunc=rowSums);
 
       # percent detected per group
-      reps_per_group <- tcount(igroups_i);
+      reps_per_group <- jamba::tcount(igroups_i);
       if (verbose) {
          jamba::printDebug("se_detected_rows(): ",
             "reps_per_group: ");

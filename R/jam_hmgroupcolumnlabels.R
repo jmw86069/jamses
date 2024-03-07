@@ -147,6 +147,8 @@ detect_heatmap_components <- function
 #' * When `add_group_box=TRUE`, and `row_split` indicates multiple row
 #' groups, it should calculate the y-axis coordinate values (top and bottom
 #' boundaries) using the full set of row groups.
+#' * Enable blank annotations, either by passing a subset `se`, or by
+#' annotations with no associated label.
 #'
 #'
 #' @param hm_group_list `character` or `list` with one of the
@@ -173,6 +175,14 @@ detect_heatmap_components <- function
 #'    The default enforces 1-mm white space between lines so they
 #'    do not touch.
 #' @param group_line_lwd `numeric` line width when `add_group_line=TRUE`.
+#' @param group_line_requires_label `logical` whether to require
+#'    the associated group label to contain non-whitespace visible
+#'    text.
+#'    * `group_line_requires_label=TRUE` (default) requires group label
+#'    to have visible characters, which means the presence of an
+#'    empty labels will cause the group line not to be drawn.
+#'    * `group_line_requires_label=FALSE` does not require a group label,
+#'    therefore all group lines are drawn.
 #' @param group_box_lwd `numeric` line width when `add_group_box=TRUE`.
 #' @param group_box_outer `logical` indicating whether to draw the group
 #'    box as an outer border, which means the border will be drawn only
@@ -220,6 +230,7 @@ heatmap_column_group_labels <- function
  add_group_box=FALSE,
  group_line_buffer=grid::unit(1, "mm"),
  group_line_lwd=2,
+ group_line_requires_label=TRUE,
  group_box_lwd=2,
  group_box_outer=TRUE,
  font_cex=1,
@@ -328,6 +339,7 @@ heatmap_column_group_labels <- function
             hm_group_list=bbvl1num,
             add_group_label=add_group_label,
             add_group_line=add_group_line,
+            group_line_requires_label=group_line_requires_label,
             add_group_box=add_group_box,
             group_line_buffer=group_line_buffer,
             group_line_lwd=group_line_lwd,
@@ -451,8 +463,11 @@ heatmap_column_group_labels <- function
       #    y=grid::unit(1, "npc") + grid::unit(y_offset_lines, "lines"))
 
       grid::seekViewport("global")
-      # label above each group
-      if (add_group_label) {
+      # label above each group only if label exists and has non-whitespace
+      if (add_group_label &&
+            !all(is.na(i)) &&
+            length(i) > 0 &&
+            jamba::igrepHas("[^ \t\n]", i)) {
          if (TRUE %in% use_gridtext) {
             gtg <- gridtext::richtext_grob(text=i,
                gp=grid::gpar(
@@ -479,15 +494,29 @@ heatmap_column_group_labels <- function
       }
       # line below group label
       if (TRUE %in% add_group_line) {
-         grid::grid.lines(
-            gp=grid::gpar(
-               lwd=group_line_lwd,
-               col="black"),
-            default.units="native",
-            x=grid::unit.c(
-               loc1_l$x + group_line_buffer,
-               loc1_r$x - group_line_buffer),
-            y=grid::unit.c(loc2_t$y, loc2_b$y) + grid::unit(2, "mm"))
+         if (FALSE %in% group_line_requires_label ||
+               (!any(is.na(i)) &&
+                  length(i) > 0 &&
+                  jamba::igrepHas("[^ \t\n]", i))) {
+            if (verbose) {
+               jamba::printDebug("heatmap_column_group_labels(): ",
+                  "Drawing group line for i: '", i, "'");
+            }
+            grid::grid.lines(
+               gp=grid::gpar(
+                  lwd=group_line_lwd,
+                  col="black"),
+               default.units="native",
+               x=grid::unit.c(
+                  loc1_l$x + group_line_buffer,
+                  loc1_r$x - group_line_buffer),
+               y=grid::unit.c(loc2_t$y, loc2_b$y) + grid::unit(2, "mm"))
+         } else {
+            if (verbose) {
+               jamba::printDebug("heatmap_column_group_labels(): ",
+                  "Hiding group line for i: '", i, "'");
+            }
+         }
       }
 
       # box around heatmap

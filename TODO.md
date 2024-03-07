@@ -1,11 +1,116 @@
 
 # TODO for jamses
 
+## 06mar2024
+
+* `se_normalize()`
+
+   * DONE. Consider allowing user-specified `assay_name` to store the
+   resulting data? Some mechanism to allow customizing the output `assay_name`.
+   New arguments:
+   
+      * DONE. `output_method_prefix` which by default uses each value in `method`
+      to formulate each output `assay_name`
+      * DONE. `output_assay_names` 
+      
+         * specify completely user-defined output `assay_name` values,
+         overriding `method` and `output_method_prefix` when defining
+         the output `assay_name`.
+         * `character` vector, must be equal to the number of normalizations.
+         Note that each normalization is applied to each `assay_names` in order:
+         `method1_assay1`, `method1_assay2`, `method2_assay1`, `method2_assay2`.
+   
+   * DONE. Consider using `mcols(assays(se))` to store annotation regarding
+   the normalization:
+   
+      * DONE. store values: `"normalization_method"`, `"source_assay_name"`,
+      `"params"` (params may not be easy to use, since params is a `list`
+      whose elements may include `character` vectors, `numeric` values with
+      many decimal places, etc.
+      * DENIED. Consider comparing new `mcols()` entries to existing `mcols()`
+      entries to decide whether to overwrite the existing entry, or to
+      create a new `assays()` entry with versioned name and different params.
+      Decision: Do **not** make this change, push this back onto users
+      to define `output_method_prefix` or `output_assay_names`, with the
+      idea that the user should specifically request creating a new
+      `assay_name`.
+   
+   * DENIED. If `method="jammanorm"` is called with different params, should it
+   create a new `assay_name` entry associated with those params?
+   **Decision: No.**
+
+* `heatmap_column_group_labels()`
+
+   * Consider permitting a subset of `se` columns being passed, to
+   allow labeling only a subset of columns per operation.
+   Ignore columns which are not provided in the `se` object.
+   * DONE. Consider option to hide the group line, when the group label
+   is also empty or whitespace.
+
+* `heatmap_row_group_labels()`
+
+   * New function completely analogous to `heatmap_column_group_labels()`.
+   * Default `rot` text rotation is 180 degrees (sideways).
+   * Consider adding something like `hm_title_buffer` to adjust the
+   buffer to the left of `left_annotation`, `HeatmapBody`?
+
+## 26feb2024
+
+* `se_normalize()`
+
+   * DONE. new methods from `edgeR::calcNormFactors()`:
+   
+      * "TMM": trimmed mean of M-values
+      * "TMMwsP": modified TMM with singleton pairing, removes zeros
+      * "RLE": relative log expression
+      * "upperquartile": uses upper 75% (by default) or user-defined threshold
+
+   * DENIED. Consider composite `assay_name` with param values?
+   
+      * for example running the same normalization with two sets of `params`
+
+* DENIED. consider renaming `"limma_batch_effect"`
+
+   * something shorter, and without underscores
+   * `"lba"`, `"limmabatchadjust"`
+   * (Instead user can customize the resulting assay_name.)
+
+* DELAYED. Consider something like `list_normalization_methods()`
+
+   * purpose is to list available normalizations as a programmatic reference
+   * returns `data.frame`: abbreviation, full_name, description
+   * the `abbreviation` ultimately becomes the new `assay_name`
+   * Currently `jamba::jargs(se_normalize, "method")` will print available
+   options, except without descriptive information. `? se_normalize`
+
+## 23feb2024
+
+* `heatmap_se()`
+
+   * When an entry in `sample_color_list` contains a color function, the
+   breaks are taken from `attr(x, "breaks")`, and it uses the same
+   values as labels.
+   
+      * Consider recognizing optional attribute with "labels" to use:
+      `attr(x, "labels")`. It must be the same length as `"breaks"`.
+
+## 25jan2024
+
+* `se_contrast_stats()`
+
+   * when using blocking factor (argument `block`) the group mean values
+   slightly differ from what could be calculated manually, even when
+   applying limma batch adjustment.
+   * Excellent overview of experiment design and contrast models in R:
+   https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7873980/
+   doi: 10.12688/f1000research.27893.1
+
+
 ## 10jan2024
 
 * `heatmap_se()`
 
-   * Consider using `"legend_title"` instead of `"name"` as the heatmap
+   * DONE. Consider using `"legend_title"` instead of `"name"` as the heatmap
    legend title, so that `"name"` can be defined with a specific value.
    The driving need is when adding two heatmaps together, if they both
    have the same `"name"` the name appears twice when calling

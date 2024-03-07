@@ -6,14 +6,17 @@
 \usage{
 matrix_normalize(
   x,
-  method = c("quantile", "jammanorm", "limma_batch_adjust"),
+  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE"),
   apply_log2 = c("ifneeded", "no", "always"),
   floor = 0,
+  floor_value = floor,
   enforce_norm_floor = TRUE,
   params = list(quantile = list(ties = TRUE), jammanorm = list(controlGenes = NULL,
     minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
     noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
-    NULL, group = NULL)),
+    NULL, group = NULL), TMM = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05,
+    doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
+    0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
   subset_columns = NULL,
   debug = FALSE,
@@ -27,7 +30,17 @@ gene rows, but any measured assay row will meet the assumptions
 of the method.}
 
 \item{method}{\code{character} string indicating which normalization
-method to apply.}
+method to apply.
+\itemize{
+\item \code{"quantile"}: quantile normalization via \code{limma::normalizeQuantiles()}
+\item \code{"jammanorm"}: log-ratio normalization via \code{jamma::jammanorm()}
+\item \code{"limma_batch_adjust"}: batch adjustment via
+\code{limma::removeBatchEffect()}, recommended for data visualization,
+but not recommended for downstream statistical comparisons.
+\item \code{"TMM"}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
+\item \code{"TMMwsp"}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
+\item \code{"RLE"}: relative log expression via \code{edgeR::calcNormFactors()}
+}}
 
 \item{apply_log2}{\code{character} string indicating whether to apply
 log2 transformation: \code{"ifneeded"} will apply log2 transform
@@ -43,6 +56,11 @@ value, below which values are assigned to this floor. The default
 \code{floor=0} requires all values are \code{0}, and any values below \code{0} are
 assigned \code{0}. Note that the \code{floor} is applied after log2 transform,
 when the log2 transform is performed.}
+
+\item{floor_value}{\code{numeric} or \code{NA} used to replace values in \code{x}
+when they are at or below \code{floor}, default \code{floor_value=floor},
+however it can be useful to assign \code{NA} to replace zero in
+circumstances when that is preferable.}
 
 \item{enforce_norm_floor}{\code{logical} indicating whether to enforce the
 \code{floor} for the normalized results, default is \code{TRUE}. For example,
@@ -74,11 +92,15 @@ each normalization method to use an appropriate subset of
 }
 \value{
 \code{numeric} matrix with the same dimensions as the
-input matrix \code{x}. Some normalization methods return
-additional information in \code{attributes(x)}, for example
-\code{method="jammanorm"} will return the vector of housekeeper
-genes used in \code{attr(x, "hk")} for normalization of each sample
-when supplied with \code{controlGenes} values.
+input matrix \code{x}.
+Additional information may be returned as \code{attributes(x)}:
+\itemize{
+\item \code{"norm_method"}: a \code{character} string with the method used.
+\item \code{"nf"}: a \code{numeric} vector with normalization factors, returned
+only by \code{"jammanorm"}, \code{"TMM"}, and \code{"TMMwsp"}.
+\item \code{"hk"}: a \code{character} vector of \code{rownames(x)} used as housekeeper
+\code{controlGenes} by \code{"jammanorm"}.
+}
 }
 \description{
 Normalize a numeric data matrix

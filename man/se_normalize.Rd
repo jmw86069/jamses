@@ -6,17 +6,26 @@
 \usage{
 se_normalize(
   se,
-  method = c("quantile", "jammanorm", "limma_batch_adjust"),
+  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE"),
   assay_names = NULL,
+  output_method_prefix = NULL,
+  output_assay_names = NULL,
   genes = NULL,
   samples = NULL,
   params = list(quantile = list(ties = TRUE), jammanorm = list(controlGenes = NULL,
     minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
     noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
-    NULL, group = NULL)),
+    NULL, group = NULL), TMM = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05,
+    doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
+    0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL), RLE = list(refColumn =
+    NULL, logratioTrim = 0.3, 
+     sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
+  floor = 0,
+  enforce_norm_floor = TRUE,
   output_sep = "_",
   override = TRUE,
+  populate_mcols = TRUE,
   verbose = FALSE,
   ...
 )
@@ -25,18 +34,59 @@ se_normalize(
 \item{se}{\code{SummarizedExperiment} object}
 
 \item{method}{\code{character} vector indicating which normalization method(s)
-to apply.}
+to apply.
+\itemize{
+\item \code{"quantile"}: quantile normalization via \code{limma::normalizeQuantiles()}
+\item \code{"jammanorm"}: log-ratio normalization via \code{jamma::jammanorm()}
+\item \code{"limma_batch_adjust"}: batch adjustment via
+\code{limma::removeBatchEffect()}, recommended for data visualization,
+but not recommended for downstream statistical comparisons.
+\item \code{"TMM"}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
+\item \code{"TMMwsp"}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
+\item \code{"RLE"}: relative log expression via \code{edgeR::calcNormFactors()}
+}}
 
 \item{assay_names}{\code{character} vector or one or more \code{names(assays(se))}
 that indicates which numeric matrix to use during normalization. When
 multiple values are provided, each matrix is normalized independently
 by each \code{method}.}
 
+\item{output_method_prefix}{\code{character} vector (optional) with custom
+method prefix values to use when creating the new \code{assay_name} for
+each normalization. It must have length equal to \code{length(method)},
+to be applied to each method in order.
+Note that \code{output_assay_names} takes priority, and when it is defined
+the \code{output_method_prefix} entries are ignored.
+
+Consider these arguments:
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{assay_name="counts",
+method="limma_batch_adjust",
+output_method_prefix="lba"
+}\if{html}{\out{</div>}}
+
+The assay_name created during normalization will be \code{"lba_counts"}.}
+
+\item{output_assay_names}{\code{character} vector (optional) which overrides
+the default method for defining assay names for normalized data.
+This vector length must equal \code{length(method) * length(assay_names)},
+and will be applied in the order data is normalized:
+\enumerate{
+\item \code{assay_names} are iterated.
+\item For each value in \code{assay_names}, each normalization in \code{method}
+is applied.
+}
+
+Therefore the order of \code{output_assay_names} could follow this order:
+\code{method1_assay1}, \code{method1_assay2}, \code{method2_assay1}, \code{method2_assay2}.}
+
 \item{genes}{\code{character} vector (optional) used to define a subset of
 gene rows in \code{se} to use for normalization.
 Values must match \code{rownames(se)}.}
 
-\item{samples}{\verb{character vector (optional) used to define a subset of sample columns in }se\verb{to use for normalization. Values must match}colnames(se)`.}
+\item{samples}{\code{character} vector (optional) used to define a subset of
+sample columns in \code{se} to use for normalization.
+Values must match \code{colnames(se)}.}
 
 \item{params}{\code{list} (optional) parameters specific to each
 normalization method, passed to \code{matrix_normalize()}. Any
@@ -61,6 +111,12 @@ and \code{output_sep="_"} the new assay name will be \code{"quantile_counts"}.}
 matrix values with the same output assay name. When \code{override=FALSE}
 and the output assay name already exists, the normalization will
 not be performed.}
+
+\item{populate_mcols}{\code{logical} indicating whether to populate
+normalization details into \code{mcols(assays(se))}, including
+the normalization \code{method},
+the source \code{assay_name} used during normalization, and
+values from \code{params}.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
@@ -106,7 +162,7 @@ step, see that function description for details on each method.
 if (jamba::check_pkg_installed("farrisdata")) {
 
    # se_normalize
-   suppressPackageStartupMessages(library(SummarizedExperiment))
+   # suppressPackageStartupMessages(library(SummarizedExperiment))
    GeneSE <- farrisdata::farrisGeneSE;
    samples <- colnames(GeneSE);
    genes <- rownames(GeneSE);
@@ -117,17 +173,21 @@ if (jamba::check_pkg_installed("farrisdata")) {
       assay_names=c("raw_counts", "counts"),
       method="jammanorm",
       params=list(jammanorm=list(minimum_mean=5)))
-   names(assays(GeneSE))
+   SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
+   names(SummarizedExperiment::assays(GeneSE))
 
    # review normalization factor values
-   round(digits=3, attr(assays(GeneSE)$jammanorm_raw_counts, "nf"))
+   round(digits=3, attr(
+      SummarizedExperiment::assays(GeneSE)$jammanorm_raw_counts, "nf"))
 
    # the data in "counts" was already normalized
    # so the normalization factors are very near 0 as expected
-   round(digits=3, attr(assays(GeneSE)$jammanorm_counts, "nf"))
+   round(digits=3,
+      attr(SummarizedExperiment::assays(GeneSE)$jammanorm_counts, "nf"))
 
 
    # note that housekeeper genes are supplied in params
+   # also this demonstrates output_method_prefix
    set.seed(123);
    hkgenes <- sample(rownames(GeneSE), 1000)
    GeneSE <- se_normalize(GeneSE,
@@ -135,15 +195,23 @@ if (jamba::check_pkg_installed("farrisdata")) {
       samples=samples,
       assay_names=c("raw_counts"),
       method="jammanorm",
+      output_method_prefix="hkjammanorm",
       params=list(jammanorm=list(minimum_mean=5,
          controlGenes=hkgenes)))
-   round(digits=3, attr(assays(GeneSE)$jammanorm_raw_counts, "nf"))
+   SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
 
    # example showing quantile normalization
    GeneSE <- se_normalize(GeneSE,
       assay_names=c("raw_counts"),
+      method="quantile")
+   SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
+
+   # example showing quantile normalization with custom output_assay_names
+   GeneSE <- se_normalize(GeneSE,
+      assay_names=c("raw_counts"),
       method="quantile",
-      params=list(jammanorm=list(min_mean=5)))
+      output_assay_names="newquantile_raw_counts")
+   SummarizedExperiment::mcols(SummarizedExperiment::assays(GeneSE))
 }
 
 
