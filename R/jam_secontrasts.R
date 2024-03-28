@@ -509,6 +509,35 @@ se_contrast_stats <- function
    # each vector will be analyzed independently
    isamples_normgroup_list <- split(isamples, normgroup[isamples]);
 
+   # 0.0.57.900 - validate block content, order
+   # - enforce names(block) == isamples
+   if (length(block) > 0) {
+      if (length(names(block)) == 0) {
+         # block with no names: length(block) must equal length(isamples)
+         if (!length(block) == length(isamples)) {
+            cli::cli_abort(paste0(
+               "{.var length(block)} must equal {.var length(isamples)} ",
+               "unless {.var names(block)} are available."));
+            stop("length(block) must equal length(isamples).");
+         }
+         names(block) <- isamples;
+      } else {
+         # block with names: all isamples must be found in names(block)
+         if (!all(isamples %in% names(block))) {
+            cli::cli_abort(paste0(
+               "{.var isamples} must all exist in {.var names(block)}."));
+            stop("isamples must all exist in names(block)");
+         }
+         # synchronize block order using isamples
+         block <- block[isamples];
+      }
+      if (any(is.na(block))) {
+         cli::cli_abort(paste0(
+            "{.var block} must not contain NA values."));
+         stop("block must not contain NA values.");
+      }
+   }
+
    ## prepare optional gene_df data.frame
    rowData_df <- NULL;
    rowData_colnames <- intersect(rowData_colnames,
@@ -621,7 +650,11 @@ se_contrast_stats <- function
             ## - block is defined but not correlation, calculate correlation
             ## - Note that voom weights are included here if they were calculated
             calculate_correlation <- FALSE;
-            if (length(block) > 0 &&
+            use_block <- NULL;
+            if (length(block) > 0) {
+               use_block <- block[normgroup_samples];
+            }
+            if (length(unique(use_block)) > 1 &&
                   length(correlation) == 0) {
                calculate_correlation <- TRUE;
             }
@@ -648,7 +681,7 @@ se_contrast_stats <- function
                   object=imatrix_ng[k, , drop=FALSE],
                   design=idesign,
                   weights=weights[k, , drop=FALSE],
-                  block=block)
+                  block=use_block)
                correlation <- dupcor$consensus;
                if (verbose) {
                   jamba::printDebug("se_contrast_stats(): ",
@@ -659,7 +692,7 @@ se_contrast_stats <- function
             #######################################################
             ## Re-calculate voom weights only when block is defined
             ## - Note it uses voom weights, and correlation
-            if (length(unique(block)) > 1 &&
+            if (length(unique(use_block)) > 1 &&
                   length(correlation) > 0 &&
                   TRUE %in% voom_block_twostep &&
                   TRUE %in% use_voom) {
@@ -671,7 +704,7 @@ se_contrast_stats <- function
                   design=idesign,
                   normalize.method="none",
                   plot=FALSE,
-                  block=block,
+                  block=use_block,
                   correlation=correlation,
                   weights=weights,
                   verbose=verbose,
@@ -696,7 +729,7 @@ se_contrast_stats <- function
                      object=imatrix_ng[k, , drop=FALSE],
                      design=idesign,
                      weights=weights[k, , drop=FALSE],
-                     block=block,
+                     block=use_block,
                      ...)
                   correlation <- dupcor$consensus;
                   if (verbose) {
@@ -746,7 +779,7 @@ se_contrast_stats <- function
                ave_cutoff=ave_cutoff,
                rowData_df=rowData_df,
                collapse_by_gene=collapse_by_gene,
-               block=block,
+               block=use_block,
                correlation=correlation,
                posthoc_test=posthoc_test,
                posthoc_args=posthoc_args,
@@ -842,7 +875,7 @@ se_contrast_stats <- function
          ## - block is defined but not correlation, calculate correlation
          ## - Note that voom weights are included here if they were calculated
          calculate_correlation <- FALSE;
-         if (length(block) > 0 &&
+         if (length(unique(block)) > 1 &&
                length(correlation) == 0) {
             calculate_correlation <- TRUE;
          }

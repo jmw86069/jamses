@@ -1,6 +1,73 @@
 
 # TODO for jamses
 
+## 12mar2024
+
+* New function idea: `heatmap_to_xlsx()` or `heatmap_to_df()`
+to convert `heatmap_se()` output to `data.frame` or save with
+`jamba::writeOpenxlsx()`.
+
+   * Idea is to extract data from the heatmap as displayed, in order to
+   save it to a file (e.g. Excel or tab-delimited) for later review.
+   * Use techniques to extract the `left_annotation` and `top_annotation` data.
+   * Annotation colors can be extracted and used to colorize corresponding
+   cells in Excel.
+   * It should mainly target features made available by `heatmap_se()`,
+   in other words any custom `HeatmapAnnotation()` functions would likely
+   not be supported. Things like annotation bar charts, line plots, etc. would
+   not be easily supported for export.
+   * Main features:
+   
+      * Rows and columns match the order as they appear in the heatmap.
+      * Left annotations: `rowData_colnames`, `sestats`, `sestats_alt`
+      * Top annotations: `top_colnames`
+      
+         * As below, it is unclear how best to handle multiple header rows,
+         it makes the output file much more difficult to use,
+         whether it is saved as tab-delimited text, or Excel.
+      
+      * Optional: Extract heatmap color function, apply to each cell.
+      (This step sounds interesting, but is likely to be a bad idea.
+      Applying a color per cell in Excel would be very time-consuming
+      and inefficient, and would produce a much larger file.)
+      * Optional `column_labels`, `row_labels`
+      * Row split encoded as a row annotation, using values from `row_title`.
+      * Column split - unclear the best approach to use:
+      
+         * Adding column annotations requires saving multiple header rows,
+         which makes the exported file substantially more difficult to use.
+         * One option is to use column split as a prefix, e.g.
+         "Group 1 - colname1", "Group 1 - colname2", "Group 2 - colname3", etc.
+      
+      * Option to supply the `se` object, and append additional data
+      via `rowData_colnames`.
+
+   * Required: Ability to save `HeatmapList` objects, already drawn using
+   `ComplexHeatmap::draw()`.
+   
+      * Bonus points: recognize when multiple heatmaps are present, e.g. from
+      `ComplexHeatmap::draw(hm1 + hm2 + hm3)`.
+      * It needs to iterate each heatmap in the `HeatmapList`, potentially also
+      obtaining `left_annotation` and `top_annotation` from each `Heatmap`.
+      Ugh. Each heatmap could have different `top_annotations` which means
+      the `top_annotation` would need to have a column with row names for
+      each heatmap's unique `top_annotation`.
+
+## 07mar2024
+
+* `groups_to_sedesign()`
+
+   * Consider adding argument `normgroup` to restrict contrasts within
+   each `normgroup`.
+
+* `heatmap_se()`: Consider some way to indicate `controlSamples`.
+
+   * Note that sometimes `controlSamples` are not displayed on the heatmap,
+   this might be an exception where it is not shown.
+   The rule might be: if not all `controlSamples` are in `isamples` then do
+   not indicate `controlSamples`.
+   * One option is to render an asterisk just above each column? `"*"`
+
 ## 06mar2024
 
 * `se_normalize()`

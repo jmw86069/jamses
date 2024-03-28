@@ -1,3 +1,24 @@
+# jamses 0.0.57.900
+
+## Bug fixes
+
+* `se_contrast_stats()`
+
+   * Caused an error when using `normgroup` and `block` together,
+   caused by the `block` not being subset to match `isamples`.
+   Fortunately the bug would always cause failure, since it did
+   not return an incorrect statistical result.
+   * `block` is expected to equal `length(isamples)`, and will
+   be named as such so it can also be subset within each `normgroup`.
+   * when `names(block)` are defined, they are validated to match
+   `isamples`, and will be subset and re-ordered to match `isamples`
+   as needed.
+   * when `names(block)` is not defined, its length must equal
+   `length(isamples)`, and then `names(block)` will be defined using
+   `isamples`.
+   * in each `normgroup` the `block` is only applied when there is
+   more than one unique value for the relevant `block[isamples]`.
+
 # jamses 0.0.56.900
 
 * Added `edgeR` to Suggests, in order to enable new normalization
