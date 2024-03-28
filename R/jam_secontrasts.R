@@ -194,9 +194,11 @@
 #' @param collapse_by_gene `logical` (not currently implemented).
 #' @param block `character`, `factor`, or `numeric` used as a blocking
 #'    factor, using argument `block` in `limma::lmFit()` for example.
-#'    Currently this argument must be supplied as a vector in order
-#'    of `isamples`, or when `isamples` is not supplied `colnames(se)`.
-#'    In future, `block` will accept `colnames(colData(se))`.
+#'
+#'    The argument can be supplied as one of the following:
+#'    * `character` with one or more `colnames(colData(se))`
+#'    * `character` vector which must be named using all values
+#'    in `isamples`
 #' @param correlation optional inter-duplicate or inter-technical
 #'    correlation matrix passed to `limma::lmFit()`.
 #' @param max_correlation_rows `numeric` maximum number of rows in
@@ -226,6 +228,11 @@
 #'    subset the appropriate contrasts to use only samples within the
 #'    current normgroup. As a result, any contrasts that span two
 #'    normgroups will be removed, and will not appear in the output.
+#'
+#'    The argument can be supplied as one of the following:
+#'    * `character` with one or more `colnames(colData(se))`
+#'    * `character` vector which must be named using all values
+#'    in `isamples`
 #' @param do_normgroups `logical` whether to enable normgroup processing,
 #'    or to use the previous technique that kept all samples together.
 #'    This argument may be removed in future, with recommendation to use
@@ -499,11 +506,23 @@ se_contrast_stats <- function
       normgroup <- jamba::nameVector(
          jamba::pasteByRowOrdered(
             data.frame(check.names=FALSE,
-               SummarizedExperiment::colData(se[,isamples])[,normgroup, drop=FALSE])),
+               SummarizedExperiment::colData(se[, isamples])[,normgroup, drop=FALSE])),
          isamples);
+   } else if (length(names(normgroup)) == 0) {
+      stop("normgroup supplied as a vector must contain names(normgroup) which match isamples.");
+   } else if (!all(isamples %in% names(normgroup))) {
+      stop("not all isamples are contained in names(normgroup)");
+   } else {
+      # order normgroup by isamples
+      normgroup <- normgroup[isamples];
    }
-   if (length(names(normgroup)) == 0 && length(normgroup) == length(isamples)) {
-      names(normgroup) <- isamples;
+   if (any(is.na(normgroup))) {
+      cli::cli_abort(paste0(
+         "{.var normgroup} must not contain NA values."));
+      stop("normgroup must not contain NA values.");
+   }
+   if (!all(isamples %in% names(normgroup))) {
+      stop("not all isamples are present in names(normgroup)");
    }
    # isamples_normgroup_list is a list separated by normgroup,
    # each vector will be analyzed independently
@@ -513,14 +532,18 @@ se_contrast_stats <- function
    # - enforce names(block) == isamples
    if (length(block) > 0) {
       if (length(names(block)) == 0) {
-         # block with no names: length(block) must equal length(isamples)
-         if (!length(block) == length(isamples)) {
-            cli::cli_abort(paste0(
-               "{.var length(block)} must equal {.var length(isamples)} ",
-               "unless {.var names(block)} are available."));
-            stop("length(block) must equal length(isamples).");
-         }
-         names(block) <- isamples;
+         stop("block must contain names(block), which also matches isamples.")
+      }
+      if (all(block %in% colnames(SummarizedExperiment::colData(se[, isamples])))) {
+         block <- jamba::nameVector(
+            jamba::pasteByRowOrdered(
+               data.frame(check.names=FALSE,
+                  SummarizedExperiment::colData(se[,isamples])[,block, drop=FALSE])),
+            isamples);
+      } else if (!all(isamples %in% names(block))) {
+         cli::cli_abort(paste0(
+            "{.var isamples} must all exist in {.var names(block)}."));
+         stop("isamples must all exist in names(block)");
       } else {
          # block with names: all isamples must be found in names(block)
          if (!all(isamples %in% names(block))) {
@@ -529,8 +552,8 @@ se_contrast_stats <- function
             stop("isamples must all exist in names(block)");
          }
          # synchronize block order using isamples
-         block <- block[isamples];
       }
+      block <- block[isamples];
       if (any(is.na(block))) {
          cli::cli_abort(paste0(
             "{.var block} must not contain NA values."));

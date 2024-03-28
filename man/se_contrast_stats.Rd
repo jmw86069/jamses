@@ -221,9 +221,13 @@ with \code{colnames(rowData(se))} to determine which columns to keep.}
 
 \item{block}{\code{character}, \code{factor}, or \code{numeric} used as a blocking
 factor, using argument \code{block} in \code{limma::lmFit()} for example.
-Currently this argument must be supplied as a vector in order
-of \code{isamples}, or when \code{isamples} is not supplied \code{colnames(se)}.
-In future, \code{block} will accept \code{colnames(colData(se))}.}
+
+The argument can be supplied as one of the following:
+\itemize{
+\item \code{character} with one or more \code{colnames(colData(se))}
+\item \code{character} vector which must be named using all values
+in \code{isamples}
+}}
 
 \item{correlation}{optional inter-duplicate or inter-technical
 correlation matrix passed to \code{limma::lmFit()}.}
@@ -255,7 +259,14 @@ Each subset of samples begins with the same \code{sedesign}, \code{idesign},
 \code{icontrast}, however they are fed into \code{validate_sestats()} to
 subset the appropriate contrasts to use only samples within the
 current normgroup. As a result, any contrasts that span two
-normgroups will be removed, and will not appear in the output.}
+normgroups will be removed, and will not appear in the output.
+
+The argument can be supplied as one of the following:
+\itemize{
+\item \code{character} with one or more \code{colnames(colData(se))}
+\item \code{character} vector which must be named using all values
+in \code{isamples}
+}}
 
 \item{do_normgroups}{\code{logical} whether to enable normgroup processing,
 or to use the previous technique that kept all samples together.

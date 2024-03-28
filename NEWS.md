@@ -19,6 +19,17 @@
    * in each `normgroup` the `block` is only applied when there is
    more than one unique value for the relevant `block[isamples]`.
 
+
+## change to existing functions
+
+* `se_contrast_stats()`
+
+   * Arguments `normgroup` and `block` both accept `colnames(colData(se))`,
+   or a vector of values; however when supplying a vector of values,
+   they must now be named using `isamples` - it no longer assumes they
+   are the same order as `isamples`. The `names(block)` are used to
+   confirm absolute synchrony.
+
 # jamses 0.0.56.900
 
 * Added `edgeR` to Suggests, in order to enable new normalization
