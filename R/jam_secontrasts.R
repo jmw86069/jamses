@@ -679,7 +679,7 @@ se_contrast_stats <- function
                }
                dupcor <- limma::duplicateCorrelation(
                   object=imatrix_ng[k, , drop=FALSE],
-                  design=idesign,
+                  design=idesign_ng,
                   weights=weights[k, , drop=FALSE],
                   block=use_block)
                correlation <- dupcor$consensus;
@@ -701,7 +701,7 @@ se_contrast_stats <- function
                      "   Re-calculating Voom weight matrix (with block).");
                }
                imatrix_v <- voom_jam((2^imatrix_ng)-1,
-                  design=idesign,
+                  design=idesign_ng,
                   normalize.method="none",
                   plot=FALSE,
                   block=use_block,
@@ -727,7 +727,7 @@ se_contrast_stats <- function
                   dupcor <- jamba::call_fn_ellipsis(
                      limma::duplicateCorrelation,
                      object=imatrix_ng[k, , drop=FALSE],
-                     design=idesign,
+                     design=idesign_ng,
                      weights=weights[k, , drop=FALSE],
                      block=use_block,
                      ...)
