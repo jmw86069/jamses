@@ -127,7 +127,9 @@ se_detected_rows <- function
          print(reps_per_group);
       }
       # first determine replicates per group
-      se_Pct_Group <- se_Num_Group / reps_per_group[colnames(se_Num_Group)];
+      se_Pct_Group <- se_Num_Group / rep(
+         reps_per_group[colnames(se_Num_Group)],
+         each=nrow(se_Num_Group));
       # se_Pct_Group <- se_Num_Group /
       #    rep(apply(head(se_Num_Group, 10000), 2, function(i){
       #          max(i, na.rm=TRUE)

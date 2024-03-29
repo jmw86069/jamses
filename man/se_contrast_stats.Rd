@@ -225,8 +225,11 @@ factor, using argument \code{block} in \code{limma::lmFit()} for example.
 The argument can be supplied as one of the following:
 \itemize{
 \item \code{character} with one or more \code{colnames(colData(se))}
-\item \code{character} vector which must be named using all values
-in \code{isamples}
+\item \code{character} vector named using values in \code{isamples} and/or
+\code{colnames(se)}
+\item \code{character} vector without names, whose length must equal
+\code{length(isamples)} or when \code{isamples} is not provided,
+\code{ncol(se)}.
 }}
 
 \item{correlation}{optional inter-duplicate or inter-technical
@@ -264,8 +267,11 @@ normgroups will be removed, and will not appear in the output.
 The argument can be supplied as one of the following:
 \itemize{
 \item \code{character} with one or more \code{colnames(colData(se))}
-\item \code{character} vector which must be named using all values
-in \code{isamples}
+\item \code{character} vector named using values in \code{isamples} and/or
+\code{colnames(se)}
+\item \code{character} vector without names, whose length must equal
+\code{length(isamples)} or when \code{isamples} is not provided,
+\code{ncol(se)}.
 }}
 
 \item{do_normgroups}{\code{logical} whether to enable normgroup processing,

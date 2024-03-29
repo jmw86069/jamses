@@ -1,4 +1,38 @@
-# jamses 0.0.57.900
+# jamses 0.0.59.900
+
+## Bug fixes
+
+* `se_detected_rows()` was not properly applying `detect_minpct` for
+the minimum percentage of replicates per group, impacting cases where
+groups each differed in size. Bug has been resolved.
+
+## Changes to existing functions
+
+* `se_contrast_stats()`
+
+   * Arguments `block` and `normgroup` both allow three types of input,
+   which were modified slightly to reduce the risk of values being
+   out of sync.
+   
+      1. Unnamed `character` vector, must be equal to `length(isamples)`,
+      or when `isamples` is not provided, `ncol(se)`. In this case,
+      `isamples` or `colnames(se)` are assigned as names.
+      **This option prints an alter message** suggesting that
+      values be provided with names.
+      However, values are named by `isamples` before any other
+      subsetting is performed relative to `isamples`.
+      2. Named `character` vector, whose names match `colnames(se)`
+      and `isamples`.
+      3. `character` vector matching `colnames(colData(se))` to use
+      one or more annotation columns, which also automatically
+      uses `isamples` as appropriate, to maintain synchrony.
+
+   * Note that when using `normgroup` and/or `block` the intermediate
+   processing can be reviewed by including `verbose=TRUE`. The output
+   will also print each `correlation` value for each `normgroup`,
+   when `block` is also provided.
+
+# jamses 0.0.58.900
 
 ## Bug fixes
 
