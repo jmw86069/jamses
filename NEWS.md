@@ -1,3 +1,15 @@
+# jamses 0.0.60.900
+
+## Bug fixes
+
+* `se_contrast_stats()`
+
+   * when `normgroup` and `block` were both defined, but one `normgroup`
+   did not have multiple values for `block`, it threw an error.
+   In this case, when there is only one unique value for `block` within
+   a `normgroup` it is set to `NULL` for that `normgroup` so it is not
+   use in `limma::lmFit()`.
+
 # jamses 0.0.59.900
 
 ## Bug fixes

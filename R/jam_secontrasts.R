@@ -765,6 +765,9 @@ se_contrast_stats <- function
                   length(correlation) == 0) {
                calculate_correlation <- TRUE;
             }
+            if (length(unique(use_block)) <= 1) {
+               use_block <- NULL;
+            }
             if (TRUE %in% calculate_correlation) {
                # use a random subset of rows to calculate correlation
                if (length(max_correlation_rows) == 1 &&
