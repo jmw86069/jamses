@@ -4,11 +4,14 @@
 
 * `se_contrast_stats()`
 
-   * when `normgroup` and `block` were both defined, but one `normgroup`
+   * When `normgroup` and `block` were both defined, but one `normgroup`
    did not have multiple values for `block`, it threw an error.
    In this case, when there is only one unique value for `block` within
    a `normgroup` it is set to `NULL` for that `normgroup` so it is not
    use in `limma::lmFit()`.
+   * `handle_na="full1"` was not performing as intended, caused when
+   migrating away from `matrixStats::rowMins(x)` to `apply(x, 1, min)`,
+   the logic was no longer being applied as described.
 
 # jamses 0.0.59.900
 

@@ -1298,7 +1298,7 @@ handle_na_values <- function
             x1[is.na(x)] <- NA;
             # changed from rowMins()
             # x1[rowMins(is.na(x)*1) == 1, ] <- na_value;
-            x1[apply(is.na(x)*1, 1, min) == 1,] <- NA;
+            x1[apply(is.na(x)*1, 1, min) == 1, ] <- NA;
             x1;
          });
    } else if ("full1" %in% handle_na) {
@@ -1309,21 +1309,30 @@ handle_na_values <- function
       ## group variability.
       if (verbose) {
          jamba::printDebug("handle_na_values(): ",
-            c("Leaving singlet NA as-is, filling full-group NA with ",
+            c("Filling only full-group NA with one instance of ",
                na_value,
-               " once per group."),
+               " per group."),
             sep="");
       }
+      ## 0.0.60.900 - slightly modified to avoid copying data x to x1
       x <- jamba::rowGroupMeans(x[,names(groupV),drop=FALSE],
          groups=rep(names(groupL), lengths(groupL)),
          rowStatsFunc=function(x,...){
-            x1 <- x;
-            x1[is.na(x)] <- NA;
-            # changed from rowMins
-            # x1[rowMins(is.na(x)*1) == 1, 1] <- na_value;
-            x1[apply(is.na(x)*1, 1, min) == 1,] <- NA;
-            x1;
+            # x1 <- x;
+            full_na_rows <- (apply(is.na(x)*1, 1, min) == 1);
+            if (any(full_na_rows)) {
+               # x1[full_na_rows, 1] <- na_value;
+               x[full_na_rows, 1] <- na_value;
+            }
+            x;
          });
+            ## unclear why the following step was used
+            # x1[is.na(x)] <- NA;
+
+            ## changed from previous matrixStats::rowMins
+            # x1[matrixStats::rowMins(is.na(x)*1) == 1, 1] <- na_value;
+            ## 0.0.60.900 - fixed bug from copy-paste above
+            # x1[apply(is.na(x)*1, 1, min) == 1, ] <- NA;
    } else if ("all" %in% handle_na) {
       if (verbose) {
          jamba::printDebug("handle_na_values(): ",
@@ -1331,7 +1340,9 @@ handle_na_values <- function
                na_value),
             sep="");
       }
-      x[xNA] <- na_value;
+      if (any(xNA)) {
+         x[xNA] <- na_value;
+      }
    }
    ## define weight matrix
    if (TRUE %in% return_weights) {
