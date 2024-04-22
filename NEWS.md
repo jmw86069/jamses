@@ -1,3 +1,13 @@
+# jamses 0.0.61.900
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * `row_split` now accepts `data.frame` input
+   * `row_split` is more forgiving with vector input, now accepts
+   a named numeric vector.
+
 # jamses 0.0.60.900
 
 ## Bug fixes

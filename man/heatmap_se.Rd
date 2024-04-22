@@ -332,9 +332,14 @@ is added to the \code{row_names_gp} supplied.}
 passed to \code{ComplexHeatmap::Heatmap()} argument \code{row_split}. However,
 the input type can vary:
 \itemize{
-\item \code{integer} number of row splits based upon row clustering
+\item \code{integer} number of row splits based upon row clustering. If
+\code{row_split} is greater than the number of rows, it will be set
+to the number of rows.
 \item \code{character} value or values in colnames of \code{rowData(se)} to split
 using row annotation in \code{se}.
+\item \code{data.frame} whose \code{rownames()} must contain all rows to be
+displayed in the heatmap. This argument is passed directly to
+\code{ComplexHeatmap::Heatmap()} to apply the split appropriately.
 \item \code{character} or \code{factor} vector named by \code{rownames(se)} with another
 custom row split, passed directly to \code{ComplexHeatmap::Heatmap()}
 argument \code{row_split}, with proper order for rows being displayed

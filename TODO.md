@@ -1,6 +1,89 @@
 
 # TODO for jamses
 
+## 16apr2024
+
+* Implement `testthis` unit tests for `se_contrast_stats()`
+
+   * Highest priority: test each option of `handle_na`
+   * Test `use_voom`.
+   * Test `block`.
+   * Test `normgroup`.
+   * Test `block` and `use_voom` together, `voom_block_twostep=TRUE`,
+   which should call correlation twice.
+   * Test `block` and `normgroup` notably when one `normgroup` contains 2+
+   unique `block` values, and another `normgroup` has only 1 `block`.
+   * Bonus points: Test using a subset of `isamples` that no longer contains
+   a valid contrast. It should fail - though in future it could potentially
+   return the group mean values, then stop short of performing contrasts.
+
+* Extend `SEDesign` for `block` and `normgroup`:
+
+   * Pressing need to maintain `normgroup` and `block` with `sedesign`.
+   Basic goal: when `sedesign` is subset, `normgroup` and `block` are also
+   subset consistently.
+   * New slot names:
+   
+      * `"normgroup"` - `character` vector to match `samples()`, and
+      `rownames()` of the design matrix.
+      Or could it be `data.frame` to permit multiple column values?
+      Upon use each row would be concatenated to make one value per sample.
+      When `sedesign` is subset, `"normgroup"` is also subset consistently.
+      * `"block"` - `data.frame` with one or more columns, indicating.
+      Its primary purpose is to maintain values per `samples()`, so they
+      can be subset and maintained consistently.
+      It will be pushed to `se_contrast_stats()` how to deal with the
+      actual values:
+      
+         * `character` values are considered `block` covariates for `limma`.
+         For now, only `character` will be permitted.
+         * `numeric` values can be encoded as a scalar covariate, and
+         would be appended as a new column in `design` - and therefore must
+         be added as a new row in `contrasts` with empty `0` values.
+         * `integer`, `factor` values are encoded as an ordinal covariate,
+         converted to rank integer values.
+   
+   * `normgroup()`, `normgroup()<-` - set/get functions for `sedesign@normgroup`
+   * `block()`, `block()<-` - set/get functions for `sedesign@block`
+
+* `groups_to_sedesign()` to handle `normgroup`, `block`
+
+   * When `normgroup` is supplied, contrasts should be limited to those
+   within each `normgroup`.
+   It may be accomplished by including `normgroup` as factor columns,
+   but not included with `factor_order` so that comparisons cannot
+   involve multiple `normgroup` values.
+   * Store `normgroup` in the `SEDesign` object, see above.
+
+* `SEStats` S4 object for output from `se_contrast_stats()`
+
+   * Proposed slots:
+   
+      * `"hit_array"`
+      * `"stats_dfs"` - each contrast in `data.frame` format
+      * `"stats_df"` - overall merged `data.frame`
+      * `"sedesign"` - (with `"block"`, `"normgroup"`) - for reproducibility
+   
+   * Methods:
+   
+      * `contrast_names()`
+      * `sestats_to_list()` (analogous to `hit_array_to_list()`)
+      * `sestats_to_im()` as above but returns signed incidence matrix
+      * `sestats_to_sedesign()` extracts equivalent `SEDesign` object
+   
+   * `hit_array()` - access to the array of statistical hits by dimensions:
+   
+      * `cutoff_name`
+      * `contrast_name`
+      * `assay_name`
+      * `method_name` - Add this dimension to enable alternative methods
+   
+   * `hit_im()` - incidence `matrix` for specific dimensions in `hit_array`
+   * `hit_list()` - `list` of stat hit direction, named by entity
+   * `sestats_to_df()` - `data.frame` suitable for RMarkdown and `kable()`
+   * accessors: `assay_names()`, `contrast_names()`, `cutoff_names()`,
+   `method_names()`
+
 ## 12mar2024
 
 * New function idea: `heatmap_to_xlsx()` or `heatmap_to_df()`
@@ -277,20 +360,6 @@ to convert `heatmap_se()` output to `data.frame` or save with
    Similarly the `posthoc_method="DEqMS"` may be included so that
    its effects can be compared to limma without the custom posthoc adjustment.
 
-* Create proper S4 `SEStats` object with methods
-
-   * `hit_array()` - access to the array of statistical hits by dimensions:
-   
-      * `cutoff_name`
-      * `contrast_name`
-      * `assay_name`
-      * `method_name` - Add this dimension to enable alternative methods
-   
-   * `hit_im()` - incidence `matrix` for specific dimensions in `hit_array`
-   * `hit_list()` - `list` of stat hit direction, named by entity
-   * `sestats_to_df()` - `data.frame` suitable for RMarkdown and `kable()`
-   * accessors: `assay_names()`, `contrast_names()`, `cutoff_names()`,
-   `method_names()`
 
 ## 18oct2023
 

@@ -350,9 +350,14 @@
 #' @param row_split is used to define heatmap split by row, ultimately
 #'    passed to `ComplexHeatmap::Heatmap()` argument `row_split`. However,
 #'    the input type can vary:
-#'    * `integer` number of row splits based upon row clustering
+#'    * `integer` number of row splits based upon row clustering. If
+#'    `row_split` is greater than the number of rows, it will be set
+#'    to the number of rows.
 #'    * `character` value or values in colnames of `rowData(se)` to split
 #'    using row annotation in `se`.
+#'    * `data.frame` whose `rownames()` must contain all rows to be
+#'    displayed in the heatmap. This argument is passed directly to
+#'    `ComplexHeatmap::Heatmap()` to apply the split appropriately.
 #'    * `character` or `factor` vector named by `rownames(se)` with another
 #'    custom row split, passed directly to `ComplexHeatmap::Heatmap()`
 #'    argument `row_split`, with proper order for rows being displayed
@@ -1430,20 +1435,37 @@ heatmap_se <- function
          }
       } else {
          # non-correlation uses rowData for split
-         if (any(c("factor", "character") %in% class(row_split))) {
-            if (!any(duplicated(row_split)) &&
+         if (length(row_split) == 1 && is.numeric(row_split)) {
+            # leave as-is, this splits to the number of clusters requested
+            if (row_split > length(gene_hits)) {
+               row_split <- length(gene_hits);
+            }
+         } else {
+            # 0.0.61.900 - anything except single numeric value
+            # is handled here
+            # } else if (any(c("factor", "character") %in% class(row_split))) {
+            if (inherits(row_split, "data.frame")) {
+               # data.frame is acceptable input
+               # but rownames must represent every gene_hits value
+               row_split_match <- match(gene_hits, rownames(row_split));
+               if (all(is.na(row_split_match))) {
+                  stop("rownames(row_split) does not match any heatmap rows.");
+               }
+               row_split <- row_split[row_split_match, , drop=FALSE];
+               rownames(row_split) <- row_split_match;
+            } else if (!any(duplicated(row_split)) &&
                   all(row_split %in% colnames(rowData_se))) {
+               # no duplicated values, and all values match colnames(rowData)
+               row_split_cols <- intersect(row_split, colnames(rowData_se))
                row_split <- data.frame(check.names=FALSE,
-                  rowData_se[gene_hits, row_split, drop=FALSE]);
-            } else if (all(names(row_split) %in% gene_hits)) {
-               row_split <- row_split[gene_hits];
+                  rowData_se[gene_hits, row_split_cols, drop=FALSE]);
+            } else if (all(gene_hits %in% names(row_split))) {
+               # 0.0.61.900 - reverse order: gene_hits in names(row_split)
+               row_split <- data.frame(row_split=row_split[gene_hits]);
+               rownames(row_split) <- gene_hits;
             } else {
                row_split <- NULL;
             }
-         } else if (length(row_split) == 1 && is.numeric(row_split)) {
-            # leave as-is
-         } else {
-            row_split <- NULL;
          }
       }
    } else if (TRUE %in% correlation) {
