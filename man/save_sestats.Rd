@@ -6,11 +6,12 @@
 \usage{
 save_sestats(
   sestats,
-  file,
+  file = NULL,
   assay_names = NULL,
   contrast_names = NULL,
   cutoff_names = NULL,
-  type = c("xlsx"),
+  type = c("xlsx", "list"),
+  data_content = c("data", "hits"),
   max_nchar_sheetname = 31,
   review_output = TRUE,
   sheet_prefix = NULL,
@@ -22,6 +23,9 @@ save_sestats(
   se = NULL,
   rowData_colnames = NULL,
   row_type = "gene_name",
+  hitRule = c(-1, 0, 1),
+  hitFormat = "#,##0",
+  freezePaneColumn = 2,
   verbose = FALSE,
   ...
 )
@@ -29,7 +33,9 @@ save_sestats(
 \arguments{
 \item{sestats}{\code{list} object output from \code{se_contrast_stats()}}
 
-\item{file}{\code{character} string indicating the filename to save.}
+\item{file}{\code{character} string indicating the filename to save.
+When \code{file} is \code{NULL}, output is returned as a \code{list}, equivalent
+to \code{type="list"}.}
 
 \item{assay_names}{\code{character} string indicating which assay names
 to save, stored in \code{dimnames(sestats$hit_array)$Signal}.
@@ -37,15 +43,31 @@ When \code{NULL} then all assay names are saved.}
 
 \item{contrast_names}{\code{character} string indicating which contrasts
 to save, stored in \code{dimnames(sestats$hit_array)$Contrasts}.
-When \code{NULL} then all contrasts are saved.}
+The default \code{NULL} will save all contrasts.}
 
 \item{type}{\code{character} string indicating the type of file to save.
 \itemize{
-\item \code{"xlsx"}: saves an Excel xlsx file using \code{jamba::writeOpenxlsx()}.
+\item \code{"xlsx"} - saves an Excel xlsx file using \code{jamba::writeOpenxlsx()}.
+Each worksheet is renamed so the string length does not exceed
+\code{max_nchar_sheetname}, whose default is 31 characters.
+\item \code{"list"} - returns a \code{list} of \code{data.frame} objects, equivalent
+to the data to be stored in an output file.
+This option will \strong{not} save data to \code{file}.
+}}
+
+\item{data_content}{\code{character} string describing the data content
+to include:
+\itemize{
+\item \verb{"contrasts","hits"} - include worksheets per \code{contrast_names},
+then assemble one \code{"hit sheet"} across all contrasts.
+One hit sheet is created for each value in \code{assay_names}.
+\item \code{"contrasts"} - (default) include worksheets per \code{contrast_names}
+\item \code{"hits"} - include only one \code{"hit sheet"} per value in
+\code{assay_names}.
 }}
 
 \item{max_nchar_sheetname}{\code{integer} number of characters allowed in
-MS Excel worksheet names, currently 31 characters.}
+Microsoft Excel worksheet names, default 31 characters.}
 
 \item{review_output}{\code{logical} indicating whether a summary of output
 should be returned as a \code{data.frame} without exporting data. This
@@ -73,6 +95,9 @@ in the output Excel worksheets.}
 categorical background colors for text string fields in Excel.
 The \code{names(colorSub)} are matched to character strings to assign
 colors.}
+
+\item{hitRule, hitFormat, freezePaneColumn}{arguments passed to
+\code{jamba::writeOpenxlsx()}.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

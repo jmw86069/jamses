@@ -1,6 +1,31 @@
 
 # TODO for jamses
 
+## 15may2024
+
+* `save_sestats()`
+
+   * include a summary table with the `"hit"` column from each contrast
+
+## 23apr2024
+
+* Design idea for `plot_sedesign()`
+
+   * Allow and document how to create a multi-panel plot, with this
+   plot as one panel in the output?
+   
+      * The driving use case is to display contrasts alongside a Venn diagram
+      or heatmap.
+
+   * Option to plot one contrast, showing the arrow (or arrows) and
+   displaying at the top the full contrast name, optionally
+   the abbreviated "comp".
+   * Potential to create a small "logo" for a single contrast, that
+   could be displayed as a thumbnail in another slide.
+   * Potential to create a small "logo" for a few contrasts,
+   for example alongside a Venn diagram comparing two or three contrasts.
+   The thumbnail could represent which contrasts are being displayed.
+
 ## 16apr2024
 
 * Implement `testthis` unit tests for `se_contrast_stats()`

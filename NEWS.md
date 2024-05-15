@@ -1,3 +1,21 @@
+# jamses 0.0.62.900
+
+## changes to existing functions
+
+* `save_sestats()`
+
+   * New argument `data_content=c("data", "hits")` changes default behavior
+   to include a `"hit sheet"` in the output worksheets. This hit sheet
+   includes all the "hit" columns from each contrast in one large table.
+   For previous behavior use `data_content="data"`.
+   * New argument value `type="list"` will not save to file, instead
+   returns a `list` of `data.frames` named by worksheet name.
+   Default is the same as before `type="xlsx"` will export to file
+   in Excel xlsx format.
+   * New arguments `hitRule`, `hitFormat`, `freezePaneColumn` merely
+   provide some previously internal defaults, for optional customization.
+
+
 # jamses 0.0.61.900
 
 ## changes to existing functions
