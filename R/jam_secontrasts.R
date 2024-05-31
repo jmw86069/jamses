@@ -490,7 +490,7 @@ se_contrast_stats <- function
       }
       normgroup <- jamba::nameVector(rep("bulk", length(isamples)),
          isamples);
-   } else if (all(normgroup %in% colnames(SummarizedExperiment::colData(se[,isamples])))) {
+   } else if (all(normgroup %in% colnames(SummarizedExperiment::colData(se)))) {
       if (verbose) {
          jamba::printDebug("se_contrast_stats(): ",
             "normgroup defined by matching colData(se) colnames");
@@ -729,7 +729,8 @@ se_contrast_stats <- function
                   idesign=idesign_ng,
                   handle_na=handle_na,
                   na_value=na_value,
-                  ...);
+                  ...)[, normgroup_samples, drop=FALSE];
+               colnames(imatrix_ng) <- normgroup_samples;
             }
             ## Optionally determine voom weights prior to running limma
             if (use_voom) {
@@ -929,11 +930,12 @@ se_contrast_stats <- function
                jamba::printDebug("se_contrast_stats(): ",
                   "   Performing handle_na: ", handle_na);
             }
-            imatrix <- handle_na_values(imatrix,
+            imatrix <- handle_na_values(imatrix[, isamples, drop=FALSE],
                idesign=idesign,
                handle_na=handle_na,
                na_value=na_value,
-               ...);
+               ...)[, isamples, drop=FALSE];
+            colnames(imatrix) <- isamples;
          }
 
          #######################################################
@@ -1261,6 +1263,8 @@ handle_na_values <- function
       rep(names(groupL),
          lengths(groupL)),
       unlist(groupL));
+   # revert to input order
+   groupV <- groupV[match(rownames(idesign), names(groupV))];
    if ("partial" %in% handle_na) {
       ## We replace NA with zero, except when an entire
       ## group is NA, then we leave it as NA
@@ -1273,7 +1277,8 @@ handle_na_values <- function
             sep="");
       }
       x <- jamba::rowGroupMeans(x[,names(groupV),drop=FALSE],
-         groups=rep(names(groupL), lengths(groupL)),
+         # groups=rep(names(groupL), lengths(groupL)),
+         groups=groupV,
          rowStatsFunc=function(x,...){
             x1 <- x;
             x1[is.na(x)] <- na_value;
@@ -1292,7 +1297,8 @@ handle_na_values <- function
             sep="");
       }
       x <- jamba::rowGroupMeans(x[,names(groupV),drop=FALSE],
-         groups=rep(names(groupL), lengths(groupL)),
+         # groups=rep(names(groupL), lengths(groupL)),
+         groups=groupV,
          rowStatsFunc=function(x,...){
             x1 <- x;
             x1[is.na(x)] <- NA;
@@ -1316,7 +1322,8 @@ handle_na_values <- function
       }
       ## 0.0.60.900 - slightly modified to avoid copying data x to x1
       x <- jamba::rowGroupMeans(x[,names(groupV),drop=FALSE],
-         groups=rep(names(groupL), lengths(groupL)),
+         # groups=rep(names(groupL), lengths(groupL)),
+         groups=groupV,
          rowStatsFunc=function(x,...){
             # x1 <- x;
             full_na_rows <- (apply(is.na(x)*1, 1, min) == 1);

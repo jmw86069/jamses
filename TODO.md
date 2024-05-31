@@ -1,9 +1,16 @@
 
 # TODO for jamses
 
+## 30may2024
+
+* DONE. Debug `se_contrast_stats()` discrepancies when `isamples` is provided
+in different orders. All outputs should be identical regardless of input
+order. Bug was `handle_na_values()` and was fixed, unclear when it was
+introduced.
+
 ## 15may2024
 
-* `save_sestats()`
+* DONE. `save_sestats()`
 
    * include a summary table with the `"hit"` column from each contrast
 

@@ -1,3 +1,21 @@
+# jamses 0.0.63.900
+
+## bug fixes
+
+* `se_contrast_stats()` was not maintaining correct order of data matrix
+for a specific scenario, when `handle_na` was not `"none"`, and when
+the order of groups in the `design` matrix was non-standard, that is
+with the first group not in the first column and first row. It obviously
+should not matter the order of groups, but this scenario limits when
+the bug occurred, which is somewhat comforting.
+
+   * The cause was `handle_na_values()` which converted the design
+   matrix to `list` in order to associated colnames to groups.
+   The `list` was converted to vector, sometimes changing the order
+   of columns returned.
+   * The bug is fixed in `handle_na_values()` by returning columns in
+   the same order they were provided at input.
+
 # jamses 0.0.62.900
 
 ## changes to existing functions
