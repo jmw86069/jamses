@@ -1,6 +1,56 @@
 
 # TODO for jamses
 
+## 24jun2024
+
+* Consider function to take `SEStats` and reverse/flip contrasts
+using a preferred set of contrasts.
+
+   * Use case is when receiving data with (groupA-groupB) but the preferred
+   order is (groupB-groupA).
+   * Function iterates `SEStats` and finds matching contrasts to reverse.
+   * All hit signs and fold changes are multiplied by `-1` to flip the sign.
+   * All matching contrast names are reversed.
+   * All colnames which include the contrast also have the contrast flipped.
+
+* Consider new function to take `list` of `data.frame` with statistical
+results and create `SEStats` object.
+
+   * It should parse each `data.frame` and create `"hit "` column if needed.
+   * It should define `hit_list` for each `data.frame`
+
+* Consider function to manipulate dimnames in `SEStats`: contrast_names,
+assay_names, cutoff_names.
+
+   * Basic example is to convert `contrast` to `comp` or vice versa.
+   * Could be through accessor `contrast_names(SEStats)` and
+   `contrast_names(SEStats)<-`
+   * Rename `assay_names` as needed.
+   * Rename `cutoff_names`?? Perhaps not rename.
+   
+
+* Consider function to "validate" `SEStats` object, suggested rules:
+
+   * `hit_array` contrast_names must match `hit_list` and `stats_dfs`.
+   * `hit_array` assay_names must match `hit_list` and `stats_dfs`.
+   * `hit_array` cutoff_names must match `hit_list` and `stats_dfs`.
+
+* Consider function to `c()` multiple `SEStats` objects together.
+
+   * It would combine `hit_list`, throw error whenever the input
+   and new data both have: `assay_name`, `contrast_name`, and `cutoff_name`.
+
+* Consider function to subset `SEStats` by dimensions:
+`assay_name`, `contrast_name`, `cutoff_name`
+
+   * For example: `SEStats[1, 4:8, 2]`
+
+## 31may2024
+
+* Add testing for all variations of `se_contrast_stats()`
+
+   * create test case with `NA` values, to test `handle_na`
+
 ## 30may2024
 
 * DONE. Debug `se_contrast_stats()` discrepancies when `isamples` is provided

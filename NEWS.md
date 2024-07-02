@@ -1,3 +1,16 @@
+# jamses 0.0.64.900
+
+## bug fixes
+
+* `heatmap_column_group_labels()`
+
+   * Apparently some vicious RMarkdown corner case causes `options("warn"=2)`
+   which causes all warnings to become fatal errors. As a result, harmless
+   `gsub()` used when `hm_body_base` is auto-detected - resuling in
+   multiple potential values. The first value is used, but presence of
+   multiple values causes `gsub()` to issue a warning, causing an error.
+   It needed to be fixed anyway, and now it is. But `warn=2` is evil, haha.
+
 # jamses 0.0.63.900
 
 ## bug fixes

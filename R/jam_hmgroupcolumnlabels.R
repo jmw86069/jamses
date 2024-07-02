@@ -279,6 +279,8 @@ heatmap_column_group_labels <- function
                dhc$heatmap_body_components, "'")
          }
          hm_body_base <- dhc$heatmap_body_components;
+         # 0.0.64.900 - warning about multiple entries in grep() used later
+         hm_body_base <- head(hm_body_base, 1);
       }
    }
 
@@ -370,9 +372,10 @@ heatmap_column_group_labels <- function
       use_hm_test_components <- paste0(hm_body_test, seq_along(hm_group_list))
       if (all(use_hm_test_components %in% all_hm_components)) {
          hm_body_base_t <- use_hm_body_components;
+         hm_body_pattern <- gsub("_1_", "_[0-9]+_", hm_body_base);
          hm_body_base_b1 <- tail(unique(gsub("_[0-9]+$", "_",
             setdiff(
-               jamba::vigrep(gsub("_1_", "_[0-9]+_", hm_body_base), all_hm_components),
+               jamba::vigrep(hm_body_pattern, all_hm_components),
                use_hm_body_components))), 1)
          hm_body_base_b <- paste0(hm_body_base_b1, seq_along(hm_group_list))
       } else {
