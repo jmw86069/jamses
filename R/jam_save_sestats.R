@@ -36,6 +36,10 @@
 #'    `assay_names`.
 #' @param max_nchar_sheetname `integer` number of characters allowed in
 #'    Microsoft Excel worksheet names, default 31 characters.
+#' @param abbreviate `logical` indicating whether to abbreviate factor
+#'    levels using `shortest_unique_abbreviation()`.
+#'    This option is `FALSE` by default, but may become preferred
+#'    after more testing.
 #' @param review_output `logical` indicating whether a summary of output
 #'    should be returned as a `data.frame` without exporting data. This
 #'    summary will indicate all worksheets to be saved, in addition
@@ -75,6 +79,7 @@ save_sestats <- function
  data_content=c("data",
     "hits"),
  max_nchar_sheetname=31,
+ abbreviate=FALSE,
  review_output=TRUE,
  sheet_prefix=NULL,
  use_assay_suffix=TRUE,
@@ -114,6 +119,10 @@ save_sestats <- function
    if (length(contrast_names) == 0) {
       contrast_names <- dimnames(sestats$hit_array)$Contrasts;
    }
+   if (verbose) {
+      jamba::printDebug("save_sestats(): ",
+         "contrast_names:", contrast_names, sep="; ");
+   }
 
    # validate cutoff_names
    cutoff_names <- intersect(cutoff_names,
@@ -139,18 +148,34 @@ save_sestats <- function
    # create sheet names
    export_df$sheetName <- export_df$contrast_names;
    export_df$saved <- ifelse("data" %in% data_content, "Yes", "No")
+   if (verbose) {
+      jamba::printDebug("save_sestats(): ",
+         "export_df (input):");
+      print(export_df);
+   }
 
    # optionally rename contrasts
    if (rename_contrasts) {
       export_df$sheetName <- tryCatch({
          gsub("[:]+", ";",
-            contrast2comp(export_df$contrast_names))
+            contrast2comp(export_df$contrast_names,
+               abbreviate=abbreviate,
+               ...))
       }, error=function(e){
          export_df$contrast_names
       });
    }
+   # if (verbose) {
+   #    jamba::printDebug("save_sestats(): ",
+   #       "export_df (edited):");
+   #    print(export_df);
+   # }
 
    if (length(sheet_prefix) > 0) {
+      if (verbose) {
+         jamba::printDebug("save_sestats(): ",
+            "applying sheet_prefix: ", sheet_prefix);
+      }
       export_df$sheetName <- paste0(sheet_prefix,
          export_df$sheetName);
    }
@@ -159,6 +184,10 @@ save_sestats <- function
    short_assay_names <- "";
    if (use_assay_suffix &&
          length(unique(export_df$assay_names)) > 1) {
+      if (verbose) {
+         jamba::printDebug("save_sestats(): ",
+            "abbreviating assay_names.");
+      }
       for (n in 4:1) {
          short_assay_names <- export_df$assay_names
          ipattern <- paste0("([a-zA-Z]{1,",
@@ -199,13 +228,18 @@ save_sestats <- function
       sheetNames <- gsub("^[-.:_ ]+|[-.:_ ]+$", "", sheetNames);
       is_toolong <- (nchar(sheetNames) > max_nchar_sheetname);
       if (any(is_toolong)) {
-         sheetNames[is_toolong] <- substr(sheetNames, 1, max_nchar_sheetname)
+         sheetNames[is_toolong] <- substr(sheetNames[is_toolong],
+            1, max_nchar_sheetname);
       }
+      # remove leading/trailing whitespace/punctuation
       sheetNames <- gsub("^[-.:_ ]+|[-.:_ ]+$", "", sheetNames);
+
+      # look for duplicates
       is_dupe <- duplicated(sheetNames);
       if (any(is_dupe)) {
          sheetNames[is_dupe] <- jamba::makeNames(
-            substr(sheetNames[is_dupe], 1, max_nchar_sheetname - trim_n),
+            substr(sheetNames[is_dupe],
+               1, max_nchar_sheetname - trim_n),
             renameOnes=TRUE,
             suffix="_v");
       }
@@ -213,7 +247,8 @@ save_sestats <- function
       while (any(nchar(sheetNames) > max_nchar_sheetname)) {
          add_n <- add_n + 1;
          sheetNames[is_dupe] <- jamba::makeNames(
-            substr(sheetNames[is_dupe], 1, max_nchar_sheetname - (trim_n + add_n)),
+            substr(sheetNames[is_dupe],
+               1, max_nchar_sheetname - (trim_n + add_n)),
             renameOnes=TRUE,
             suffix="_v");
          if (add_n > 3) {
@@ -227,9 +262,19 @@ save_sestats <- function
       }
       sheetNames
    }
+   if (verbose) {
+      jamba::printDebug("save_sestats(): ",
+         "export_df (edited):");
+      print(export_df);
+   }
    # ensure each sheet name is unique and no greater than max_nchar_sheetname
    export_df$sheetName <- validate_sheetNames(export_df$sheetName,
       max_nchar_sheetname);
+   if (verbose) {
+      jamba::printDebug("save_sestats(): ",
+         "export_df (validated):");
+      print(export_df);
+   }
 
    if (length(max_rows) > 0) {
       max_rows <- rep(max_rows, nrow(export_df));

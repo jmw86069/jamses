@@ -13,6 +13,7 @@ contrast2comp(
   contrast_factor_delim = "_",
   comp_factor_delim = ":",
   add_attr = FALSE,
+  abbreviate = FALSE,
   verbose = FALSE,
   ...
 )
@@ -63,6 +64,11 @@ design factors in a comp.}
 
 \item{add_attr}{\code{logical} indicating whether to add attributes to
 the output, containing the input values provided.}
+
+\item{abbreviate}{\code{logical} indicating whether to abbreviate factors,
+by calling \code{shortest_unique_abbreviation()}.
+Note this option prevents output from being reversible, since
+the abbreviated term will not match the original factor level.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output,
 or for much more verbose output use \code{verbose=2}.}
@@ -246,6 +252,7 @@ contrast_names <- c(
    "(CellA_Treated-CellB_Treated)-(CellA_Control-CellB_Control)"
 );
 contrast2comp(contrast_names)
+contrast2comp(contrast_names, abbreviate=TRUE)
 
 contrast2comp(contrast_names, comp_factor_delim=";")
 

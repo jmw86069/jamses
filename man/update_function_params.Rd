@@ -28,6 +28,7 @@ Other jamses utilities:
 \code{\link{se_collapse_by_column}()},
 \code{\link{se_collapse_by_row}()},
 \code{\link{se_rbind}()},
+\code{\link{shortest_unique_abbreviation}()},
 \code{\link{shrinkDataFrame}()},
 \code{\link{shrink_df}()},
 \code{\link{strsplitOrdered}()},

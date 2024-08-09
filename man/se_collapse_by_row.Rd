@@ -175,6 +175,7 @@ Other jamses utilities:
 \code{\link{mark_stat_hits}()},
 \code{\link{se_collapse_by_column}()},
 \code{\link{se_rbind}()},
+\code{\link{shortest_unique_abbreviation}()},
 \code{\link{shrinkDataFrame}()},
 \code{\link{shrink_df}()},
 \code{\link{strsplitOrdered}()},

@@ -1,3 +1,42 @@
+# jamses 0.0.65.900
+
+## bug fixes
+
+* `save_sestats()`
+
+   * Fixed bug causing mismatch in `sheetName` when only a subset of
+   `sheetName` values were too long for the permitted Excel worksheet name.
+
+## new functions
+
+* `shortest_unique_abbreviation()`
+
+   * New function intended to provide shortest unique abbreviation for
+   a `character` vector.
+   * A neat feature enabled by default is that it will retain trailing
+   numeric values without splitting the number, if the number is required
+   to make the abbreviated vector unique.
+   * This function can be enabled within other functions:
+   `contrast2comps(..., abbreviate=TRUE)` and
+   `save_sestats(..., abbreviate=TRUE)`.
+   It is not enabled by default in either of these functions.
+
+## changes to existing functions
+
+* `contrast2comps()`, `contrasts_to_factors()`, and `save_sestats()`
+new argument `abbreviate=FALSE`:
+
+   * Optionally calls `shortest_unique_abbreviation()` to abbreviate
+   factor levels within each contrast.
+   * It will attempt to create unique abbreviations for each factor
+   independently.
+   * If any abbreviation is not unique, or if any factor level across multiple
+   columns is not unique, it will create global abbreviations so that each
+   abbreviated value represents a defined factor level.
+   * It should also properly handle non-standard contrasts, with each
+   factor in order, using the appropriate abbreviation in each column.
+
+
 # jamses 0.0.64.900
 
 ## bug fixes

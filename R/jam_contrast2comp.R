@@ -158,6 +158,7 @@
 #'    "(CellA_Treated-CellB_Treated)-(CellA_Control-CellB_Control)"
 #' );
 #' contrast2comp(contrast_names)
+#' contrast2comp(contrast_names, abbreviate=TRUE)
 #'
 #' contrast2comp(contrast_names, comp_factor_delim=";")
 #'
@@ -257,6 +258,10 @@
 #'    comparisons for two-way and higher order contrasts.
 #' @param add_attr `logical` indicating whether to add attributes to
 #'    the output, containing the input values provided.
+#' @param abbreviate `logical` indicating whether to abbreviate factors,
+#'    by calling `shortest_unique_abbreviation()`.
+#'    Note this option prevents output from being reversible, since
+#'    the abbreviated term will not match the original factor level.
 #' @param verbose `logical` indicating whether to print verbose output,
 #'    or for much more verbose output use `verbose=2`.
 #' @param ... additional arguments are ignored.
@@ -268,6 +273,7 @@ contrast2comp <- function
  contrast_factor_delim="_",
  comp_factor_delim=":",
  add_attr=FALSE,
+ abbreviate=FALSE,
  verbose=FALSE,
  ...)
 {
@@ -365,9 +371,80 @@ contrast2comp <- function
          contrast_delim=contrast_delim);
       imcontrasts
    }))
+
+   # apply optional abbreviations
+   if (TRUE %in% abbreviate) {
+      factors_df <- data.frame(jamba::rbindList(strsplit(comps, ":")))
+      # per-column abbreviation
+      uwdf <- jamba::rbindList(lapply(seq_along(colnames(factors_df)),
+         function(fcol){
+         nonu <- !grepl("_", factors_df[[fcol]]);
+         udf <- data.frame(word=character(0), col=numeric(0))
+         if (any(nonu)) {
+            unique_words <- unique(unlist(strsplit(factors_df[[fcol]][nonu], "[-]")))
+            udf <- data.frame(word=unique_words, col=fcol)
+         }
+         if (any(!nonu)) {
+            nonudf <- data.frame(jamba::rbindList(
+               strsplit(unlist(strsplit(factors_df[[fcol]][!nonu], "[-]")), "_")));
+            ndf <- jamba::rbindList(
+               lapply(seq_len(ncol(nonudf)), function(ucol){
+                  data.frame(word=unique(nonudf[[ucol]]), col=ucol)
+               }))
+            udf <- rbind(udf, ndf);
+         }
+         udf
+      }))
+      ablist <- lapply(split(uwdf$word, uwdf$col),
+         shortest_unique_abbreviation)
+
+      # check for non-unique abbreviations
+      dupe_abbrevs_byname <- duplicated(unlist(lapply(ablist, names)));
+      dupe_abbrevs <- duplicated(unlist(ablist));
+      if (any(dupe_abbrevs) || any(dupe_abbrevs_byname)) {
+         # if any duplicated, revert to global
+         # global abbreviation
+         unique_words <- unique(unlist(strsplit(unique(unlist(factors_df)), "[-_]")))
+         abbrev_words <- shortest_unique_abbreviation(unique_words)
+      } else {
+         abbrev_words <- unlist(unname(ablist))
+      }
+      # apply abbreviations
+      icomps <- strsplit(comps, ":");
+      comps <- jamba::cPaste(sep=":", lapply(icomps, function(icomp){
+         hasd <- grepl("-", icomp);
+         # jamba::printDebug("icomp:");print(icomp);# debug
+         ocomp <- icomp;
+         if (any(hasd)) {
+            ocomp_hasds <- lapply(strsplit(icomp[hasd], "-"), function(dcomp){
+               # jamba::printDebug("dcomp:");print(dcomp);# debug
+               jamba::cPaste(sep="_", lapply(strsplit(dcomp, "_"),
+                  function(dcomp1){
+                     # jamba::printDebug("dcomp1:");print(dcomp1);# debug
+                     # jamba::printDebug("dcomp1a:");print(abbrev_words[dcomp1]);# debug
+                     abbrev_words[dcomp1]
+                  }))
+            })
+            ocomp_hasds1 <- jamba::cPaste(sep="-", ocomp_hasds);
+            ocomp[hasd] <- ocomp_hasds1;
+         }
+         if (any(!hasd)) {
+            # jamba::printDebug("ocomp[!hasd]:");print(ocomp[!hasd]);# debug
+            ocomp[!hasd] <- abbrev_words[ocomp[!hasd]];
+         }
+         ocomp
+      }))
+      # optionally add abbrev_words as attribute for reference
+      if (add_attr) {
+         attr(comps, "abbrev_words") <- abbrev_words;
+      }
+   }
+
+   # store original contrast_names as attributes for reference
    if (add_attr) {
       attr(comps, "contrast_names") <- contrast_names;
    }
+
    names(comps) <- names(contrast_names);
    comps
 }

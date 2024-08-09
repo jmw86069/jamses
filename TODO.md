@@ -1,6 +1,31 @@
 
 # TODO for jamses
 
+## 09aug2024
+
+* `save_sestats()`
+
+   * Debug misalignment of sheet name with contrasts. Sigh.
+   * Consider optional methods to shorten the sheet names
+   
+      * custom function to edit the sheet name before
+      truncating to `max_nchar_sheetname` number of characters.
+      For example to edit things like `"male", "female"` to `"m", "f"`
+      to save space.
+      * option to abbreviate each term to use only the first letter
+      or first N unique letters?
+
+## 08aug2024
+
+* `matrix_normalize()` and `se_normalize()`
+
+   * Consider option to define `reference_samples` during normalization.
+   CORRECTION: Test existing option `controlSamples` to confirm it works
+   as intended for this purpose.
+
+      * The goal is to normalize only the `controlSamples` to themselves,
+      then normalize all other samples relative to that subset.
+
 ## 24jun2024
 
 * Consider function to take `SEStats` and reverse/flip contrasts

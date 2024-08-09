@@ -13,6 +13,7 @@ save_sestats(
   type = c("xlsx", "list"),
   data_content = c("data", "hits"),
   max_nchar_sheetname = 31,
+  abbreviate = FALSE,
   review_output = TRUE,
   sheet_prefix = NULL,
   use_assay_suffix = TRUE,
@@ -68,6 +69,11 @@ One hit sheet is created for each value in \code{assay_names}.
 
 \item{max_nchar_sheetname}{\code{integer} number of characters allowed in
 Microsoft Excel worksheet names, default 31 characters.}
+
+\item{abbreviate}{\code{logical} indicating whether to abbreviate factor
+levels using \code{shortest_unique_abbreviation()}.
+This option is \code{FALSE} by default, but may become preferred
+after more testing.}
 
 \item{review_output}{\code{logical} indicating whether a summary of output
 should be returned as a \code{data.frame} without exporting data. This
