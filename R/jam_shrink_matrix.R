@@ -11,13 +11,13 @@
 #' The default function uses `mean(x, na.rm=TRUE)` so that `NA`
 #' values are ignored where possible.
 #'
-#' This function applies the same `shrinkFunc` to all columns, and
+#' This function applies the same `shrink_func` to all columns, and
 #' it optimal for `numeric` values. For more control over which
 #' function to apply to specific columns, see `shrinkDataFrame()`.
 #'
 #' Trivia:
 #' This function is identical to `splicejam::shrinkDataFrame()` except
-#' that the default `shrinkFunc` includes `na.rm=TRUE` and no
+#' that the default `shrink_func` includes `na.rm=TRUE` and no
 #' longer calls the `.Internal()` function, since that is not
 #' permitted by CRAN package guidelines.
 #'
@@ -25,18 +25,18 @@
 #' @param groupBy `character` or `factor` vector of group labels,
 #'    whose length equals `nrow(x)`.
 #'    These values will become rownames in the output data.
-#' @param shrinkFunc `function` that takes vector input and returns
+#' @param shrink_func `function` that takes vector input and returns
 #'    **single value** output. The vector class can be checked, in order to
 #'    call a function on numeric or character data separately, as
 #'    needed.
-#' @param returnClass `character` string indicating the return data type.
+#' @param return_class `character` string indicating the return data type.
 #'    * `"data.frame"` returns a `data.frame` whose first column contains
 #'    entries from `groups`.
 #'    * `"matrix"` returns a numeric matrix whose rownames are entries
 #'    from `groups`.
 #' @param verbose logical indicating whether to print verbose output.
 #'
-#' @returns `data.frame` or `matrix` based upon argument `returnClass`.
+#' @returns `data.frame` or `matrix` based upon argument `return_class`.
 #'
 #' @import data.table
 #'
@@ -46,13 +46,13 @@
 shrink_matrix <- function
 (x,
  groupBy,
- shrinkFunc=function(x){mean(x, na.rm=TRUE)},
- returnClass=c("data.frame",
+ shrink_func=function(x){mean(x, na.rm=TRUE)},
+ return_class=c("data.frame",
     "matrix"),
  verbose=FALSE,
  ...)
 {
-   ## Note: using .Internal(mean(x)) is 5x faster than using mean(x)
+   ## Note: using .Internal(mean(x)) is (used to be) 5x faster than mean(x)
    ##
    ## Timings which show data.table and sqldf are fastest at apply() functions
    ## on groups:
@@ -70,7 +70,7 @@ shrink_matrix <- function
    # if (!suppressPackageStartupMessages(require(data.table))) {
    #    stop("This method requires the data.table package.");
    # }
-   returnClass <- match.arg(returnClass);
+   return_class <- match.arg(return_class);
 
    ## Create DT object
    if (verbose) {
@@ -87,7 +87,7 @@ shrink_matrix <- function
    }
 
    ## Operate on the DT object
-   byDT <- DT[, lapply(.SD, shrinkFunc),
+   byDT <- DT[, lapply(.SD, shrink_func),
       by="groupBy"];
    if (verbose) {
       t3 <- Sys.time();
@@ -102,7 +102,7 @@ shrink_matrix <- function
          format(t3-t2));
    }
    retData <- as(byDT, "data.frame");
-   if (returnClass %in% "matrix") {
+   if (return_class %in% "matrix") {
       retData <- matrix(ncol=ncol(retData)-1,
          data=(as.matrix(retData[,-1,drop=FALSE])),
          dimnames=list(retData[,"groupBy"], colnames(retData)[-1]));

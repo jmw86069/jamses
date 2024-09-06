@@ -657,7 +657,9 @@
 #'
 #' # sestats as incidence matrix
 #' # - automatically subsets rows unless rows is defined
+#' if (jamba::check_pkg_installed("venndir")) {
 #' sestats_im <- venndir::list2im_value(sestats_list, do_sparse=FALSE)
+#' print(head(sestats_im, 10));
 #' hm5 <- heatmap_se(se,
 #'    controlSamples=rownames(
 #'       subset(SummarizedExperiment::colData(se), Group %in% "WildType")),
@@ -671,6 +673,7 @@
 #' ComplexHeatmap::draw(hm5,
 #'    column_title=attr(hm5, "hm_title"),
 #'    merge_legends=TRUE)
+#' }
 #'
 #' # custom column_names_gp
 #' hm6 <- heatmap_se(se,
@@ -689,9 +692,10 @@
 #'    column_title=attr(hm6, "hm_title"),
 #'    merge_legends=TRUE)
 #'
-#' # correlation heatmap
+#' # 'correlation=TRUE' to create a correlation heatmap
 #' hm6corr <- heatmap_se(se,
 #'    correlation=TRUE,
+#'    apply_hm_column_title=TRUE,
 #'    controlSamples=rownames(
 #'       subset(SummarizedExperiment::colData(se), Group %in% "WildType")),
 #'    control_label="vs WildType",
@@ -701,8 +705,48 @@
 #'    column_split=c("Group"),
 #'    sample_color_list=sample_color_list)
 #' ComplexHeatmap::draw(hm6corr,
-#'    column_title=attr(hm6corr, "hm_title"),
 #'    merge_legends=TRUE)
+#'
+#' ## Final heatmap:
+#' # 1. Applies heatmap title automatically.
+#' # 2. Hides the top_colnames
+#' # 3. Adds fancy grouped labels above the heatmap.
+#' #
+#' # apply_hm_column_title=TRUE
+#' #    convenient way to define a title,
+#' #    but it does not also display column_split labels
+#' #
+#' # hm_title_buffer=4
+#' #    convenient way to insert some whitespace lines
+#' #
+#' # heatmap_column_group_labels()
+#' #    adds to a drawn heatmap - it must already be drawn
+#' #
+#' SummarizedExperiment::colData(se)$Genotype <- rep(c("WT", "KO"), each=16);
+#' SummarizedExperiment::colData(se)$Treatment <- rep(c("Control", "Dex"), each=8);
+#' hm6 <- heatmap_se(se,
+#'    apply_hm_column_title=TRUE,
+#'    hm_title_buffer=3,
+#'    controlSamples=rownames(
+#'       subset(SummarizedExperiment::colData(se), Group %in% "WildType")),
+#'    control_label="vs WildType",
+#'    sestats=sestats_list,
+#'    top_colnames=FALSE,
+#'    column_split=c("Group"),
+#'    row_split=c("Class"),
+#'    rowData_colnames=c("Class"),
+#'    cluster_row_slices=FALSE,
+#'    sample_color_list=sample_color_list)
+#' hm6_drawn <- ComplexHeatmap::draw(hm6,
+#'    merge_legends=TRUE)
+#'
+#' # now add fancy labels
+#' heatmap_column_group_labels(
+#'    hm_group_list=c("Treatment", "Genotype"),
+#'    se=se,
+#'    hm_drawn=hm6_drawn)
+#' # you can adjust the height of labels with argument y_offset_lines
+#' # with positive values (upward), or negative values (downward).
 #'
 #' @export
 heatmap_se <- function
@@ -801,9 +845,9 @@ heatmap_se <- function
    if (!jamba::check_pkg_installed("venndir")) {
       stop("This function requires Github package venndir from 'jmw86069/venndir'");
    }
-   if (!suppressPackageStartupMessages(require(SummarizedExperiment))) {
-      stop("This function requires Bioconductor package SummarizedExperiment.");
-   }
+   # if (!suppressPackageStartupMessages(require(SummarizedExperiment))) {
+   #    stop("This function requires Bioconductor package SummarizedExperiment.");
+   # }
    if (length(correlation) == 0) {
       correlation <- FALSE;
    }
@@ -1004,9 +1048,9 @@ heatmap_se <- function
    # Note: This process does not subset by `rows` or `isamples` yet
    if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
       rowData_se <- data.frame(check.names=FALSE,
-         rowData(se));
+         SummarizedExperiment::rowData(se));
       colData_se <- data.frame(check.names=FALSE,
-         colData(se))
+         SummarizedExperiment::colData(se))
    } else {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",

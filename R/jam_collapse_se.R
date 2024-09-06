@@ -323,7 +323,7 @@ se_collapse_by_row <- function
    {
       ## Purpose is to calculate the classical geometric mean
       if (na.rm && any(is.na(x))) {
-         x <- rmNA(x,
+         x <- jamba::rmNA(x,
             naValue=naValue);
       }
       2^mean(log2(x + offset)) - offset;
@@ -536,7 +536,7 @@ se_collapse_by_row <- function
    rowDataShrunk <- shrinkDataFrame(
       x=SummarizedExperiment::rowData(se[rows,])[, rowDataColnames, drop=FALSE],
       groupBy=row_groups,
-      includeNumReps=TRUE,
+      include_num_reps=TRUE,
       verbose=(verbose - 1) > 0,
       ...);
 
@@ -566,7 +566,7 @@ se_collapse_by_row <- function
    se_shrunk <- SummarizedExperiment::SummarizedExperiment(
       assays=assaysGroupedL,
       rowData=rowDataShrunk,
-      colData=colData(se),
+      colData=SummarizedExperiment::colData(se),
       metadata=list(
          genes=rownames(rowDataShrunk),
          samples=colnames(se)));

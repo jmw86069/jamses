@@ -311,9 +311,9 @@ groups_to_sedesign <- function
    ## TODO: fix issue when one column contains numeric values instead of
    ## character or factor, e.g. when "Time" contains c(15,45).
    ## One solution is convert to factor, then proceed.
-   if (!suppressPackageStartupMessages(require(limma))) {
-      stop("limma is required for groups_to_sedesign()).");
-   }
+   # if (!suppressPackageStartupMessages(require(limma))) {
+   #    stop("limma is required for groups_to_sedesign()).");
+   # }
    sample2group <- NULL;
 
    # validate default_order
@@ -1414,7 +1414,7 @@ intercalate <- function
 list2im_opt <- function
 (setlist,
  empty=0,
- do_sparse=TRUE,
+ do_sparse=FALSE,
  ...)
 {
    setnamesunion <- Reduce("union", setlist);
@@ -1431,7 +1431,7 @@ list2im_opt <- function
       j;
    }))
    rownames(setlistim) <- setnamesunion;
-   if (do_sparse && suppressPackageStartupMessages(require(Matrix))) {
+   if (TRUE %in% do_sparse) {
       setlistim <- as(setlistim, "ngCMatrix");
    }
    return(setlistim);

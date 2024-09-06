@@ -188,9 +188,10 @@ se_collapse_by_column <- function
          "Collapsing colData(se)");
    }
    colDataShrunk <- shrinkDataFrame(
-      x=SummarizedExperiment::colData(se[,columns])[, colDataColnames, drop=FALSE],
+      x=SummarizedExperiment::colData(se[, columns])[,
+         colDataColnames, drop=FALSE],
       groupBy=column_groups,
-      includeNumReps=TRUE,
+      include_num_reps=TRUE,
       verbose=FALSE,
       ...);
 

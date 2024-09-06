@@ -1,9 +1,10 @@
 
-#' Mock-up shrink data.frame function
+#' Shrink data.frame by row groups
 #'
-#' Mock-up shrink data.frame function
+#' Shrink data.frame by row groups
 #'
-#' This function is a simplified version of `shrinkDataFrame()`
+#' This function is currently a wrapper for `shrinkDataFrame()`,
+#' it was formerly a simplified version of `shrinkDataFrame()`
 #' which is intended to use more modern methods from the R package
 #' `data.table`.
 #'
@@ -19,13 +20,24 @@
 #'    the row grouping.
 #' @param string_func `function` used for `character` and other non-numeric
 #'    column types.
-#' @param num_func `function` used for `numeric` column types.
-#' @param extra_funcs `list` of functions with list names that match values
-#'    in `colnames(df)`, to be applied to specific columns in `df`. These
-#'    functions will therefore override the default functions defined
+#'    For efficiency, `string_func` by default is applied to the entire
+#'    column, with `list` input, expecting `vector` output. It is not
+#'    applied using `data.table`.
+#' @param num_func `function` used for `numeric` column types. This function
+#'    is applied using `data.table` and should expect a `vector` input,
+#'    and provide a single atomic value output.
+#' @param extra_funcs `list`, default `NULL`, containing `function` objects.
+#'    The list names should match  `colnames(x)`, in order to apply a
+#'    function to a specific column in `x`.
+#'    These functions will therefore override the default functions defined
 #'    by `string_func` and `num_func`.
-#' @param do_test `logical` indicating whether to perform an internal test
+#'    Only one function is applied per column.
+#' @param do_test `logical`, default FALSE, indicating whether to perform an internal test
 #'    with internally-generated argument values.
+#' @param use_new_method `logical` default FALSE, whether to call newer
+#'    tidy/data.table methods (TRUE), or call `shrinkDataFrame()` (FALSE).
+#'    Currently `shrinkDataFrame()` is remarkably faster.
+#'    More research necessary.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
@@ -33,29 +45,54 @@
 #'
 #' @export
 shrink_df <- function
-(df,
+(x,
  by,
- string_func=jamba::cPasteU,
- num_func=mean,
+ string_func=function(x)jamba::cPasteSU(x, na.rm=TRUE),
+ num_func=function(x)mean(x, na.rm=TRUE),
+ add_string_cols=NULL,
+ num_to_string_func=as.character,
+ keep_na_groups=TRUE,
+ include_num_reps=FALSE,
  extra_funcs=NULL,
  do_test=FALSE,
+ use_new_method=FALSE,
  verbose=FALSE,
  ...)
 {
-   if (!suppressPackageStartupMessages(require(data.table))) {
-      stop("The data.table package is required.");
-   }
+   #
    if (do_test) {
-      df <- data.frame(A=rep(LETTERS[1:3], c(1,2,3)),
+      jamba::printDebug("shrink_df(): ",
+         c("Running do_test=TRUE"))
+      x <- data.frame(A=rep(LETTERS[1:3], c(1,2,3)),
          B=1:6,
          C=rep(LETTERS[4:6], c(3,2,1)));
       by <- "C";
    }
-   by <- intersect(by, colnames(df));
+   if (nrow(x) == 0) {
+      return(x);
+   }
+   if (FALSE %in% use_new_method) {
+      return(shrinkDataFrame(x=x,
+         groupBy=by,
+         string_func=string_func,
+         num_func=num_func,
+         add_string_cols=add_string_cols,
+         num_to_string_func=num_to_string_func,
+         keep_na_groups=keep_na_groups,
+         include_num_reps=include_num_reps,
+         verbose=verbose,
+         ...))
+   }
+
+   if (all(by %in% colnames(x))) {
+      by <- intersect(by, colnames(x));
+      use_names <- jamba::nameVector(setdiff(colnames(x), by));
+   } else if (length(by) ==nrow(x)) {
+      use_names <- colnames(x);
+   }
    if (length(by) == 0) {
       stop("'by' not found colnames(df).");
    }
-   use_names <- jamba::nameVector(setdiff(colnames(df), by));
    func_set <- lapply(use_names, function(i){
       if (is.numeric(df[[i]])) {
          num_func

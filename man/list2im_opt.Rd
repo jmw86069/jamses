@@ -4,7 +4,7 @@
 \alias{list2im_opt}
 \title{Convert list to incidence matrix}
 \usage{
-list2im_opt(setlist, empty = 0, do_sparse = TRUE, ...)
+list2im_opt(setlist, empty = 0, do_sparse = FALSE, ...)
 }
 \arguments{
 \item{setlist}{\code{list} of vectors}

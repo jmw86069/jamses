@@ -2,47 +2,65 @@
 % Please edit documentation in R/jam_shrink_df_alt.R
 \name{shrink_df}
 \alias{shrink_df}
-\title{Mock-up shrink data.frame function}
+\title{Shrink data.frame by row groups}
 \usage{
 shrink_df(
-  df,
+  x,
   by,
-  string_func = jamba::cPasteU,
-  num_func = mean,
+  string_func = function(x) jamba::cPasteSU(x, na.rm = TRUE),
+  num_func = function(x) mean(x, na.rm = TRUE),
+  add_string_cols = NULL,
+  num_to_string_func = as.character,
+  keep_na_groups = TRUE,
+  include_num_reps = FALSE,
   extra_funcs = NULL,
   do_test = FALSE,
+  use_new_method = FALSE,
   verbose = FALSE,
   ...
 )
 }
 \arguments{
-\item{df}{\code{data.frame} or compatible input class.}
-
 \item{by}{\code{character} vector of one or more \code{colnames(df)}, used to define
 the row grouping.}
 
 \item{string_func}{\code{function} used for \code{character} and other non-numeric
-column types.}
+column types.
+For efficiency, \code{string_func} by default is applied to the entire
+column, with \code{list} input, expecting \code{vector} output. It is not
+applied using \code{data.table}.}
 
-\item{num_func}{\code{function} used for \code{numeric} column types.}
+\item{num_func}{\code{function} used for \code{numeric} column types. This function
+is applied using \code{data.table} and should expect a \code{vector} input,
+and provide a single atomic value output.}
 
-\item{extra_funcs}{\code{list} of functions with list names that match values
-in \code{colnames(df)}, to be applied to specific columns in \code{df}. These
-functions will therefore override the default functions defined
-by \code{string_func} and \code{num_func}.}
+\item{extra_funcs}{\code{list}, default \code{NULL}, containing \code{function} objects.
+The list names should match  \code{colnames(x)}, in order to apply a
+function to a specific column in \code{x}.
+These functions will therefore override the default functions defined
+by \code{string_func} and \code{num_func}.
+Only one function is applied per column.}
 
-\item{do_test}{\code{logical} indicating whether to perform an internal test
+\item{do_test}{\code{logical}, default FALSE, indicating whether to perform an internal test
 with internally-generated argument values.}
+
+\item{use_new_method}{\code{logical} default FALSE, whether to call newer
+tidy/data.table methods (TRUE), or call \code{shrinkDataFrame()} (FALSE).
+Currently \code{shrinkDataFrame()} is remarkably faster.
+More research necessary.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
+
+\item{df}{\code{data.frame} or compatible input class.}
 }
 \description{
-Mock-up shrink data.frame function
+Shrink data.frame by row groups
 }
 \details{
-This function is a simplified version of \code{shrinkDataFrame()}
+This function is currently a wrapper for \code{shrinkDataFrame()},
+it was formerly a simplified version of \code{shrinkDataFrame()}
 which is intended to use more modern methods from the R package
 \code{data.table}.
 

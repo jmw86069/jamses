@@ -8,6 +8,20 @@
    converted to a wrapper to `shrinkDataFrame()`.
    * Calls internal `shrink_matrix()` to avoid `splicejam` as a
    dependency.
+   * Tests have been added to cover the variations.
+
+* `shrink_df()`
+
+   * By default it calls `shrinkDataFrame()` unless `use_new_method=TRUE`.
+   (It is remarkably slower.) It may be updated over time to use more
+   efficient and modern R methods.
+
+* `list2im_opt()` default changed to `do_sparse=FALSE`
+* `heatmap_se()`
+
+   * Removed `require(SummarizedExperiment)`, added package prefixes.
+   * Added examples with `heatmap_column_group_labels()`,
+   `apply_hm_column_title=TRUE` and `hm_title_buffer=3`.
 
 ## new functions
 

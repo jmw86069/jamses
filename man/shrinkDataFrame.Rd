@@ -8,16 +8,15 @@ shrinkDataFrame(
   x,
   groupBy,
   na.rm = TRUE,
-  stringShrinkFunc = function(x) jamba::cPasteSU(x, na.rm = TRUE),
-  numShrinkFunc = function(x) {
+  string_func = function(x) jamba::cPasteSU(x, na.rm = TRUE),
+  num_func = function(x) {
      mean(x, na.rm = TRUE)
  },
-  addStringCols = NULL,
-  stringToNumFunc = as.character,
-  keepNAgroupBy = TRUE,
-  includeNumReps = FALSE,
-  collapseMethod = 2,
-  applyKeepCols = TRUE,
+  add_string_cols = NULL,
+  num_to_string_func = as.character,
+  keep_na_groups = TRUE,
+  include_num_reps = FALSE,
+  collapse_method = 2,
   verbose = FALSE,
   ...
 )
@@ -33,34 +32,41 @@ will define the row groups used.
 values will define the row groups used.
 }}
 
-\item{stringShrinkFunc}{\code{function}, default uses \code{jamba::cPasteSU()},
+\item{string_func}{\code{function}, default uses \code{jamba::cPasteSU()},
 used for \code{character} or \code{factor} columns. Note that string
 columns are handled differently than \code{numeric} columns by applying
 vectorized operations across the complete set of rows in one step,
 rather than calling \code{data.table} on each subgroup.}
 
-\item{numShrinkFunc}{\code{function}, default \code{function(x)mean(x, na.rm=TRUE)},
+\item{num_func}{\code{function}, default \code{function(x)mean(x, na.rm=TRUE)},
 used for \code{numeric} columns. Note that this function is applied
 to each row group by \code{data.table}, and is typically very efficient
 for \code{numeric} values.}
 
-\item{addStringCols}{\code{character} with optional \code{numeric} columns that
+\item{add_string_cols}{\code{character} with optional \code{numeric} columns that
 should be handled as if they were \code{character} columns. Default \code{NULL}.}
 
-\item{stringToNumFunc}{\code{function} used for \code{addStringCols} when converting
+\item{num_to_string_func}{\code{function} used for \code{add_string_cols} when converting
 \code{numeric} columns to \code{character}. Default \code{as.character()} retains
 the full \code{numeric} value, however it may be useful to use something
 like \code{function(x)signif(x, digits=3)} to limit the output to
 only three significant digits, or \code{function(x)format(x, digits=3)}.}
 
-\item{keepNAgroupBy}{\code{logical}, default TRUE, whether to convert \code{NA}
-values in row groups to \code{""} so they are retained in the output.}
+\item{keep_na_groups}{\code{logical}, default TRUE, whether to convert \code{NA}
+values in row groups to \code{""} so they are retained in the output.
+\itemize{
+\item You may want to use \code{keep_na_groups=FALSE} when there are a large
+number of un-annotated rows that should not be aggregated together.
+This situation may occur if converting a probe to a gene symbol,
+where a subset of probes cannot be converted to a gene symbol
+and instead receive \code{NA}.
+}}
 
-\item{includeNumReps}{\code{logical} indicating whether to add a column
-\code{"numReps"} to the output, with the \code{integer} number of rows
+\item{include_num_reps}{\code{logical} indicating whether to add a column
+\code{"num_reps"} to the output, with the \code{integer} number of rows
 in each row group.}
 
-\item{collapseMethod}{\code{integer} default 2, indicating the internal
+\item{collapse_method}{\code{integer} default 2, indicating the internal
 collapse method used. Experimental.
 \itemize{
 \item \code{1} collapses each \code{numeric} column independently.
@@ -70,9 +76,6 @@ shrink function, they are all calculated in a single step, which
 is typically much faster.
 }}
 
-\item{applyKeepCols}{\code{logical} whether to reorder columns to match the
-input \code{colnames(x)}.}
-
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
@@ -81,30 +84,50 @@ input \code{colnames(x)}.}
 Shrink data.frame by row groups
 }
 \details{
-Purpose is to take a data.frame with multiple column classes,
-and a groupBy key, and to collapse multiple rows per key
-into one row per key.
+Purpose is to shrink a \code{data.frame} to have one row per row grouping.
+The row grouping can use a single column of identifiers, or multiple
+columns. The challenge is to apply a relevant function to each column,
+expecting there will be columns with \code{numeric}, \code{character}, or \code{factor}
+types.
+
+The default behavior:
+\itemize{
+\item \code{numeric} columns are summarized with \code{mean(x, na.rm=TRUE)}, so that
+NA values are ignored when there are non-NA values present.
+\item \code{character} columns are combined using unique, sorted \code{character} strings.
+\itemize{
+\item This step uses \code{jamba::cPasteSU()} where the
+\code{S} activates sorting using \code{jamba::mixedSort()}, and
+\code{U} calls \code{unique()}.
+\item To retain all values, remove the \code{U} and call \code{jamba::cPasteS()}
+\item To skip the sort, remove the \code{S} and call \code{jamba::cPasteU()}
+\item To keep all values, and skip sorting, call \code{jamba::cPaste()}
+}
+}
 }
 \examples{
 testdf <- data.frame(check.names=FALSE,
    SYMBOL=rep(c("ACTB", "GAPDH", "PPIA"), c(2, 3, 1)),
-   `logFC B-A`=c(1.4, 1.4, 2.3, NA, 2.3, 5.1),
+   `logFC B-A`=c(1.4, 1.4, 2.3, NA, 2.5, 5.1),
    probe=paste0("probe", 1:6))
-shrink_df(testdf, by="SYMBOL", num_func=function(x){mean(x, na.rm=TRUE)})
+shrink_df(testdf, by="SYMBOL")
+
+shrink_df(testdf, by="SYMBOL", num_func=mean)
+
+shrink_df(testdf, by="SYMBOL", add_string_cols="logFC B-A")
 
 testdftall <- do.call(rbind, lapply(1:10000, function(i){
    idf <- testdf;
    idf$SYMBOL <- paste0(idf$SYMBOL, "_", i);
    idf;
 }))
-head(testdftall, 12)
 shrunk_tall <- shrink_df(testdftall,
-   by="SYMBOL",
-   num_func=function(x){mean(x, na.rm=TRUE)})
+   by="SYMBOL")
+head(shrunk_tall, 6)
 
 shrunk_tall2 <- jamses::shrinkDataFrame(testdftall,
    groupBy="SYMBOL")
-head(shrunk_tall2, 12)
+head(shrunk_tall2, 6)
 
 }
 \seealso{

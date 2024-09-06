@@ -7,10 +7,10 @@
 shrink_matrix(
   x,
   groupBy,
-  shrinkFunc = function(x) {
+  shrink_func = function(x) {
      mean(x, na.rm = TRUE)
  },
-  returnClass = c("data.frame", "matrix"),
+  return_class = c("data.frame", "matrix"),
   verbose = FALSE,
   ...
 )
@@ -22,12 +22,12 @@ shrink_matrix(
 whose length equals \code{nrow(x)}.
 These values will become rownames in the output data.}
 
-\item{shrinkFunc}{\code{function} that takes vector input and returns
+\item{shrink_func}{\code{function} that takes vector input and returns
 \strong{single value} output. The vector class can be checked, in order to
 call a function on numeric or character data separately, as
 needed.}
 
-\item{returnClass}{\code{character} string indicating the return data type.
+\item{return_class}{\code{character} string indicating the return data type.
 \itemize{
 \item \code{"data.frame"} returns a \code{data.frame} whose first column contains
 entries from \code{groups}.
@@ -38,7 +38,7 @@ from \code{groups}.
 \item{verbose}{logical indicating whether to print verbose output.}
 }
 \value{
-\code{data.frame} or \code{matrix} based upon argument \code{returnClass}.
+\code{data.frame} or \code{matrix} based upon argument \code{return_class}.
 }
 \description{
 Shrink a numeric matrix across groups of rows, by applying a summary
@@ -52,13 +52,13 @@ provide a custom function to shrink row values.
 The default function uses \code{mean(x, na.rm=TRUE)} so that \code{NA}
 values are ignored where possible.
 
-This function applies the same \code{shrinkFunc} to all columns, and
+This function applies the same \code{shrink_func} to all columns, and
 it optimal for \code{numeric} values. For more control over which
 function to apply to specific columns, see \code{shrinkDataFrame()}.
 
 Trivia:
 This function is identical to \code{splicejam::shrinkDataFrame()} except
-that the default \code{shrinkFunc} includes \code{na.rm=TRUE} and no
+that the default \code{shrink_func} includes \code{na.rm=TRUE} and no
 longer calls the \code{.Internal()} function, since that is not
 permitted by CRAN package guidelines.
 }
