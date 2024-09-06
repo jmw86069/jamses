@@ -252,7 +252,7 @@ se_collapse_by_row <- function
 
    ## rowStatsFunc will become a list named by signal after this section
    if (length(rowStatsFunc) > 0) {
-      if (igrepHas("function", class(rowStatsFunc))) {
+      if (jamba::igrepHas("function", class(rowStatsFunc))) {
          if (length(group_func_name) == 0) {
             customSignal <- assay_names;
          } else {
@@ -262,7 +262,7 @@ se_collapse_by_row <- function
          rowStatsFunc <- lapply(jamba::nameVector(customSignal), function(i){
             rowStatsFunc
          });
-      } else if (!igrepHas("list", class(rowStatsFunc))) {
+      } else if (!jamba::igrepHas("list", class(rowStatsFunc))) {
          stop(paste0("rowStatsFunc must be NULL, a function,",
             " or a list of functions"));
       }
@@ -543,8 +543,8 @@ se_collapse_by_row <- function
    ## Optional polish step to re-delimit column values to make them unique
    if (length(delim) > 0) {
       for (iCol in colnames(rowDataShrunk)) {
-         if (igrepHas("character", class(rowDataShrunk[[iCol]])) &&
-               igrepHas(delim, rowDataShrunk[[iCol]])) {
+         if (jamba::igrepHas("character", class(rowDataShrunk[[iCol]])) &&
+               jamba::igrepHas(delim, rowDataShrunk[[iCol]])) {
             if (verbose) {
                jamba::printDebug("se_collapse_by_row(): ",
                   "Re-delimiting unique values in column:",

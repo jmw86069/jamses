@@ -1,12 +1,40 @@
 
 # TODO for jamses
 
-## 09aug2024
+## 14aug2024
 
-* `save_sestats()`
+* `plot_sedesign()` - Improve the method for bumping arrows.
 
-   * Debug misalignment of sheet name with contrasts. Sigh.
-   * Consider optional methods to shorten the sheet names
+   * Currently all contrasts that share the same y-position or x-position
+   are bumped relative to each other. The goal is to bump contrasts
+   only when they overlap another contrast.
+   * When B-A:X and D-C:X are on the same y-position, but one does not cross
+   the other, they should not bump each other.
+   * The new algorithm may need to account for x,y,intercept and bump number,
+   so that a contrast is only bumped when it matches all three values.
+   This way, when one contrast is bumped, it should free some space for other
+   contrasts. It may also need to be adjusted iteratively.
+   * Interesting to consider whether to begin with longest or shortest
+   contrasts (by Eucliden distance) in order to control the symmetry.
+
+* Consider method to combine two `SEStats` objects
+
+   * Typically expected to append contrasts across two objects
+   with the same hit thresholds, assay_names. Not required, however.
+
+* `heatmap_se()`: Consider option to add item count to `row_title`.
+
+   * New argument? `tabulate_row_split=TRUE`
+   * Get the row split information, tabulate number of rows per split,
+   define `row_title` to include the number in parentheses.
+   * Label should be "(1,234 `row_type`)".
+   * Bonus points: Trim trailing "s" if there is only one row.
+
+
+* DONE. `save_sestats()`
+
+   * DONE. Debug misalignment of sheet name with contrasts. Sigh.
+   * DONE. Consider optional methods to shorten the sheet names
    
       * custom function to edit the sheet name before
       truncating to `max_nchar_sheetname` number of characters.
@@ -17,11 +45,11 @@
 
 ## 08aug2024
 
-* `matrix_normalize()` and `se_normalize()`
+* DONE. `matrix_normalize()` and `se_normalize()`
 
-   * Consider option to define `reference_samples` during normalization.
+   * DONE. Consider option to define `reference_samples` during normalization.
    CORRECTION: Test existing option `controlSamples` to confirm it works
-   as intended for this purpose.
+   as intended for this purpose. CONFIRMED.
 
       * The goal is to normalize only the `controlSamples` to themselves,
       then normalize all other samples relative to that subset.

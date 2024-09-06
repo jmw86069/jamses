@@ -47,6 +47,7 @@ Other jamses utilities:
 \code{\link{shortest_unique_abbreviation}()},
 \code{\link{shrinkDataFrame}()},
 \code{\link{shrink_df}()},
+\code{\link{shrink_matrix}()},
 \code{\link{strsplitOrdered}()},
 \code{\link{update_function_params}()},
 \code{\link{update_list_elements}()}

@@ -22,6 +22,61 @@ shrinkDataFrame(
   ...
 )
 }
+\arguments{
+\item{x}{\code{data.frame} (or equivalent)}
+
+\item{groupBy}{\code{character} vector with one of the following:
+\itemize{
+\item one or more columns in \code{colnames(x)}. The values in these columns
+will define the row groups used.
+\item \code{character} or \code{factor} with length equal to \code{nrow(x)}. These
+values will define the row groups used.
+}}
+
+\item{stringShrinkFunc}{\code{function}, default uses \code{jamba::cPasteSU()},
+used for \code{character} or \code{factor} columns. Note that string
+columns are handled differently than \code{numeric} columns by applying
+vectorized operations across the complete set of rows in one step,
+rather than calling \code{data.table} on each subgroup.}
+
+\item{numShrinkFunc}{\code{function}, default \code{function(x)mean(x, na.rm=TRUE)},
+used for \code{numeric} columns. Note that this function is applied
+to each row group by \code{data.table}, and is typically very efficient
+for \code{numeric} values.}
+
+\item{addStringCols}{\code{character} with optional \code{numeric} columns that
+should be handled as if they were \code{character} columns. Default \code{NULL}.}
+
+\item{stringToNumFunc}{\code{function} used for \code{addStringCols} when converting
+\code{numeric} columns to \code{character}. Default \code{as.character()} retains
+the full \code{numeric} value, however it may be useful to use something
+like \code{function(x)signif(x, digits=3)} to limit the output to
+only three significant digits, or \code{function(x)format(x, digits=3)}.}
+
+\item{keepNAgroupBy}{\code{logical}, default TRUE, whether to convert \code{NA}
+values in row groups to \code{""} so they are retained in the output.}
+
+\item{includeNumReps}{\code{logical} indicating whether to add a column
+\code{"numReps"} to the output, with the \code{integer} number of rows
+in each row group.}
+
+\item{collapseMethod}{\code{integer} default 2, indicating the internal
+collapse method used. Experimental.
+\itemize{
+\item \code{1} collapses each \code{numeric} column independently.
+\item \code{2} collapses each set of \code{numeric} columns that use the same
+numeric shrink function. When all \code{numeric} columns use the same
+shrink function, they are all calculated in a single step, which
+is typically much faster.
+}}
+
+\item{applyKeepCols}{\code{logical} whether to reorder columns to match the
+input \code{colnames(x)}.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
+}
 \description{
 Shrink data.frame by row groups
 }
@@ -29,6 +84,28 @@ Shrink data.frame by row groups
 Purpose is to take a data.frame with multiple column classes,
 and a groupBy key, and to collapse multiple rows per key
 into one row per key.
+}
+\examples{
+testdf <- data.frame(check.names=FALSE,
+   SYMBOL=rep(c("ACTB", "GAPDH", "PPIA"), c(2, 3, 1)),
+   `logFC B-A`=c(1.4, 1.4, 2.3, NA, 2.3, 5.1),
+   probe=paste0("probe", 1:6))
+shrink_df(testdf, by="SYMBOL", num_func=function(x){mean(x, na.rm=TRUE)})
+
+testdftall <- do.call(rbind, lapply(1:10000, function(i){
+   idf <- testdf;
+   idf$SYMBOL <- paste0(idf$SYMBOL, "_", i);
+   idf;
+}))
+head(testdftall, 12)
+shrunk_tall <- shrink_df(testdftall,
+   by="SYMBOL",
+   num_func=function(x){mean(x, na.rm=TRUE)})
+
+shrunk_tall2 <- jamses::shrinkDataFrame(testdftall,
+   groupBy="SYMBOL")
+head(shrunk_tall2, 12)
+
 }
 \seealso{
 Other jamses utilities: 
@@ -40,6 +117,7 @@ Other jamses utilities:
 \code{\link{se_rbind}()},
 \code{\link{shortest_unique_abbreviation}()},
 \code{\link{shrink_df}()},
+\code{\link{shrink_matrix}()},
 \code{\link{strsplitOrdered}()},
 \code{\link{sub_split_vector}()},
 \code{\link{update_function_params}()},

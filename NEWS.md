@@ -1,3 +1,19 @@
+# jamses 0.0.66.900
+
+## changes to existing functions
+
+* `shrinkDataFrame()`
+
+   * Preferred over `shrink_df()` which will be retired or
+   converted to a wrapper to `shrinkDataFrame()`.
+   * Calls internal `shrink_matrix()` to avoid `splicejam` as a
+   dependency.
+
+## new functions
+
+* `shrink_matrix()` - copied from `splicejam::shrinkMatrix()` with
+improved default numeric function.
+
 # jamses 0.0.65.900
 
 ## bug fixes
