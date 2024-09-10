@@ -1,3 +1,14 @@
+# jamses 0.0.67.900
+
+## changes to existing functions
+
+* `save_sestats()`
+
+   * `rowData_colnames` now ignores any columns already
+   present in the data, to prevent erroneously returning duplicated
+   columns. This change fixes occassional error "duplicated colNames"
+   when saving to xlsx format, caused when using `rowData_colnames`.
+
 # jamses 0.0.66.900
 
 ## changes to existing functions

@@ -356,8 +356,10 @@ save_sestats <- function
 
          # optionally add rowData_colnames
          if (length(se) > 0 && length(rowData_colnames) > 0) {
-            rowData_colnames <- intersect(rowData_colnames,
-               colnames(SummarizedExperiment::rowData(se)));
+            rowData_colnames <- setdiff(intersect(rowData_colnames,
+               colnames(SummarizedExperiment::rowData(se))),
+               name_colnames);
+            nonname_colnames <- setdiff(icols, name_colnames);
             if (length(rowData_colnames) > 0) {
                imatch <- match(iDF[,1], rownames(se));
                if (any(is.na(imatch))) {
@@ -368,15 +370,18 @@ save_sestats <- function
                }
                if (!any(is.na(imatch))) {
                   jDF <- data.frame(check.names=FALSE,
-                     SummarizedExperiment::rowData(se[imatch,])[, rowData_colnames, drop=FALSE]);
+                     SummarizedExperiment::rowData(se[imatch,])[,
+                        rowData_colnames, drop=FALSE]);
                   iDF <- data.frame(check.names=FALSE,
-                     iDF[, 1, drop=FALSE],
+                     iDF[, name_colnames, drop=FALSE],
                      jDF,
-                     iDF[, -1, drop=FALSE]);
+                     iDF[, nonname_colnames, drop=FALSE]);
                   # add to name_colnames
-                  name_colnames <- c(name_colnames[1],
-                     colnames(jDF),
-                     name_colnames[-1]);
+                  name_colnames <- c(name_colnames,
+                     rowData_colnames);
+                  # name_colnames <- c(name_colnames[1],
+                  #    colnames(jDF),
+                  #    name_colnames[-1]);
                }
             }
          }

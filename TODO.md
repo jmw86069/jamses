@@ -1,6 +1,12 @@
 
 # TODO for jamses
 
+## 10sep2024
+
+* DONE. Fix error with `save_sestats()` when `rowData_colnames` contains
+columns already present, causing them to be added twice.
+The error is caused with `writeOpenxlsx()` by duplicate colnames.
+
 ## 14aug2024
 
 * `plot_sedesign()` - Improve the method for bumping arrows.
