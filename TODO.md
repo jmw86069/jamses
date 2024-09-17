@@ -1,6 +1,12 @@
 
 # TODO for jamses
 
+## 16sep2024
+
+* Adapt `heatmap_se()` for `SingleCellExperiment` objects.
+
+   * By proxy, it could also work for `Seurat` objects.
+
 ## 10sep2024
 
 * DONE. Fix error with `save_sestats()` when `rowData_colnames` contains

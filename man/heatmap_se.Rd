@@ -91,10 +91,19 @@ heatmap_se(
 )
 }
 \arguments{
-\item{se}{\code{SummarizedExperiment} object with accessor functions:
-\code{rowData()}, \code{colData()}, and \code{assays()};
-or another suitable Bioconductor object with accessor functions:
-\code{featureData()}, \code{phenoData()}, and \code{assayData()}.}
+\item{se}{\code{SummarizedExperiment} by default, or one of the following:
+\itemize{
+\item \code{SummarizedExperiment} with accessor functions
+\code{rowData()}, \code{colData()}, and \code{assays()}. It will use
+\code{values(rowRanges())} if no slot \code{rowData} exists.
+\item \code{SingleCellExperiment} with accessor functions
+\code{rowData()}, \code{colData()}, and \code{assays()}. It will use
+\code{values(rowRanges())} if no slot \code{rowData} exists.
+\item \code{Seurat} object, which is coerced to \code{SingleCellExperiment} and
+handled accordingly
+\item \code{ExpressionSet} or compatible object with accessor functions
+\code{featureData()}, \code{phenoData()}, and \code{assayData()}.
+}}
 
 \item{sestats}{one of the following types of data:
 \itemize{

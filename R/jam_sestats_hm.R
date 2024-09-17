@@ -154,9 +154,16 @@
 #'    colData=data.frame(Sample=colnames(matrix)))
 #' ```
 #'
-#' @param se `SummarizedExperiment` object with accessor functions:
-#'    `rowData()`, `colData()`, and `assays()`;
-#'    or another suitable Bioconductor object with accessor functions:
+#' @param se `SummarizedExperiment` by default, or one of the following:
+#'    * `SummarizedExperiment` with accessor functions
+#'    `rowData()`, `colData()`, and `assays()`. It will use
+#'    `values(rowRanges())` if no slot `rowData` exists.
+#'    * `SingleCellExperiment` with accessor functions
+#'    `rowData()`, `colData()`, and `assays()`. It will use
+#'    `values(rowRanges())` if no slot `rowData` exists.
+#'    * `Seurat` object, which is coerced to `SingleCellExperiment` and
+#'    handled accordingly
+#'    * `ExpressionSet` or compatible object with accessor functions
 #'    `featureData()`, `phenoData()`, and `assayData()`.
 #' @param sestats one of the following types of data:
 #'    * `list` output from `se_contrast_stats()`, which
@@ -1046,11 +1053,75 @@ heatmap_se <- function
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
    # Note: This process does not subset by `rows` or `isamples` yet
-   if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
-      rowData_se <- data.frame(check.names=FALSE,
-         SummarizedExperiment::rowData(se));
-      colData_se <- data.frame(check.names=FALSE,
-         SummarizedExperiment::colData(se))
+   ## Experimental: handle Seurat objects
+   if ("Seurat" %in% class(se)) {
+      se <- Seurat::as.SingleCellExperiment(se,
+         # assay=assay_name,
+         ...);
+   }
+   # Confirm rownames/colnames exist
+   if (length(rownames(se)) == 0) {
+      rownames(se) <- paste0("row",
+         jamba::padInteger(seq_len(nrow(se))));
+   }
+   if (length(colnames(se)) == 0) {
+      colnames(se) <- paste0("column",
+         jamba::padInteger(seq_len(ncol(se))));
+   }
+   ## Experimental: handle SingleCellExperiment objects
+   if ("SingleCellExperiment" %in% class(se)) {
+      if ("colData" %in% slotNames(se)) {
+         colData_se <- data.frame(check.names=FALSE,
+            SummarizedExperiment::colData(se))
+      } else {
+         colData_se <- data.frame(check.names=FALSE,
+            row.names=colnames(se),
+            columns=colnames(se))
+      }
+      if (ncol(colData_se) == 0) {
+         colData_se$rows <- rownames(colData_se);
+      }
+      if ("rowData" %in% slotNames(se)) {
+         rowData_se <- data.frame(check.names=FALSE,
+            SummarizedExperiment::rowData(se));
+      } else if ("rowRanges" %in% slotNames(se)) {
+         rowData_se <- data.frame(check.names=FALSE,
+            row.names=rownames(se),
+            SummarizedExperiment::values(
+               SummarizedExperiment::rowRanges(se)))
+      } else {
+         rowData_se <- data.frame(check.names=FALSE,
+            row.names=rownames(se),
+            rows=rownames(se))
+      }
+      if (ncol(rowData_se) == 0) {
+         rowData_se$rows <- rownames(rowData_se);
+      }
+   } else if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
+      if ("rowData" %in% slotNames(se)) {
+         rowData_se <- data.frame(check.names=FALSE,
+            SummarizedExperiment::rowData(se));
+      } else if ("rowRanges" %in% slotNames(se)) {
+         rowData_se <- data.frame(check.names=FALSE,
+            row.names=rownames(se),
+            SummarizedExperiment::values(
+               SummarizedExperiment::rowRanges(se)))
+      } else {
+         rowData_se <- data.frame(check.names=FALSE,
+            row.names=rownames(se),
+            rows=rownames(se))
+      }
+      if (ncol(rowData_se) == 0) {
+         rowData_se$rows <- rownames(rowData_se);
+      }
+      if ("colData" %in% slotNames(se)) {
+         colData_se <- data.frame(check.names=FALSE,
+            SummarizedExperiment::colData(se))
+      } else {
+         colData_se <- data.frame(check.names=FALSE,
+            row.names=colnames(se),
+            columns=colnames(se))
+      }
    } else {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
@@ -1595,7 +1666,8 @@ heatmap_se <- function
    # pull assay data separately so we can tolerate other object types
    # Note columns are not subset here so they can be used during centering.
    # After centering, isamples is used to subset columns as needed.
-   if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
+   if (any(grepl("SummarizedExperiment|SingleCellExperiment",
+      ignore.case=TRUE, class(se)))) {
       se_matrix <- SummarizedExperiment::assays(se[gene_hits, ])[[assay_name]];
    } else {
       se_matrix <- Biobase::assayData(se[gene_hits, ])[[assay_name]];

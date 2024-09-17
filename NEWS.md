@@ -1,3 +1,17 @@
+# jamses 0.0.68.900
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * Added preliminary support for `SingleCellExperiment` and `Seurat`
+   objects. Initial support recognizes the data exactly as provided.
+   Future options may involve filtering, transformation, etc.
+   * Input now uses `values(rowRanges())` when there is no slot name
+   `"rowData"`.
+   * If either `rowData()` or `colData()` are empty (0 columns), it defines
+   the rownames/colnames in "row"/"column", respectively.
+
 # jamses 0.0.67.900
 
 ## changes to existing functions
