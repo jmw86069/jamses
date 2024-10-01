@@ -1,3 +1,31 @@
+# jamses 0.0.69.900
+
+* Bumped version for some jam packages in Imports:
+jamba, colorjam, multienrichjam
+* Bumped version for some jam packages in Suggests:
+genejam, venndir
+
+## bug fixes
+
+* `heatmap_se()` was not properly defining `rowData_se` causing
+`rowData_colnames` to be ignored. The bug was that although `"rowRanges"`
+is defined as a slot name, `"rowData"` is not. In either case the
+correct approach is to use accessor functions `rowRanges` and `rowData()`
+which handle whatever slot names are in use for the given object class.
+
+## new functions
+
+* `se_to_rowcoldata()` - captures logic to define `rowData_se` and
+`colData_se` from a number of possible input classes, removing this
+logic from `heatmap_se()`.
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * now calls `se_to_rowcoldata()` to define `rowData_se` and `colData_se`.
+   * Examples now include `rowData_colnames` to confirm proper output.
+
 # jamses 0.0.68.900
 
 ## changes to existing functions

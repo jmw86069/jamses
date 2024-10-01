@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.68.900
+Version: 0.0.69.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -13,22 +13,22 @@ Description: Jam SummarizedExperiment Stats methods to
    in statistical contrasts.
 biocViews:
 Depends: R (>= 3.6.0)
-Imports: jamba(>= 0.0.95.900),
+Imports: jamba (>= 0.0.103.900),
    jamma (>= 0.0.33.900),
-   colorjam (>= 0.0.23.900),
+   colorjam (>= 0.0.28.900),
    SummarizedExperiment (>= 1.16.1),
    data.table,
    matrixStats,
    BiocGenerics,
    limma,
    ComplexHeatmap (>= 2.13.4),
-   multienrichjam,
+   multienrichjam (>= 0.0.90.950),
    amap,
    cli,
    gridtext
 Suggests:
-   genejam,
-   venndir,
+   genejam (>= 0.0.16.900),
+   venndir (>= 0.0.40.900),
    farrisdata,
    testthat (>= 3.0.0),
    statmod,

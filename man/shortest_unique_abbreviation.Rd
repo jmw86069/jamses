@@ -104,6 +104,7 @@ Other jamses utilities:
 \code{\link{se_collapse_by_column}()},
 \code{\link{se_collapse_by_row}()},
 \code{\link{se_rbind}()},
+\code{\link{se_to_rowcoldata}()},
 \code{\link{shrinkDataFrame}()},
 \code{\link{shrink_df}()},
 \code{\link{shrink_matrix}()},

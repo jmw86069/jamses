@@ -769,8 +769,12 @@ SummarizedExperiment::colData(se)$Group <- factor(
    SummarizedExperiment::colData(se)$Group,
    levels=unique(SummarizedExperiment::colData(se)$Group))
 
+# optionally define factor levels to force the order of labels
+SummarizedExperiment::rowData(se)$Class <- factor(
+   sample(head(LETTERS, 5), size=nrow(se), replace=TRUE))
+
 # basic heatmap
-hm <- heatmap_se(se)
+hm <- heatmap_se(se, rowData_colnames="Class")
 
 # draw by printing hm, or call draw() to add useful options
 ComplexHeatmap::draw(hm,
@@ -785,16 +789,25 @@ sample_color_list <- list(
    unique(SummarizedExperiment::rowData(se)$Class)))
 
 heatmap_se(se,
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
 
 # let's have some fun now
-heatmap_se(se,
+hm2 <- heatmap_se(se,
    column_split=c("Group"),
    column_title_rot=90,
    row_split=c("Class"),
    rowData_colnames=c("Class"),
    cluster_row_slices=FALSE,
    sample_color_list=sample_color_list)
+hm2drawn <- ComplexHeatmap::draw(hm2, merge_legends=TRUE)
+
+# as an example, extract the row order
+# technically you should use hm2drawn, but usually hm2 is enough
+hro <- jamba::heatmap_row_order(hm2drawn);
+jamba::sdim(hro)
+lapply(hro, head, 7)
+# (the names will differ from values when `row_labels` are customized)
 
 # center by WildType samples
 # - controlSamples
@@ -813,9 +826,11 @@ hm2drawn <- ComplexHeatmap::draw(hm2,
    column_title=attr(hm2, "hm_title"),
    merge_legends=TRUE)
 
-# labels only a subset of rows
+# add "callout" labels for a subset of rows
 mark_rows <- c(sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=5),
    sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=3));
+# turn off ComplexHeatmap warning when using RStudio
+ComplexHeatmap::ht_opt(message=FALSE)
 hm3 <- heatmap_se(se,
    mark_rows=mark_rows,
    controlSamples=rownames(

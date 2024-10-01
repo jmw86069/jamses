@@ -580,8 +580,12 @@
 #'    SummarizedExperiment::colData(se)$Group,
 #'    levels=unique(SummarizedExperiment::colData(se)$Group))
 #'
+#' # optionally define factor levels to force the order of labels
+#' SummarizedExperiment::rowData(se)$Class <- factor(
+#'    sample(head(LETTERS, 5), size=nrow(se), replace=TRUE))
+#'
 #' # basic heatmap
-#' hm <- heatmap_se(se)
+#' hm <- heatmap_se(se, rowData_colnames="Class")
 #'
 #' # draw by printing hm, or call draw() to add useful options
 #' ComplexHeatmap::draw(hm,
@@ -596,16 +600,25 @@
 #'    unique(SummarizedExperiment::rowData(se)$Class)))
 #'
 #' heatmap_se(se,
+#'    rowData_colnames="Class",
 #'    sample_color_list=sample_color_list)
 #'
 #' # let's have some fun now
-#' heatmap_se(se,
+#' hm2 <- heatmap_se(se,
 #'    column_split=c("Group"),
 #'    column_title_rot=90,
 #'    row_split=c("Class"),
 #'    rowData_colnames=c("Class"),
 #'    cluster_row_slices=FALSE,
 #'    sample_color_list=sample_color_list)
+#' hm2drawn <- ComplexHeatmap::draw(hm2, merge_legends=TRUE)
+#'
+#' # as an example, extract the row order
+#' # technically you should use hm2drawn, but usually hm2 is enough
+#' hro <- jamba::heatmap_row_order(hm2drawn);
+#' jamba::sdim(hro)
+#' lapply(hro, head, 7)
+#' # (the names will differ from values when `row_labels` are customized)
 #'
 #' # center by WildType samples
 #' # - controlSamples
@@ -624,9 +637,11 @@
 #'    column_title=attr(hm2, "hm_title"),
 #'    merge_legends=TRUE)
 #'
-#' # labels only a subset of rows
+#' # add "callout" labels for a subset of rows
 #' mark_rows <- c(sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=5),
 #'    sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=3));
+#' # turn off ComplexHeatmap warning when using RStudio
+#' ComplexHeatmap::ht_opt(message=FALSE)
 #' hm3 <- heatmap_se(se,
 #'    mark_rows=mark_rows,
 #'    controlSamples=rownames(
@@ -1055,11 +1070,15 @@ heatmap_se <- function
    # Note: This process does not subset by `rows` or `isamples` yet
    ## Experimental: handle Seurat objects
    if ("Seurat" %in% class(se)) {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "Converted Seurat input to SingleCellExperiment");
+      }
       se <- Seurat::as.SingleCellExperiment(se,
          # assay=assay_name,
          ...);
    }
-   # Confirm rownames/colnames exist
+   # confirm rownames and colnames exist
    if (length(rownames(se)) == 0) {
       rownames(se) <- paste0("row",
          jamba::padInteger(seq_len(nrow(se))));
@@ -1068,71 +1087,12 @@ heatmap_se <- function
       colnames(se) <- paste0("column",
          jamba::padInteger(seq_len(ncol(se))));
    }
-   ## Experimental: handle SingleCellExperiment objects
-   if ("SingleCellExperiment" %in% class(se)) {
-      if ("colData" %in% slotNames(se)) {
-         colData_se <- data.frame(check.names=FALSE,
-            SummarizedExperiment::colData(se))
-      } else {
-         colData_se <- data.frame(check.names=FALSE,
-            row.names=colnames(se),
-            columns=colnames(se))
-      }
-      if (ncol(colData_se) == 0) {
-         colData_se$rows <- rownames(colData_se);
-      }
-      if ("rowData" %in% slotNames(se)) {
-         rowData_se <- data.frame(check.names=FALSE,
-            SummarizedExperiment::rowData(se));
-      } else if ("rowRanges" %in% slotNames(se)) {
-         rowData_se <- data.frame(check.names=FALSE,
-            row.names=rownames(se),
-            SummarizedExperiment::values(
-               SummarizedExperiment::rowRanges(se)))
-      } else {
-         rowData_se <- data.frame(check.names=FALSE,
-            row.names=rownames(se),
-            rows=rownames(se))
-      }
-      if (ncol(rowData_se) == 0) {
-         rowData_se$rows <- rownames(rowData_se);
-      }
-   } else if (any(grepl("SummarizedExperiment", ignore.case=TRUE, class(se)))) {
-      if ("rowData" %in% slotNames(se)) {
-         rowData_se <- data.frame(check.names=FALSE,
-            SummarizedExperiment::rowData(se));
-      } else if ("rowRanges" %in% slotNames(se)) {
-         rowData_se <- data.frame(check.names=FALSE,
-            row.names=rownames(se),
-            SummarizedExperiment::values(
-               SummarizedExperiment::rowRanges(se)))
-      } else {
-         rowData_se <- data.frame(check.names=FALSE,
-            row.names=rownames(se),
-            rows=rownames(se))
-      }
-      if (ncol(rowData_se) == 0) {
-         rowData_se$rows <- rownames(rowData_se);
-      }
-      if ("colData" %in% slotNames(se)) {
-         colData_se <- data.frame(check.names=FALSE,
-            SummarizedExperiment::colData(se))
-      } else {
-         colData_se <- data.frame(check.names=FALSE,
-            row.names=colnames(se),
-            columns=colnames(se))
-      }
-   } else {
-      if (verbose) {
-         jamba::printDebug("heatmap_se(): ",
-            "using accessor functions: ",
-            c("featureData()", "phenoData()"))
-      }
-      rowData_se <- as(Biobase::featureData(se), "data.frame");
-      rownames(rowData_se) <- rownames(se);
-      colData_se <- as(Biobase::phenoData(se), "data.frame")
-      rownames(colData_se) <- colnames(se);
-   }
+   # 0.0.69.900 - call se_to_rowcoldata() and remove logic from here
+   rowcolData_list <- se_to_rowcoldata(se,
+      verbose=verbose,
+      ...);
+   rowData_se <- rowcolData_list$rowData_se;
+   colData_se <- rowcolData_list$colData_se;
 
    # normgroup for column split
    normgroup_colname <- intersect(normgroup_colname,

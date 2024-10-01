@@ -1,11 +1,22 @@
 
 # TODO for jamses
 
+## 18sep2024
+
+* Adapt `heatmap_column_group_labels()` for `Seurat` and `SingleCellExperiment`
+* `plot_sedesign()`, `groups_to_sedesign()`
+
+   * Consider option to return/filter "useful information":
+   
+      * Filter for minimum number of replicates in a group to be permitted
+      in a contrast.
+      * Return number of replicates per group in a contrast.
+
 ## 16sep2024
 
-* Adapt `heatmap_se()` for `SingleCellExperiment` objects.
+* DONE. Adapt `heatmap_se()` for `SingleCellExperiment` objects.
 
-   * By proxy, it could also work for `Seurat` objects.
+   * DONE. By proxy, it could also work for `Seurat` objects.
 
 ## 10sep2024
 
