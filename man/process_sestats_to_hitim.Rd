@@ -50,3 +50,17 @@ relevant.}
 \description{
 Process sestats input into a hit incidence matrix
 }
+\seealso{
+Other jamses stats: 
+\code{\link{ebayes2dfs}()},
+\code{\link{format_hits}()},
+\code{\link{handle_na_values}()},
+\code{\link{hit_array_to_list}()},
+\code{\link{run_limma_replicate}()},
+\code{\link{save_sestats}()},
+\code{\link{se_contrast_stats}()},
+\code{\link{sestats_to_dfs}()},
+\code{\link{sestats_to_df}()},
+\code{\link{voom_jam}()}
+}
+\concept{jamses stats}

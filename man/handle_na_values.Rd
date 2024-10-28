@@ -74,10 +74,14 @@ when an entire group is \code{NA} the entire group is kept at \code{NA}.
 \seealso{
 Other jamses stats: 
 \code{\link{ebayes2dfs}()},
-\code{\link{matrix_normalize}()},
+\code{\link{format_hits}()},
+\code{\link{hit_array_to_list}()},
+\code{\link{process_sestats_to_hitim}()},
 \code{\link{run_limma_replicate}()},
+\code{\link{save_sestats}()},
 \code{\link{se_contrast_stats}()},
-\code{\link{se_normalize}()},
+\code{\link{sestats_to_dfs}()},
+\code{\link{sestats_to_df}()},
 \code{\link{voom_jam}()}
 }
 \concept{jamses stats}

@@ -332,6 +332,12 @@ groups_to_sedesign <- function
       }
    }
 
+   ## Handle DataFrame,DFrame input
+   if (inherits(ifactors, c("DataFrame", "DFrame"))) {
+      ifactors <- data.frame(check.names=FALSE,
+         ifactors);
+   }
+
    ## Special case where one data.frame column is sent, which is delimited.
    ## Mainly we treat as a vector, except that we keep the rownames
    ## so we can derive isamples.
@@ -1193,8 +1199,7 @@ groups_to_sedesign <- function
 #'    `keep_factor_order==TRUE` then only `sort(x)` is returned.
 #' @param ... additional arguments are ignored.
 #'
-#' @family jam string functions
-#' @family jam RNA-seq functions
+#' @family jamses utilities
 #'
 #' @examples
 #' # the defaults perform well for clear descriptors
@@ -1355,6 +1360,15 @@ strsplitOrdered <- function
 
 #' Intercalate two or more vectors
 #'
+#' Purpose is to take a list of vectors, and intercalate their values
+#'
+#' @returns `character` vector with values of each list in `...`
+#'    combined in alternating fashion.
+#'
+#' @family jamses utilities
+#'
+#' @param ... one or more `character` vectors
+#'
 #' @export
 intercalate <- function
 (...)
@@ -1409,6 +1423,8 @@ intercalate <- function
 #'    to `ngCMatrix` which is best for extremely large incidence
 #'    matrix data.
 #' @param ... additional arguments are ignored.
+#'
+#' @family jamses utilities
 #'
 #' @export
 list2im_opt <- function

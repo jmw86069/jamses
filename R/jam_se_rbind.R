@@ -43,7 +43,7 @@
 #' )
 #' ```
 #'
-#' @family jamses utilities
+#' @family jamses SE utilities
 #'
 #' @returns `SummarizedExperiment` object whose `colData()` has been
 #'    processed according to `colData_action` - either keeping only

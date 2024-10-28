@@ -74,6 +74,7 @@
 #' x4 <- c("one", "two", "three", "four");
 #' shortest_unique_abbreviation(x4)
 #'
+#' @export
 shortest_unique_abbreviation <- function
 (x,
  retain_contig_numbers=TRUE,

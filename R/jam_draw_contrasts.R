@@ -3,6 +3,8 @@
 #'
 #' Draw one-way contrast using block arrows
 #'
+#' @family jam experiment design
+#'
 #' @param x0,x1,y0,y1 `numeric` values with the start and end coordinates,
 #'    for the x and y axes, respectively.
 #' @param color,border `character` R colors used to define color fill
@@ -306,6 +308,7 @@ draw_oneway_contrast <- function
 #'    the active graphics device, or when `do_plot=FALSE` only the underlying
 #'    data is returned with no plotting.
 #'
+#' @family jam experiment design
 #'
 #' @examples
 #' plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")

@@ -357,12 +357,25 @@ jp <- jamma::jammaplot(xwarpnorm,
 
 }
 \seealso{
-Other jamses stats: 
-\code{\link{ebayes2dfs}()},
-\code{\link{handle_na_values}()},
-\code{\link{run_limma_replicate}()},
-\code{\link{se_contrast_stats}()},
-\code{\link{se_normalize}()},
-\code{\link{voom_jam}()}
+Other jamses utilities: 
+\code{\link{choose_annotation_colnames}()},
+\code{\link{contrast2comp_dev}()},
+\code{\link{fold_to_log2fold}()},
+\code{\link{intercalate}()},
+\code{\link{list2im_opt}()},
+\code{\link{log2fold_to_fold}()},
+\code{\link{make_block_arrow_polygon}()},
+\code{\link{mark_stat_hits}()},
+\code{\link{point_handedness}()},
+\code{\link{point_slope_intercept}()},
+\code{\link{shortest_unique_abbreviation}()},
+\code{\link{shrinkDataFrame}()},
+\code{\link{shrink_df}()},
+\code{\link{shrink_matrix}()},
+\code{\link{sort_samples}()},
+\code{\link{strsplitOrdered}()},
+\code{\link{sub_split_vector}()},
+\code{\link{update_function_params}()},
+\code{\link{update_list_elements}()}
 }
-\concept{jamses stats}
+\concept{jamses utilities}

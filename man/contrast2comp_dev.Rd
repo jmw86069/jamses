@@ -10,8 +10,8 @@ contrast2comp_dev(contrast_names, verbose = FALSE, ...)
 Convert contrast to short-form comp, convert comp to contrast (DEV)
 }
 \details{
-This method is developmental, intended to provide a vectorized
-approach to improve speed.
+This method is developmental and is being tested as potentially
+faster version of \code{contrast2comp()}.
 }
 \examples{
 contrast_names1 <- c("(A_c-B_c)-(A_d-B_d)",
@@ -28,3 +28,26 @@ contrast2comp(c("(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 contrast2comp_dev(c(contrast_names1[1:2], "(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 
 }
+\seealso{
+Other jamses utilities: 
+\code{\link{choose_annotation_colnames}()},
+\code{\link{fold_to_log2fold}()},
+\code{\link{intercalate}()},
+\code{\link{list2im_opt}()},
+\code{\link{log2fold_to_fold}()},
+\code{\link{make_block_arrow_polygon}()},
+\code{\link{mark_stat_hits}()},
+\code{\link{matrix_normalize}()},
+\code{\link{point_handedness}()},
+\code{\link{point_slope_intercept}()},
+\code{\link{shortest_unique_abbreviation}()},
+\code{\link{shrinkDataFrame}()},
+\code{\link{shrink_df}()},
+\code{\link{shrink_matrix}()},
+\code{\link{sort_samples}()},
+\code{\link{strsplitOrdered}()},
+\code{\link{sub_split_vector}()},
+\code{\link{update_function_params}()},
+\code{\link{update_list_elements}()}
+}
+\concept{jamses utilities}

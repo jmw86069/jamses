@@ -23,3 +23,9 @@ This function is a wrapper around \code{ComplexHeatmap::list_components()}
 which also creates a \code{list} of component names based upon common
 naming conventions used in the \code{ComplexHeatmap} package.
 }
+\seealso{
+Other jamses heatmaps: 
+\code{\link{heatmap_column_group_labels}()},
+\code{\link{heatmap_se}()}
+}
+\concept{jamses heatmaps}

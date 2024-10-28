@@ -72,6 +72,9 @@ and the previous set will contain \code{(max_venn_size - 1)} members.
 Convert contrast names to Venn setlists for visual comparison
 }
 \details{
+This function is still under active development to be improved,
+feedback is welcomed.
+
 The motivation is to take a set of contrast names, and return
 reasonable subsets of contrasts suitable for visual comparison
 using Venn diagrams. Ultimately, the process is analogous to
@@ -140,3 +143,19 @@ venn_set_factors
 data.frame(names(venn_set_factors))
 
 }
+\seealso{
+Other jam experiment design: 
+\code{\link{check_sedesign}()},
+\code{\link{contrast2comp}()},
+\code{\link{contrast_colors_by_group}()},
+\code{\link{contrast_names_to_sedesign}()},
+\code{\link{contrasts_to_factors}()},
+\code{\link{draw_oneway_contrast}()},
+\code{\link{draw_twoway_contrast}()},
+\code{\link{filter_contrast_names}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()},
+\code{\link{validate_sedesign}()}
+}
+\concept{jam experiment design}

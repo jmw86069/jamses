@@ -169,20 +169,12 @@ but only after exponentiating the data, for example the reciprocal
 }
 }
 \seealso{
-Other jamses utilities: 
-\code{\link{fold_to_log2fold}()},
-\code{\link{log2fold_to_fold}()},
-\code{\link{mark_stat_hits}()},
+Other jamses SE utilities: 
+\code{\link{make_se_test}()},
 \code{\link{se_collapse_by_column}()},
+\code{\link{se_detected_rows}()},
+\code{\link{se_normalize}()},
 \code{\link{se_rbind}()},
-\code{\link{se_to_rowcoldata}()},
-\code{\link{shortest_unique_abbreviation}()},
-\code{\link{shrinkDataFrame}()},
-\code{\link{shrink_df}()},
-\code{\link{shrink_matrix}()},
-\code{\link{strsplitOrdered}()},
-\code{\link{sub_split_vector}()},
-\code{\link{update_function_params}()},
-\code{\link{update_list_elements}()}
+\code{\link{se_to_rowcoldata}()}
 }
-\concept{jamses utilities}
+\concept{jamses SE utilities}

@@ -12,6 +12,7 @@ save_sestats(
   cutoff_names = NULL,
   type = c("xlsx", "list"),
   data_content = c("data", "hits"),
+  hits_use_lfc = FALSE,
   max_nchar_sheetname = 31,
   abbreviate = FALSE,
   review_output = TRUE,
@@ -67,6 +68,15 @@ One hit sheet is created for each value in \code{assay_names}.
 \code{assay_names}.
 }}
 
+\item{hits_use_lfc}{\code{logical} default FALSE, indicating whether values
+in \code{"hits"} columns should use the log2 fold change.
+\itemize{
+\item \code{FALSE} (default) assigns \code{c(-1, 0, 1)} to indicate directionality
+after applying stat thresholds.
+\item \code{TRUE} assigns the actual log2 fold change \emph{only for hits} as defined
+by the stat thresholds.
+}}
+
 \item{max_nchar_sheetname}{\code{integer} number of characters allowed in
 Microsoft Excel worksheet names, default 31 characters.}
 
@@ -102,12 +112,35 @@ categorical background colors for text string fields in Excel.
 The \code{names(colorSub)} are matched to character strings to assign
 colors.}
 
+\item{rename_contrasts}{\code{logical} indicating whetheer to apply
+\code{contrasts2comp()} to shorten long contrast names.}
+
+\item{se}{\code{SummarizedExperiment}, default NULL, used when
+\code{rowData_colnames} is defined.}
+
+\item{rowData_colnames}{\code{character}, default NULL, with optional colnames
+used only when \code{se} is also provided. When defined, it provides
+additional annotations for each row as defined by \code{rowData(se)}.}
+
+\item{row_type}{\code{character} with custom column name to use for the
+primary row identifier. The default \code{"probes"} is often not accurate,
+though this may not be problematic in practice.
+When defined, the first column is renamed to \code{row_type}.}
+
 \item{hitRule, hitFormat, freezePaneColumn}{arguments passed to
-\code{jamba::writeOpenxlsx()}.}
+\code{jamba::writeOpenxlsx()}, used only to define the color thresholds
+used with conditional formatting. It changes none of the data.
+The \code{freezePaneColumn} defines the first non-fixed column when
+viewed in Excel, and by default keeps only the first column fixed
+when scrolling to the right. Use a higher value if columns added
+by \code{rowData_colnames} should also be fixed columns.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are passed to \code{jamba::writeOpenxlsx()}}
+}
+\value{
+\code{data.frame} when \code{type="xlsx"} or \code{list} when \code{type="list"}.
 }
 \description{
 Save SE contrast stats output
@@ -116,4 +149,93 @@ Save SE contrast stats output
 This function is intended as a convenient method to export
 a series of statistical tables into organized, formatted Excel
 worksheets.
+
+The output will generally contain two types of worksheets:
+\enumerate{
+\item Each contrast in its own worksheet.
+This is option is enabled by including \code{"contrasts"} in
+argument \code{data_content}, which is default.
+\itemize{
+\item If there are multiple "Signals" (e.g. multiple \code{assay_name})
+then each contrast/signal combination will be saved to its
+own worksheet.
 }
+\item One table will be created with one column for each contrast,
+using values \code{c(1, 0, -1)} to indicate whether the row met the
+statistical criteria.
+This is option is enabled by including \code{"hits"} in
+argument \code{data_content}, which is default.
+\itemize{
+\item If there are multiple "Signals" (e.g. multiple \code{assay_name})
+then one table for each signal will be saved to its
+own worksheet.
+}
+}
+\subsection{Output to Excel xlsx or as \code{list}}{
+\itemize{
+\item To output a \code{list} of \code{data.frame} objects, use:
+\verb{type="list", review_output=FALSE}
+}
+}
+
+\subsection{Worksheet names}{
+
+Because the \code{xlsx} worksheet name is limited to 31 characters, the
+contrast names are abbreviated by default. The output of this
+function is a \code{data.frame} which includes the relationship of
+the contrast and signal, to the abbreviated worksheet name.
+}
+}
+\examples{
+se <- make_se_test();
+
+# create SEDesign
+sedesign <- groups_to_sedesign(se, group_colnames="group")
+
+# limma contrasts
+sestats <- se_contrast_stats(se=se,
+   sedesign=sedesign,
+   assay_names="counts")
+
+# review_output=TRUE
+info_df <- save_sestats(sestats, review_output=TRUE)
+info_df
+
+# review_output=FALSE
+stat_dfs1 <- save_sestats(sestats, review_output=FALSE, type="list")
+head(stat_dfs1[[1]])
+
+# review_output=FALSE, hits_use_lfc=TRUE
+stat_dfs <- save_sestats(sestats, review_output=FALSE, type="list", hits_use_lfc=TRUE)
+head(stat_dfs[[1]])
+
+set.seed(12)
+heatmap_se(se, sestats=sestats)
+
+set.seed(12)
+heatmap_se(stat_dfs[[2]], column_names_rot=80,
+   column_cex=0.2, row_cex=0.5) +
+heatmap_se(se, sestats=sestats, rows=rownames(se))
+
+set.seed(12)
+heatmap_se(stat_dfs[[2]], column_names_rot=80,
+   column_cex=0.2, row_cex=0.5) +
+heatmap_se(stat_dfs1[[2]], column_names_rot=80,
+   column_cex=0.2, row_cex=0.5) +
+heatmap_se(se, sestats=sestats, rows=rownames(se))
+
+}
+\seealso{
+Other jamses stats: 
+\code{\link{ebayes2dfs}()},
+\code{\link{format_hits}()},
+\code{\link{handle_na_values}()},
+\code{\link{hit_array_to_list}()},
+\code{\link{process_sestats_to_hitim}()},
+\code{\link{run_limma_replicate}()},
+\code{\link{se_contrast_stats}()},
+\code{\link{sestats_to_dfs}()},
+\code{\link{sestats_to_df}()},
+\code{\link{voom_jam}()}
+}
+\concept{jamses stats}

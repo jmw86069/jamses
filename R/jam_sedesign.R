@@ -102,6 +102,8 @@ setClass("SEDesign",
 #'
 #' @return `SEDesign` object after validation updates have been applied.
 #'
+#' @family jam experiment design
+#'
 #' @param object `SEDesign` object
 #' @param min_reps `integer` indicating the minimum required replicate
 #'    samples per design group to be used during analysis. Any design

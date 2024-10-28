@@ -1,6 +1,45 @@
 
 # TODO for jamses
 
+## 28oct2024
+
+* Prepare `pkgdown` package docs.
+
+## 07oct2024
+
+* Update `README.Rmd`
+
+   * Include visuals for `plot_sedesign()`, and `sestats()`
+   * Include visuals for `heatmap_se()`
+   * Include examples for `heatmap_column_group_labels()`
+   * Include description for `shrinkDataFrame()`
+   * Consider examples using `colorjam::col_div_xf()` within a customized
+   `ComplexHeatmap::Legend()`.
+
+* `save_sestats()`
+
+   * DONE. Consider option to populate the "hits" worksheet using `logFC` values
+   instead of only using `c(1, 0, -1)`.
+
+* Consider new helper functions
+
+   * `contrast_list_by_factor()`: subdivides a set of contrasts by which
+   factor is being compared
+   * `sestats_to_dfs()`: wrapper for `save_sestats()` which returns
+   the list of `data.frames`.
+
+* Consider adding conversion of `Seurat` to `SingleCellExperiment`
+
+   * Key addition: maintain all assay matrix objects using their original
+   names: `layername_assayname`
+   * Option to apply `log2(1 + x)` if range exceeds a threshold (e.g. 50)
+   * Option to convert sparse `Matrix` objects to vanilla `matrix`.
+
+* Add tests
+
+   * `heatmap_se()` basic workflows
+   * Conversion of `Seurat` to `SingleCellExperiment`
+
 ## 18sep2024
 
 * Adapt `heatmap_column_group_labels()` for `Seurat` and `SingleCellExperiment`

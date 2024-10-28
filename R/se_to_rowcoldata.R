@@ -33,7 +33,7 @@
 #' each duplicated colname is not renamed. Use `verbose=TRUE` to confirm
 #' when duplicated columns are detected and renamed.
 #'
-#' @family jamses utilities
+#' @family jamses SE utilities
 #'
 #' @returns `list` with two components:
 #' * `"colData_se"` as a `data.frame` with column metadata from `se`

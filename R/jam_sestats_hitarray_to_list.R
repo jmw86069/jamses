@@ -8,7 +8,9 @@
 #' hits across the different cutoffs and signals contained
 #' in the `hit_array` of `sestats` output from `se_contrast_stats()`.
 #'
-#' @return `list` named by `contrast_names`, that contains unique statistical
+#' @family jamses stats
+#'
+#' @returns `list` named by `contrast_names`, that contains unique statistical
 #'    hits by combining entries across the `cutoff_names` and `assay_names`
 #'    for each contrast.
 #'

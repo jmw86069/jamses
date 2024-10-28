@@ -37,6 +37,12 @@
     <loc>/reference/contrast_names_to_sedesign.html</loc>
   </url>
   <url>
+    <loc>/reference/contrasts_to_factors.html</loc>
+  </url>
+  <url>
+    <loc>/reference/contrasts_to_venn_setlists.html</loc>
+  </url>
+  <url>
     <loc>/reference/detect_heatmap_components.html</loc>
   </url>
   <url>
@@ -88,6 +94,9 @@
     <loc>/reference/make_block_arrow_polygon.html</loc>
   </url>
   <url>
+    <loc>/reference/make_se_test.html</loc>
+  </url>
+  <url>
     <loc>/reference/mark_stat_hits.html</loc>
   </url>
   <url>
@@ -130,16 +139,28 @@
     <loc>/reference/se_rbind.html</loc>
   </url>
   <url>
+    <loc>/reference/se_to_rowcoldata.html</loc>
+  </url>
+  <url>
     <loc>/reference/sedesign_to_factors.html</loc>
   </url>
   <url>
     <loc>/reference/sestats_to_df.html</loc>
   </url>
   <url>
+    <loc>/reference/sestats_to_dfs.html</loc>
+  </url>
+  <url>
+    <loc>/reference/shortest_unique_abbreviation.html</loc>
+  </url>
+  <url>
     <loc>/reference/shrinkDataFrame.html</loc>
   </url>
   <url>
     <loc>/reference/shrink_df.html</loc>
+  </url>
+  <url>
+    <loc>/reference/shrink_matrix.html</loc>
   </url>
   <url>
     <loc>/reference/sort_samples.html</loc>
@@ -149,6 +170,9 @@
   </url>
   <url>
     <loc>/reference/strsplitOrdered.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sub_split_vector.html</loc>
   </url>
   <url>
     <loc>/reference/update_function_params.html</loc>

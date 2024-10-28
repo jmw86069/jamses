@@ -148,6 +148,8 @@
 #'    original direction to prevent loss of information.
 #'    * comp: `(CellA:Treated-Control)-(CellB:Control-Treatment)`
 #'
+#' @family jam experiment design
+#'
 #' @examples
 #' contrast_names <- c(
 #'    "CellA_Treated-CellA_Control",
@@ -565,6 +567,8 @@ comp2contrast <- function
 #' `comp2contrast()`. It takes a single vector of groups, with
 #' 2^(integer) number of entries, and combines them into a
 #' series of pairwise contrasts.
+#'
+#' @family jamses utilities
 #'
 #' For example:
 #' * `A, B` becomes `A-B`

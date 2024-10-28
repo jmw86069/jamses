@@ -73,7 +73,7 @@
 #' but only after exponentiating the data, for example the reciprocal
 #' `( 2 ^ x ) - 1` is sufficient.
 #'
-#' @family jamses utilities
+#' @family jamses SE utilities
 #'
 #' @return `SummarizedExperiment` object with these changes:
 #'    * rows will be collapsed by `row_groups`, for each `assays(se)`

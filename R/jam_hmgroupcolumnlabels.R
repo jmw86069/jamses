@@ -7,12 +7,14 @@
 #' which also creates a `list` of component names based upon common
 #' naming conventions used in the `ComplexHeatmap` package.
 #'
-#' @return `list` of `character` vectors, where `list` names represent
+#' @returns `list` of `character` vectors, where `list` names represent
 #'    different features of the heatmap, and each `character` vector
 #'    includes the grid layout component name stem suitable for use
 #'    in `heatmap_column_group_labels()`.
 #'
 #' @param ... additional arguments are ignored.
+#'
+#' @family jamses heatmaps
 #'
 #' @export
 detect_heatmap_components <- function
@@ -150,6 +152,7 @@ detect_heatmap_components <- function
 #' * Enable blank annotations, either by passing a subset `se`, or by
 #' annotations with no associated label.
 #'
+#' @family jamses heatmaps
 #'
 #' @param hm_group_list `character` or `list` with one of the
 #'    following types of content:

@@ -3,6 +3,8 @@
 #'
 #' Process sestats input into a hit incidence matrix
 #'
+#' @family jamses stats
+#'
 #' @param sestats one of the following:
 #'    * `list` object output from `se_contrast_stats()`, containing `"hit_array"`
 #'    * `array` in format `"hit_array"` with dimnames
@@ -28,14 +30,14 @@
 #' @export
 process_sestats_to_hitim <- function
 (sestats,
-   cutoff_names=NULL,
-   contrast_names=NULL,
-   assay_names=NULL,
-   contrast_suffix=NULL,
-   rename_contrasts=FALSE,
-   rows=NULL,
-   verbose=FALSE,
-   ...)
+ cutoff_names=NULL,
+ contrast_names=NULL,
+ assay_names=NULL,
+ contrast_suffix=NULL,
+ rename_contrasts=FALSE,
+ rows=NULL,
+ verbose=FALSE,
+ ...)
 {
    #
    # if input is list, and does not contain name "hit_array"

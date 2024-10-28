@@ -94,3 +94,19 @@ validate_sedesign(condes2, groups=c("one", "two"))
 condes2[, c("one", "two")]
 
 }
+\seealso{
+Other jam experiment design: 
+\code{\link{check_sedesign}()},
+\code{\link{contrast2comp}()},
+\code{\link{contrast_colors_by_group}()},
+\code{\link{contrast_names_to_sedesign}()},
+\code{\link{contrasts_to_factors}()},
+\code{\link{contrasts_to_venn_setlists}()},
+\code{\link{draw_oneway_contrast}()},
+\code{\link{draw_twoway_contrast}()},
+\code{\link{filter_contrast_names}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()}
+}
+\concept{jam experiment design}

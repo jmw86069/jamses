@@ -514,10 +514,14 @@ jamba::sdim(hit_list);
 \seealso{
 Other jamses stats: 
 \code{\link{ebayes2dfs}()},
+\code{\link{format_hits}()},
 \code{\link{handle_na_values}()},
-\code{\link{matrix_normalize}()},
+\code{\link{hit_array_to_list}()},
+\code{\link{process_sestats_to_hitim}()},
 \code{\link{run_limma_replicate}()},
-\code{\link{se_normalize}()},
+\code{\link{save_sestats}()},
+\code{\link{sestats_to_dfs}()},
+\code{\link{sestats_to_df}()},
 \code{\link{voom_jam}()}
 }
 \concept{jamses stats}

@@ -47,8 +47,9 @@
 #' into `"detected_rows"` which returns rows detected across
 #' all normgroups.
 #'
+#' @family jamses SE utilities
 #'
-#' @return `list` with the following elements:
+#' @returns `list` with the following elements:
 #' * `detected_rows` is a `character` vector of detected `rownames(se)`
 #' * `detected_normgroup` is a `list` of `logical` vectors for each normgroup,
 #' where the vectors encode whether a row is detected within each normgroup.
@@ -111,14 +112,13 @@ se_detected_rows <- function
 
       # define groups for this normgroup
       igroups_i <- jamba::pasteByRow(sep="_",
-         SummarizedExperiment::colData(se[,isamples_i])[,group_colnames]);
+         SummarizedExperiment::colData(se[,isamples_i])[, group_colnames, drop=FALSE]);
 
       # sum detected points by group
       se_Num_Samples_Detected <- rowSums(detect_im, na.rm=TRUE);
       se_Num_Group <- jamba::rowGroupMeans(detect_im,
          groups=igroups_i,
          rowStatsFunc=rowSums);
-
       # percent detected per group
       reps_per_group <- jamba::tcount(igroups_i);
       if (verbose) {
@@ -142,6 +142,23 @@ se_detected_rows <- function
       im_criteria <- (
          se_Num_Group >= detect_minreps &
             se_Pct_Group >= detect_minpct) * 1;
+      if (verbose) {
+         jamba::printDebug("se_detected_rows(): ",
+            "head(detect_im): ");
+         print(head(detect_im));
+         jamba::printDebug("se_detected_rows(): ",
+            "head(se_Num_Samples_Detected): ");
+         print(head(se_Num_Samples_Detected));
+         jamba::printDebug("se_detected_rows(): ",
+            "head(se_Num_Group): ");
+         print(head(se_Num_Group));
+         jamba::printDebug("se_detected_rows(): ",
+            "head(se_Pct_Group): ");
+         print(head(se_Pct_Group));
+         jamba::printDebug("se_detected_rows(): ",
+            "head(im_criteria): ");
+         print(head(im_criteria));
+      }
       valid_rows <- (rowSums(im_criteria, na.rm=TRUE) >= detect_mingroups &
             se_Num_Samples_Detected >= detect_totalreps);
       jamba::nameVector(valid_rows,

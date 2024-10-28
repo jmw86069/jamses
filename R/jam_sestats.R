@@ -29,6 +29,11 @@
 #'    * `comp_factor_delim=":"` to customize the delimiter between factors
 #'    * `factor_order=NULL` to customize the order of factor comparisons
 #'
+#' @family jamses stats
+#'
+#' @returns `data.frame` with a summary of statistical hits per contrast,
+#'    assay_name, and threshold.
+#'
 #' @examples
 #' if (FALSE) {
 #' hitdf <- sestats_to_df(list(hit_array=hit_array));
@@ -162,6 +167,8 @@ sestats_to_df <- function
 #'    not performed.
 #'    * `"vector"`: `integer` vector with names `("hit", "up", "down")`.
 #' @param ... additional arguments are ignored.
+#'
+#' @family jamses stats
 #'
 #' @return the same data type as input, where the hit vector is replaced
 #'    with a single value summarizing the hits. The data types have

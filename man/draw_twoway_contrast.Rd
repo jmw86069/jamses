@@ -252,3 +252,19 @@ draw_twoway_contrast(x0=c(4, 3), x1=c(4, 3), y0=c(2, 2), y1=c(1, 1),
    label=c("contrast one", "contrast two"),
    color=c("gold", "dodgerblue"), extend_angle=-20)
 }
+\seealso{
+Other jam experiment design: 
+\code{\link{check_sedesign}()},
+\code{\link{contrast2comp}()},
+\code{\link{contrast_colors_by_group}()},
+\code{\link{contrast_names_to_sedesign}()},
+\code{\link{contrasts_to_factors}()},
+\code{\link{contrasts_to_venn_setlists}()},
+\code{\link{draw_oneway_contrast}()},
+\code{\link{filter_contrast_names}()},
+\code{\link{groups_to_sedesign}()},
+\code{\link{plot_sedesign}()},
+\code{\link{sedesign_to_factors}()},
+\code{\link{validate_sedesign}()}
+}
+\concept{jam experiment design}

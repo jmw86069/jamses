@@ -4,14 +4,21 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="Jam SummarizedExperiment Stats methods to
+   normalize SummarizedExperiment data, define
+   experiment design, visualize the experiment design,
+   define statistical contrasts,
+   perform differential analysis (via other packages).
+   S4 object SEDesign enforces relationship between
+   individual samples, design groups, and groups involved
+   in statistical contrasts.">
 <title>Jam SummarizedExperiment Stats • jamses</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Jam SummarizedExperiment Stats">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Jam SummarizedExperiment Stats">
 <meta property="og:description" content="Jam SummarizedExperiment Stats methods to
    normalize SummarizedExperiment data, define
    experiment design, visualize the experiment design,
@@ -25,241 +32,605 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <div class="container template-home">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">jamses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.50.900</span>
-      </span>
-    </div>
+    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    
+    <a class="navbar-brand me-2" href="index.html">jamses</a>
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="reference/index.html">Reference</a>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.69.900</small>
+
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item">
+  <a class="nav-link" href="reference/index.html">Reference</a>
 </li>
-<li>
-  <a href="news/index.html">Changelog</a>
+<li class="nav-item">
+  <a class="nav-link" href="news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="http://github.com/jmw86069/jamses/" class="external-link">
-    <span class="fab fa-github fa-lg"></span>
+<form class="form-inline my-2 my-lg-0" role="search">
+        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="search.json" id="search-input" placeholder="Search for" autocomplete="off">
+</form>
+
+      <ul class="navbar-nav">
+<li class="nav-item">
+  <a class="external-link nav-link" href="http://github.com/jmw86069/jamses/" aria-label="github">
+    <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
 </li>
       </ul>
 </div>
-<!--/.nav-collapse -->
+
+    
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
-
-      
-
-      </header><div class="row">
-  <div class="contents col-md-9">
-<div class="section level1">
-<div class="page-header"><h1 id="jamses">jamses<a class="anchor" aria-label="anchor" href="#jamses"></a>
+</nav><div class="container template-home">
+<div class="row">
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="jam-summarizedexperiment-stats-jamses">Jam SummarizedExperiment Stats (jamses)<a class="anchor" aria-label="anchor" href="#jam-summarizedexperiment-stats-jamses"></a>
 </h1></div>
-<p>Jam SummarizedExperiment Stats (jamses)</p>
-<p>This package is under active development, as these functions make up a core set of methods used across multiple Omics analysis projects. A summary of goals and relevant features are described below.</p>
+<p>This package is under active development, these functions make up a core set of methods currently used across active Omics analysis projects. A summary of goals and relevant features are described below.</p>
+<p><a href="https://jmw86069.github.io/jamses" class="external-link">Full jamses command reference</a></p>
 <div class="section level2">
-<h2 id="goal">Goal<a class="anchor" aria-label="anchor" href="#goal"></a>
+<h2 id="goals-of-jamses">Goals of jamses<a class="anchor" aria-label="anchor" href="#goals-of-jamses"></a>
 </h2>
-<p>The core goal is to make data analysis of <code>SummarizedExperiment</code> objects straightforward for common scenarios:</p>
+<p>The core goal is to make data analysis and visualization of <code>SummarizedExperiment</code> objects straightforward for common scenarios. It also accepts <code>SingleCellExperiment</code> and <code>Seurat</code> objects.</p>
 <ul>
+<li><p><strong>Define a design matrix</strong> using <code>~ 0 + group</code> syntax, see below.</p></li>
+<li><p><strong>Define statistical contrasts</strong> to compare one or more factors, see <code><a href="reference/groups_to_sedesign.html">groups_to_sedesign()</a></code>.</p></li>
+<li><p><strong>Plot contrasts</strong> as defined, see <code><a href="reference/plot_sedesign.html">plot_sedesign()</a></code>.</p></li>
+<li><p><strong>Confirm design,contrast matrices</strong> are always in sync, see <code>SEDesign-class</code>.</p></li>
+<li><p><strong>Automate analysis of multiple contrasts</strong>, using limma/limmavoom/DEqMS, see <code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code>.</p></li>
 <li>
-<p>Define a design matrix based upon sample groups</p>
-<ul>
-<li>by default using <code>~ 0 + group</code> syntax.</li>
-</ul>
-</li>
-<li>
-<p>Define statistical contrasts for factor comparisons</p>
-<ul>
-<li>one or more design factors are recognized</li>
-<li>goal to enable one-way and two-way contrasts*</li>
-<li>factor comparisons are applied in proper order</li>
-</ul>
+<p><strong>Convenient “short hand” for contrasts</strong>, see <code>contrasts2comp()</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a> (B_treated<span class="sc">-</span>B_control)<span class="sc">-</span>(A_treated<span class="sc">-</span>A_control)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a> <span class="co"># "comp" format:</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a> B<span class="sc">-</span>A<span class="sc">:</span>treated<span class="sc">-</span>control</span></code></pre></div>
 </li>
 <li>
-<p>Automate analysis of a series of contrasts</p>
+<p><strong>Integrate with other tools</strong>.</p>
 <ul>
-<li>allow multiple data matrices stored as <code>assays</code>
-</li>
-<li>intended to help compare data normalization/processing steps</li>
+<li>
+<code><a href="https://rdrr.io/pkg/venndir/man/venndir.html" class="external-link">venndir::venndir()</a></code> - see Github <code>"jmw86069/venndir"</code> to create directional Venn diagrams.</li>
 </ul>
 </li>
 </ul>
-<blockquote>
-<p>*Note: <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a> describes alternate approaches for one-way and two-way contrasts. The approach used in <code>jamses</code> uses the <code>~0 + x</code> style of grouping, which defines each experiment group with independent replicates. In this context, a two-way contrast is defined as testing the fold change of one-way fold changes. The <code>jamses</code> methods ensure that two-way contrasts compare the same factors in proper order, for example <code>(A_treated - A_control)</code> can be compared to <code>(B_treated - B_control)</code>, but will not be compared to <code>(B_treated - B_knockout)</code>. Similarly, one-way contrasts will only compare one factor change at a time, and would not generate a contrast <code>(A_treated - B_control)</code>.</p>
-</blockquote>
+</div>
+<div class="section level2">
+<h2 id="approach-for-statistical-contrasts">Approach for Statistical Contrasts<a class="anchor" aria-label="anchor" href="#approach-for-statistical-contrasts"></a>
+</h2>
+<p><a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a> (LUG) is an amazing resource which describes alternate approaches for one-way and two-way contrasts, <strong>which are mathematically equivalent</strong>. For a more thorough discussion please review these approaches to confirm that <code>~0 + x</code> is mathematically identical to <code>~ x</code>, and only differs in how estimates are reported.</p>
+<ul>
+<li><p>The approach used in <code>jamses</code> uses the <code>~0 + x</code> strategy.<br> Each experiment group is defined using independent replicates.<br> This approach <em>does not imply</em> that there is “no intercept” during the model fit, see LUG for details.</p></li>
+<li>
+<p>One-way contrasts must compare only one factor change per contrast.<br> For example, a valid one-way contrast is shown below:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>(A_treated <span class="sc">-</span> A_control) <span class="co"># valid one-way contrast</span></span></code></pre></div>
+<p>It compares <strong><code>(treated-control)</code></strong> with factor level <strong><code>A</code></strong> unchanged.<br> However, an invalid one-way contrast is shown below:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>(A_treated <span class="sc">-</span> B_control) <span class="co"># not a valid one-way contrast</span></span></code></pre></div>
+<p>It is invalid because allows two factor changes: <strong><code>treated-control</code></strong> and <strong><code>A-B</code></strong>.</p>
+</li>
+<li>
+<p>A two-way contrast is defined as the fold change of two <strong><em>compatible</em></strong> one-way fold changes, and in the proper order.<br> Consider the following:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>(A_treated <span class="sc">-</span> A_control)  <span class="co"># one-way contrast</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>                         <span class="co"># "treated-control" for A</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>(B_treated <span class="sc">-</span> B_control)  <span class="co"># compatible one-way contrast</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                         <span class="co"># "treated-control" for B</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>(B_treated <span class="sc">-</span> B_knockout) <span class="co"># incompatible one-way contrast</span></span></code></pre></div>
+</li>
+<li><p>Caveat: Specific contrasts can be added manually when necessary.</p></li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="define-experiment-design-and-contrasts">Define experiment design and contrasts<a class="anchor" aria-label="anchor" href="#define-experiment-design-and-contrasts"></a>
 </h2>
 <ul>
 <li>
-<p><code><a href="reference/groups_to_sedesign.html">groups_to_sedesign()</a></code> takes by default a <code>data.frame</code> where each column represents an experiment factor, and performs the following steps:</p>
+<p><code><a href="reference/groups_to_sedesign.html">groups_to_sedesign()</a></code> takes by default a <code>data.frame</code> where each column represents an experiment factor, and creates the following:</p>
 <ul>
-<li>defines appropriate experiment <code>design</code> matrix</li>
-<li>defines a <code>contrast</code> matrix limited to changes in single experiment factors at a time, combining equivalent contrasts across secondary factors where appropriate, up to <code>max_depth</code> factor depth.</li>
-<li>defines an appropriate <code>samples</code> vector typically defined by <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames()</a></code> of the input <code>data.frame</code>.</li>
+<li>
+<code>design</code> matrix</li>
+<li>
+<code>contrast</code> matrix using only appropriate changes in single experiment factor levels for one-way contrasts, and equivalent contrasts across secondary factor levels where appropriate for two-way contrasts, up to <code>max_depth</code> factor depth.</li>
+<li>
+<code>samples</code> vector representing individual sample columns used from the input data.</li>
 </ul>
 </li>
 <li>
-<p>Output is <code>SEDesign</code> as described:</p>
+<p>Output is <code>SEDesign</code> as an S4 object with slot names:</p>
 <ul>
 <li>
-<code>SE@samples</code> - contains the vector of samples.</li>
+<code>sedesign@design</code> - the design matrix.</li>
 <li>
-<code>SE@design</code> contains the design matrix.</li>
+<code>sedesign@contrasts</code> - the contrasts matrix.</li>
 <li>
-<code>SE@contrasts</code> contains the contrasts matrix.</li>
+<code>sedesign@samples</code> - vector of samples.</li>
 </ul>
 </li>
-<li><p>The input <code>data.frame</code> columns represent design factors, and column values represent factor levels. If columns are <code>character</code> they are coerced to <code>factor</code>, otherwise the order of existing <code>factor</code> levels is maintained.</p></li>
-<li><p>Contrasts are defined such that the first level is the control group in each comparison.</p></li>
 </ul>
-</div>
-<div class="section level2">
-<h2 id="new-object-class-sedesign">New object class: <code>SEDesign</code>
-<a class="anchor" aria-label="anchor" href="#new-object-class-sedesign"></a>
-</h2>
+<div class="section level3">
+<h3 id="sedesign-s4-object-details">SEDesign S4 Object Details<a class="anchor" aria-label="anchor" href="#sedesign-s4-object-details"></a>
+</h3>
 <p><code>SEDesign</code> is an S4 object that contains the following slots:</p>
 <ul>
-<li><p><code>"samples"</code>: a <code>character</code> vector of sample names, derived from <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> of the <code>SummarizedExperiment</code> object.</p></li>
 <li>
-<p><code>"design"</code>: a <code>matrix</code> representing the design matrix, with specific constraints:</p>
+<p><strong><code>samples</code></strong>: a <code>character</code> vector of sample names, derived from <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> of the SummarizedExperiment` object.</p>
 <ul>
-<li>
-<code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames()</a></code> are equal to <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> of the <code>SummarizedExperiment</code> object. This requirement helps ensure that the design and assay data are integrated.</li>
-<li>
-<code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> are defined as sample groups, typically equivalent to using <code>model.matrix( ~ 0 + groups )</code>, based upon the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a> from the <code>limma</code> Bioconductor package.</li>
+<li>When <code>samples</code> are subset, it has a cascade effect on <code>design</code> and <code>contrasts</code>. When groups are no longer represented, they are removed from <code>design</code> and <code>contrasts</code> as relevant.</li>
 </ul>
 </li>
 <li>
-<p><code>"contrasts"</code>: a <code>matrix</code> representing the contrast matrix used for statistical comparisons, with constraints:</p>
+<p><strong><code>design</code></strong>: a <code>matrix</code> representing the design matrix, with additional constraints:</p>
 <ul>
 <li>
-<code>rownames(contrasts)</code> must be equal to <code>colnames(contrasts)</code> in order to ensure all data is properly synchronized.</li>
-</ul>
-</li>
-</ul>
-<div class="section level3">
-<h3 id="use-cases-for-sedesign">Use cases for <code>SEDesign</code>:<a class="anchor" aria-label="anchor" href="#use-cases-for-sedesign"></a>
-</h3>
-<ul>
+<code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames()</a></code> are always maintained, so they can be aligned with <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> of the <code>SummarizedExperiment</code> object. This requirement helps ensure that the design and assay data are always in proper sync.</li>
 <li>
-<p><code>SEDesign</code> can be subset by <code>samples</code> using the form: <code>SE[samples, ]</code></p>
-<ul>
-<li>Subsetting <code>samples</code> may be useful in order to remove outlier samples, or to focus analysis on a subset of samples within best statistical practices (outside scope of this package).</li>
-<li>Subsetting <code>SEDesign</code> by <code>samples</code> will force appropriate subsetting of the <code>design</code> matrix. This subset will cascade to <code>contrasts</code>.</li>
-<li>Argument <code>min_reps=1</code> defines the minimum samples required in a <code>design</code> group in order for the group to be retained. It may be beneficial to require at least <code>n=3</code> replicates for analysis for example.</li>
+<code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> are defined as sample groups, equivalent to using <code>model.matrix( ~ 0 + groups )</code> for example from the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a> from the <code>limma</code> Bioconductor package.</li>
+<li>All values are always <code>1</code> or <code>0</code> with no fractions. More complicated designs require manual adjustment, beyond the scope of <code>jamses</code>.</li>
 </ul>
 </li>
 <li>
-<p><code>SEDesign</code> can be subset by <code>groups</code> using the form: <code>SE[, groups]</code></p>
+<p><strong><code>contrasts</code></strong>: a <code>matrix</code> representing the contrast matrix used for statistical comparisons, with additional constraints:</p>
 <ul>
-<li>The <code>design</code> matrix will be subset accordingly.</li>
-<li>The <code>samples</code> vector will be subset to remove samples that are not present in any remaining design groups.</li>
-<li>The <code>contrasts</code> matrix will be subset to remove all contrasts where one or more groups are no longer present.</li>
-</ul>
-</li>
 <li>
-<p><code>SEDesign</code> can be subset by <code>contrasts</code>.</p>
-<ul>
-<li>The <code>contrasts</code> matrix will be subset accordingly.</li>
-<li>The <code>design</code> matrix will be subset to include only those groups required by the contrasts.</li>
+<code>rownames(contrasts)</code> are always defined, and always equal <code>colnames(contrasts)</code> to ensure contrasts and design are always properly synchronized.</li>
 </ul>
 </li>
+</ul>
+<div class="section level4">
+<h4 id="example-sedesign-object">Example SEDesign object<a class="anchor" aria-label="anchor" href="#example-sedesign-object"></a>
+</h4>
+<p>The example below uses a <code>character</code> vector of group names per sample, with two factors separated by underscore <code>"_"</code>. The same data can be provided as a <code>data.frame</code> with two columns.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://github.com/jmw86069/jamses" class="external-link">jamses</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/nameVector.html" class="external-link">nameVector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Treated"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>   sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span>,</span>
+<span>   suffix<span class="op">=</span><span class="st">"_rep"</span><span class="op">)</span>;</span>
+<span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">igroups</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span>;</span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups<span class="op">=</span><span class="va">igroups</span><span class="op">)</span>;</span></code></pre></div>
+<div class="kable-table">
+<table class="table">
+<thead><tr class="header">
+<th align="left"></th>
+<th align="left">groups</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">WT_Control_rep1</td>
+<td align="left">WT_Control</td>
+</tr>
+<tr class="even">
+<td align="left">WT_Control_rep2</td>
+<td align="left">WT_Control</td>
+</tr>
+<tr class="odd">
+<td align="left">WT_Control_rep3</td>
+<td align="left">WT_Control</td>
+</tr>
+<tr class="even">
+<td align="left">WT_Treated_rep1</td>
+<td align="left">WT_Treated</td>
+</tr>
+<tr class="odd">
+<td align="left">WT_Treated_rep2</td>
+<td align="left">WT_Treated</td>
+</tr>
+<tr class="even">
+<td align="left">WT_Treated_rep3</td>
+<td align="left">WT_Treated</td>
+</tr>
+<tr class="odd">
+<td align="left">KO_Control_rep1</td>
+<td align="left">KO_Control</td>
+</tr>
+<tr class="even">
+<td align="left">KO_Control_rep2</td>
+<td align="left">KO_Control</td>
+</tr>
+<tr class="odd">
+<td align="left">KO_Control_rep3</td>
+<td align="left">KO_Control</td>
+</tr>
+<tr class="even">
+<td align="left">KO_Treated_rep1</td>
+<td align="left">KO_Treated</td>
+</tr>
+<tr class="odd">
+<td align="left">KO_Treated_rep2</td>
+<td align="left">KO_Treated</td>
+</tr>
+<tr class="even">
+<td align="left">KO_Treated_rep3</td>
+<td align="left">KO_Treated</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The resulting design and contrasts matrices are shown below:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sedesign</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span>;</span>
+<span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
+<span>   caption<span class="op">=</span><span class="st">"Design matrix output from design(sedesign):"</span>,</span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>check.names<span class="op">=</span><span class="cn">FALSE</span>, <span class="fu">design</span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>;</span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Design matrix output from design(sedesign):
+</caption>
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+WT_Control
+</th>
+<th style="text-align:right;">
+WT_Treated
+</th>
+<th style="text-align:right;">
+KO_Control
+</th>
+<th style="text-align:right;">
+KO_Treated
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
+<span>   caption<span class="op">=</span><span class="st">"Contrast matrix output from contrasts(sedesign):"</span>,</span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>check.names<span class="op">=</span><span class="cn">FALSE</span>, <span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>;</span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Contrast matrix output from contrasts(sedesign):
+</caption>
+<thead><tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+KO_Control-WT_Control
+</th>
+<th style="text-align:right;">
+KO_Treated-WT_Treated
+</th>
+<th style="text-align:right;">
+WT_Treated-WT_Control
+</th>
+<th style="text-align:right;">
+KO_Treated-KO_Control
+</th>
+<th style="text-align:right;">
+(KO_Treated-WT_Treated)-(KO_Control-WT_Control)
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>For convenience, SEDesign can be visualized using <code><a href="reference/plot_sedesign.html">plot_sedesign()</a></code>:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># plot the design and contrasts</span></span>
+<span><span class="fu"><a href="reference/plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span>;</span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/title.html" class="external-link">title</a></span><span class="op">(</span>main<span class="op">=</span><span class="st">"plot_sedesign(sedesign)\noutput:"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-plot_sedesign-1.png"><!-- --></p>
+<ul>
+<li>Two-way contrasts are indicated by the “squiggly curved line” which connects the end of one contrast to the beginning of the next contrast. This connection describes the first contrast, subtracted by the second contrast.</li>
 </ul>
 </div>
-<div class="section level3">
-<h3 id="accessor-functions-to-sedesign">Accessor functions to <code>SEDesign</code>:<a class="anchor" aria-label="anchor" href="#accessor-functions-to-sedesign"></a>
-</h3>
-<ul>
-<li><p><code>samples()</code> will list the samples, equivalent to <code>rownames(design)</code>.</p></li>
-<li><p><code>samples()&lt;-</code> will set values in slot <code>samples</code>, and update <code>rownames(design)</code>.</p></li>
-<li><p><code>design()</code> will return the <code>design</code> matrix which defines experiment groups.</p></li>
-<li>
-<p><code>design()&lt;-</code> will set the <code>design</code> matrix, also ensure that:</p>
-<ul>
-<li>
-<code>colnames(design)</code> are in the same order as <code>rownames(contrasts)</code>, and</li>
-<li>
-<code>rownames(design)</code> are in the same order as <code>samples</code>.</li>
-</ul>
-</li>
-<li><p><code><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts()</a></code> will return the <code>contrasts</code> matrix.</p></li>
-<li><p><code>contrasts()&lt;-</code> will set the contrast matrix, and verify the <code>rownames(contrasts)</code> are in the same order as <code>colnames(design)</code>.</p></li>
-<li><p><code>groups()</code> will export <code>colnames(design)</code> representing the design groups.</p></li>
-<li><p><code>groups()&lt;-</code> will update group names with the corresponding vector.</p></li>
-</ul>
 </div>
 </div>
 <div class="section level2">
 <h2 id="data-normalization">Data normalization<a class="anchor" aria-label="anchor" href="#data-normalization"></a>
 </h2>
-<p><code>SummarizedExperiment</code> objects are normalized by:</p>
+<p><code>SummarizedExperiment</code> objects are normalized using:</p>
 <ul>
 <li>
-<p><code><a href="reference/se_normalize.html">se_normalize()</a></code> - lightweight wrapper to one of several normalization functions:</p>
+<p><code><a href="reference/se_normalize.html">se_normalize()</a></code> - lightweight wrapper to several normalization functions:</p>
 <ul>
 <li>
-<code><a href="https://rdrr.io/pkg/jamma/man/jammanorm.html" class="external-link">jamma::jammanorm()</a></code> which normalizes the median log fold change to zero. This method is also used in <code>DESeq2::estimateSizeFactors()</code> for example. When using <code><a href="https://rdrr.io/pkg/jamma/man/jammaplot.html" class="external-link">jamma::jammaplot()</a></code> for MA-plots, the <code>jammanorm()</code> method is conceptually equivalent to shifting the y-axis values to zero, so the median log fold change is zero. (Assumptions apply.)</li>
+<code>method="jammanorm"</code>: calls <code><a href="https://rdrr.io/pkg/jamma/man/jammanorm.html" class="external-link">jamma::jammanorm()</a></code> which normalizes the median log fold change to zero. This method is also used in <code>DESeq2::estimateSizeFactors()</code> for example. When using <code><a href="https://rdrr.io/pkg/jamma/man/jammaplot.html" class="external-link">jamma::jammaplot()</a></code> for MA-plots, the <code>jammanorm()</code> method is conceptually equivalent to shifting the y-axis values to zero, so the median log fold change is zero. (Assumptions apply.)</li>
 <li>
-<code><a href="https://rdrr.io/pkg/limma/man/normalizequantiles.html" class="external-link">limma::normalizeQuantiles()</a></code> for quantile normalization.</li>
+<code>method="quantile</code>: calls <code><a href="https://rdrr.io/pkg/limma/man/normalizequantiles.html" class="external-link">limma::normalizeQuantiles()</a></code> for quantile normalization.</li>
 <li>
-<code><a href="https://rdrr.io/pkg/limma/man/removeBatchEffect.html" class="external-link">limma::removeBatchEffect()</a></code> for adjustment of batch effects, recommended for visualization and clustering, not typically recommended prior to statistical comparisons. Instead, we suggest using a blocking factor, which can be passed to <code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code>.</li>
+<code>method="limma_batch_adjust"</code> or <code>method="lba"</code>: calls <code><a href="https://rdrr.io/pkg/limma/man/removeBatchEffect.html" class="external-link">limma::removeBatchEffect()</a></code> to adjust of batch effects. This normalization is only recommended for visualization and clustering, not recommended prior to statistical comparisons. Instead, the recommendation is to define a blocking factor passed to <code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code> with argument <code>block</code>.</li>
 </ul>
 </li>
 <li><p><code><a href="reference/matrix_normalize.html">matrix_normalize()</a></code> - is the core function for <code><a href="reference/se_normalize.html">se_normalize()</a></code> and operates on individual numeric data matrices.</p></li>
 </ul>
-</div>
-<div class="section level2">
-<h2 id="heatmaps">Heatmaps<a class="anchor" aria-label="anchor" href="#heatmaps"></a>
-</h2>
-<p><code><a href="reference/heatmap_se.html">heatmap_se()</a></code> is a convenient wrapper for <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap()</a></code>. Some useful arguments and features are described below:</p>
-<ul>
-<li>
-<code>se</code>: the <code>SummarizedExperiment</code> data for the heatmap</li>
-<li>
-<code>assay_name</code>: define a specific data matrix to display</li>
-<li>
-<code>rows</code>: choose a specific subset of rows</li>
-<li>
-<code>sestats</code>: output from <code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code> to display a hit matrix alongside the heatmap. Also <code>rows</code> are automatically subset to show statistical hits.</li>
-<li>
-<code>top_colnames</code>: display column annotations across the top. When absent, it will auto-detect columns which may have interesting annotations, based upon the cardinality of each column annotation.</li>
-<li>
-<code>rowData_colnames</code>: display row/gene annotations on the left</li>
-<li>
-<code>sample_color_list</code>: supply pre-defined set of colors for top and left annotations</li>
-<li>
-<code>centerby_colnames</code>: optional data centering sub-groups, where data is centered within each centerby group.</li>
-<li>
-<code>normgroup_colnames</code>: optional normalization groups, also used for independent data centering. Columns are also “split” by this value, visually separating columns by each normgroup.</li>
-</ul>
-<p>Other options can be passed to <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap()</a></code>:</p>
-<ul>
-<li>
-<code>row_split</code>: split by <code>rowData(se)</code> column annotations, or by number of dendrogram sub-tree clusters.</li>
-</ul>
+<blockquote>
+<p>Normalization can be reviewed with MA-plots, recommended by using <code><a href="https://rdrr.io/pkg/jamma/man/jammaplot.html" class="external-link">jamma::jammaplot()</a></code>. See Github repository <code>"jmw86069/jamma"</code>.</p>
+</blockquote>
 </div>
 <div class="section level2">
 <h2 id="statistical-comparisons">Statistical comparisons<a class="anchor" aria-label="anchor" href="#statistical-comparisons"></a>
@@ -269,23 +640,27 @@
 <code>se_contrast_stats()</code> is the central function<a class="anchor" aria-label="anchor" href="#se_contrast_stats-is-the-central-function"></a>
 </h3>
 <ul>
-<li><p>Applies design and contrasts defined by <code>SEDesign</code>, or given specific <code>design</code> and <code>contrasts</code> matrix objects.</p></li>
+<li><p>Applies <code>SEDesign</code> (design and contrasts) to <code>SummarizedExperiment</code> data.</p></li>
 <li>
-<p>Initially calls <code>limma</code> functions on a series of <code>assays</code>, for one or more data matrices in the <code>SummarizedExperiment</code> object.</p>
+<p>Calls the appropriate <code>limma</code> functions one or more <code>assays</code> in the <code>SummarizedExperiment</code> object.</p>
 <ul>
-<li>Optionally applies <code>limma-voom</code> methodology for count data, for example RNA-seq or Nanostring, to apply the <code>voom</code> methodology of estimating dispersion and applying weights to contrast stats.</li>
-<li>Optionally applies <code>limma-DEqMS</code> methodology for proteomics mass spec data, to apply error model based upon PSM counts per row.</li>
+<li>
+<code>use_voom=TRUE</code> will enable <code>limmavoom</code> methodology for count data.</li>
+<li>
+<code>posthoc_test="DEqMS"</code> will enable <code>limma-DEqMS</code> methodology for proteomics mass spec data, which defines an error model based upon PSM counts per row.</li>
+<li>
+<code>block</code> will define blocking factor for <code>limma</code>. When also applying <code>limmavoom</code>, it performs the appropriate two-step process as described by Dr. Smyth.</li>
 </ul>
 </li>
 <li>
-<p>Applies statistical thresholds to define statistical hits for follow-up:</p>
+<p>Applies statistical thresholds to mark statistical hits:</p>
 <ul>
 <li>
 <code>adjp_cutoff</code>: adjusted P-value threshold</li>
 <li>
 <code>fold_cutoff</code>: normal space fold change threshold</li>
 <li>
-<code>mgm_cutoff</code>: “mgm” is an abbreviation for “max group mean”; which requires at least one experiment group involved in the contrast to have group mean at or above this threshold. The cutoff is useful to require at least one group to have signal above a noise threshold.</li>
+<code>mgm_cutoff</code>: “mgm” is an abbreviation for “max group mean”. This threshold requires at least one experiment group involved in the contrast to have group mean at or above this threshold in order to mark a statistical hit. It does not subset data prior to testing.</li>
 </ul>
 </li>
 <li>
@@ -294,9 +669,9 @@
 <li>
 <code>p_cutoff</code>: unadjusted P-value threshold</li>
 <li>
-<code>ave_cutoff</code>: average expression threshold, using the equivalent of <code>limma</code> column <code>AveExpr</code> with the mean group expression. Note this <code>AveExpr</code> value is calculated mean per row across all groups, and is subject to skewing.</li>
+<code>ave_cutoff</code>: average expression threshold, using the equivalent of <code>limma</code> column <code>AveExpr</code> with the mean group expression. Note this <code>AveExpr</code> value is calculated mean per row across all groups, and may be subject to skewing.</li>
 <li>
-<code>int_adjp_cutoff</code>, <code>int_fold_cutoff</code>, <code>int_mgm_cutoff</code> are optionally used for interaction contrasts, for example sometimes a two-way contrast threshold is more lenient during data mining experiments, eg. <code>int_adjp_cutoff=0.1</code> for example.</li>
+<code>int_adjp_cutoff</code>, <code>int_fold_cutoff</code>, <code>int_mgm_cutoff</code>: optional thresholds only used for interaction contrasts, intended for data mining purposes. For example, data mining may filter for two-way contrast results with no fold change threshold, or slightly relaxed <code>int_adjp_cutoff=0.1</code>.</li>
 </ul>
 </li>
 <li>
@@ -307,9 +682,11 @@
 <li>
 <code>posthoc_test="DEqMS"</code>: enable DEqMS post-hoc adjustment to the limma empirical Bayes model fit.</li>
 <li>
-<code>floor_min</code>, <code>floor_value</code>: logic to handle numeric values below a pre-defined noise threshold, values below this threshold are assigned <code>floor_value</code>. This filtering may allow converting values from <code>0</code> zero to <code>NA</code>, and as such the values do not contribute to replicate measurements. For data with substantial missing measurements, this option may be beneficial.</li>
+<code>floor_min</code>, <code>floor_value</code>: logic to handle numeric values below a defined noise threshold, values below this threshold become <code>floor_value</code>. This filtering can also convert values from <code>0</code> zero to <code>NA</code>, where appropriate. For data with substantial missing measurements, this option may be beneficial.</li>
 <li>
-<code>block</code>: optional blocking factor, which enables the <code><a href="https://rdrr.io/pkg/limma/man/dupcor.html" class="external-link">limma::duplicateCorrelation()</a></code> calculation, which also applied and used during model fit per the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a>.</li>
+<code>handle_na</code>, <code>na_value</code>: logic to handle <code>NA</code> values, particularly when an entire group is <code>NA</code>. For proteomics, or platforms with a defined “noise floor”, it may be useful to use <code>handle_na="full1"</code> and <code>na_value=noise_floor</code>. This specific scenario assigns <code>noise_floor</code> to one value in any completely <code>NA</code> group to <code>noise_floor</code> so that its variability is not used, however the fold change can still be calculated relative to the platform minimum signal</li>
+<li>
+<code>block</code>: optional blocking factor, which enables the <code><a href="https://rdrr.io/pkg/limma/man/dupcor.html" class="external-link">limma::duplicateCorrelation()</a></code> calculation, which is applied to the model fit per the <a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a>.</li>
 </ul>
 </li>
 <li>
@@ -329,27 +706,76 @@
 </ul>
 </li>
 <li>
-<p>Save to excel with <code><a href="reference/save_sestats.html">save_sestats()</a></code></p>
+<p>Save to excel with <code><a href="reference/save_sestats.html">save_sestats()</a></code>:</p>
 <ul>
-<li>This function helps automate saving every statistical contrast to its own Excel worksheet.</li>
+<li>This function helps automate saving every statistical contrast in table format, into individual Excel worksheets. It may include additional <code>rowData()</code> annotations.</li>
 <li>Each worksheet is styled consistently, making it easy to flip through each worksheet.</li>
 </ul>
 </li>
-<li>
-<p>Future work:</p>
-<ul>
-<li>Port the function <code>plot_comparisons()</code> which creates a visual plot of each one-way and two-way contrast, with axes defined by the experiment factors.</li>
-<li>Enable equivalent analysis workflow steps using <code>DESeq2</code> methodology.</li>
 </ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="heatmaps">Heatmaps<a class="anchor" aria-label="anchor" href="#heatmaps"></a>
+</h2>
+<p><code><a href="reference/heatmap_se.html">heatmap_se()</a></code> is a wrapper for the amazing <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap()</a></code>, intended to automate frequently-used options that represent repetitive work.</p>
+<p>Common rules:</p>
+<ul>
+<li>All data is centered by default. It can be customized.</li>
+<li>All data is assumed to be <code>log2</code> or otherwise “appropriately transformed”. (The typical transform is <code>log2(1 + x)</code>.)</li>
+<li>The heatmap can also be displayed as sample correlations (<code>correlation=TRUE</code>) which re-uses the same data centering options (critical aspect of these plots).</li>
+<li>The heatmap can be subset using <code>rows</code> or <code>sestats</code> to show stat hit annotations on the left side.</li>
+<li>Column and row annotations can be added using <code>colData(se)</code> and <code>rowData(se)</code>
+</li>
+<li>Columns and rows can be split using <code>colData(se)</code> and <code>rowData(se)</code> colnames.</li>
+<li>The heatmap title includes a summary of data.</li>
+</ul>
+<p>Common arguments:</p>
+<ul>
+<li><p><code>se</code>: the <code>SummarizedExperiment</code> data for the heatmap</p></li>
+<li><p><code>assay_name</code>: define a specific data matrix to display</p></li>
+<li><p><code>rows</code>: choose a specific subset of rows (optional)</p></li>
+<li>
+<p><code>sestats</code>: optional stat hits in one of these formats:</p>
+<ul>
+<li>output from <code><a href="reference/se_contrast_stats.html">se_contrast_stats()</a></code>
+</li>
+<li>incidence <code>matrix</code> with values <code>c(-1, 0, 1)</code>
+</li>
+<li>
+<code>list</code> of numeric values using <code>c(-1, 0, 1)</code>, with names representing <code>rownames(se)</code>
+</li>
+<li>
+<code>list</code> of <code>rownames(se)</code>
 </li>
 </ul>
+</li>
+<li><p><code>top_colnames</code>: column annotations in <code>colData(se)</code> to display across the top.</p></li>
+<li><p><code>rowData_colnames</code>: optional row annotations to display on the left.</p></li>
+<li><p><code>sample_color_list</code>: <code>list</code> named by colnames from <code>colData(se)</code> or <code>rowData(se)</code> to define colors.</p></li>
+<li>
+<p><code>centerby_colnames</code>: optional sub-groups for data centering</p>
+<ul>
+<li>Useful to center multiple tissue types, or sample classes, batches, etc.</li>
+<li>Set <code>centerby_colnames=FALSE</code> to turn off data centering altogether.</li>
+</ul>
+</li>
+<li><p><code>controlSamples</code>: custom subset of control samplesfor data centering.</p></li>
+<li><p><code>row_split</code>: split rows using colnames in <code>rowData(se)</code>, or by number of dendrogram sub-tree clusters.</p></li>
+<li><p><code>column_split</code>: split columns using colnames in <code>colData(se)</code>, or by number of dendrogram sub-tree clusters.</p></li>
+<li><p><code>mark_rows</code>: optional subset of rows for callout labels.</p></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="future-work">Future work:<a class="anchor" aria-label="anchor" href="#future-work"></a>
+</h2>
+<ul>
+<li>Convert <code>sestats</code> to proper <code>SEStats</code> S4 object, with convenient accessor functions.</li>
+<li>Enable equivalent analysis using <code>DESeq2</code> or <code>edgeR</code> methodology.</li>
+</ul>
 </div>
 </div>
-</div>
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="links">
+  </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="http://github.com/jmw86069/jamses/" class="external-link">Browse source code</a></li>
@@ -381,25 +807,24 @@
 
 
 
-  </div>
+  </aside>
 </div>
 
 
-      <footer><div class="copyright">
+    <footer><div class="pkgdown-footer-left">
   <p></p>
 <p>Developed by James M. Ward.</p>
 </div>
 
-<div class="pkgdown">
+<div class="pkgdown-footer-right">
   <p></p>
 <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
 
   
-
 
   
 

@@ -23,6 +23,8 @@
 #'    between factors and contrasts, respectively.
 #' @param ... additional arguments are ignored.
 #'
+#' @family jam experiment design
+#'
 #' @examples
 #' contrast_names_3fac <- c(
 #'    "(CellA_Treated-CellA_Control)-(CellB_Treated-CellB_Control)",

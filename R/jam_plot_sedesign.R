@@ -1337,6 +1337,8 @@ plot_sedesign <- function
 #' PDF, SVG, PNG, etc. That said, it would otherwise be the preferred
 #' approach, along with the `vwline` variable grid line package.
 #'
+#' @family jamses utilities
+#'
 #' @param x `numeric` vector with the start value for each line segment,
 #'    or when `x1=NULL` then `x` must contain two values per line segment.
 #' @param y `numeric` vector with the start value for each line segment,
@@ -1643,8 +1645,10 @@ make_block_arrow_polygon <- function
 
 #' convert point-slope to axis intercept
 #'
-#' @return `numeric` intercept on the y-axis, except with slope is
+#' @returns `numeric` intercept on the y-axis, except with slope is
 #'    infinite in which case the value returned is the x-axis intercept.
+#'
+#' @family jamses utilities
 #'
 #' @param pt `numeric` matrix with two columns, or coerced to matrix
 #'    with two columns using `byrow=TRUE`.
@@ -1691,7 +1695,9 @@ point_slope_intercept <- function
 #' @param do_plot `logical` indicating whether to plot the result.
 #' @param ... additional arguments are ignored.
 #'
-#' @return `character` vector equal to the number of points, `nrow(pt1)`:
+#' @family jamses utilities
+#'
+#' @returns `character` vector equal to the number of points, `nrow(pt1)`:
 #'    * `"right"` indicates `pt1` is on the right side of `pt2`
 #'    * `"left"` indicates `pt1` is on the left side of `pt2`
 #'

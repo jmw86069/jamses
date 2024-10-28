@@ -25,6 +25,19 @@ logic from `heatmap_se()`.
 
    * now calls `se_to_rowcoldata()` to define `rowData_se` and `colData_se`.
    * Examples now include `rowData_colnames` to confirm proper output.
+   * Now accepts `matrix` and `data.frame` input, by converting to a simple
+   `SummarizedExperiment` object.
+   * When data contains only one column it defines `centerby_colnames=FALSE`
+   to skip the data centering, otherwise all data becomes zero.
+
+* `save_sestats()`
+
+   * Improved help docs.
+   * New argument `hits_use_lfc=FALSE` which can optionally use log2 fold
+   change values instead of directional values `c(-1, 0, 1)`. When
+   enabled, the actual log2 fold change is multiplied by the absolute
+   value of the hit column, resulting in the log2 fold change only for
+   entries that met other statistical criteria.
 
 # jamses 0.0.68.900
 

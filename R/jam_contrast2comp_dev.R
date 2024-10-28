@@ -3,8 +3,10 @@
 #'
 #' Convert contrast to short-form comp, convert comp to contrast (DEV)
 #'
-#' This method is developmental, intended to provide a vectorized
-#' approach to improve speed.
+#' This method is developmental and is being tested as potentially
+#' faster version of `contrast2comp()`.
+#'
+#' @family jamses utilities
 #'
 #' @examples
 #' contrast_names1 <- c("(A_c-B_c)-(A_d-B_d)",

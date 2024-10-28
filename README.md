@@ -1,272 +1,721 @@
-# jamses
-Jam SummarizedExperiment Stats (jamses)
 
-This package is under active development, as these functions
-make up a core set of methods used across multiple
-Omics analysis projects. A summary of goals and relevant
-features are described below.
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## Goal
+# Jam SummarizedExperiment Stats (jamses)
 
-The core goal is to make data analysis of
-`SummarizedExperiment` objects straightforward for
-common scenarios:
+This package is under active development, these functions make up a core
+set of methods currently used across active Omics analysis projects. A
+summary of goals and relevant features are described below.
 
-* Define a design matrix based upon sample groups
+[Full jamses command reference](https://jmw86069.github.io/jamses)
 
-   * by default using `~ 0 + group` syntax.
+## Goals of jamses
 
-* Define statistical contrasts for factor comparisons
+The core goal is to make data analysis and visualization of
+`SummarizedExperiment` objects straightforward for common scenarios. It
+also accepts `SingleCellExperiment` and `Seurat` objects.
 
-   * one or more design factors are recognized
-   * goal to enable one-way and two-way contrasts*
-   * factor comparisons are applied in proper order
-   
-* Automate analysis of a series of contrasts
+- **Define a design matrix** using `~ 0 + group` syntax, see below.
 
-   * allow multiple data matrices stored as `assays`
-   * intended to help compare data normalization/processing steps
+- **Define statistical contrasts** to compare one or more factors, see
+  `groups_to_sedesign()`.
 
+- **Plot contrasts** as defined, see `plot_sedesign()`.
 
-> \*Note: [The Limma User's Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
-describes alternate approaches for one-way and two-way contrasts.
-The approach used in `jamses` uses the `~0 + x` style of grouping,
-which defines each experiment group with independent replicates.
-In this context, a two-way contrast is defined as testing the
-fold change of one-way fold changes. The `jamses` methods ensure
-that two-way contrasts compare the same factors in proper order,
-for example `(A_treated - A_control)` can be compared to
-`(B_treated - B_control)`, but will not be compared to
-`(B_treated - B_knockout)`. Similarly, one-way contrasts will
-only compare one factor change at a time, and would not
-generate a contrast `(A_treated - B_control)`.
+- **Confirm design,contrast matrices** are always in sync, see
+  `SEDesign-class`.
 
+- **Automate analysis of multiple contrasts**, using
+  limma/limmavoom/DEqMS, see `se_contrast_stats()`.
+
+- **Convenient “short hand” for contrasts**, see `contrasts2comp()`.
+
+       (B_treated-B_control)-(A_treated-A_control)
+       # "comp" format:
+       B-A:treated-control
+
+- **Integrate with other tools**.
+
+  - `venndir::venndir()` - see Github `"jmw86069/venndir"` to create
+    directional Venn diagrams.
+
+## Approach for Statistical Contrasts
+
+[The Limma User’s
+Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
+(LUG) is an amazing resource which describes alternate approaches for
+one-way and two-way contrasts, **which are mathematically equivalent**.
+For a more thorough discussion please review these approaches to confirm
+that `~0 + x` is mathematically identical to `~ x`, and only differs in
+how estimates are reported.
+
+- The approach used in `jamses` uses the `~0 + x` strategy.<br> Each
+  experiment group is defined using independent replicates.<br> This
+  approach *does not imply* that there is “no intercept” during the
+  model fit, see LUG for details.
+
+- One-way contrasts must compare only one factor change per
+  contrast.<br> For example, a valid one-way contrast is shown below:
+
+      (A_treated - A_control) # valid one-way contrast
+
+  It compares **`(treated-control)`** with factor level **`A`**
+  unchanged.<br> However, an invalid one-way contrast is shown below:
+
+      (A_treated - B_control) # not a valid one-way contrast
+
+  It is invalid because allows two factor changes: **`treated-control`**
+  and **`A-B`**.
+
+- A two-way contrast is defined as the fold change of two
+  ***compatible*** one-way fold changes, and in the proper order.<br>
+  Consider the following:
+
+      (A_treated - A_control)  # one-way contrast
+                               # "treated-control" for A
+      (B_treated - B_control)  # compatible one-way contrast
+                               # "treated-control" for B
+      (B_treated - B_knockout) # incompatible one-way contrast
+
+- Caveat: Specific contrasts can be added manually when necessary.
 
 ## Define experiment design and contrasts
 
-* `groups_to_sedesign()` takes by default a `data.frame` where each column
-represents an experiment factor, and performs the following steps:
+- `groups_to_sedesign()` takes by default a `data.frame` where each
+  column represents an experiment factor, and creates the following:
 
-   * defines appropriate experiment `design` matrix
-   * defines a `contrast` matrix limited to changes in single
-   experiment factors at a time, combining equivalent contrasts across
-   secondary factors where appropriate, up to `max_depth` factor depth.
-   * defines an appropriate `samples` vector typically defined by `rownames()`
-   of the input `data.frame`.
+  - `design` matrix
+  - `contrast` matrix using only appropriate changes in single
+    experiment factor levels for one-way contrasts, and equivalent
+    contrasts across secondary factor levels where appropriate for
+    two-way contrasts, up to `max_depth` factor depth.
+  - `samples` vector representing individual sample columns used from
+    the input data.
 
-* Output is `SEDesign` as described:
+- Output is `SEDesign` as an S4 object with slot names:
 
-   * `SE@samples` - contains the vector of samples.
-   * `SE@design` contains the design matrix.
-   * `SE@contrasts` contains the contrasts matrix.
+  - `sedesign@design` - the design matrix.
+  - `sedesign@contrasts` - the contrasts matrix.
+  - `sedesign@samples` - vector of samples.
 
-* The input `data.frame` columns represent design factors,
-and column values represent factor levels.
-If columns are `character` they are coerced to `factor`,
-otherwise the order of existing `factor` levels is maintained.
-* Contrasts are defined such that the first level is the control group
-in each comparison.
-
-
-## New object class: `SEDesign`
+### SEDesign S4 Object Details
 
 `SEDesign` is an S4 object that contains the following slots:
 
-* `"samples"`: a `character` vector of sample names, derived from
-`colnames()` of the `SummarizedExperiment` object.
-* `"design"`: a `matrix` representing the design matrix, with specific
-constraints:
+- **`samples`**: a `character` vector of sample names, derived from
+  `colnames()` of the SummarizedExperiment\` object.
 
-   * `rownames()` are equal to `colnames()` of the `SummarizedExperiment`
-   object. This requirement helps ensure that the design and assay data
-   are integrated.
-   * `colnames()` are defined as sample groups, typically equivalent to
-   using `model.matrix( ~ 0 + groups )`, based upon the 
-   [The Limma User's Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
-   from the `limma` Bioconductor package.
+  - When `samples` are subset, it has a cascade effect on `design` and
+    `contrasts`. When groups are no longer represented, they are removed
+    from `design` and `contrasts` as relevant.
 
-* `"contrasts"`: a `matrix` representing the contrast matrix used for
-statistical comparisons, with constraints:
+- **`design`**: a `matrix` representing the design matrix, with
+  additional constraints:
 
-   * `rownames(contrasts)` must be equal to `colnames(contrasts)` in order
-   to ensure all data is properly synchronized.
+  - `rownames()` are always maintained, so they can be aligned with
+    `colnames()` of the `SummarizedExperiment` object. This requirement
+    helps ensure that the design and assay data are always in proper
+    sync.
+  - `colnames()` are defined as sample groups, equivalent to using
+    `model.matrix( ~ 0 + groups )` for example from the [The Limma
+    User’s
+    Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
+    from the `limma` Bioconductor package.
+  - All values are always `1` or `0` with no fractions. More complicated
+    designs require manual adjustment, beyond the scope of `jamses`.
 
-### Use cases for `SEDesign`:
+- **`contrasts`**: a `matrix` representing the contrast matrix used for
+  statistical comparisons, with additional constraints:
 
-* `SEDesign` can be subset by `samples` using the form: `SE[samples, ]`
+  - `rownames(contrasts)` are always defined, and always equal
+    `colnames(contrasts)` to ensure contrasts and design are always
+    properly synchronized.
 
-   * Subsetting `samples` may be useful in order to remove outlier samples,
-   or to focus analysis on a subset of samples within best statistical
-   practices (outside scope of this package).
-   * Subsetting `SEDesign` by `samples` will force appropriate subsetting
-   of the `design` matrix. This subset will cascade to `contrasts`.
-   * Argument `min_reps=1` defines the minimum samples required in a
-   `design` group in order for the group to be retained. It may be beneficial
-   to require at least `n=3` replicates for analysis for example.
+#### Example SEDesign object
 
-* `SEDesign` can be subset by `groups` using the form: `SE[, groups]`
+The example below uses a `character` vector of group names per sample,
+with two factors separated by underscore `"_"`. The same data can be
+provided as a `data.frame` with two columns.
 
-   * The `design` matrix will be subset accordingly.
-   * The `samples` vector will be subset to remove samples that are not
-   present in any remaining design groups.
-   * The `contrasts` matrix will be subset to remove all contrasts where one
-   or more groups are no longer present.
+``` r
+library(jamses)
 
-* `SEDesign` can be subset by `contrasts`.
+igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
+   rep(c("Control", "Treated"), each=3),
+   sep="_"),
+   suffix="_rep");
+igroups <- factor(igroups, levels=unique(igroups));
+data.frame(groups=igroups);
+```
 
-   * The `contrasts` matrix will be subset accordingly.
-   * The `design` matrix will be subset to include only those groups
-   required by the contrasts.
+<div class="kable-table">
 
-### Accessor functions to `SEDesign`:
+|                 | groups     |
+|:----------------|:-----------|
+| WT_Control_rep1 | WT_Control |
+| WT_Control_rep2 | WT_Control |
+| WT_Control_rep3 | WT_Control |
+| WT_Treated_rep1 | WT_Treated |
+| WT_Treated_rep2 | WT_Treated |
+| WT_Treated_rep3 | WT_Treated |
+| KO_Control_rep1 | KO_Control |
+| KO_Control_rep2 | KO_Control |
+| KO_Control_rep3 | KO_Control |
+| KO_Treated_rep1 | KO_Treated |
+| KO_Treated_rep2 | KO_Treated |
+| KO_Treated_rep3 | KO_Treated |
 
-* `samples()` will list the samples, equivalent to `rownames(design)`.
-* `samples()<-` will set values in slot `samples`, and update `rownames(design)`.
-* `design()` will return the `design` matrix which defines experiment groups.
-* `design()<-` will set the `design` matrix, also ensure that:
+</div>
 
-   * `colnames(design)` are in the same order as `rownames(contrasts)`, and
-   * `rownames(design)` are in the same order as `samples`.
-   
-* `contrasts()` will return the `contrasts` matrix.
-* `contrasts()<-` will set the contrast matrix, and verify the
-`rownames(contrasts)` are in the same order as `colnames(design)`.
-* `groups()` will export `colnames(design)` representing the design groups.
-* `groups()<-` will update group names with the corresponding vector.
+The resulting design and contrasts matrices are shown below:
 
+``` r
+sedesign <- groups_to_sedesign(igroups);
+jamba::kable_coloring(
+   caption="Design matrix output from design(sedesign):",
+   data.frame(check.names=FALSE, design(sedesign)));
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Design matrix output from design(sedesign):
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+WT_Control
+</th>
+<th style="text-align:right;">
+WT_Treated
+</th>
+<th style="text-align:right;">
+KO_Control
+</th>
+<th style="text-align:right;">
+KO_Treated
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep2
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep3
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+
+``` r
+jamba::kable_coloring(
+   caption="Contrast matrix output from contrasts(sedesign):",
+   data.frame(check.names=FALSE, contrasts(sedesign)));
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Contrast matrix output from contrasts(sedesign):
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+KO_Control-WT_Control
+</th>
+<th style="text-align:right;">
+KO_Treated-WT_Treated
+</th>
+<th style="text-align:right;">
+WT_Treated-WT_Control
+</th>
+<th style="text-align:right;">
+KO_Treated-KO_Control
+</th>
+<th style="text-align:right;">
+(KO_Treated-WT_Treated)-(KO_Control-WT_Control)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+-1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+0
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+
+For convenience, SEDesign can be visualized using `plot_sedesign()`:
+
+``` r
+# plot the design and contrasts
+plot_sedesign(sedesign);
+title(main="plot_sedesign(sedesign)\noutput:")
+```
+
+![](man/figures/README-plot_sedesign-1.png)<!-- -->
+
+- Two-way contrasts are indicated by the “squiggly curved line” which
+  connects the end of one contrast to the beginning of the next
+  contrast. This connection describes the first contrast, subtracted by
+  the second contrast.
 
 ## Data normalization
 
-`SummarizedExperiment` objects are normalized by:
+`SummarizedExperiment` objects are normalized using:
 
-* `se_normalize()` - lightweight wrapper to one of several normalization
-functions:
+- `se_normalize()` - lightweight wrapper to several normalization
+  functions:
 
-   * `jamma::jammanorm()` which normalizes the median log fold change to zero.
-   This method is also used in `DESeq2::estimateSizeFactors()` for example.
-   When using `jamma::jammaplot()` for MA-plots, the `jammanorm()` method
-   is conceptually equivalent to shifting the y-axis values to zero, so
-   the median log fold change is zero. (Assumptions apply.)
-   * `limma::normalizeQuantiles()` for quantile normalization.
-   * `limma::removeBatchEffect()` for adjustment of batch effects,
-   recommended for visualization and clustering, not typically recommended
-   prior to statistical comparisons. Instead, we suggest using a blocking
-   factor, which can be passed to `se_contrast_stats()`.
+  - `method="jammanorm"`: calls `jamma::jammanorm()` which normalizes
+    the median log fold change to zero. This method is also used in
+    `DESeq2::estimateSizeFactors()` for example. When using
+    `jamma::jammaplot()` for MA-plots, the `jammanorm()` method is
+    conceptually equivalent to shifting the y-axis values to zero, so
+    the median log fold change is zero. (Assumptions apply.)
+  - `method="quantile`: calls `limma::normalizeQuantiles()` for quantile
+    normalization.
+  - `method="limma_batch_adjust"` or `method="lba"`: calls
+    `limma::removeBatchEffect()` to adjust of batch effects. This
+    normalization is only recommended for visualization and clustering,
+    not recommended prior to statistical comparisons. Instead, the
+    recommendation is to define a blocking factor passed to
+    `se_contrast_stats()` with argument `block`.
 
-* `matrix_normalize()` - is the core function for `se_normalize()` and operates
-on individual numeric data matrices.
+- `matrix_normalize()` - is the core function for `se_normalize()` and
+  operates on individual numeric data matrices.
 
-
-## Heatmaps
-
-`heatmap_se()` is a convenient wrapper for `ComplexHeatmap::Heatmap()`.
-Some useful arguments and features are described below:
-
-* `se`: the `SummarizedExperiment` data for the heatmap
-* `assay_name`: define a specific data matrix to display
-* `rows`: choose a specific subset of rows
-* `sestats`: output from `se_contrast_stats()` to display a hit matrix
-alongside the heatmap. Also `rows` are automatically subset to
-show statistical hits.
-* `top_colnames`: display column annotations across the top. When
-absent, it will auto-detect columns which may have interesting
-annotations, based upon the cardinality of each column annotation.
-* `rowData_colnames`: display row/gene annotations on the left
-* `sample_color_list`: supply pre-defined set of colors for top and
-left annotations
-* `centerby_colnames`: optional data centering sub-groups, where data
-is centered within each centerby group.
-* `normgroup_colnames`: optional normalization groups, also used
-for independent data centering. Columns are also "split" by this value,
-visually separating columns by each normgroup.
-
-Other options can be passed to `ComplexHeatmap::Heatmap()`:
-
-* `row_split`: split by `rowData(se)` column annotations, or by number
-of dendrogram sub-tree clusters.
-
+> Normalization can be reviewed with MA-plots, recommended by using
+> `jamma::jammaplot()`. See Github repository `"jmw86069/jamma"`.
 
 ## Statistical comparisons
 
 ### `se_contrast_stats()` is the central function
 
-* Applies design and contrasts defined by `SEDesign`, or given
-specific `design` and `contrasts` matrix objects.
-* Initially calls `limma` functions on a series of `assays`,
-for one or more data matrices in the `SummarizedExperiment` object.
+- Applies `SEDesign` (design and contrasts) to `SummarizedExperiment`
+  data.
 
-   * Optionally applies `limma-voom` methodology for count data, for
-   example RNA-seq or Nanostring, to apply the `voom` methodology of
-   estimating dispersion and applying weights to contrast stats.
-   * Optionally applies `limma-DEqMS` methodology for proteomics mass
-   spec data, to apply error model based upon PSM counts per row.
+- Calls the appropriate `limma` functions one or more `assays` in the
+  `SummarizedExperiment` object.
 
-* Applies statistical thresholds to define statistical hits for follow-up:
+  - `use_voom=TRUE` will enable `limmavoom` methodology for count data.
+  - `posthoc_test="DEqMS"` will enable `limma-DEqMS` methodology for
+    proteomics mass spec data, which defines an error model based upon
+    PSM counts per row.
+  - `block` will define blocking factor for `limma`. When also applying
+    `limmavoom`, it performs the appropriate two-step process as
+    described by Dr. Smyth.
 
-   * `adjp_cutoff`: adjusted P-value threshold
-   * `fold_cutoff`: normal space fold change threshold
-   * `mgm_cutoff`: "mgm" is an abbreviation for "max group mean";
-   which requires at least one experiment group involved in the
-   contrast to have group mean at or above this threshold. The cutoff
-   is useful to require at least one group to have signal above
-   a noise threshold.
+- Applies statistical thresholds to mark statistical hits:
 
-* Additional threshold options:
+  - `adjp_cutoff`: adjusted P-value threshold
+  - `fold_cutoff`: normal space fold change threshold
+  - `mgm_cutoff`: “mgm” is an abbreviation for “max group mean”. This
+    threshold requires at least one experiment group involved in the
+    contrast to have group mean at or above this threshold in order to
+    mark a statistical hit. It does not subset data prior to testing.
 
-   * `p_cutoff`: unadjusted P-value threshold
-   * `ave_cutoff`: average expression threshold, using the equivalent of
-   `limma` column `AveExpr` with the mean group expression. Note this
-   `AveExpr` value is calculated mean per row across all groups,
-   and is subject to skewing.
-   * `int_adjp_cutoff`, `int_fold_cutoff`, `int_mgm_cutoff` are
-   optionally used for interaction contrasts, for example sometimes a two-way
-   contrast threshold is more lenient during data mining experiments,
-   eg. `int_adjp_cutoff=0.1` for example.
+- Additional threshold options:
 
-* Options:
+  - `p_cutoff`: unadjusted P-value threshold
+  - `ave_cutoff`: average expression threshold, using the equivalent of
+    `limma` column `AveExpr` with the mean group expression. Note this
+    `AveExpr` value is calculated mean per row across all groups, and
+    may be subject to skewing.
+  - `int_adjp_cutoff`, `int_fold_cutoff`, `int_mgm_cutoff`: optional
+    thresholds only used for interaction contrasts, intended for data
+    mining purposes. For example, data mining may filter for two-way
+    contrast results with no fold change threshold, or slightly relaxed
+    `int_adjp_cutoff=0.1`.
 
-   * `use_voom=TRUE`: enable limmavoom workflow for count data
-   * `posthoc_test="DEqMS"`: enable DEqMS post-hoc adjustment to the limma
-   empirical Bayes model fit.
-   * `floor_min`, `floor_value`: logic to handle numeric values below a
-   pre-defined noise threshold, values below this threshold are assigned
-   `floor_value`. This filtering may allow converting values from `0` zero
-   to `NA`, and as such the values do not contribute to replicate
-   measurements. For data with substantial missing measurements, this
-   option may be beneficial.
-   * `block`: optional blocking factor, which enables the
-   `limma::duplicateCorrelation()` calculation, which also applied and
-   used during model fit per the
-   [The Limma User's Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/).
+- Options:
 
-* Returns a `list` referred to as `sestats`:
+  - `use_voom=TRUE`: enable limmavoom workflow for count data
+  - `posthoc_test="DEqMS"`: enable DEqMS post-hoc adjustment to the
+    limma empirical Bayes model fit.
+  - `floor_min`, `floor_value`: logic to handle numeric values below a
+    defined noise threshold, values below this threshold become
+    `floor_value`. This filtering can also convert values from `0` zero
+    to `NA`, where appropriate. For data with substantial missing
+    measurements, this option may be beneficial.
+  - `handle_na`, `na_value`: logic to handle `NA` values, particularly
+    when an entire group is `NA`. For proteomics, or platforms with a
+    defined “noise floor”, it may be useful to use `handle_na="full1"`
+    and `na_value=noise_floor`. This specific scenario assigns
+    `noise_floor` to one value in any completely `NA` group to
+    `noise_floor` so that its variability is not used, however the fold
+    change can still be calculated relative to the platform minimum
+    signal
+  - `block`: optional blocking factor, which enables the
+    `limma::duplicateCorrelation()` calculation, which is applied to the
+    model fit per the [The Limma User’s
+    Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/).
 
-   * `"hit_array"`: `array` of named numeric vectors indicating direction of
-   statistical hits after applying the relevant threshold cutoffs:
-   
-      * `1` up-regulated
-      * `-1` down-regulated
-      
-   * `"stats_dfs"`: `list` of `data.frame` for each contrast,
-   where column headers also include the statistical contrast to
-   help confirm the identity of each analysis result.
-   * `"stats_df"`: one super-wide `data.frame` with results across
-   all contrasts, assay data matrices, and hit thresholds. This
-   matrix is intended to help filter for hits across the various
-   different contrasts and thresholds.
+- Returns a `list` referred to as `sestats`:
 
-* Save to excel with `save_sestats()`
+  - `"hit_array"`: `array` of named numeric vectors indicating direction
+    of statistical hits after applying the relevant threshold cutoffs:
 
-   * This function helps automate saving every statistical contrast
-   to its own Excel worksheet.
-   * Each worksheet is styled consistently, making it easy to flip
-   through each worksheet.
+    - `1` up-regulated
+    - `-1` down-regulated
 
+  - `"stats_dfs"`: `list` of `data.frame` for each contrast, where
+    column headers also include the statistical contrast to help confirm
+    the identity of each analysis result.
 
-* Future work:
+  - `"stats_df"`: one super-wide `data.frame` with results across all
+    contrasts, assay data matrices, and hit thresholds. This matrix is
+    intended to help filter for hits across the various different
+    contrasts and thresholds.
 
-   * Port the function `plot_comparisons()` which creates a visual
-   plot of each one-way and two-way contrast, with axes defined by the
-   experiment factors.
-   * Enable equivalent analysis workflow steps using `DESeq2` methodology.
+- Save to excel with `save_sestats()`:
 
+  - This function helps automate saving every statistical contrast in
+    table format, into individual Excel worksheets. It may include
+    additional `rowData()` annotations.
+  - Each worksheet is styled consistently, making it easy to flip
+    through each worksheet.
+
+## Heatmaps
+
+`heatmap_se()` is a wrapper for the amazing `ComplexHeatmap::Heatmap()`,
+intended to automate frequently-used options that represent repetitive
+work.
+
+Common rules:
+
+- All data is centered by default. It can be customized.
+- All data is assumed to be `log2` or otherwise “appropriately
+  transformed”. (The typical transform is `log2(1 + x)`.)
+- The heatmap can also be displayed as sample correlations
+  (`correlation=TRUE`) which re-uses the same data centering options
+  (critical aspect of these plots).
+- The heatmap can be subset using `rows` or `sestats` to show stat hit
+  annotations on the left side.
+- Column and row annotations can be added using `colData(se)` and
+  `rowData(se)`
+- Columns and rows can be split using `colData(se)` and `rowData(se)`
+  colnames.
+- The heatmap title includes a summary of data.
+
+Common arguments:
+
+- `se`: the `SummarizedExperiment` data for the heatmap
+
+- `assay_name`: define a specific data matrix to display
+
+- `rows`: choose a specific subset of rows (optional)
+
+- `sestats`: optional stat hits in one of these formats:
+
+  - output from `se_contrast_stats()`
+  - incidence `matrix` with values `c(-1, 0, 1)`
+  - `list` of numeric values using `c(-1, 0, 1)`, with names
+    representing `rownames(se)`
+  - `list` of `rownames(se)`
+
+- `top_colnames`: column annotations in `colData(se)` to display across
+  the top.
+
+- `rowData_colnames`: optional row annotations to display on the left.
+
+- `sample_color_list`: `list` named by colnames from `colData(se)` or
+  `rowData(se)` to define colors.
+
+- `centerby_colnames`: optional sub-groups for data centering
+
+  - Useful to center multiple tissue types, or sample classes, batches,
+    etc.
+  - Set `centerby_colnames=FALSE` to turn off data centering altogether.
+
+- `controlSamples`: custom subset of control samplesfor data centering.
+
+- `row_split`: split rows using colnames in `rowData(se)`, or by number
+  of dendrogram sub-tree clusters.
+
+- `column_split`: split columns using colnames in `colData(se)`, or by
+  number of dendrogram sub-tree clusters.
+
+- `mark_rows`: optional subset of rows for callout labels.
+
+## Future work:
+
+- Convert `sestats` to proper `SEStats` S4 object, with convenient
+  accessor functions.
+- Enable equivalent analysis using `DESeq2` or `edgeR` methodology.

@@ -35,6 +35,10 @@ in the input group names, for example \code{"Treatment1_Time1"} uses "_".
 \item \code{factor_order=NULL} to customize the order of factor comparisons
 }}
 }
+\value{
+\code{data.frame} with a summary of statistical hits per contrast,
+assay_name, and threshold.
+}
 \description{
 Convert sestats to table summary
 }
@@ -57,3 +61,17 @@ jamba::kable_coloring(
 }
 
 }
+\seealso{
+Other jamses stats: 
+\code{\link{ebayes2dfs}()},
+\code{\link{format_hits}()},
+\code{\link{handle_na_values}()},
+\code{\link{hit_array_to_list}()},
+\code{\link{process_sestats_to_hitim}()},
+\code{\link{run_limma_replicate}()},
+\code{\link{save_sestats}()},
+\code{\link{se_contrast_stats}()},
+\code{\link{sestats_to_dfs}()},
+\code{\link{voom_jam}()}
+}
+\concept{jamses stats}

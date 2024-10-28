@@ -9,6 +9,42 @@
 #' a series of statistical tables into organized, formatted Excel
 #' worksheets.
 #'
+#' The output will generally contain two types of worksheets:
+#'
+#' 1. Each contrast in its own worksheet.
+#' This is option is enabled by including `"contrasts"` in
+#' argument `data_content`, which is default.
+#'
+#'    * If there are multiple "Signals" (e.g. multiple `assay_name`)
+#'    then each contrast/signal combination will be saved to its
+#'    own worksheet.
+#'
+#' 2. One table will be created with one column for each contrast,
+#' using values `c(1, 0, -1)` to indicate whether the row met the
+#' statistical criteria.
+#' This is option is enabled by including `"hits"` in
+#' argument `data_content`, which is default.
+#'
+#'    * If there are multiple "Signals" (e.g. multiple `assay_name`)
+#'    then one table for each signal will be saved to its
+#'    own worksheet.
+#'
+#' ## Output to Excel xlsx or as `list`
+#'
+#' * To output a `list` of `data.frame` objects, use:
+#' `type="list", review_output=FALSE`
+#'
+#' ## Worksheet names
+#'
+#' Because the `xlsx` worksheet name is limited to 31 characters, the
+#' contrast names are abbreviated by default. The output of this
+#' function is a `data.frame` which includes the relationship of
+#' the contrast and signal, to the abbreviated worksheet name.
+#'
+#' @returns `data.frame` when `type="xlsx"` or `list` when `type="list"`.
+#'
+#' @family jamses stats
+#'
 #' @param sestats `list` object output from `se_contrast_stats()`
 #' @param file `character` string indicating the filename to save.
 #'    When `file` is `NULL`, output is returned as a `list`, equivalent
@@ -34,6 +70,12 @@
 #'    * `"contrasts"` - (default) include worksheets per `contrast_names`
 #'    * `"hits"` - include only one `"hit sheet"` per value in
 #'    `assay_names`.
+#' @param hits_use_lfc `logical` default FALSE, indicating whether values
+#'    in `"hits"` columns should use the log2 fold change.
+#'    * `FALSE` (default) assigns `c(-1, 0, 1)` to indicate directionality
+#'    after applying stat thresholds.
+#'    * `TRUE` assigns the actual log2 fold change *only for hits* as defined
+#'    by the stat thresholds.
 #' @param max_nchar_sheetname `integer` number of characters allowed in
 #'    Microsoft Excel worksheet names, default 31 characters.
 #' @param abbreviate `logical` indicating whether to abbreviate factor
@@ -62,10 +104,64 @@
 #'    categorical background colors for text string fields in Excel.
 #'    The `names(colorSub)` are matched to character strings to assign
 #'    colors.
+#' @param rename_contrasts `logical` indicating whetheer to apply
+#'    `contrasts2comp()` to shorten long contrast names.
+#' @param se `SummarizedExperiment`, default NULL, used when
+#'    `rowData_colnames` is defined.
+#' @param rowData_colnames `character`, default NULL, with optional colnames
+#'    used only when `se` is also provided. When defined, it provides
+#'    additional annotations for each row as defined by `rowData(se)`.
+#' @param row_type `character` with custom column name to use for the
+#'    primary row identifier. The default `"probes"` is often not accurate,
+#'    though this may not be problematic in practice.
+#'    When defined, the first column is renamed to `row_type`.
 #' @param hitRule,hitFormat,freezePaneColumn arguments passed to
-#'    `jamba::writeOpenxlsx()`.
+#'    `jamba::writeOpenxlsx()`, used only to define the color thresholds
+#'    used with conditional formatting. It changes none of the data.
+#'    The `freezePaneColumn` defines the first non-fixed column when
+#'    viewed in Excel, and by default keeps only the first column fixed
+#'    when scrolling to the right. Use a higher value if columns added
+#'    by `rowData_colnames` should also be fixed columns.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `jamba::writeOpenxlsx()`
+#'
+#' @examples
+#' se <- make_se_test();
+#'
+#' # create SEDesign
+#' sedesign <- groups_to_sedesign(se, group_colnames="group")
+#'
+#' # limma contrasts
+#' sestats <- se_contrast_stats(se=se,
+#'    sedesign=sedesign,
+#'    assay_names="counts")
+#'
+#' # review_output=TRUE
+#' info_df <- save_sestats(sestats, review_output=TRUE)
+#' info_df
+#'
+#' # review_output=FALSE
+#' stat_dfs1 <- save_sestats(sestats, review_output=FALSE, type="list")
+#' head(stat_dfs1[[1]])
+#'
+#' # review_output=FALSE, hits_use_lfc=TRUE
+#' stat_dfs <- save_sestats(sestats, review_output=FALSE, type="list", hits_use_lfc=TRUE)
+#' head(stat_dfs[[1]])
+#'
+#' set.seed(12)
+#' heatmap_se(se, sestats=sestats)
+#'
+#' set.seed(12)
+#' heatmap_se(stat_dfs[[2]], column_names_rot=80,
+#'    column_cex=0.2, row_cex=0.5) +
+#' heatmap_se(se, sestats=sestats, rows=rownames(se))
+#'
+#' set.seed(12)
+#' heatmap_se(stat_dfs[[2]], column_names_rot=80,
+#'    column_cex=0.2, row_cex=0.5) +
+#' heatmap_se(stat_dfs1[[2]], column_names_rot=80,
+#'    column_cex=0.2, row_cex=0.5) +
+#' heatmap_se(se, sestats=sestats, rows=rownames(se))
 #'
 #' @export
 save_sestats <- function
@@ -78,6 +174,7 @@ save_sestats <- function
     "list"),
  data_content=c("data",
     "hits"),
+ hits_use_lfc=FALSE,
  max_nchar_sheetname=31,
  abbreviate=FALSE,
  review_output=TRUE,
@@ -303,6 +400,7 @@ save_sestats <- function
             sep="");
       }
 
+      # assemble iDF to be saved to Excel
       name_colnames <- NULL;
       if ("hits" %in% export_df$contrast_names[irow]) {
          if (TRUE %in% verbose) {
@@ -310,20 +408,28 @@ save_sestats <- function
                "Assembling hit sheet for assay_name '", assay_name, "'");
          }
          # assemble one hit data.frame
-         name_colnames <- unique(unlist(lapply(hit_list_dfs[[assay_name]], function(xdf){
-            attr(xdf, "nameColumns")
-         })));
+         name_colnames <- unique(unlist(
+            lapply(hit_list_dfs[[assay_name]], function(xdf){
+               attr(xdf, "nameColumns")
+            })));
          # make first column a factor to help order rows consistently
          iDF <- jamba::mergeAllXY(
             lapply(hit_list_dfs[[assay_name]], function(xdf){
-               xdf[,1] <- factor(xdf[,1], levels=unique(xdf[,1]))
+               xdf[, 1] <- factor(xdf[, 1], levels=unique(xdf[, 1]))
                xdf
             }));
          iDF <- jamba::mixedSortDF(iDF, byCols=1);
-         iDF[,1] <- as.character(iDF[,1]);
+         # optionally keep only max_rows rows
+         if (length(max_rows) > 0) {
+            iDF <- head(iDF,
+               max_rows[irow]);
+         }
+         # revert to character for compatibility with openxlsx
+         iDF[, 1] <- as.character(iDF[, 1]);
          attr(iDF, "nameColumns") <- name_colnames;
       } else {
          iDF <- sestats$stats_dfs[[assay_name]][[contrast_name]];
+         # optionally keep only max_rows rows
          if (length(max_rows) > 0) {
             iDF <- head(iDF,
                max_rows[irow]);
@@ -331,7 +437,7 @@ save_sestats <- function
          if (length(iDF) == 0 || nrow(iDF) == 0) {
             if (verbose) {
                jamba::printDebug("save_sestats(): ",
-                  "      No data availale to save.");
+                  "      No data available to save.");
             }
             next;
          }
@@ -353,6 +459,23 @@ save_sestats <- function
             "."),
             colnames(iDF));
          iDF <- iDF[,icols, drop=FALSE];
+
+         # optionally convert hits to use log2 fold change
+         if (TRUE %in% hits_use_lfc) {
+            lfccol <- head(jamba::vigrep("^logFC|^log2f", icols), 1);
+            if (length(lfccol) == 0) {
+               # warn here and skip
+            } else {
+               if (verbose) {
+                  jamba::printDebug("save_sestats(): ",
+                     "Converted hitcols to use log2 fold change.");
+               }
+               hitcols <- jamba::vigrep("^hit ", icols);
+               for (hitcol in hitcols) {
+                  iDF[[hitcol]] <- (abs(sign(iDF[[hitcol]])) * iDF[[lfccol]])
+               }
+            }
+         }
 
          # optionally add rowData_colnames
          if (length(se) > 0 && length(rowData_colnames) > 0) {

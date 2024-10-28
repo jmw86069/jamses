@@ -25,7 +25,7 @@
 #'    * `colData(se)` will also be collapsed by `shrinkDataFrame()` to
 #'    combine unique values from each column annotation.
 #'
-#' @family jamses utilities
+#' @family jamses SE utilities
 #'
 #' @param se `SummarizedExperiment` object
 #' @param columns `character` vector of `colnames(se)` to include in the

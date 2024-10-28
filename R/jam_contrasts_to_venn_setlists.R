@@ -3,6 +3,9 @@
 #'
 #' Convert contrast names to Venn setlists for visual comparison
 #'
+#' This function is still under active development to be improved,
+#' feedback is welcomed.
+#'
 #' The motivation is to take a set of contrast names, and return
 #' reasonable subsets of contrasts suitable for visual comparison
 #' using Venn diagrams. Ultimately, the process is analogous to
@@ -35,6 +38,7 @@
 #'    * In all cases, the resulting sets are split into subsets with
 #'    size `max_venn_size`.
 #'
+#' @family jam experiment design
 #'
 #' @returns `list` with contrast names suitable for use in Venn diagrams.
 #'

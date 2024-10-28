@@ -25,13 +25,6 @@ This is an internal function called by \code{contrast2comp()} and
 \code{comp2contrast()}. It takes a single vector of groups, with
 2^(integer) number of entries, and combines them into a
 series of pairwise contrasts.
-
-For example:
-\itemize{
-\item \verb{A, B} becomes \code{A-B}
-\item \verb{A, B, C, D} becomes \code{(A-B)-(C-D)}
-\item \verb{A, B, C, D, E, F, G, H} becomes \code{((A-B)-(C-D))-((E-F)-(G-H))}
-}
 }
 \examples{
 stack_contrasts(head(LETTERS, 2))
@@ -59,3 +52,11 @@ tryCatch({
 })
 
 }
+\concept{jamses utilities
+
+For example:
+\itemize{
+\item \verb{A, B} becomes \code{A-B}
+\item \verb{A, B, C, D} becomes \code{(A-B)-(C-D)}
+\item \verb{A, B, C, D, E, F, G, H} becomes \code{((A-B)-(C-D))-((E-F)-(G-H))}
+}}

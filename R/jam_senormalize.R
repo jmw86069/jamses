@@ -31,7 +31,7 @@
 #' This method calls `matrix_normalize()` to perform each normalization
 #' step, see that function description for details on each method.
 #'
-#' @family jamses stats
+#' @family jamses SE utilities
 #'
 #' @return `SummarizedExperiment` object where the normalized output
 #'    is added to `assays(se)` using the naming format `method_assayname`.
@@ -607,7 +607,7 @@ se_normalize <- function
 #'    * `"hk"`: a `character` vector of `rownames(x)` used as housekeeper
 #'    `controlGenes` by `"jammanorm"`.
 #'
-#' @family jamses stats
+#' @family jamses utilities
 #'
 #' @param x `numeric` matrix with sample columns, and typically
 #'    gene rows, but any measured assay row will meet the assumptions

@@ -6,6 +6,36 @@
 \usage{
 intercalate(...)
 }
-\description{
-Intercalate two or more vectors
+\arguments{
+\item{...}{one or more \code{character} vectors}
 }
+\value{
+\code{character} vector with values of each list in \code{...}
+combined in alternating fashion.
+}
+\description{
+Purpose is to take a list of vectors, and intercalate their values
+}
+\seealso{
+Other jamses utilities: 
+\code{\link{choose_annotation_colnames}()},
+\code{\link{contrast2comp_dev}()},
+\code{\link{fold_to_log2fold}()},
+\code{\link{list2im_opt}()},
+\code{\link{log2fold_to_fold}()},
+\code{\link{make_block_arrow_polygon}()},
+\code{\link{mark_stat_hits}()},
+\code{\link{matrix_normalize}()},
+\code{\link{point_handedness}()},
+\code{\link{point_slope_intercept}()},
+\code{\link{shortest_unique_abbreviation}()},
+\code{\link{shrinkDataFrame}()},
+\code{\link{shrink_df}()},
+\code{\link{shrink_matrix}()},
+\code{\link{sort_samples}()},
+\code{\link{strsplitOrdered}()},
+\code{\link{sub_split_vector}()},
+\code{\link{update_function_params}()},
+\code{\link{update_list_elements}()}
+}
+\concept{jamses utilities}

@@ -30,7 +30,9 @@
 #'    relevant criteria.
 #' @param ... additional arguments are ignored.
 #'
-#' @return `character` vector of colnames in `df` that meet the criteria.
+#' @family jamses utilities
+#'
+#' @returns `character` vector of colnames in `df` that meet the criteria.
 #'    If no colnames meet the criteria, this function returns `NULL`.
 #'
 #' @examples
