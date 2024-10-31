@@ -74,7 +74,32 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
+  <main id="main" class="col-md-9"><ul>
+<li>
+<a href="#jam-summarizedexperiment-stats-jamses">Jam SummarizedExperiment Stats (jamses)</a>
+<ul>
+<li><a href="#goals-of-jamses">Goals of jamses</a></li>
+<li><a href="#approach-for-statistical-contrasts">Approach for Statistical Contrasts</a></li>
+<li>
+<a href="#design-and-contrasts---sedesign">Design and contrasts - SEDesign</a>
+<ul>
+<li><a href="#sedesign-s4-object-details">SEDesign S4 Object Details</a></li>
+<li><a href="#example-sedesign-object">Example SEDesign object</a></li>
+</ul>
+</li>
+<li><a href="#data-normalization">Data normalization</a></li>
+<li>
+<a href="#statistical-comparisons">Statistical comparisons</a>
+<ul>
+<li><a href="#se_contrast_stats-is-the-central-function"><code>se_contrast_stats()</code> is the central function</a></li>
+</ul>
+</li>
+<li><a href="#heatmaps">Heatmaps</a></li>
+<li><a href="#future-work">Future work:</a></li>
+</ul>
+</li>
+</ul>
+<!-- README.md is generated from README.Rmd. Please edit that file --><div class="section level1">
 <div class="page-header"><h1 id="jam-summarizedexperiment-stats-jamses">Jam SummarizedExperiment Stats (jamses)<a class="anchor" aria-label="anchor" href="#jam-summarizedexperiment-stats-jamses"></a>
 </h1></div>
 <p>This package is under active development, these functions make up a core set of methods currently used across active Omics analysis projects. A summary of goals and relevant features are described below.</p>
@@ -129,7 +154,7 @@
 </ul>
 </div>
 <div class="section level2">
-<h2 id="define-experiment-design-and-contrasts">Define experiment design and contrasts<a class="anchor" aria-label="anchor" href="#define-experiment-design-and-contrasts"></a>
+<h2 id="design-and-contrasts---sedesign">Design and contrasts - SEDesign<a class="anchor" aria-label="anchor" href="#design-and-contrasts---sedesign"></a>
 </h2>
 <ul>
 <li>
@@ -184,20 +209,25 @@
 </ul>
 </li>
 </ul>
-<div class="section level4">
-<h4 id="example-sedesign-object">Example SEDesign object<a class="anchor" aria-label="anchor" href="#example-sedesign-object"></a>
-</h4>
+</div>
+<div class="section level3">
+<h3 id="example-sedesign-object">Example SEDesign object<a class="anchor" aria-label="anchor" href="#example-sedesign-object"></a>
+</h3>
 <p>The example below uses a <code>character</code> vector of group names per sample, with two factors separated by underscore <code>"_"</code>. The same data can be provided as a <code>data.frame</code> with two columns.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://github.com/jmw86069/jamses" class="external-link">jamses</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/nameVector.html" class="external-link">nameVector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">6</span><span class="op">)</span>,</span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Treated"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
 <span>   sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span>,</span>
 <span>   suffix<span class="op">=</span><span class="st">"_rep"</span><span class="op">)</span>;</span>
 <span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">igroups</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span>;</span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups<span class="op">=</span><span class="va">igroups</span><span class="op">)</span>;</span></code></pre></div>
-<div class="kable-table">
+<span><span class="co"># jamba::kable_coloring(color_cells=FALSE,</span></span>
+<span><span class="co">#    format="markdown",</span></span>
+<span><span class="co">#    caption="Sample to group association",</span></span>
+<span><span class="co">#    data.frame(groups=igroups))</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups<span class="op">=</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left"></th>
@@ -254,16 +284,17 @@
 </tr>
 </tbody>
 </table>
-</div>
 <p>The resulting design and contrasts matrices are shown below:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sedesign</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span>;</span>
 <span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
-<span>   caption<span class="op">=</span><span class="st">"Design matrix output from design(sedesign):"</span>,</span>
+<span><span class="co"># knitr::kable(</span></span>
+<span>   colorSub<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`-1`<span class="op">=</span><span class="st">"dodgerblue"</span>, `1`<span class="op">=</span><span class="st">"firebrick"</span><span class="op">)</span>,</span>
+<span>   caption<span class="op">=</span><span class="st">"Design matrix output from design(sedesign)."</span>,</span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>check.names<span class="op">=</span><span class="cn">FALSE</span>, <span class="fu">design</span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>;</span></code></pre></div>
 <table class="table table" style="margin-left: auto; margin-right: auto;">
 <caption>
-Design matrix output from design(sedesign):
+Design matrix output from design(sedesign).
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -287,16 +318,16 @@ KO_Treated
 WT_Control_rep1
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -304,16 +335,16 @@ WT_Control_rep1
 WT_Control_rep2
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -321,16 +352,16 @@ WT_Control_rep2
 WT_Control_rep3
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -338,16 +369,16 @@ WT_Control_rep3
 WT_Treated_rep1
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -355,16 +386,16 @@ WT_Treated_rep1
 WT_Treated_rep2
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -372,16 +403,16 @@ WT_Treated_rep2
 WT_Treated_rep3
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -389,16 +420,16 @@ WT_Treated_rep3
 KO_Control_rep1
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -406,16 +437,16 @@ KO_Control_rep1
 KO_Control_rep2
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -423,16 +454,16 @@ KO_Control_rep2
 KO_Control_rep3
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 </tr>
 <tr>
@@ -440,16 +471,16 @@ KO_Control_rep3
 KO_Treated_rep1
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 </tr>
 <tr>
@@ -457,16 +488,16 @@ KO_Treated_rep1
 KO_Treated_rep2
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 </tr>
 <tr>
@@ -474,27 +505,30 @@ KO_Treated_rep2
 KO_Treated_rep3
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 </tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
-<span>   caption<span class="op">=</span><span class="st">"Contrast matrix output from contrasts(sedesign):"</span>,</span>
+<code class="sourceCode R"><span></span>
+<span><span class="co"># knitr::kable(</span></span>
+<span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamba/man/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
+<span>   colorSub<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`-1`<span class="op">=</span><span class="st">"dodgerblue"</span>, `1`<span class="op">=</span><span class="st">"firebrick"</span><span class="op">)</span>,</span>
+<span>   caption<span class="op">=</span><span class="st">"Contrast matrix output from contrasts(sedesign)."</span>,</span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>check.names<span class="op">=</span><span class="cn">FALSE</span>, <span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html" class="external-link">contrasts</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>;</span></code></pre></div>
 <table class="table table" style="margin-left: auto; margin-right: auto;">
 <caption>
-Contrast matrix output from contrasts(sedesign):
+Contrast matrix output from contrasts(sedesign).
 </caption>
 <thead><tr>
 <th style="text-align:left;">
@@ -521,19 +555,19 @@ KO_Treated-KO_Control
 WT_Control
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 </tr>
 <tr>
@@ -541,19 +575,19 @@ WT_Control
 WT_Treated
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 </tr>
 <tr>
@@ -561,19 +595,19 @@ WT_Treated
 KO_Control
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
--1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: dodgerblue !important;">-1</span>
 </td>
 </tr>
 <tr>
@@ -581,19 +615,19 @@ KO_Control
 KO_Treated
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-0
+<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 <td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-1
+<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
 </td>
 </tr>
 </tbody>
@@ -607,7 +641,6 @@ KO_Treated
 <ul>
 <li>Two-way contrasts are indicated by the “squiggly curved line” which connects the end of one contrast to the beginning of the next contrast. This connection describes the first contrast, subtracted by the second contrast.</li>
 </ul>
-</div>
 </div>
 </div>
 <div class="section level2">
@@ -775,6 +808,7 @@ KO_Treated
 </ul>
 </div>
 </div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
