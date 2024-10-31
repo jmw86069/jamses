@@ -96,7 +96,7 @@ Consider the following:
 * Caveat: Specific contrasts can be added manually when necessary.
 
 
-## Define experiment design and contrasts
+## Design and contrasts - SEDesign
 
 * `groups_to_sedesign()` takes by default a `data.frame` where each column
 represents an experiment factor, and creates the following:
@@ -148,7 +148,7 @@ statistical comparisons, with additional constraints:
    `colnames(contrasts)`  to ensure contrasts and design are always
    properly synchronized.
 
-#### Example SEDesign object
+### Example SEDesign object
 
 The example below uses a `character` vector of group names per sample,
 with two factors separated by underscore `"_"`.
@@ -175,17 +175,17 @@ The resulting design and contrasts matrices are shown below:
 
 ```{r sedesign_output, collapse=TRUE}
 sedesign <- groups_to_sedesign(igroups);
-# jamba::kable_coloring(
-knitr::kable(
+jamba::kable_coloring(
+# knitr::kable(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
-# jamba::kable_coloring(
-kbl <- knitr::kable(
+
+# knitr::kable(
+jamba::kable_coloring(
+   colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Contrast matrix output from contrasts(sedesign).",
    data.frame(check.names=FALSE, contrasts(sedesign)));
-kbl
-# kbl %>% kableExtra::kable_styling()
 
 ```
 
