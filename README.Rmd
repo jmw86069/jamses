@@ -1,10 +1,11 @@
 ---
-always_allow_html: true
 output:
   github_document:
     fig_width: 9
     fig_height: 7
+    toc: true
     df_print: kable
+always_allow_html: true
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -155,25 +156,36 @@ The same data can be provided as a `data.frame` with two columns.
 
 ```{r sedesign, collapse=TRUE}
 library(jamses)
+library(kableExtra)
 
 igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
    rep(c("Control", "Treated"), each=3),
    sep="_"),
    suffix="_rep");
 igroups <- factor(igroups, levels=unique(igroups));
-data.frame(groups=igroups);
+# jamba::kable_coloring(color_cells=FALSE,
+#    format="markdown",
+#    caption="Sample to group association",
+#    data.frame(groups=igroups))
+knitr::kable(data.frame(groups=igroups))
+
 ```
 
 The resulting design and contrasts matrices are shown below:
 
 ```{r sedesign_output, collapse=TRUE}
 sedesign <- groups_to_sedesign(igroups);
+# knitr::kable(
 jamba::kable_coloring(
-   caption="Design matrix output from design(sedesign):",
+   colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
+   caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
-jamba::kable_coloring(
-   caption="Contrast matrix output from contrasts(sedesign):",
+# jamba::kable_coloring(
+kbl <- knitr::kable(
+   caption="Contrast matrix output from contrasts(sedesign).",
    data.frame(check.names=FALSE, contrasts(sedesign)));
+kbl %>% kableExtra::kable_styling()
+
 ```
 
 For convenience, SEDesign can be visualized using `plot_sedesign()`:

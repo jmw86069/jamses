@@ -1,15 +1,47 @@
 
 # TODO for jamses
 
+## 30oct2024
+
+* Fix the README.Rmd.
+* `heatmap_se()` - Consider recognizing `table` input.
+
+   * 2-dimensional table could be converted to `matrix`, then assigning
+   `dimnames()` to `column_title` and `row_title` if not already defined.
+   * 3-dimensional table could be converted to 2-dimensional `matrix`,
+   stacking each matrix slice with `rbind()`, then using `row_split`
+   to represent the third dimension?
+
+* `heatmap_se()`
+
+   * Consider convenient way to define `controlSamples`
+
+      * Current: Must provide `colnames(se)`, then define `control_label`
+      * Goal: Provide groups, control group(s), so that `control_label`
+      is defined by default.
+      * Define column(s) with grouping
+      * Default takes first ordered group
+      * Optionally specify group(s) to use as controls
+      * Benefit is that `control_label` can be defined also,
+      `versus [group_name]`
+
+   * Consider some way to indicate control samples used for centering.
+   
+      * Some ideas: Bold text; `control_prefix="*"`
+      `"Sample B"` would become `"* Sample B"`
+   
+   * Consider new argument: `column_label_colname` as with `row_label_colname`
+
+
 ## 28oct2024
 
-* Prepare `pkgdown` package docs.
+* DONE. Prepare `pkgdown` package docs.
 
 ## 07oct2024
 
 * Update `README.Rmd`
 
-   * Include visuals for `plot_sedesign()`, and `sestats()`
+   * DONE. Include visuals for `plot_sedesign()`, and `sestats()`
    * Include visuals for `heatmap_se()`
    * Include examples for `heatmap_column_group_labels()`
    * Include description for `shrinkDataFrame()`
