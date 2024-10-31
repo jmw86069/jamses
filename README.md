@@ -187,359 +187,50 @@ The resulting design and contrasts matrices are shown below:
 
 ``` r
 sedesign <- groups_to_sedesign(igroups);
-# knitr::kable(
-jamba::kable_coloring(
+# jamba::kable_coloring(
+knitr::kable(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
+|                 | WT_Control | WT_Treated | KO_Control | KO_Treated |
+|:----------------|-----------:|-----------:|-----------:|-----------:|
+| WT_Control_rep1 |          1 |          0 |          0 |          0 |
+| WT_Control_rep2 |          1 |          0 |          0 |          0 |
+| WT_Control_rep3 |          1 |          0 |          0 |          0 |
+| WT_Treated_rep1 |          0 |          1 |          0 |          0 |
+| WT_Treated_rep2 |          0 |          1 |          0 |          0 |
+| WT_Treated_rep3 |          0 |          1 |          0 |          0 |
+| KO_Control_rep1 |          0 |          0 |          1 |          0 |
+| KO_Control_rep2 |          0 |          0 |          1 |          0 |
+| KO_Control_rep3 |          0 |          0 |          1 |          0 |
+| KO_Treated_rep1 |          0 |          0 |          0 |          1 |
+| KO_Treated_rep2 |          0 |          0 |          0 |          1 |
+| KO_Treated_rep3 |          0 |          0 |          0 |          1 |
+
 Design matrix output from design(sedesign).
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-WT_Control
-</th>
-<th style="text-align:right;">
-WT_Treated
-</th>
-<th style="text-align:right;">
-KO_Control
-</th>
-<th style="text-align:right;">
-KO_Treated
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Control_rep1
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Control_rep2
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Control_rep3
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Treated_rep1
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Treated_rep2
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-WT_Treated_rep3
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Control_rep1
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Control_rep2
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Control_rep3
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Treated_rep1
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Treated_rep2
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-</tr>
-<tr>
-<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
-KO_Treated_rep3
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(0, 0, 0, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: transparent !important;">0</span>
-</td>
-<td style="text-align:right;border-left:1px solid #DDDDDD;white-space: nowrap;">
-<span style="     color: rgba(255, 255, 255, 255) !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: firebrick !important;">1</span>
-</td>
-</tr>
-</tbody>
-</table>
 
 ``` r
 # jamba::kable_coloring(
 kbl <- knitr::kable(
    caption="Contrast matrix output from contrasts(sedesign).",
    data.frame(check.names=FALSE, contrasts(sedesign)));
-kbl %>% kableExtra::kable_styling()
+kbl
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
+|            | KO_Control-WT_Control | KO_Treated-WT_Treated | WT_Treated-WT_Control | KO_Treated-KO_Control | (KO_Treated-WT_Treated)-(KO_Control-WT_Control) |
+|:-----------|----------------------:|----------------------:|----------------------:|----------------------:|------------------------------------------------:|
+| WT_Control |                    -1 |                     0 |                    -1 |                     0 |                                               1 |
+| WT_Treated |                     0 |                    -1 |                     1 |                     0 |                                              -1 |
+| KO_Control |                     1 |                     0 |                     0 |                    -1 |                                              -1 |
+| KO_Treated |                     0 |                     1 |                     0 |                     1 |                                               1 |
+
 Contrast matrix output from contrasts(sedesign).
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:right;">
-KO_Control-WT_Control
-</th>
-<th style="text-align:right;">
-KO_Treated-WT_Treated
-</th>
-<th style="text-align:right;">
-WT_Treated-WT_Control
-</th>
-<th style="text-align:right;">
-KO_Treated-KO_Control
-</th>
-<th style="text-align:right;">
-(KO_Treated-WT_Treated)-(KO_Control-WT_Control)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-WT_Control
-</td>
-<td style="text-align:right;">
--1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-WT_Treated
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-KO_Control
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--1
-</td>
-<td style="text-align:right;">
--1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-KO_Treated
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-</tbody>
-</table>
+
+``` r
+# kbl %>% kableExtra::kable_styling()
+```
 
 For convenience, SEDesign can be visualized using `plot_sedesign()`:
 
