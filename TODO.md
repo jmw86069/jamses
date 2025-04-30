@@ -1,7 +1,180 @@
 
 # TODO for jamses
 
-## 30oct2024
+## 11apr2025
+
+* `heatmap_se()`
+
+   * Consider "trimmed down" method to indicate controls and centerGroups:
+   
+      * controlSamples: Thin black bar at the top or bottom.
+      * centerGroups: Thin colored/greyscale rectangles?
+   
+   * Consider adding something like `column_sort`, `row_sort`.
+   Either `character` vector matching `colnames(colData(se))`, or
+   vector to use for sorting directly, or
+   named vector to use where names match `colnames(se)`.
+
+## 02apr2025
+
+* Add `print()`/`show()` for `SEDesign` class:
+
+   * group names, contrast names, number of samples
+
+* S4 object `SEStats`
+
+   * Slots:
+   
+      * hit_array
+      * stat_dfs
+      * design
+      * contrasts
+      * normgroup (or within "metadata" slot?)
+
+* `plot_sedesign()` enhancements
+
+   * Consider option to "highlight" one or more contrasts:
+
+      * Emphasized: group boxes, contrast border, contrast color,
+      contrast font.
+      * Un-emphasized: greyed group boxes, greyed border/fill, hide label.
+      * Hidden: optionally hide the "un-emphasized" contrasts, and factors.
+
+   * Consider subsetting by factor levels.
+   Probably not necessary if the option to emphasize/hide is available.
+   * Consider easier method to assign group colors
+   
+      * Fix `colorset`, assign colors by factor or contrast, something like
+      `sample_color_list` (list named by factor, with vector of colors named
+      by factor level), or `colorSub`/`color_sub` just vector of colors
+      named by factor levels.
+      * Optional bonus points: when group colors are supplied, optionally
+      create group colors by blending the factor level colors.
+      (It might become too muddy, but would be fun to test.)
+
+* `heatmap_se()`
+
+   * Make it work with `DESeqDataSet` - optional log2(1 + x) transform counts.
+   * Consider "easy option" to add row mean (or centered mean) row annotation.
+
+
+* `groups_to_sedesign()` enhancements
+
+   * Consider option not to use `limma::eBayes()`, passed through to
+   `run_limma_replicate()`
+   * Make it work for more input types:
+   `SummarizedExperiment`, `SingleCellExperiment`, optionallly `Seurat`,
+   `DESeq2::DESeqDataSet`, `Biobase::ExpressionSet`.
+   * Is `groups_to_sedesign()` the best name? What about `make_sedesign()`?
+   * Consider recognizing `numeric` columns to apply as a covariate
+   in the `design`.
+
+* `se_contrast_stats()` enhancements
+
+   * Accept more input data types:
+   `SummarizedExperiment`, `SingleCellExperiment`, optionallly `Seurat`,
+   `DESeq2::DESeqDataSet`, `Biobase::ExpressionSet`.
+   * Consider adding DESeq2 methods equivalent to limma:
+   ```
+   dds <- makeExampleDESeqDataSet(n=100, m=18)
+   dds$genotype <- factor(rep(rep(c("I","II","III"),each=3),2))
+   design(dds) <- ~ genotype + condition + genotype:condition
+   dds <- DESeq(dds)
+   resultsNames(dds)
+   ```
+   * Confirm that design and contrast matrices can be supplied.
+   * Use `DESeq2::results()` as equivalent to `limma::topTable()`
+
+
+## 18mar2025
+
+* Vignette: "How to Create Insightful Heatmaps"
+
+   * Centering, grouping, advanced centering
+   * Subsetting by cluster, etc.
+
+## 24jan2025
+
+* `heatmap_se()`
+
+   * Consider some way to indicate control samples used for centering.
+   Asterisk beside label? Asterisk above/below heatmap?
+
+* For `se_normalize()` consider accepting `batch` and `group` params
+for `limma_batch_adjust` using colnames of `colData(se)`.
+* Consider some "unifying framework" by which:
+
+   * Groups are recognized.
+   * Contrasts are defined using factor level changes.
+   * Groups are assigned colors, based upon factor design, and factor levels.
+   * Contrasts are assigned colors, using group colors. (Some rational way.)
+   * Venn diagram comparisons are defined, using contrast factor changes.
+   Bonus points for including twoway contrasts with component oneway contrasts.
+
+* Extend `SEDesign` for `block` and `normgroup`
+
+   * Optional slots which could be empty?
+   * In practice, `normgroup` subdivides analyses.
+   * In practice, `block` would be used during `limma` analysis.
+
+* `SEStats` S4 object for output from `se_contrast_stats()`
+   
+   * Main drivers:
+   
+      * Need to combine multiple SEStats objects together (for convenience).
+      * Need to extract component pieces easily.
+      * Need safer print summary of object itself.
+      * Improve default behaviors, via generic functions.
+
+   * Proposed slots:
+   
+      * `"hit_array"`
+      * `"stats_dfs"` - each contrast in `data.frame` format
+      * `"stats_df"` - overall merged `data.frame`
+      * `"sedesign"` - (with `"block"`, `"normgroup"`) - for reproducibility
+      * `"metadata"` - effectively "miscellaneous" supporting data
+   
+   * Methods:
+   
+      * `contrast_names()`, `assayNames()`, `hit_names()` - core dimnames
+      * `sestats_to_list()` - return hits as `list`, e.g. `hit_array_to_list()`
+      * `sestats_to_im()` - above but returns signed incidence matrix
+      * `sestats_to_sedesign()`, `sedesign()` - returns `SEDesign`
+      * `sestats_to_statlist()` to convert to older `list` format for
+      backward compatibility
+      * `statlist_to_sestats()` to convert older `list` format to `SEStats`
+      for forward compatibility
+   
+   * Concatenation by `c()` or `rbind()`, `cbind()`:
+   
+      * Simplest approach: Do not maintain `sedesign` or else convert to
+      `list()` and store as metadata.
+      * Combine `hit_array`
+      * Combine `sedesign`? Or not, in case two are not compatible.
+   
+   * `hit_array()` - access to the array of statistical hits by dimensions:
+   
+      * `cutoff_name`
+      * `contrast_name`
+      * `assay_name`
+      * `method_name` - Add this dimension to enable alternative methods
+   
+   * `hit_im()` - incidence `matrix` for specific dimensions in `hit_array`
+   * `hit_list()` - `list` of stat hit direction, named by entity
+   * `sestats_to_df()` - `data.frame` suitable for RMarkdown and `kable()`
+   * accessors: `assay_names()`, `contrast_names()`, `cutoff_names()`,
+   `method_names()`
+
+## 05dec2024
+
+* `plot_sedesign()`
+   
+   * Debug arguments `group_fill`, `group_border`, which cause warning/error.
+   * Fix bug/warning/errors, some caused by comparing multiple value `if()`:
+   `"Warning in max(subset(contrast_group_df, angle %in% c(0, 180))$bump):"`
+   `"no non-missing arguments to max; returning -Inf"`
+
+## 13nov2024
 
 * Fix the README.Rmd.
 * `heatmap_se()` - Consider recognizing `table` input.
@@ -17,8 +190,12 @@
    * Consider convenient way to define `controlSamples`
 
       * Current: Must provide `colnames(se)`, then define `control_label`
-      * Goal: Provide groups, control group(s), so that `control_label`
-      is defined by default.
+      * Goal: Define groups, control group, and consistent `control_label`
+      * Suggested patterns:
+      
+         * First group per centering group (`centerby_colnames`).
+         * Pattern-match group name within each centering group.
+      
       * Define column(s) with grouping
       * Default takes first ordered group
       * Optionally specify group(s) to use as controls
@@ -27,10 +204,13 @@
 
    * Consider some way to indicate control samples used for centering.
    
-      * Some ideas: Bold text; `control_prefix="*"`
-      `"Sample B"` would become `"* Sample B"`
+      * Some ideas:
+      
+         * Bold text
+         * `control_suffix="*"` - add an asterisk `*` to control samples
+         `"Sample B"` would become `"* Sample B"`
    
-   * Consider new argument: `column_label_colname` as with `row_label_colname`
+   * Consider new argument: `column_label_colname`, to match `row_label_colname`
 
 
 ## 28oct2024
@@ -283,35 +463,6 @@ introduced.
    but not included with `factor_order` so that comparisons cannot
    involve multiple `normgroup` values.
    * Store `normgroup` in the `SEDesign` object, see above.
-
-* `SEStats` S4 object for output from `se_contrast_stats()`
-
-   * Proposed slots:
-   
-      * `"hit_array"`
-      * `"stats_dfs"` - each contrast in `data.frame` format
-      * `"stats_df"` - overall merged `data.frame`
-      * `"sedesign"` - (with `"block"`, `"normgroup"`) - for reproducibility
-   
-   * Methods:
-   
-      * `contrast_names()`
-      * `sestats_to_list()` (analogous to `hit_array_to_list()`)
-      * `sestats_to_im()` as above but returns signed incidence matrix
-      * `sestats_to_sedesign()` extracts equivalent `SEDesign` object
-   
-   * `hit_array()` - access to the array of statistical hits by dimensions:
-   
-      * `cutoff_name`
-      * `contrast_name`
-      * `assay_name`
-      * `method_name` - Add this dimension to enable alternative methods
-   
-   * `hit_im()` - incidence `matrix` for specific dimensions in `hit_array`
-   * `hit_list()` - `list` of stat hit direction, named by entity
-   * `sestats_to_df()` - `data.frame` suitable for RMarkdown and `kable()`
-   * accessors: `assay_names()`, `contrast_names()`, `cutoff_names()`,
-   `method_names()`
 
 ## 12mar2024
 
