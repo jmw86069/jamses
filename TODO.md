@@ -1,6 +1,13 @@
 
 # TODO for jamses
 
+## 07aug2025
+
+* DONE. Update `se_contrast_stats()` to handle `detected_genes` as list
+alongside normgroups.
+Purpose is to apply independent detected genes for corresponding normgroups.
+
+
 ## 11apr2025
 
 * `heatmap_se()`

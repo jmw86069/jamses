@@ -12,7 +12,6 @@
 #' * fold change
 #' * max group mean
 #'
-#' This function is unique in that it applies the statistical methods
 #' to one or more "signals" in the input `SummarizedExperiment` assays,
 #' specifically intended to compare things like normalization methods.
 #'
@@ -123,7 +122,11 @@
 #'    by default it uses `colnames(se)` that are also defined in the design
 #'    matrix.
 #' @param igenes `character` vector with optional subset of `rownames(se)`,
-#'    by default it uses all `rownames(se)`.
+#'    by default (NULL) it uses all `rownames(se)`.
+#'    * Alternatively, `list` input used together with `normgroup`, where
+#'    `names(igenes)` are represented by values in `normgroup`.
+#'    In this case, each normgroup is able to use independent genes, which
+#'    is intended when detected genes are independent for each `normgroup`.
 #' @param enforce_design `logical` (this option is not implemented).
 #'    By default the design matrix is used to subset the input `colnames(se)`
 #'    as needed, and `isamples` is used to subset the design matrix
@@ -216,12 +219,16 @@
 #'    improving the summary correlation value.
 #' @param normgroup `character` or `factor` vector with length
 #'    `ncol(se)` or `length(isamples)` when `isamples` is defined.
-#'    Values define independent normalization groups, which performs
-#'    independent analyses within each unique normalization group.
-#'    This option is intended for convenience, enabling separate
+#'
+#'    * Values define independent normalization groups, to perform
+#'    independent analyses within each unique normgroup.
+#'    * This option is intended for convenience, enabling separate
 #'    variance models for each normalization group, which is
 #'    appropriate when analyzing very different sample types.
-#'    During limma model fit, all samples in all groups are used by default,
+#'    * Note that `igenes` can be supplied as a `list` named by values
+#'    in `normgroup` which will thereby limit the analysis to those
+#'    igenes for each `normgroup`.
+#'    * During limma model fit, all samples in all groups are used by default,
 #'    which may incorrectly estimate variance when the variability
 #'    by row is not uniform across different sample types.
 #'    When `normgroup=NULL` the default is to assume all samples are in
@@ -479,7 +486,13 @@ se_contrast_stats <- function
    if (length(igenes) == 0) {
       igenes <- rownames(se);
    }
-   igenes <- intersect(igenes, rownames(se));
+   if (!inherits(igenes, "list")) {
+      igenes <- intersect(igenes, rownames(se));
+   } else {
+      igenes <- lapply(igenes, function(igenes1){
+         intersect(igenes1, rownames(se))
+      })
+   }
 
    ####################################
    ## normgroup validation
@@ -498,7 +511,8 @@ se_contrast_stats <- function
       normgroup <- jamba::nameVector(
          jamba::pasteByRowOrdered(
             data.frame(check.names=FALSE,
-               SummarizedExperiment::colData(se[, isamples])[,normgroup, drop=FALSE])),
+               SummarizedExperiment::colData(
+                  se[, isamples])[,normgroup, drop=FALSE])),
          isamples);
    } else if (length(names(normgroup)) == 0) {
       if (length(normgroup) == length(isamples)) {
@@ -537,6 +551,20 @@ se_contrast_stats <- function
    }
    if (!all(isamples %in% names(normgroup))) {
       stop("not all isamples are present in names(normgroup)");
+   }
+
+   #######################################################
+   ## validate igenes as list when normgroup is supplied
+   if (length(normgroup) > 0 && inherits(igenes, "list")) {
+      #
+      if (!all(names(igenes) %in% unique(normgroup))) {
+         jamba::printDebug("unique(normgroup): ", unique(normgroup));# debug
+         jamba::printDebug("names(igenes): ", names(igenes));# debug
+         cli::cli_abort(paste0(
+            "{.var normgroup} must be contained in {.var names(igenes)}",
+            " when igenes is a list."));
+         stop("normgroup must be in names(igenes) when igenes is a list.");
+      }
    }
 
    ####################################
@@ -644,6 +672,8 @@ se_contrast_stats <- function
    # each vector will be analyzed independently
    isamples_normgroup_list <- split(isamples, normgroup[isamples]);
 
+   ## Use overall igenes_all to allow for igenes applied per normgroup
+   igenes_all <- unique(unlist(igenes));
 
    ## prepare optional gene_df data.frame
    rowData_df <- NULL;
@@ -652,18 +682,20 @@ se_contrast_stats <- function
    if (length(rowData_colnames) > 0) {
       rowData_df <- data.frame(check.names=FALSE,
          stringsAsFactors=FALSE,
-         probes=igenes,
+         probes=igenes_all,
          data.frame(check.names=FALSE,
             SummarizedExperiment::rowData(
-               se[igenes, ])[, rowData_colnames, drop=FALSE])
+               se[igenes_all, ])[, rowData_colnames, drop=FALSE])
       )
    }
 
    ## Iterate each assay_name
    ## Run statistical tests for gene data
-   stats_hits_dfs1 <- lapply(jamba::nameVector(assay_names), function(signalSet) {
+   stats_hits_dfs1 <- lapply(jamba::nameVector(assay_names),
+      function(signalSet) {
       retVals <- list();
-      imatrix <- SummarizedExperiment::assays(se[igenes, isamples])[[signalSet]];
+      imatrix <- SummarizedExperiment::assays(
+         se[igenes_all, isamples])[[signalSet]];
       if (length(imatrix) == 0) {
          return(NULL)
       }
@@ -696,14 +728,20 @@ se_contrast_stats <- function
 
       # iterate each normgroup independently
       if (TRUE %in% do_normgroups) {
-         normgroup_stats <- lapply(jamba::nameVectorN(isamples_normgroup_list), function(normgroup_name) {
+         normgroup_stats <- lapply(jamba::nameVectorN(isamples_normgroup_list),
+            function(normgroup_name) {
             normgroup_samples <- isamples_normgroup_list[[normgroup_name]];
+            if (inherits(igenes, "list")) {
+               normgroup_igenes <- igenes[[normgroup_name]];
+            } else {
+               normgroup_igenes <- igenes;
+            }
             if (verbose) {
                jamba::printDebug("se_contrast_stats(): ",
                   "   Analyzing normgroup_name: ", normgroup_name);
             }
-            # new imatrix_ng only uses samples in this normgroup
-            imatrix_ng <- imatrix[,normgroup_samples, drop=FALSE];
+            # new imatrix_ng only uses igenes,samples in this normgroup
+            imatrix_ng <- imatrix[normgroup_igenes, normgroup_samples, drop=FALSE];
             sestats_ng <- validate_sedesign(
                new("SEDesign",
                   design=idesign,
@@ -711,7 +749,9 @@ se_contrast_stats <- function
                samples=normgroup_samples);
             icontrasts_ng <- sestats_ng@contrasts;
             idesign_ng <- sestats_ng@design;
-            if (length(icontrasts_ng) == 0 || ncol(icontrasts_ng) == 0 || nrow(icontrasts_ng) == 0) {
+            if (length(icontrasts_ng) == 0 ||
+                  ncol(icontrasts_ng) == 0 ||
+                  nrow(icontrasts_ng) == 0) {
                if (verbose) {
                   jamba::printDebug("se_contrast_stats(): ",
                      "   No contrasts were defined for this normgroup_name.",

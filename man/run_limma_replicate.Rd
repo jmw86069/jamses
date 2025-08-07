@@ -117,8 +117,8 @@ Other jamses stats:
 \code{\link{process_sestats_to_hitim}()},
 \code{\link{save_sestats}()},
 \code{\link{se_contrast_stats}()},
-\code{\link{sestats_to_dfs}()},
 \code{\link{sestats_to_df}()},
+\code{\link{sestats_to_dfs}()},
 \code{\link{voom_jam}()}
 }
 \concept{jamses stats}

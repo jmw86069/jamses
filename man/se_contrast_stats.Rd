@@ -126,7 +126,13 @@ contrasts, and sample-group design matrices. These values are ignored
 when \code{sedesign} is defined.}
 
 \item{igenes}{\code{character} vector with optional subset of \code{rownames(se)},
-by default it uses all \code{rownames(se)}.}
+by default (NULL) it uses all \code{rownames(se)}.
+\itemize{
+\item Alternatively, \code{list} input used together with \code{normgroup}, where
+\code{names(igenes)} are represented by values in \code{normgroup}.
+In this case, each normgroup is able to use independent genes, which
+is intended when detected genes are independent for each \code{normgroup}.
+}}
 
 \item{isamples}{\code{character} vector with optional subset of \code{colnames(se)},
 by default it uses \code{colnames(se)} that are also defined in the design
@@ -248,12 +254,16 @@ improving the summary correlation value.}
 
 \item{normgroup}{\code{character} or \code{factor} vector with length
 \code{ncol(se)} or \code{length(isamples)} when \code{isamples} is defined.
-Values define independent normalization groups, which performs
-independent analyses within each unique normalization group.
-This option is intended for convenience, enabling separate
+\itemize{
+\item Values define independent normalization groups, to perform
+independent analyses within each unique normgroup.
+\item This option is intended for convenience, enabling separate
 variance models for each normalization group, which is
 appropriate when analyzing very different sample types.
-During limma model fit, all samples in all groups are used by default,
+\item Note that \code{igenes} can be supplied as a \code{list} named by values
+in \code{normgroup} which will thereby limit the analysis to those
+igenes for each \code{normgroup}.
+\item During limma model fit, all samples in all groups are used by default,
 which may incorrectly estimate variance when the variability
 by row is not uniform across different sample types.
 When \code{normgroup=NULL} the default is to assume all samples are in
@@ -263,6 +273,7 @@ Each subset of samples begins with the same \code{sedesign}, \code{idesign},
 subset the appropriate contrasts to use only samples within the
 current normgroup. As a result, any contrasts that span two
 normgroups will be removed, and will not appear in the output.
+}
 
 The argument can be supplied as one of the following:
 \itemize{
@@ -303,7 +314,6 @@ thresholds to define "statistical hits" by three main criteria:
 \item max group mean
 }
 
-This function is unique in that it applies the statistical methods
 to one or more "signals" in the input \code{SummarizedExperiment} assays,
 specifically intended to compare things like normalization methods.
 
@@ -520,8 +530,8 @@ Other jamses stats:
 \code{\link{process_sestats_to_hitim}()},
 \code{\link{run_limma_replicate}()},
 \code{\link{save_sestats}()},
-\code{\link{sestats_to_dfs}()},
 \code{\link{sestats_to_df}()},
+\code{\link{sestats_to_dfs}()},
 \code{\link{voom_jam}()}
 }
 \concept{jamses stats}

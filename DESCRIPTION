@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.69.900
+Version: 0.0.70.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -48,5 +48,5 @@ URL: http://github.com/jmw86069/jamses
 BugReports: http://github.com/jmw86069/jamses/issues
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Config/testthat/edition: 3

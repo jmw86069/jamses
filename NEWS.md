@@ -1,3 +1,14 @@
+# jamses 0.0.70.900
+
+## changes to existing functions
+
+* `se_contrast_stats()`
+
+   * Argument `igenes` now accepts `list` input, named to match values
+   in `normgroup`. The purpose is to enable independent sets of genes
+   to be tested for each `normgroup`, which is helpful when there
+   are independent sets of detected genes for example.
+
 # jamses 0.0.69.900
 
 * Bumped version for some jam packages in Imports:
