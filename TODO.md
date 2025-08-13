@@ -1,11 +1,25 @@
 
 # TODO for jamses
 
+## 08aug2025
+
+* `se_contrast_stats()`
+
+   * Figure out how to test a subset of rows, but retain the total
+   rows in the output.
+   Purpose is to mimic DESeq2 output, where it tests only a subset of rows,
+   but returns summary information about all rows anyway.
+   
+      * Perhaps option to return all rows?
+      * Should the group mean and logFC values be reported without P-values?
+      Probably yes.
+
+   * DONE. Update `se_contrast_stats()` to handle `detected_genes` as list
+   alongside normgroups.
+   Purpose is to apply independent detected genes for corresponding normgroups.
+
 ## 07aug2025
 
-* DONE. Update `se_contrast_stats()` to handle `detected_genes` as list
-alongside normgroups.
-Purpose is to apply independent detected genes for corresponding normgroups.
 
 
 ## 11apr2025

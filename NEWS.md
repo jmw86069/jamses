@@ -1,3 +1,7 @@
+# jamses 0.0.71.900
+
+* Bumped jamba dependency to 1.0.4 and pointed to CRAN, not Github.
+
 # jamses 0.0.70.900
 
 ## changes to existing functions
