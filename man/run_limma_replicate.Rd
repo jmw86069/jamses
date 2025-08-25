@@ -25,6 +25,7 @@ run_limma_replicate(
   rowData_df = NULL,
   collapse_by_gene = FALSE,
   correlation = NULL,
+  define_hits = TRUE,
   posthoc_test = c("none", "DEqMS"),
   posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   seed = 123,
@@ -56,6 +57,9 @@ when there are multiple rows that represent the same gene.}
 Note that when \code{block} is defined (and non-empty), and when
 \code{correlation=NULL}, the correlation will be calculated by
 calling \code{limma::duplicateCorrelation()}.}
+
+\item{define_hits}{\code{logical} indicating whether to define hits
+using the statistical thresholds.}
 
 \item{seed}{\code{numeric} value used to define \code{set.seed()} for reproducibility.
 To avoid setting seed, use \code{seed=NULL}.}

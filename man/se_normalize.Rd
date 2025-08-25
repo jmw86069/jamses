@@ -97,10 +97,20 @@ the default value in \code{matrix_normalize()}, for example
 to the \code{jammanorm} normalization method.}
 
 \item{normgroup}{\code{character} or equivalent vector that defines subgroups
-of \code{samples} to be normalized indendently of each normgroup. When
-\code{NULL} then all data is normalized together as default.
-The \code{normgroup} vector is expected to be in the same order as
-\code{samples}, or \code{names(normgroup)} must contain all \code{samples}.}
+of \code{samples} to be normalized indendently of each normgroup, or
+\code{character} vector with one or more colnames in \code{colData(se)}.
+\itemize{
+\item When \code{normgroup} is \code{NULL} all data is normalized together by default.
+\item When supplying colnames in \code{colData(se)}, values are combined using
+\code{jamba::pasteByRow()} which uses \verb{_} underscore delimiter between
+non-empty fields in each column.
+\item When supplying a vector of normgroup values, it should be equal
+to \code{length(samples)} or should be named using values in \code{samples}
+such that all \code{samples} are present in \code{names(normgroup)}.
+\item Note that when data are normalized in independent normgroups,
+these normgroups are not normalized relative to each other.
+Data are only normalized within each independent normgroup.
+}}
 
 \item{output_sep}{\code{character} string used as a delimited between the
 \code{method} and the \code{assay_names} to define the output assay name,
@@ -112,11 +122,10 @@ matrix values with the same output assay name. When \code{override=FALSE}
 and the output assay name already exists, the normalization will
 not be performed.}
 
-\item{populate_mcols}{\code{logical} indicating whether to populate
+\item{populate_mcols}{\code{logical}, default TRUE, whether to populate
 normalization details into \code{mcols(assays(se))}, including
-the normalization \code{method},
-the source \code{assay_name} used during normalization, and
-values from \code{params}.}
+the normalization \code{method}, the source \code{assay_name} used during
+normalization, and values from \code{params}.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 

@@ -1,3 +1,28 @@
+# jamses 0.0.72.900
+
+## changes to existing functions
+
+* `se_contrast_stats()`, `run_limma_replicate()`, `ebayes2df()`
+
+   * New argument `define_hits=TRUE` to enable the option to process
+   without defining hits. Currently experimental, intended for eventual use
+   to calculate mean and logFC without P-Value, specifically when testing
+   a subset of rows, but reporting all rows.
+   Early iterative step forward.
+
+* `se_normalize()`
+
+   * Allow `normgroup` to use colnames in  `colData()`.
+   * Allow `genes` to be a `list` named by values in `normgroup`, so
+   normalization can use genes specific to each normgroup.
+
+* `matrix_normalize`
+
+   * New argument `normgroup_rows` with optional `list` of rows to use
+   for each `normgroup` value when supplied. This argument is intended
+   when using `se_normalize()` with `genes` as a `list` of rows to use
+   independently for each `normgroup`.
+
 # jamses 0.0.71.900
 
 * Bumped jamba dependency to 1.0.4 and pointed to CRAN, not Github.

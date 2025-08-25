@@ -18,6 +18,7 @@ matrix_normalize(
     doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
     0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
+  normgroup_rows = NULL,
   subset_columns = NULL,
   debug = FALSE,
   verbose = TRUE,
@@ -78,13 +79,31 @@ whose values are a list named by the relevant method parameter.
 See examples.}
 
 \item{normgroup}{\code{character} or equivalent vector that defines subgroups
-of \code{samples} to be normalized indendently of each normgroup. When
-\code{NULL} then all data is normalized together as default.
-The \code{normgroup} vector is expected to be in the order of
-\code{colnames(x)} in the same order.}
+of \code{samples} to be normalized indendently of each normgroup.
+\itemize{
+\item When \code{normgroup} is \code{NULL} all data is normalized together as default.
+\item The \code{normgroup} vector is expected to be in the order of
+\code{colnames(x)}.
+\item Note that when data are normalized in independent normgroups,
+these normgroups are not normalized relative to each other.
+Data are only normalized within each independent normgroup.
+}}
+
+\item{normgroup_rows}{\code{list} with \code{character} values which must match
+\code{rownames(x)}, and where \code{names(normgroup_rows)} must also match
+the values in \code{normgroup}.
+\itemize{
+\item The purpose is to permit using independent rows for each normgroup,
+for example if the detected genes (rows) in each matrix differ
+for each normgroup, the normalization should only use each
+appropriate set of detected genes (rows).
+\item When \code{normgroup_rows} are applied, data for rows not present in each
+particular normgroup will be set to \code{NA}, since those values were
+not included in the normalization for that normgroup.
+}}
 
 \item{subset_columns}{\code{integer} intended for internal use when
-\code{normgroups} is provided. This argument is used to instruct
+\code{normgroup} is provided. This argument is used to instruct
 each normalization method to use an appropriate subset of
 \code{params} based upon the subset of columns being analyzed.}
 

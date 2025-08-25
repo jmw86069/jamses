@@ -89,10 +89,18 @@
 #'    `minimum_mean=2` then use other default values relevant
 #'    to the `jammanorm` normalization method.
 #' @param normgroup `character` or equivalent vector that defines subgroups
-#'    of `samples` to be normalized indendently of each normgroup. When
-#'    `NULL` then all data is normalized together as default.
-#'    The `normgroup` vector is expected to be in the same order as
-#'    `samples`, or `names(normgroup)` must contain all `samples`.
+#'    of `samples` to be normalized indendently of each normgroup, or
+#'    `character` vector with one or more colnames in `colData(se)`.
+#'    * When `normgroup` is `NULL` all data is normalized together by default.
+#'    * When supplying colnames in `colData(se)`, values are combined using
+#'    `jamba::pasteByRow()` which uses `_` underscore delimiter between
+#'    non-empty fields in each column.
+#'    * When supplying a vector of normgroup values, it should be equal
+#'    to `length(samples)` or should be named using values in `samples`
+#'    such that all `samples` are present in `names(normgroup)`.
+#'    * Note that when data are normalized in independent normgroups,
+#'    these normgroups are not normalized relative to each other.
+#'    Data are only normalized within each independent normgroup.
 #' @param output_sep `character` string used as a delimited between the
 #'    `method` and the `assay_names` to define the output assay name,
 #'    for example when `assay_name="counts"`, `method="quantile"`,
@@ -101,11 +109,10 @@
 #'    matrix values with the same output assay name. When `override=FALSE`
 #'    and the output assay name already exists, the normalization will
 #'    not be performed.
-#' @param populate_mcols `logical` indicating whether to populate
+#' @param populate_mcols `logical`, default TRUE, whether to populate
 #'    normalization details into `mcols(assays(se))`, including
-#'    the normalization `method`,
-#'    the source `assay_name` used during normalization, and
-#'    values from `params`.
+#'    the normalization `method`, the source `assay_name` used during
+#'    normalization, and values from `params`.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `matrix_normalize()`.
 #'
@@ -250,8 +257,14 @@ se_normalize <- function
 
    allgenes <- rownames(se);
    allsamples <- colnames(se);
+
+   # validate genes and samples using rownames(se), colnames(se)
    if (length(genes) == 0) {
       genes <- allgenes;
+   } else if (inherits(genes, "list")) {
+      genes <- lapply(genes, function(igenes){
+         intersect(igenes, allgenes)
+      })
    } else {
       genes <- intersect(genes, allgenes);
    }
@@ -260,7 +273,10 @@ se_normalize <- function
    } else {
       samples <- intersect(samples, allsamples);
    }
-   if (length(genes) == 0 || length(samples) == 0) {
+
+   # check if any entries have length zero
+   if (length(genes) == 0 || length(samples) == 0 ||
+         (inherits(genes, "list") && any(lengths(genes) == 0))) {
       cli::cli_abort(paste0(
          "Only recognized {.var length(genes)}={length(genes)}",
          " and {.var length(samples)}={length(samples)} ",
@@ -272,9 +288,17 @@ se_normalize <- function
          length(samples),
          " samples in the input se."));
    }
+
    # optional normgroup
    if (length(normgroup) > 0) {
-      if (length(names(normgroup)) > 0) {
+      if (all(normgroup %in% colnames(SummarizedExperiment::colData(se)))) {
+         # 0.0.72.900 - recognize colnames in colData
+         normgroup <- jamba::nameVector(
+            jamba::pasteByRow(
+               SummarizedExperiment::colData(
+                  se[, samples])[, normgroup, drop=FALSE]),
+            samples)
+      } else if (length(names(normgroup)) > 0) {
          if (!all(samples %in% names(normgroup))) {
             cli::cli_abort(paste0(
                "When {.var names(normgroup)} is defined ",
@@ -290,7 +314,8 @@ se_normalize <- function
       } else {
          if (length(normgroup) != length(samples)) {
             cli::cli_abort(paste0(
-               "When {.var names(normgroup)} is not defined ",
+               "When {.var names(normgroup)} is not defined, ",
+               "values should match {.var colnames(colData(se))}, or ",
                "length(normgroup)=",
                "{length(normgroup)}",
                ", must equal ",
@@ -332,6 +357,38 @@ se_normalize <- function
       }
    }
 
+   # handle genes input as list
+   normgroup_rows <- NULL;
+   if (length(genes) > 0 && inherits(genes, "list")) {
+      if (length(normgroup) == 0) {
+         if (length(genes) == 1) {
+            # use as vector
+            genes <- unique(genes[[1]]);
+         } else {
+            # error
+            cli::cli_abort(paste0(
+               "normgroup is empty, genes should not be a list ",
+               "with multiple entries."))
+            stop(paste0("normgroup is empty, genes should not be a list ",
+               "with multiple entries."))
+         }
+      } else {
+         use_normgroups <- unique(as.character(normgroup));
+         if (!all(use_normgroups %in% names(genes))) {
+            # error, not all normgroup are defined in names(genes)
+            cli::cli_abort(paste0(
+               "normgroup values must all be present in {.var names(genes)}."))
+            stop(paste0("normgroup values must all be present in names(genes)}."))
+         } else {
+            # define list for normgroup_rows
+            normgroup_rows <- genes[use_normgroups];
+            # use all rows in se
+            genes <- rownames(se);
+         }
+      }
+   }
+
+
    # iterate assay_names, within which iterate method
    for (assay_name in assay_names) {
       for (imethod in method) {
@@ -362,6 +419,7 @@ se_normalize <- function
             method=imethod,
             params=params,
             normgroup=normgroup,
+            normgroup_rows=normgroup_rows,
             verbose=(verbose - 1) > 0,
             floor=floor,
             enforce_norm_floor=enforce_norm_floor,
@@ -653,12 +711,25 @@ se_normalize <- function
 #'    whose values are a list named by the relevant method parameter.
 #'    See examples.
 #' @param normgroup `character` or equivalent vector that defines subgroups
-#'    of `samples` to be normalized indendently of each normgroup. When
-#'    `NULL` then all data is normalized together as default.
-#'    The `normgroup` vector is expected to be in the order of
-#'    `colnames(x)` in the same order.
+#'    of `samples` to be normalized indendently of each normgroup.
+#'    * When `normgroup` is `NULL` all data is normalized together as default.
+#'    * The `normgroup` vector is expected to be in the order of
+#'    `colnames(x)`.
+#'    * Note that when data are normalized in independent normgroups,
+#'    these normgroups are not normalized relative to each other.
+#'    Data are only normalized within each independent normgroup.
+#' @param normgroup_rows `list` with `character` values which must match
+#'    `rownames(x)`, and where `names(normgroup_rows)` must also match
+#'    the values in `normgroup`.
+#'    * The purpose is to permit using independent rows for each normgroup,
+#'    for example if the detected genes (rows) in each matrix differ
+#'    for each normgroup, the normalization should only use each
+#'    appropriate set of detected genes (rows).
+#'    * When `normgroup_rows` are applied, data for rows not present in each
+#'    particular normgroup will be set to `NA`, since those values were
+#'    not included in the normalization for that normgroup.
 #' @param subset_columns `integer` intended for internal use when
-#'    `normgroups` is provided. This argument is used to instruct
+#'    `normgroup` is provided. This argument is used to instruct
 #'    each normalization method to use an appropriate subset of
 #'    `params` based upon the subset of columns being analyzed.
 #' @param verbose `logical` indicating whether to print verbose output.
@@ -810,6 +881,7 @@ matrix_normalize <- function
        doWeighting=TRUE,
        Acutoff=NULL)),
  normgroup=NULL,
+ normgroup_rows=NULL,
  subset_columns=NULL,
  debug=FALSE,
  verbose=TRUE,
@@ -834,8 +906,33 @@ matrix_normalize <- function
       x_split_v <- unlist(unname(x_split));
       x_split_order <- order(x_split_v);
 
+      if (length(normgroup_rows) > 0) {
+         # validate the names(normgroup_rows) match unique(normgroup)
+         if (!all(unique(as.character(normgroup)) %in% names(normgroup_rows))) {
+            cli::cli_abort(paste0(
+               "Not all {.var normgroup} values are present in ",
+               "{.var names(normgroup_rows)}."));
+            stop(paste0("All normgroup values must be ",
+               "provided in names(normgroup_rows)."));
+         }
+      }
+
       normgroup_out <- lapply(x_split, function(i_colnames){
-         matrix_normalize(x=x[, i_colnames, drop=FALSE],
+         # 0.0.72.900 - optional normgroup_rows
+         use_rows <- rownames(x);
+         if (length(normgroup_rows) > 0) {
+            use_normgroup <- as.character(normgroup[head(i_colnames, 1)]);
+            use_rows <- normgroup_rows[[use_normgroup]];
+         }
+         # create NA matrix
+         xnorm <- matrix(data=NA_real_,
+            ncol=length(i_colnames),
+            nrow=nrow(x));
+         rownames(xnorm) <- rownames(x);
+         colnames(xnorm) <- colnames(x)[i_colnames];
+         # fill rows used for normalization
+         xnorm[use_rows, i_colnames] <- matrix_normalize(
+            x=x[use_rows, i_colnames, drop=FALSE],
             method=method,
             apply_log2=apply_log2,
             floor=floor,
@@ -843,9 +940,11 @@ matrix_normalize <- function
             enforce_norm_floor=enforce_norm_floor,
             params=params,
             normgroup=NULL,
+            normgroup_rows=NULL,
             subset_columns=i_colnames,
             verbose=verbose,
             ...);
+         xnorm;
       });
       #return(normgroup_out);
       # combine normalized matrices

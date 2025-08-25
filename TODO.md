@@ -1,9 +1,45 @@
 
 # TODO for jamses
 
-## 08aug2025
+## 21aug2025
+
+* `se_normalized()`
+
+   * DONE. When processing `normgroup`, accept `detected_genes` as `list` named
+   by normgroup, then use each subset of detected genes for normalization.
+   * DONE. Confirm `normgroup` can be supplied as colnames in `colData(se)`.
+
+* `matrix_normalize()`
+
+   * DONE. Support normgroup and `normgroup_rows` to allow independent rows
+   to be normalized for each normgroup.
 
 * `se_contrast_stats()`
+
+   * When `igenes` is supplied as a list length 1, and normgroups are
+   not supplied or have length 1, use it as-is.
+   * Consider method to return group mean and logFC for "all rows" not
+   only the detected rows `igenes`.
+   
+      * Add option to calculate for all rows.
+      Document for users that `igenes` is the appropriate way to test
+      only a subset of rows - and not by subsetting `se[igenes, ]`.
+      * Easiest approach might be to run once with all rows, grab only
+      the group means, mgm, and logFC.
+      Skip the voom step - it does not affect mean/logFC anyway.
+      Voom adds a step, sometimes two-steps when used with block,
+      but can be skipped.
+      Keep things like normgroup, batch/blocking factor, etc.
+      which do affect mean/logFC.
+      Then run again with all the full parameters as usual.
+      Somehow* merge the final stat table values.
+
+* S4 SEStats object
+
+   * Need method to combine two SEStats together.
+
+## 08aug2025
+
 
    * Figure out how to test a subset of rows, but retain the total
    rows in the output.

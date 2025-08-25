@@ -26,6 +26,7 @@ se_contrast_stats(
   enforce_design = TRUE,
   use_voom = FALSE,
   voom_block_twostep = TRUE,
+  define_hits = TRUE,
   posthoc_test = c("none", "DEqMS"),
   posthoc_args = list(DEqMS = list(PSM_counts = NULL, fit.method = "loess")),
   weights = NULL,
