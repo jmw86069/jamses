@@ -502,7 +502,20 @@ se_contrast_stats <- function
          jamba::printDebug("se_contrast_stats(): ",
             "normgroup defined 'bulk' for all samples");
       }
-      normgroup <- jamba::nameVector(rep("bulk", length(isamples)),
+      use_normgroup <- "bulk";
+      if (inherits(igenes, "list")) {
+         if (length(igenes) == 1) {
+            use_normgroup <- head(names(igenes), 1);
+         } else {
+            # error
+            cli::cli_abort(paste0(
+               "{.var igenes} as a list must have length=1 ",
+               "when no normgroups are present."));
+            stop("igenes as list must be length=1 when no normgroups are used.")
+         }
+      }
+      normgroup <- jamba::nameVector(rep(use_normgroup,
+         length(isamples)),
          isamples);
    } else if (all(normgroup %in% colnames(SummarizedExperiment::colData(se)))) {
       if (verbose) {
@@ -531,9 +544,17 @@ se_contrast_stats <- function
                "Consider supplying names(normgroup) in future."));
          }
       } else {
-         stop("normgroup supplied as a vector must contain names(normgroup) which match isamples.");
+         cli::cli_abort(paste0(
+            "{.var normgroup} supplied as a vector must ",
+            "either match {.var length(isamples)} or must ",
+            "contain {.var names(normgroup)} to match {.var isamples}."))
+         stop(paste0("normgroup supplied as a vector must ",
+            "either match length(isamples) or must ",
+            "contain names(normgroup) which match isamples."));
       }
    } else if (!all(isamples %in% names(normgroup))) {
+      cli::cli_abort(paste0(
+         "Not all {.var isamples} were found in {.var names(normgroup)}."));
       stop("not all isamples are contained in names(normgroup)");
    } else {
       # order normgroup by isamples
@@ -544,14 +565,11 @@ se_contrast_stats <- function
    }
    if (length(normgroup) > 0) {
       normgroup <- normgroup[isamples];
-   }
-   if (any(is.na(normgroup))) {
-      cli::cli_abort(paste0(
-         "{.var normgroup} must not contain NA values."));
-      stop("normgroup must not contain NA values.");
-   }
-   if (!all(isamples %in% names(normgroup))) {
-      stop("not all isamples are present in names(normgroup)");
+      if (any(is.na(normgroup))) {
+         cli::cli_abort(paste0(
+            "{.var normgroup} must not contain NA values."));
+         stop("normgroup must not contain NA values.");
+      }
    }
 
    #######################################################

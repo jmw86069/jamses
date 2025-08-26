@@ -9,6 +9,8 @@
    to calculate mean and logFC without P-Value, specifically when testing
    a subset of rows, but reporting all rows.
    Early iterative step forward.
+   * Now when `igenes` is supplied as a `list` with length 1, and no normgroup
+   is defined, it uses the name of the `igenes` list to define the normgroup.
 
 * `se_normalize()`
 
@@ -22,6 +24,16 @@
    for each `normgroup` value when supplied. This argument is intended
    when using `se_normalize()` with `genes` as a `list` of rows to use
    independently for each `normgroup`.
+
+## New functions
+
+* `merge_statdf_all_test()` - work-in-progress
+
+   * Attempt to combine all rows with tested rows in two `sestats` results.
+   * The basic idea is to "test" a subset of rows, usually detected rows,
+   but supply the full table which has other values such as logFC and
+   group mean. Answers the question "Was this tested?" and
+   "Why is there no statistical result?"
 
 # jamses 0.0.71.900
 

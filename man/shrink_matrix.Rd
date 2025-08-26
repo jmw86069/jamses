@@ -73,6 +73,7 @@ Other jamses utilities:
 \code{\link{make_block_arrow_polygon}()},
 \code{\link{mark_stat_hits}()},
 \code{\link{matrix_normalize}()},
+\code{\link{merge_statdf_all_test}()},
 \code{\link{point_handedness}()},
 \code{\link{point_slope_intercept}()},
 \code{\link{shortest_unique_abbreviation}()},

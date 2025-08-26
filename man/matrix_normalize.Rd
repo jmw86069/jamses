@@ -385,6 +385,7 @@ Other jamses utilities:
 \code{\link{log2fold_to_fold}()},
 \code{\link{make_block_arrow_polygon}()},
 \code{\link{mark_stat_hits}()},
+\code{\link{merge_statdf_all_test}()},
 \code{\link{point_handedness}()},
 \code{\link{point_slope_intercept}()},
 \code{\link{shortest_unique_abbreviation}()},

@@ -1,6 +1,20 @@
 
 # TODO for jamses
 
+## 25aug2025
+
+* `heatmap_se()` consider trimming the color key to the range of values
+included in the heatmap. Specifically if all values are positive, only
+show the positive range in the color key?
+* Add vignette "How to make heatmaps with `heatmap_se()`"
+* Add method to merge the "all rows, no hits" output
+and "detected rows, with hits" so the results can be returned together.
+* Add `testthat` example data, examples for `se_contrast_stats()` with and
+without block, normgroups, voom, posthoc_test="DEqMS",
+detected_genes as a list, etc.
+* Add more vignettes with explainers, and examples: Mass spec data using
+high noise floor, and handle_na examples.
+
 ## 21aug2025
 
 * `se_normalized()`
