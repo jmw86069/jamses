@@ -91,10 +91,12 @@ point_handedness(pt1, pt2, slope=-Inf, do_plot=TRUE)
 \seealso{
 Other jamses utilities: 
 \code{\link{choose_annotation_colnames}()},
+\code{\link{combine_sestats}()},
 \code{\link{contrast2comp_dev}()},
 \code{\link{fold_to_log2fold}()},
 \code{\link{intercalate}()},
 \code{\link{list2im_opt}()},
+\code{\link{list_to_sestats}()},
 \code{\link{log2fold_to_fold}()},
 \code{\link{make_block_arrow_polygon}()},
 \code{\link{mark_stat_hits}()},

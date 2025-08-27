@@ -1,3 +1,19 @@
+# jamses 0.0.73.900
+
+## new functions
+
+* `combine_sestats()`
+
+   * Method to merge/combine two or more sestats objects, currently the
+   `list` output of `se_contrast_stats()`, but will use the
+   S4 SEStats object when released.
+
+* `list_to_sestats()`
+
+   * Simple method to convert a `list` of `data.frame` stat tables
+   to sestats format, as above currently the `list` format, but will
+   use the S4 SEStats object format when released.
+
 # jamses 0.0.72.900
 
 ## changes to existing functions
