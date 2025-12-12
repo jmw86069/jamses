@@ -4,7 +4,7 @@
 \alias{geomx_to_se}
 \title{Convert NanoStringGeoMxSet to SummarizedExperiment}
 \usage{
-geomx_to_se(x, assay_names = NULL, ...)
+geomx_to_se(x, assay_names = NULL, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{\code{NanoStringGeoMxSet} object}

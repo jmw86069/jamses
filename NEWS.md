@@ -1,3 +1,18 @@
+# jamses 0.0.74.900
+
+## Changes to existing functions
+
+* `heatmap_se()`
+
+   * New argument `rowData_side='left'` which can now recognize 'right'
+   to place row annotations on the right.
+   * New behavior for `right_annotation`, `rowData_side='right'` and
+   `mark_rows`. When `right_annotation` is supplied upfront, and either
+   `mark_rows` or `rowData_side='right'` is active, the output will become
+   `HeatmapList` due to the methods used in ComplexHeatmap to combine
+   multiple HeatmapAnnotation objects.
+   Otherwise, these elements will be combined when present.
+
 # jamses 0.0.73.900
 
 ## new functions

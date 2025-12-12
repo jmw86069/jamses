@@ -156,6 +156,23 @@
 #'
 #' @family jamses heatmaps
 #'
+#' @returns `Heatmap` object, capable of being drawn using
+#'    `ComplexHeatmap::draw()`.
+#'    * In special scenarios when `right_annotation` is provided
+#'    together with `mark_rows` or `rowData_side='right'`,
+#'    the output is `HeatmapList`.
+#'    * In either case, the row and column order can be returned using
+#'    `jamba::heatmap_row_order()` and `jamba::heatmap_column_order()`,
+#'    respectively.
+#'    * When `row_label_colname` is provided, the output of
+#'    `jamba::heatmap_row_order()` will include named `character` vectors.
+#'    The names will include the labels as displayed, while the values
+#'    will match the data being plotted. Typically, data are available
+#'    using `hm@matrix` for `Heatmap` objects, and `hm@ht_list[[1]]@matrix`
+#'    for `HeatmapList` objects, where the first heatmap in the list
+#'    is typically the main heatmap, with additional heatmaps on the right
+#'    indicating the right_annotation data where applicable.
+#'
 #' @param se `SummarizedExperiment` by default, or one of the following:
 #'    * `SummarizedExperiment` with accessor functions
 #'    `rowData()`, `colData()`, and `assays()`. It will use
@@ -368,6 +385,17 @@
 #'    as a named `list` of color vectors or color functions. The names
 #'    of this list must match colnames to be displayed, otherwise
 #'    `ComplexHeatmap::Heatmap()` will define its own color function.
+#' @param rowData_side `character` string with the side to place the
+#'    annotations defined by `rowData_colnames`. Default 'left', although
+#'    'right' is available as of 0.0.74.900.
+#'    * When `rowData_side='right'` the annotation data are prepared
+#'    as usual, and assigned to `right_annotation`.
+#'    * When `rowData_side='right'` and either `right_annotation` or
+#'    `mark_rows` are enabled, the right annotation is therefore added
+#'    to combine them, resulting in a `HeatmapList` output, thereby
+#'    also causing the output of this function to be `HeatmapList`.
+#'    It can be drawn as usual with `ComplexHeatmap::draw())`, however
+#'    it may be difficult to combine heatmaps vertically using `%v%`.
 #' @param left_annotation specific heatmap annotation as defined by
 #'    `ComplexHeatmap::rowAnnotation()`. When supplied, the `rowData_colnames`
 #'    and `sestats` row annotations are not displayed. In order to supply
@@ -379,8 +407,14 @@
 #'    label, in degrees, where `0` indicates normal text, and `90` is
 #'    rotated vertically.
 #' @param right_annotation specific heatmap annotation as defined by
-#'    `ComplexHeatmap::HeatmapAnnotation()`. This element is created
-#'    automatically when `mark_rows` is supplied.
+#'    `ComplexHeatmap::HeatmapAnnotation()`.
+#'    * This element is created automatically when `mark_rows` is supplied.
+#'    * Note: When `right_annotation` and `mark_rows` are both defined,
+#'    the annotations are added, which produces `HeatmapList` instead
+#'    of `HeatmapAnnotation`, and as a result, it is also added
+#'    to the heatmap for correct results, causing the output to become
+#'    `HeatmapList` instead of `Heatmap`. It can still be drawn, but
+#'    cannot easily be combined vertically using `%v%` for example.
 #' @param simple_anno_size `grid::unit` size used to define heatmap
 #'    annotation sizes (height or width of each line) for any simple
 #'    annotations.
@@ -493,10 +527,17 @@
 #'    2,000 rows this step can become somewhat slow.
 #' @param mark_rows `character` vector of values in `rownames(se)` that
 #'    should be labeled using `ComplexHeatmap::anno_mark()` in call-out
-#'    style. Usually this argument is used when `show_row_names=FALSE`,
-#'    hiding the row labels, but is not required. Values in `mark_rows`
-#'    are intersected with rows displayed in the heatmap, therefore only
-#'    matching entries will be labeled.
+#'    style.
+#'    * Usually this argument is used when `show_row_names=FALSE`,
+#'    hiding the row labels, but is not required.
+#'    * Values in `mark_rows` are intersected with rows included
+#'    in the heatmap, therefore only matching entries will be labeled.
+#'    * Note when `mark_rows` and another of `right_annotation` or
+#'    `rowData_side='right'` is active, the mark labels are always placed
+#'    nearest the heatmap, consistent with ComplexHeatmap convention.
+#'    Also, in this case the output of this function becomes
+#'    `HeatmapList` instead of `Heatmap`, due to how ComplexHeatmap
+#'    adds multiple annotations together.
 #' @param mark_labels_gp `grid::gpar` to customize the font used by labels
 #'    when `mark_rows` is supplied.
 #' @param column_title `character` optional title to include at the top
@@ -889,6 +930,8 @@ heatmap_se <- function
  top_annotation=NULL,
  top_annotation_name_gp=grid::gpar(),
  rowData_colnames=NULL,
+ rowData_side=c("left",
+    "right"),
  left_annotation=NULL,
  left_annotation_name_gp=grid::gpar(),
  left_annotation_name_rot=90,
@@ -954,6 +997,8 @@ heatmap_se <- function
    # if (!suppressPackageStartupMessages(require(SummarizedExperiment))) {
    #    stop("This function requires Bioconductor package SummarizedExperiment.");
    # }
+   # validate arguments
+   rowData_side <- match.arg(rowData_side);
    if (length(correlation) == 0) {
       correlation <- FALSE;
    }
@@ -1341,14 +1386,33 @@ heatmap_se <- function
          lapply(jamba::nameVector(top_colnames), function(iname){
             if (iname %in% names(top_color_list)) {
                if (is.function(top_color_list[[iname]])) {
-                  if ("breaks" %in% names(attributes(top_color_list[[iname]]))) {
+                  use_color_fn <- top_color_list[[iname]];
+                  use_breaks_at <- NULL;
+                  use_breaks_labels <- NULL;
+                  if ("legend_at" %in% names(attributes(use_color_fn))) {
+                     use_breaks_at <- attr(use_color_fn, "legend_at")
+                     if ("legend_labels" %in% names(attributes(use_color_fn))) {
+                        use_breaks_labels <- attr(use_color_fn, "legend_labels")
+                     } else {
+                        use_breaks_labels <- use_breaks_at
+                     }
+                  } else if ("breaks" %in% names(attributes(use_color_fn))) {
+                     use_breaks_at <- attr(use_color_fn, "breaks")
+                     if ("labels" %in% names(attributes(use_color_fn))) {
+                        use_breaks_labels <- attr(use_color_fn, "labels")
+                     } else {
+                        use_breaks_labels <- use_breaks_at;
+                     }
+                  }
+                  if (length(use_breaks_at) > 0) {
                      list(border=legend_border_color,
                         title_gp=legend_title_gp,
                         labels_gp=legend_labels_gp,
                         grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                         grid_width=grid::unit(4 * legend_grid_cex, "mm"),
                         color_bar="discrete",
-                        at=attr(top_color_list[[iname]], "breaks"))
+                        at=use_breaks_at,
+                        labels=use_breaks_labels)
                   } else {
                      list(border=legend_border_color,
                         title_gp=legend_title_gp,
@@ -1394,6 +1458,7 @@ heatmap_se <- function
    }
 
    # left_annotation
+   left_arglist <- NULL;
    if (length(left_annotation) == 0 && !correlation) {
       row_anno_fontsize <- jamba::noiseFloor(
          column_cex * row_anno_fontsize,
@@ -1533,14 +1598,33 @@ heatmap_se <- function
             lapply(jamba::nameVector(rowData_colnames), function(iname){
                if (iname %in% names(left_color_list)) {
                   if (is.function(left_color_list[[iname]])) {
-                     if ("breaks" %in% names(attributes(left_color_list[[iname]]))) {
+                     use_color_fn <- left_color_list[[iname]];
+                     use_breaks_at <- NULL;
+                     use_breaks_labels <- NULL;
+                     if ("legend_at" %in% names(attributes(use_color_fn))) {
+                        use_breaks_at <- attr(use_color_fn, "legend_at")
+                        if ("legend_labels" %in% names(attributes(use_color_fn))) {
+                           use_breaks_labels <- attr(use_color_fn, "legend_labels")
+                        } else {
+                           use_breaks_labels <- use_breaks_at
+                        }
+                     } else if ("breaks" %in% names(attributes(use_color_fn))) {
+                        use_breaks_at <- attr(use_color_fn, "breaks")
+                        if ("labels" %in% names(attributes(use_color_fn))) {
+                           use_breaks_labels <- attr(use_color_fn, "labels")
+                        } else {
+                           use_breaks_labels <- use_breaks_at;
+                        }
+                     }
+                     if (length(use_breaks_at) > 0) {
                         list(border=legend_border_color,
                            color_bar="discrete",
                            title_gp=legend_title_gp,
                            labels_gp=legend_labels_gp,
                            grid_height=grid::unit(4 * legend_grid_cex, "mm"),
                            grid_width=grid::unit(4 * legend_grid_cex, "mm"),
-                           at=attr(left_color_list[[iname]], "breaks"))
+                           at=use_breaks_at,
+                           labels=use_breaks_labels)
                      } else {
                         list(border=legend_border_color,
                            title_gp=legend_title_gp,
@@ -1606,12 +1690,25 @@ heatmap_se <- function
          left_arglist <- c(
             left_alist,
             left_anno_list);
-         left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
-            left_arglist);
-         if (debug > 1) {
-            print(jamba::sdim(left_annotation@anno_list))
-            for (i in left_annotation@anno_list){
-               print(i@show_legend)
+         if ("left" %in% rowData_side) {
+            left_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+               left_arglist);
+            if (debug > 1) {
+               print(jamba::sdim(left_annotation@anno_list))
+               for (i in left_annotation@anno_list){
+                  print(i@show_legend)
+               }
+            }
+         } else {
+            if (length(right_annotation) > 0) {
+               # add to previous right_annotation
+               right_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+                  left_arglist) + right_annotation;
+               attr(right_annotation, "jamses_note") <- "added"
+            } else {
+               right_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+                  left_arglist);
+               attr(right_annotation, "jamses_note") <- "rowData"
             }
          }
       }
@@ -1920,7 +2017,24 @@ heatmap_se <- function
       if (length(right_annotation) == 0) {
          right_annotation <- right_annotation_mark;
       } else {
-         right_annotation <- right_annotation + right_annotation_mark;
+         if ("rowData" %in% attr(right_annotation, "jamses_note")) {
+            left_anno_list <- c(
+               left_anno_list,
+               list(
+                  mark_rows=ComplexHeatmap::anno_mark(
+                     which="row",
+                     at=mark_at,
+                     labels=row_labels[mark_at],
+                     labels_gp=mark_labels_gp))
+               );
+            left_arglist <- c(
+               left_alist,
+               left_anno_list);
+            right_annotation <- do.call(ComplexHeatmap::rowAnnotation,
+               left_arglist);
+         } else {
+            right_annotation <- right_annotation_mark + right_annotation;
+         }
       }
    }
 
@@ -2035,6 +2149,11 @@ heatmap_se <- function
       jamba::printDebug("heatmap_se(): ",
          "row_split (pre-heatmap):");print(head(row_split, 20));
    }
+   right_annotation_hml <- NULL;
+   if (inherits(right_annotation, "HeatmapList")) {
+      right_annotation_hml <- right_annotation;
+      right_annotation <- NULL;
+   }
    hm_hits <- jamba::call_fn_ellipsis(ComplexHeatmap::Heatmap,
       matrix=se_matrix,
       use_raster=use_raster,
@@ -2079,6 +2198,10 @@ heatmap_se <- function
    attr(hm_hits, "hm_title") <- hm_title;
    if (length(column_title) > 0) {
       attr(hm_hits, "column_title") <- column_title;
+   }
+   # optionallly apply right_annotation as HeatmapList
+   if (inherits(right_annotation_hml, "HeatmapList")) {
+      hm_hits <- hm_hits + right_annotation_hml
    }
    if (debug) {
       ret_list <- list(

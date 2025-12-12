@@ -1,6 +1,14 @@
 
 # TODO for jamses
 
+## 12dec2025
+
+* DONE. Recognize color function attributes 'legend_at' and 'legend_labels',
+specific for circlize-like functions which have color breaks, and
+need custom 'at' and 'labels' for the legend.
+* DONE. Add small option to display row annotations on the right.
+Special request.
+
 ## 28aug2025
 
 * Simplify default print/show for SEDesign objects. Don't print all to screen,

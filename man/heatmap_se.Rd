@@ -38,6 +38,7 @@ heatmap_se(
   top_annotation = NULL,
   top_annotation_name_gp = grid::gpar(),
   rowData_colnames = NULL,
+  rowData_side = c("left", "right"),
   left_annotation = NULL,
   left_annotation_name_gp = grid::gpar(),
   left_annotation_name_rot = 90,
@@ -355,6 +356,20 @@ as a named \code{list} of color vectors or color functions. The names
 of this list must match colnames to be displayed, otherwise
 \code{ComplexHeatmap::Heatmap()} will define its own color function.}
 
+\item{rowData_side}{\code{character} string with the side to place the
+annotations defined by \code{rowData_colnames}. Default 'left', although
+'right' is available as of 0.0.74.900.
+\itemize{
+\item When \code{rowData_side='right'} the annotation data are prepared
+as usual, and assigned to \code{right_annotation}.
+\item When \code{rowData_side='right'} and either \code{right_annotation} or
+\code{mark_rows} are enabled, the right annotation is therefore added
+to combine them, resulting in a \code{HeatmapList} output, thereby
+also causing the output of this function to be \code{HeatmapList}.
+It can be drawn as usual with \verb{ComplexHeatmap::draw())}, however
+it may be difficult to combine heatmaps vertically using \verb{\%v\%}.
+}}
+
 \item{left_annotation}{specific heatmap annotation as defined by
 \code{ComplexHeatmap::rowAnnotation()}. When supplied, the \code{rowData_colnames}
 and \code{sestats} row annotations are not displayed. In order to supply
@@ -369,8 +384,16 @@ label, in degrees, where \code{0} indicates normal text, and \code{90} is
 rotated vertically.}
 
 \item{right_annotation}{specific heatmap annotation as defined by
-\code{ComplexHeatmap::HeatmapAnnotation()}. This element is created
-automatically when \code{mark_rows} is supplied.}
+\code{ComplexHeatmap::HeatmapAnnotation()}.
+\itemize{
+\item This element is created automatically when \code{mark_rows} is supplied.
+\item Note: When \code{right_annotation} and \code{mark_rows} are both defined,
+the annotations are added, which produces \code{HeatmapList} instead
+of \code{HeatmapAnnotation}, and as a result, it is also added
+to the heatmap for correct results, causing the output to become
+\code{HeatmapList} instead of \code{Heatmap}. It can still be drawn, but
+cannot easily be combined vertically using \verb{\%v\%} for example.
+}}
 
 \item{simple_anno_size}{\code{grid::unit} size used to define heatmap
 annotation sizes (height or width of each line) for any simple
@@ -507,10 +530,19 @@ display row names, and row dendrogram, respectively. With more than
 
 \item{mark_rows}{\code{character} vector of values in \code{rownames(se)} that
 should be labeled using \code{ComplexHeatmap::anno_mark()} in call-out
-style. Usually this argument is used when \code{show_row_names=FALSE},
-hiding the row labels, but is not required. Values in \code{mark_rows}
-are intersected with rows displayed in the heatmap, therefore only
-matching entries will be labeled.}
+style.
+\itemize{
+\item Usually this argument is used when \code{show_row_names=FALSE},
+hiding the row labels, but is not required.
+\item Values in \code{mark_rows} are intersected with rows included
+in the heatmap, therefore only matching entries will be labeled.
+\item Note when \code{mark_rows} and another of \code{right_annotation} or
+\code{rowData_side='right'} is active, the mark labels are always placed
+nearest the heatmap, consistent with ComplexHeatmap convention.
+Also, in this case the output of this function becomes
+\code{HeatmapList} instead of \code{Heatmap}, due to how ComplexHeatmap
+adds multiple annotations together.
+}}
 
 \item{mark_labels_gp}{\code{grid::gpar} to customize the font used by labels
 when \code{mark_rows} is supplied.}
@@ -635,6 +667,26 @@ reflect the actual size of each pixel.}
 }}
 
 \item{...}{additional arguments are passed to supporting functions.}
+}
+\value{
+\code{Heatmap} object, capable of being drawn using
+\code{ComplexHeatmap::draw()}.
+\itemize{
+\item In special scenarios when \code{right_annotation} is provided
+together with \code{mark_rows} or \code{rowData_side='right'},
+the output is \code{HeatmapList}.
+\item In either case, the row and column order can be returned using
+\code{jamba::heatmap_row_order()} and \code{jamba::heatmap_column_order()},
+respectively.
+\item When \code{row_label_colname} is provided, the output of
+\code{jamba::heatmap_row_order()} will include named \code{character} vectors.
+The names will include the labels as displayed, while the values
+will match the data being plotted. Typically, data are available
+using \code{hm@matrix} for \code{Heatmap} objects, and \code{hm@ht_list[[1]]@matrix}
+for \code{HeatmapList} objects, where the first heatmap in the list
+is typically the main heatmap, with additional heatmaps on the right
+indicating the right_annotation data where applicable.
+}
 }
 \description{
 Heatmap for SummarizedExperiment data
