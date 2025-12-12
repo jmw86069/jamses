@@ -14,6 +14,34 @@
    to sestats format, as above currently the `list` format, but will
    use the S4 SEStats object format when released.
 
+* `se_to_assay_names()`, `se_to_assay_data()`
+
+   * Wrappers to obtain names of assays/exprs matrices stored in the
+   relevant object types: SummarizedExperiment, SingleCellExperiment,
+   ExpressionSet, eSet, or Seurat.
+   It should work for any object that inherits from these classes.
+
+* `geomx_to_se()`
+
+   * Convert `GeomxTools::NanoStringGeoMxSet` to `SummarizedExperiment`,
+   also taking care to combine `sData` and `phenoData` into one `colData`
+   for convenience.
+
+## changes to existing functions
+
+* `heatmap_se()`
+
+   * New arguments: `noise_floor`, `noise_floor_value` used to apply
+   filtering to data before centering.
+   * New argument: `transformation` with optional `function` to be applied
+   to `numeric` assay data after filtering, and before centering.
+   * Improved support for `NanoStringGeoMxData` by using
+   `se_to_assay_names()` and `se_to_assay_data()`.
+   For now it does not call `geomx_to_se()` partly because the GeoMx object
+   stores assay data in an environment which may be more efficient with
+   memory. The SE object copies into the object, making it appear to get
+   much larger in size.
+
 # jamses 0.0.72.900
 
 ## changes to existing functions

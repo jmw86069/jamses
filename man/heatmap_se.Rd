@@ -28,6 +28,9 @@ heatmap_se(
   centerby_colnames = NULL,
   controlSamples = NULL,
   control_label = "",
+  noise_floor = NA,
+  noise_floor_value = noise_floor,
+  transformation = NULL,
   controlFloor = NA,
   naControlAction = c("na", "row", "floor", "min"),
   naControlFloor = 0,
@@ -261,15 +264,66 @@ in this format:
 \code{"centered within {centerby_colnames}, {control_label}"}, for example
 \code{"centered within Genotype/Time, versus Vehicle"}.}
 
+\item{noise_floor, noise_floor_value}{\code{numeric} values used to adjust
+data \emph{before} data centering. It is most useful when changing \code{0}
+to \code{NA}, which is appropriate when zero \code{0} represents 'not measured'.
+\itemize{
+\item \code{noise_floor}: threshold at or below which all \code{numeric}
+values are set to \code{noise_floor_value}.
+\itemize{
+\item For example, \code{noise_floor=0} and \code{noise_floor_value=NA} will
+set any value at or below \code{0} to \code{NA}. This strategy is appropriate
+when values of zero \code{0} are considered 'not measured', and
+therefore should not be considered when centering data.
+Values of \code{NA} will be colored using the argument 'na_col'
+whose default is \code{na_col="grey"} in \code{ComplexHeatmap::Heatmap()}.
+\item Another option is to set \code{noise_floor=0} or some technical noise
+floor pertinent to the platform, then \code{noise_floor_value=noise_floor}.
+This approach sets any value at or below the noise floor
+to the noise floor.
+The approach therefore assumes any measurement at or below the
+effective limit of detection is at the limit of detection,
+since no measurement below that value is trustworthy.
+Some platforms (e.g. some tandem mass spectrometry proteomics)
+produces extremely high intensities when a peptide is detected,
+and zero otherwise. However, the effective noise floor is also
+high, even in log2 space it could be log2 of 20. Any measurement
+below log2 of 20 is considered equivalent to 20, since the
+workflow is not capable of measuring 15 for example.
+}
+\item \code{noise_floor_value}: single value used as a replacement when any
+value meets the criteria, at or below \code{noise_floor}.
+\itemize{
+\item The default is to replace with \code{noise_floor}.
+\item Another option is \code{NA} so the values do not affect data centering.
+}
+}}
+
+\item{transformation}{\code{function} default NULL, optional \code{numeric}
+transformation applied \emph{after} applying \code{noise_floor}, and
+\emph{before} data is centered.
+\itemize{
+\item An example might be \code{transformation = jamba::log2signed()} which
+applies \code{log2(1 + x)} transformation, while also preserving negative
+values if they exist.
+}}
+
 \item{controlFloor, naControlAction, naControlFloor}{passed to
-\code{jamma::centerGeneData()} to customize data centering.
+\code{jamma::centerGeneData()} to customize control group values
+during data centering:
 \itemize{
 \item \code{controlFloor} imposes an optional noise floor to control group
 mean/median values, so the summary value during centering is at
 least \code{controlFloor}. Useful for defining an effective noise floor
-for a platform technology.
+for a platform technology. Use \code{NA} to apply no control floor.
 \item \code{naControlAction} defines the action taken only when values for
-all control samples are \code{NA}.
+all control samples are \code{NA}:
+\itemize{
+\item "na": all values become NA, since the control group is NA.
+\item "row": non-NA values are centered to the row non-NA values.
+\item "floor": non-NA values are centered versus \code{naControlFloor}
+\item "min": non-NA values are centered to non-NA min across all rows
+}
 \item \code{naControlFloor} is a \code{numeric} value used when
 \code{naControlAction="floor"}, which causes the group reference value
 to use the value provided in \code{naControlFloor}.

@@ -298,14 +298,53 @@
 #'    in this format:
 #'    `"centered within {centerby_colnames}, {control_label}"`, for example
 #'    `"centered within Genotype/Time, versus Vehicle"`.
+#' @param noise_floor,noise_floor_value `numeric` values used to adjust
+#'    data *before* data centering. It is most useful when changing `0`
+#'    to `NA`, which is appropriate when zero `0` represents 'not measured'.
+#'    * `noise_floor`: threshold at or below which all `numeric`
+#'    values are set to `noise_floor_value`.
+#'       * For example, `noise_floor=0` and `noise_floor_value=NA` will
+#'       set any value at or below `0` to `NA`. This strategy is appropriate
+#'       when values of zero `0` are considered 'not measured', and
+#'       therefore should not be considered when centering data.
+#'       Values of `NA` will be colored using the argument 'na_col'
+#'       whose default is `na_col="grey"` in `ComplexHeatmap::Heatmap()`.
+#'       * Another option is to set `noise_floor=0` or some technical noise
+#'       floor pertinent to the platform, then `noise_floor_value=noise_floor`.
+#'       This approach sets any value at or below the noise floor
+#'       to the noise floor.
+#'       The approach therefore assumes any measurement at or below the
+#'       effective limit of detection is at the limit of detection,
+#'       since no measurement below that value is trustworthy.
+#'       Some platforms (e.g. some tandem mass spectrometry proteomics)
+#'       produces extremely high intensities when a peptide is detected,
+#'       and zero otherwise. However, the effective noise floor is also
+#'       high, even in log2 space it could be log2 of 20. Any measurement
+#'       below log2 of 20 is considered equivalent to 20, since the
+#'       workflow is not capable of measuring 15 for example.
+#'    * `noise_floor_value`: single value used as a replacement when any
+#'    value meets the criteria, at or below `noise_floor`.
+#'       * The default is to replace with `noise_floor`.
+#'       * Another option is `NA` so the values do not affect data centering.
+#' @param transformation `function` default NULL, optional `numeric`
+#'    transformation applied *after* applying `noise_floor`, and
+#'    *before* data is centered.
+#'    * An example might be `transformation = jamba::log2signed()` which
+#'    applies `log2(1 + x)` transformation, while also preserving negative
+#'    values if they exist.
 #' @param controlFloor,naControlAction,naControlFloor passed to
-#'    `jamma::centerGeneData()` to customize data centering.
+#'    `jamma::centerGeneData()` to customize control group values
+#'    during data centering:
 #'    * `controlFloor` imposes an optional noise floor to control group
 #'    mean/median values, so the summary value during centering is at
 #'    least `controlFloor`. Useful for defining an effective noise floor
-#'    for a platform technology.
+#'    for a platform technology. Use `NA` to apply no control floor.
 #'    * `naControlAction` defines the action taken only when values for
-#'    all control samples are `NA`.
+#'    all control samples are `NA`:
+#'       * "na": all values become NA, since the control group is NA.
+#'       * "row": non-NA values are centered to the row non-NA values.
+#'       * "floor": non-NA values are centered versus `naControlFloor`
+#'       * "min": non-NA values are centered to non-NA min across all rows
 #'    * `naControlFloor` is a `numeric` value used when
 #'    `naControlAction="floor"`, which causes the group reference value
 #'    to use the value provided in `naControlFloor`.
@@ -837,6 +876,9 @@ heatmap_se <- function
  centerby_colnames=NULL,
  controlSamples=NULL,
  control_label="",
+ noise_floor=NA,
+ noise_floor_value=noise_floor,
+ transformation=NULL,
  controlFloor=NA,
  naControlAction=c("na",
     "row",
@@ -1067,7 +1109,7 @@ heatmap_se <- function
          lengths(row_order_use)),
          rows);
       # subset the se data?
-      se <- se[rows,];
+      se <- se[rows, ];
 
       if (debug) {
          return(invisible(row_order));
@@ -1156,8 +1198,8 @@ heatmap_se <- function
    # pull colData and rowData as data.frame
    # to be tolerant of other data types
    # Note: This process does not subset by `rows` or `isamples` yet
-   ## Experimental: handle Seurat objects
-   if ("Seurat" %in% class(se)) {
+   ## Experimental: convert Seurat to SingleCellExperiment
+   if (inherits(se, "Seurat")) {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
             "Converted Seurat input to SingleCellExperiment");
@@ -1166,6 +1208,7 @@ heatmap_se <- function
          # assay=assay_name,
          ...);
    }
+
    # confirm rownames and colnames exist
    if (length(rownames(se)) == 0) {
       rownames(se) <- paste0("row",
@@ -1225,7 +1268,6 @@ heatmap_se <- function
       column_cex * 60/(length(isamples))^(1/2),
       ceiling=20,
       minimum=2);
-
    # row font size
    if (correlation) {
       row_fontsize <- jamba::noiseFloor(
@@ -1639,15 +1681,18 @@ heatmap_se <- function
          "row_split:", head(row_split, 20));
    }
 
-   assay_name <- head(intersect(assay_name,
-      names(SummarizedExperiment::assays(se))), 1);
+   se_assay_names <- se_to_assay_names(se);
+   assay_name <- head(intersect(assay_name, se_assay_names), 1);
    if (length(assay_name) == 0) {
-      if (length(SummarizedExperiment::assays(se)) == 1) {
-         assay_name <- head(names(SummarizedExperiment::assays(se)), 1);
+      if (length(se_assay_names) == 1) {
+         assay_name <- head(se_assay_names, 1);
          if (length(assay_name) == 0) {
             assay_name <- 1;
          }
       } else {
+         cli::cli_abort(paste0(
+            "{.var assay_name} must be supplied when there are ",
+            "multiple available assays in {.var se}"));
          stop("assay_name must be supplied when there are multiple assays(se)")
       }
    }
@@ -1718,14 +1763,40 @@ heatmap_se <- function
       show_row_names <- (length(gene_hits) <= 500);
    }
 
-   # pull assay data separately so we can tolerate other object types
+   # pull assay data and tolerate various object types
    # Note columns are not subset here so they can be used during centering.
    # After centering, isamples is used to subset columns as needed.
-   if (any(grepl("SummarizedExperiment|SingleCellExperiment",
-      ignore.case=TRUE, class(se)))) {
-      se_matrix <- SummarizedExperiment::assays(se[gene_hits, ])[[assay_name]];
-   } else {
-      se_matrix <- Biobase::assayData(se[gene_hits, ])[[assay_name]];
+   se_matrix <- se_to_assay_data(se[gene_hits, ],
+      assay_name=assay_name);
+
+   # apply optional noise_floor
+   if (length(noise_floor_value) == 0) {
+      noise_floor_value <- NA;
+   }
+   if (length(noise_floor) == 1 &&
+         !noise_floor %in% NA &&
+         is.numeric(noise_floor) &&
+         length(noise_floor_value) == 1) {
+      # apply floor
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            "Applying noise_floor=", noise_floor,
+            " to noise_floor_value=", noise_floor_value);
+         # consider printing number of values affected, out of how many
+      }
+      se_matrix[!is.na(se_matrix) & se_matrix <= noise_floor] <-
+         noise_floor_value;
+   }
+
+   # apply optional transformation
+   if (length(transformation) > 0 && inherits(transformation, "function")) {
+      if (verbose) {
+         jamba::printDebug("heatmap_se(): ",
+            sep="",
+            c("Applying custom ",
+            "transformation()"));
+      }
+      se_matrix[] <- transformation(se_matrix);
    }
 
    # heatmap legend labels
@@ -1862,8 +1933,8 @@ heatmap_se <- function
       if (is.function(cluster_rows)) {
          if (verbose) {
             jamba::printDebug("heatmap_se(): ",
-               paste0("row_split requires for cluster_rows()",
-                  " to be applied to generate a dendrogram."));
+               paste0("row_split requires cluster_rows()",
+                  " to be applied upfront, running now."));
          }
          cluster_rows <- cluster_rows(se_matrix);
       } else if (FALSE %in% cluster_rows || length(cluster_rows) == 0) {
@@ -1960,7 +2031,7 @@ heatmap_se <- function
    }
 
    # define heatmap
-   if (verbose && length(row_split) > 0) {
+   if (verbose > 1 && length(row_split) > 0) {
       jamba::printDebug("heatmap_se(): ",
          "row_split (pre-heatmap):");print(head(row_split, 20));
    }

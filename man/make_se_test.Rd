@@ -113,11 +113,14 @@ hm2a + hm2b + hm2c
 }
 \seealso{
 Other jamses SE utilities: 
+\code{\link{geomx_to_se}()},
 \code{\link{se_collapse_by_column}()},
 \code{\link{se_collapse_by_row}()},
 \code{\link{se_detected_rows}()},
 \code{\link{se_normalize}()},
 \code{\link{se_rbind}()},
+\code{\link{se_to_assay_data}()},
+\code{\link{se_to_assay_names}()},
 \code{\link{se_to_rowcoldata}()}
 }
 \concept{jamses SE utilities}

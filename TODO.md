@@ -1,6 +1,14 @@
 
 # TODO for jamses
 
+## 28aug2025
+
+* Simplify default print/show for SEDesign objects. Don't print all to screen,
+print more like a summary of contents: Number of samples, groups, contrasts.
+Maybe the first n of each?
+* `heatmap_se()` uses `amap::hcluster()` which on Windows is not multi-threaded,
+consider fastcluster as improved replacement?
+
 ## 25aug2025
 
 * `heatmap_se()` consider trimming the color key to the range of values
