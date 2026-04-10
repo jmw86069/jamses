@@ -582,9 +582,13 @@
 #'    be used as a border color for the various legend colors. Note this
 #'    argument recognizes only the first color provided, and does not
 #'    recycle different colors across the various legend borders.
-#' @param show_top_annotation_name,show_left_annotation_name `logical`
-#'    indicating whether to display the annotation name beside the top and
-#'    left annotations, respectively.
+#' @param show_top_annotation_name,show_left_annotation_name `character`,
+#'    default 'right' for top annotation, 'bottom' for left annotation.
+#'    Indicating which side to place the label, or 'none' to hide the
+#'    label.
+#'    * For compatibility with previous work, and ComplexHeatmap in general,
+#'    `logical` is accepted, where TRUE uses the default side, and FALSE
+#'    hides the label.
 #' @param row_label_colname `character` string used as a row label, where
 #'    this value is a colname in `rowData(se)`. It is useful when rownames
 #'    are some identifier that is not user-friendly, and where another column
@@ -963,8 +967,12 @@ heatmap_se <- function
  show_top_legend=TRUE,
  show_left_legend=TRUE,
  legend_border_color="black",
- show_top_annotation_name=TRUE,
- show_left_annotation_name=TRUE,
+ show_top_annotation_name=c("right",
+    "left",
+    "none"),
+ show_left_annotation_name=c("bottom",
+    "top",
+    "none"),
  row_label_colname=NULL,
  cluster_columns=FALSE,
  cluster_column_slices=FALSE,
@@ -999,6 +1007,12 @@ heatmap_se <- function
    # }
    # validate arguments
    rowData_side <- match.arg(rowData_side);
+   if (!is.logical(show_left_annotation_name)) {
+      show_left_annotation_name <- match.arg(show_left_annotation_name);
+   }
+   if (!is.logical(show_top_annotation_name)) {
+      show_top_annotation_name <- match.arg(show_top_annotation_name);
+   }
    if (length(correlation) == 0) {
       correlation <- FALSE;
    }
@@ -1446,6 +1460,18 @@ heatmap_se <- function
                   labels_gp=legend_labels_gp)
             }
          }));
+      # top_annotation_name_side
+      top_annotation_name_side <- "right";
+      if (!is.logical(show_top_annotation_name)) {
+         if ("none" %in% show_top_annotation_name) {
+            show_top_annotation_name <- FALSE;
+         } else if ("left" %in% show_top_annotation_name) {
+            show_top_annotation_name <- TRUE;
+            top_annotation_name_side <- "left";
+         } else ("right" %in% show_top_annotation_name) {
+            show_top_annotation_name <- TRUE;
+         }
+      }
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
          border=TRUE,
          df=top_df,
@@ -1454,6 +1480,7 @@ heatmap_se <- function
          simple_anno_size=simple_anno_size,
          show_legend=show_top_legend,
          show_annotation_name=show_top_annotation_name,
+         annotation_name_side=top_annotation_name_side,
          col=top_color_list);
    }
 
@@ -1666,6 +1693,18 @@ heatmap_se <- function
          if (length(left_annotation_name_gp) == 0) {
             left_annotation_name_gp <- grid::gpar(fontsize=row_anno_fontsize);
          }
+         left_annotation_name_side <- "bottom";
+         if (!is.logical(show_left_annotation_name)) {
+            if ("none" %in% show_left_annotation_name) {
+               show_left_annotation_name <- FALSE;
+            } else if ("bottom" %in% show_left_annotation_name) {
+               show_left_annotation_name <- TRUE;
+               left_annotation_name_side <- "bottom";
+            } else if ("top" %in% show_left_annotation_name) {
+               show_left_annotation_name <- TRUE;
+               left_annotation_name_side <- "top";
+            }
+         }
          left_alist <- alist(
             simple_anno_size=simple_anno_size,
             col=left_color_list,
@@ -1675,6 +1714,7 @@ heatmap_se <- function
             show_annotation_name=show_left_annotation_name,
             annotation_name_rot=left_annotation_name_rot,
             annotation_name_gp=left_annotation_name_gp,
+            annotation_name_side=left_annotation_name_side,
             border=TRUE
          );
          if (debug > 1) {

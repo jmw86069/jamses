@@ -1,3 +1,14 @@
+# jamses 0.0.75.900
+
+## Changes to existing functions
+
+* `heatmap_se()`
+
+   * `show_top_annotation_name` and `show_left_annotation_name` can now
+   either be `logical` TRUE/FALSE or a string indicating where to
+   place the label: bottom/top for left annotation; left/right for top
+   annotation.
+
 # jamses 0.0.74.900
 
 ## Changes to existing functions

@@ -1,8 +1,70 @@
 
 # TODO for jamses
 
+## 03apr2026
+
+* `se_contrast_stats()`
+
+   * Each stats data.frame has 'groupname mean', but should be
+   'mean groupname' to match the naming convention of all other
+   columns, e.g. 'adj.P.Val KO-WT', 'fold KO-WT'.
+
+* `save_sestats()`
+
+   * Change "key" to "worksheet key". Make 'sheetName' first column.
+   Add 'comp names' using the 'contrast_names' values.
+   * Decide better approaches for multiple cutoff_name values.
+
+## 23mar2026
+
+* `heatmap_se()` general enhancements.
+
+   * Allow custom `col` color function, to bypass `color_max` color scale.
+   * Define `sample_color_list` when not provided.
+   It currently only creates categorical colors if an incomplete
+   `sample_color_list` is provided. Make it always create colors when needed.
+   * Consider method to trim the color legend range based upon data.
+
+* `heatmap_se()` design idea: show controls used for centering.
+
+   * It would be an optional component to visualize sample centering.
+   * When there are no "centerby_colnames" it only needs to indicate the
+   control samples.
+   * Use arcs to connect samples to the control group, as a visual confirmation.
+   * May be complicated since centering is versus group, so
+   the group would need to be indicated somehow, then arcs connect to the group.
+   * For paired centering, as with repeated measures for example, centering
+   may be to the same subjectID at multiple time points, spread evenly across
+   multiple groups.
+   * Groups could be defined using a colored bar. The bar is continuous when
+   the group replicates are together, otherwise it shows breaks.
+   Bars for multiple groups would be offset to prevent overlap,
+   similar to sequence read tiling.
+   * Arcs would originate from each sample, and connect to the middle sample
+   of each group.
+
+## 17jan2026
+
+* Investigate why `samples()` is "nonstandardGenericFunction" and
+therefore conflicts in incorrect ways with `Biobase::samples()`
+which is a "standardGeneric".
+They do not fallback (dispatch) to each other properly.
+
+## 06jan2026
+
+* `save_sestats()`
+
+   * default `review_output=TRUE` should ALSO SAVE,
+   currently it does not, and gives no clear indication why.
+   * Consider options to add `rowData_colnames` to Excel types:
+   pvalue, highlight, num, int, fc, lfc.
+   * Consider same option to influence colWidths for `rowData_colnames`.
+
+* `plot_sedesign()` is not working when filtering by contrast depth.
+
 ## 12dec2025
 
+* Add `heatmap_se()` visual diff (vdiff) tests.
 * DONE. Recognize color function attributes 'legend_at' and 'legend_labels',
 specific for circlize-like functions which have color breaks, and
 need custom 'at' and 'labels' for the legend.

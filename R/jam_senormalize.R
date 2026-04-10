@@ -413,6 +413,12 @@ se_normalize <- function
                   "'"),
                sep="");
          }
+
+         ## Todo:
+         ## When param includes colData() colnames, it must expand
+         ## to vector before calling matrix_normalize(), because
+         ## matrix_normalize() knows nothing about SummarizedExperiment data.
+
          imatrix <- SummarizedExperiment::assays(
             se[genes, samples])[[assay_name]];
          inorm <- matrix_normalize(imatrix,
