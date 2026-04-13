@@ -1,4 +1,4 @@
-# jamses 0.0.75.900
+# jamses 0.0.75.950
 
 ## Changes to existing functions
 
@@ -7,7 +7,7 @@
    * `show_top_annotation_name` and `show_left_annotation_name` can now
    either be `logical` TRUE/FALSE or a string indicating where to
    place the label: bottom/top for left annotation; left/right for top
-   annotation.
+   annotation. Version 0.0.75.950 fixed a type in an if statement.
 
 # jamses 0.0.74.900
 

@@ -1468,8 +1468,12 @@ heatmap_se <- function
          } else if ("left" %in% show_top_annotation_name) {
             show_top_annotation_name <- TRUE;
             top_annotation_name_side <- "left";
-         } else ("right" %in% show_top_annotation_name) {
+         } else if ("right" %in% show_top_annotation_name) {
             show_top_annotation_name <- TRUE;
+            top_annotation_name_side <- "right";
+         } else {
+            show_top_annotation_name <- TRUE;
+            top_annotation_name_side <- "right";
          }
       }
       top_annotation <- ComplexHeatmap::HeatmapAnnotation(
@@ -1703,6 +1707,9 @@ heatmap_se <- function
             } else if ("top" %in% show_left_annotation_name) {
                show_left_annotation_name <- TRUE;
                left_annotation_name_side <- "top";
+            } else {
+               show_left_annotation_name <- TRUE;
+               left_annotation_name_side <- "bottom";
             }
          }
          left_alist <- alist(
