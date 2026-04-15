@@ -665,6 +665,8 @@
 #'
 #' heatmap_se(se,
 #'    rowData_colnames="Class",
+#'    show_left_annotation_name="top",
+#'    left_annotation_name_rot=150,
 #'    sample_color_list=sample_color_list)
 #'
 #' # split rows by "Class"
@@ -1252,6 +1254,8 @@ heatmap_se <- function
             i;
          }
       })
+   } else {
+      sample_color_list <- list();
    }
 
    # pull colData and rowData as data.frame
@@ -1365,11 +1369,32 @@ heatmap_se <- function
             top_df[[top_colname]] <- factor(top_df[[top_colname]]);
          }
       }
-      if (any(top_colnames %in% names(sample_color_list))) {
-         if (subset_legend_colors) {
+      ## 0.0.76.900 - always validate color list
+      # if (any(top_colnames %in% names(sample_color_list))) {
+         # if (subset_legend_colors) {
             top_color_list <- lapply(jamba::nameVector(top_colnames), function(top_colname){
                sample_colors <- sample_color_list[[top_colname]];
                if (!is.function(sample_colors)) {
+                  # Handle numeric values
+                  if (is.numeric(top_df[isamples, top_colname]) &&
+                        length(sample_colors) == 0) {
+                     val_range <- unique(range(
+                        top_df[isamples, top_colname], na.rm=TRUE));
+                     if (length(val_range) == 1) {
+                        sample_colors <- jamba::nameVector(
+                           sample(colorjam::rainbowJam(32), 1),
+                           head(val_range, 1));
+                     } else if (length(val_range) == 0) {
+                        sample_colors <- NA;
+                     } else if (val_range[1] < 0) {
+                        sample_colors <- colorjam::col_div_xf(
+                           x=max(abs(val_range)))
+                     } else {
+                        sample_colors <- colorjam::col_linear_xf(
+                           x=max(abs(val_range)))
+                     }
+                     return(sample_colors);
+                  }
                   if (is.factor(top_df[isamples, top_colname])) {
                      uniq_values <- levels(top_df[isamples, top_colname]);
                   } else {
@@ -1377,11 +1402,21 @@ heatmap_se <- function
                         as.character(
                            top_df[isamples, top_colname])));
                   }
-                  sample_colors <- sample_colors[uniq_values];
+                  if (subset_legend_colors) {
+                     sample_colors <- sample_colors[uniq_values];
+                     names(sample_colors) <- uniq_values;
+                  } else if (!all(uniq_values %in% names(sample_colors))) {
+                     uniq_values_add <- setdiff(uniq_values,
+                        names(sample_colors));
+                     sample_colors <- c(sample_colors,
+                        jamba::nameVector(
+                           rep(NA, length(uniq_values_add)),
+                           uniq_values_add));
+                  }
                   if (length(sample_colors) == 0) {
                      sample_colors <- rep(NA, length.out=length(uniq_values));
+                     names(sample_colors) <- uniq_values;
                   }
-                  names(sample_colors) <- uniq_values;
                   if (any(is.na(sample_colors))) {
                      # fallback plan for missing values is to assign
                      # generic rainbow categorical colors
@@ -1392,10 +1427,10 @@ heatmap_se <- function
                }
                sample_colors;
             })
-         } else {
-            top_color_list <- sample_color_list[intersect(top_colnames, names(sample_color_list))];
-         }
-      }
+         # } else {
+         #    top_color_list <- sample_color_list[intersect(top_colnames, names(sample_color_list))];
+         # }
+      # }
       top_param_list <- c(
          lapply(jamba::nameVector(top_colnames), function(iname){
             if (iname %in% names(top_color_list)) {
@@ -1586,7 +1621,68 @@ heatmap_se <- function
          use_color_list_names <- intersect(rowData_colnames,
             names(sample_color_list));
          leftanno_color_list <- NULL;
-         if (length(use_color_list_names) > 0) {
+         ## use logic consistent with top_color_list
+         leftanno_color_list <- lapply(jamba::nameVector(rowData_colnames), function(rowData_colname){
+            sample_colors <- sample_color_list[[rowData_colname]];
+            if (!is.function(sample_colors)) {
+               # Handle numeric values
+               if (is.numeric(left_df[gene_hits, rowData_colname]) &&
+                     length(sample_colors) == 0) {
+                  val_range <- unique(range(
+                     left_df[gene_hits, rowData_colname], na.rm=TRUE));
+                  if (length(val_range) == 1) {
+                     sample_colors <- jamba::nameVector(
+                        sample(colorjam::rainbowJam(32), 1),
+                        head(val_range, 1));
+                  } else if (length(val_range) == 0) {
+                     sample_colors <- NA;
+                  } else if (val_range[1] < 0) {
+                     sample_colors <- colorjam::col_div_xf(
+                        x=max(abs(val_range)))
+                  } else {
+                     sample_colors <- colorjam::col_linear_xf(
+                        x=max(abs(val_range)))
+                  }
+                  return(sample_colors);
+               }
+               if (is.factor(left_df[gene_hits, rowData_colname])) {
+                  uniq_values <- levels(left_df[gene_hits, rowData_colname]);
+               } else {
+                  uniq_values <- jamba::mixedSort(unique(
+                     as.character(
+                        left_df[gene_hits, rowData_colname])));
+               }
+               if (subset_legend_colors) {
+                  sample_colors <- sample_colors[uniq_values];
+               } else if (!all(uniq_values %in% names(sample_colors))) {
+                  uniq_values_add <- setdiff(uniq_values,
+                     names(sample_colors));
+                  sample_colors <- c(sample_colors,
+                     jamba::nameVector(
+                        rep(NA, length(uniq_values_add)),
+                        uniq_values_add));
+               }
+               if (length(sample_colors) == 0) {
+                  sample_colors <- rep(NA, length.out=length(uniq_values));
+                  names(sample_colors) <- uniq_values;
+               }
+               if (any(is.na(sample_colors))) {
+                  # fallback plan for missing values is to assign
+                  # generic rainbow categorical colors
+                  sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
+                     n=sum(is.na(sample_colors)),
+                     ...);
+               }
+            }
+            sample_colors;
+         })
+         left_color_list <- c(
+            jamba::rmNULL(
+               leftanno_color_list),
+            left_color_list);
+         ##
+         ## stop using logic below
+         if (FALSE && length(use_color_list_names) > 0) {
             if (subset_legend_colors) {
                leftanno_color_list <- lapply(jamba::nameVector(use_color_list_names), function(use_color_list_name){
                   sample_colors <- sample_color_list[[use_color_list_name]];

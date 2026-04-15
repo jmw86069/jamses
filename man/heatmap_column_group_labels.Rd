@@ -225,6 +225,7 @@ annotations with no associated label.
 \seealso{
 Other jamses heatmaps: 
 \code{\link{detect_heatmap_components}()},
+\code{\link{heatmap_profile_plot}()},
 \code{\link{heatmap_se}()}
 }
 \concept{jamses heatmaps}

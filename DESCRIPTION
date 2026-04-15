@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.75.950
+Version: 0.0.76.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -33,6 +33,8 @@ Suggests:
    testthat (>= 3.0.0),
    statmod,
    edgeR
+Enhances:
+   ggplot2 (>= 4.0.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

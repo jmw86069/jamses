@@ -70,8 +70,8 @@ heatmap_se(
   show_top_legend = TRUE,
   show_left_legend = TRUE,
   legend_border_color = "black",
-  show_top_annotation_name = TRUE,
-  show_left_annotation_name = TRUE,
+  show_top_annotation_name = c("right", "left", "none"),
+  show_left_annotation_name = c("bottom", "top", "none"),
   row_label_colname = NULL,
   cluster_columns = FALSE,
   cluster_column_slices = FALSE,
@@ -598,9 +598,15 @@ be used as a border color for the various legend colors. Note this
 argument recognizes only the first color provided, and does not
 recycle different colors across the various legend borders.}
 
-\item{show_top_annotation_name, show_left_annotation_name}{\code{logical}
-indicating whether to display the annotation name beside the top and
-left annotations, respectively.}
+\item{show_top_annotation_name, show_left_annotation_name}{\code{character},
+default 'right' for top annotation, 'bottom' for left annotation.
+Indicating which side to place the label, or 'none' to hide the
+label.
+\itemize{
+\item For compatibility with previous work, and ComplexHeatmap in general,
+\code{logical} is accepted, where TRUE uses the default side, and FALSE
+hides the label.
+}}
 
 \item{row_label_colname}{\code{character} string used as a row label, where
 this value is a colname in \code{rowData(se)}. It is useful when rownames
@@ -874,6 +880,8 @@ sample_color_list <- list(
 
 heatmap_se(se,
    rowData_colnames="Class",
+   show_left_annotation_name="top",
+   left_annotation_name_rot=150,
    sample_color_list=sample_color_list)
 
 # split rows by "Class"
@@ -1109,6 +1117,7 @@ heatmap_column_group_labels(
 \seealso{
 Other jamses heatmaps: 
 \code{\link{detect_heatmap_components}()},
-\code{\link{heatmap_column_group_labels}()}
+\code{\link{heatmap_column_group_labels}()},
+\code{\link{heatmap_profile_plot}()}
 }
 \concept{jamses heatmaps}

@@ -1,3 +1,29 @@
+# jamses 0.0.76.900
+
+* Added 'ggplot2' to Enhances, used by `heatmap_profile_plot()`.
+
+## New functions
+
+* `heatmap_profile_plot()` converts `Heatmap` to a profile line plot,
+using the data stored in the heatmap. It is intended to make a line plot
+equivalent for a heatmap, using `row_split` to define row groups,
+with option to plot the mean profile per `row_split`, for example
+showing the patterns in each subcluster.
+
+
+## Changes to existing functions
+
+* `heatmap_se()`
+
+   * Annotation colors are consistently defined when not provided by
+   `sample_color_list`. Numeric columns use linear color when all
+   values are positive, divergent color when any values are negative.
+   * When `sample_color_list` is provided with incompletely defined colors,
+   missing colors are added as needed. Now this step occurs regardless
+   of `subset_legend_colors`, where previously it only occurred when
+   `subset_legend_colors=TRUE` (which was default).
+
+
 # jamses 0.0.75.950
 
 ## Changes to existing functions

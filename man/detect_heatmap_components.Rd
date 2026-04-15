@@ -26,6 +26,7 @@ naming conventions used in the \code{ComplexHeatmap} package.
 \seealso{
 Other jamses heatmaps: 
 \code{\link{heatmap_column_group_labels}()},
+\code{\link{heatmap_profile_plot}()},
 \code{\link{heatmap_se}()}
 }
 \concept{jamses heatmaps}

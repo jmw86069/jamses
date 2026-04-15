@@ -1,6 +1,20 @@
 
 # TODO for jamses
 
+## 15apr2026
+
+* Add `heatmap_profile_plot()` as an add-on to `heatmap_se()`, which
+converts the heatmp output to profile line plots.
+* Consider converting `heatmap_column_group_labels()` to
+`HeatmapAnnotation` class.
+
+   * It may not be appropriate, since `HeatmapAnnotation` is intended
+   to draw each column slice individually, and this function draws
+   across column slices.
+   * See https://jokergoo.github.io/ComplexHeatmap-reference/book/heatmap-annotations.html#implement-new-annotation-functions
+   * It would make column group labeling into a proper annotation, with
+   proper spacing, without user needing to adjust settings for alignment.
+
 ## 03apr2026
 
 * `se_contrast_stats()`
