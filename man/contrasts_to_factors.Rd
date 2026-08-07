@@ -2,7 +2,7 @@
 % Please edit documentation in R/jam_sedesign_to_factors.R
 \name{contrasts_to_factors}
 \alias{contrasts_to_factors}
-\title{Convert SEDesign contrasts to data.frame of design factors}
+\title{Convert contrasts to data.frame of design factors}
 \usage{
 contrasts_to_factors(
   contrast_names = NULL,
@@ -15,7 +15,8 @@ contrasts_to_factors(
 )
 }
 \arguments{
-\item{contrast_names}{\code{character} vector of contrast names}
+\item{contrast_names}{\code{character} vector of contrast names, or
+\code{SEDesign} object, which is equivalent to argument 'sedesign'.}
 
 \item{sedesign}{\code{SEDesign} object, used when \code{contrast_names} is
 not supplied.}
@@ -38,7 +39,53 @@ indicating either individual factor levels, or comparison
 of two factor levels.
 }
 \description{
-Convert SEDesign contrasts to data.frame of design factors
+Convert contrasts to data.frame of design factors, each factor
+in a column, with factor levels or with factor level contrasts.
+}
+\details{
+This function is intended to summarize contrasts by factor columns,
+with factor levels or with factor level contrasts, to make
+it easier to review which factor or factors are being compared
+in each contrast.
+
+\strong{Note:} It assumes all contrasts are "proper", which is defined
+as a contrast where only one factor is compared at a time for
+each contrast.
+
+A proper contrast:
+\itemize{
+\item \code{'A_B-C_B'}
+\itemize{
+\item This contrast compares 'factor1': \code{(A-C)},
+both with 'factor2': \code{B}
+}
+}
+
+An improper contrast:
+\itemize{
+\item \code{'A_B-C_D'}
+\itemize{
+\item This contrast compares 'factor1': \code{(A-C)}, while
+'factor2' is also changing: \code{(B-D)}.
+\item However, it is "improper" because the factors are not
+independently controlled, instead the factors are
+confounded into one contrast.
+\item The "proper" form, for the purpose of the assumptions
+in this function, is defined as a "two-way" style
+contrast, a "diff of diffs":
+}
+
+\code{(A_B-C_B)-(A_D-B_D)}
+}
+\subsection{Todo}{
+\itemize{
+\item Currently, "improper" contrasts are returned in the first column,
+with no additional information.
+\item In future, "improper" contrasts should be flagged, or handled
+in a way that preserves the factor levels represented while still
+representing the original contrast.
+}
+}
 }
 \examples{
 group_names <- paste0(
@@ -49,18 +96,31 @@ contrasts_to_factors(sedesign)
 
 }
 \seealso{
-Other jam experiment design: 
-\code{\link{check_sedesign}()},
-\code{\link{contrast2comp}()},
-\code{\link{contrast_colors_by_group}()},
-\code{\link{contrast_names_to_sedesign}()},
-\code{\link{contrasts_to_venn_setlists}()},
-\code{\link{draw_oneway_contrast}()},
-\code{\link{draw_twoway_contrast}()},
-\code{\link{filter_contrast_names}()},
-\code{\link{groups_to_sedesign}()},
-\code{\link{plot_sedesign}()},
-\code{\link{sedesign_to_factors}()},
-\code{\link{validate_sedesign}()}
+Other jam experiment design:
+\code{\link[=SEDesign]{SEDesign()}},
+\code{\link{[,SEDesign-method}},
+\code{\link[=check_sedesign]{check_sedesign()}},
+\code{\link[=contrast2comp]{contrast2comp()}},
+\code{\link[=contrast_colors_by_group]{contrast_colors_by_group()}},
+\code{\link[=contrast_names_to_sedesign]{contrast_names_to_sedesign()}},
+\code{\link[=contrastnames]{contrastnames()}},
+\code{\link[=contrasts]{contrasts()}},
+\code{\link[=contrasts<-]{contrasts<-()}},
+\code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
+\code{\link{design,SEDesign-method}},
+\code{\link{design<-,SEDesign,matrix-method}},
+\code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
+\code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
+\code{\link[=factors]{factors()}},
+\code{\link[=filter_contrast_names]{filter_contrast_names()}},
+\code{\link[=groups]{groups()}},
+\code{\link[=groups_to_sedesign]{groups_to_sedesign()}},
+\code{\link[=plot.SEDesign]{plot.SEDesign()}},
+\code{\link[=plot_sedesign]{plot_sedesign()}},
+\code{\link[=print.SEDesign]{print.SEDesign()}},
+\code{\link[=samples]{samples()}},
+\code{\link[=sedesign_to_factors]{sedesign_to_factors()}},
+\code{\link[=sort_contrasts]{sort_contrasts()}},
+\code{\link[=validate_sedesign]{validate_sedesign()}}
 }
 \concept{jam experiment design}

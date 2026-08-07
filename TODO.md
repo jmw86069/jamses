@@ -1,6 +1,60 @@
 
 # TODO for jamses
 
+## 06aug2026
+
+* Port `heatmap_column_group_labels()` from 'gridtext' to 'marquee'.
+Remove 'gridtext' dependency.
+* `SEDesign`
+
+   * DONE. Consider converting to S7 object. Converted to `S7::new_class()`,
+   see NEWS.md for `jamses 0.0.77.900`. All existing accessors/generics
+   continue to work (`samples()`, `groups()`, `design()`, `contrasts()`,
+   `contrastnames()`, `contrast_names()`, `[`, and `<-` setters).
+   Objects are now created with `SEDesign(design=, contrasts=, samples=,
+   factors=)` instead of `new("SEDesign", ...)`.
+   * DONE (partial). Improve the show/print to give summary information,
+   not print out all the data. `print.SEDesign()` now shows sample/group/
+   contrast counts, and factor levels (in order) for each underlying
+   experimental factor, via new `factors()`/`design_df` (see below).
+   Still TODO: indicate whether a blocking factor was used, and the
+   depth of contrasts (oneway, twoway, etc.).
+   * Added `factors()`/`factors()<-`: labels for the underlying
+   experimental factors (`colnames(design_df)`), used only for display
+   purposes; editing them has no effect on `design`, `contrasts`, or
+   `groups()`. `design_df` (per-group factor decomposition) and
+   `contrasts_df` (cached `contrasts_to_factors()` result) are new
+   internal-use properties, refreshed automatically as needed.
+   * `design()<-`/`contrasts()<-` are now stricter, validating against
+   `groups(sedesign)` exactly; use `groups(sedesign) <- ...` to rename
+   design groups (not generally recommended, but supported).
+
+* Scope out something like 'SEDataList' to store
+collection of analysis-related data in one convenient object.
+
+   * Driving use case: Need to pick up where we left off, using
+   expression data, statistical results, support multiple SEDesign
+   and stats output.
+   * Nice to have: Print method gives reasonable summary of data,
+   the designs used, etc.
+
+## 05jun2026
+
+* Add method to display/print `sedesign` which shows blocking
+in its own column, `data.frame` or `kable` output intended
+only for display and not use as a design matrix.
+* DONE. Consider moving to S7 objects. See `jamses 0.0.77.900` in NEWS.md.
+* DONE. Consider proper `SEDesign` creation. `SEDesign()` is now a proper
+S7 constructor function.
+* Consider `SEDesignList` with `list` of `SEDesign`.
+* Consider method to automate "showing DEG heatmaps", various
+centering styles, with Rmd or Qmd tabset output.
+* Consider suite of methods to print Rmd/Qmd-tabset output:
+
+   * `SEDesign` design/Contrast matrices
+   * `SEDesignList` design/contrast matrices for each model
+   * `SEStats` heatmaps, summary table of hits, plot_sedesign with hits
+
 ## 15apr2026
 
 * Add `heatmap_profile_plot()` as an add-on to `heatmap_se()`, which
@@ -87,9 +141,10 @@ Special request.
 
 ## 28aug2025
 
-* Simplify default print/show for SEDesign objects. Don't print all to screen,
-print more like a summary of contents: Number of samples, groups, contrasts.
-Maybe the first n of each?
+* DONE. Simplify default print/show for SEDesign objects. Don't print all
+to screen, print more like a summary of contents: Number of samples,
+groups, contrasts. Maybe the first n of each? `print.SEDesign()` now
+shows sample/group/contrast counts and factor levels per factor.
 * `heatmap_se()` uses `amap::hcluster()` which on Windows is not multi-threaded,
 consider fastcluster as improved replacement?
 
@@ -180,9 +235,11 @@ high noise floor, and handle_na examples.
 
 ## 02apr2025
 
-* Add `print()`/`show()` for `SEDesign` class:
+* DONE. Add `print()`/`show()` for `SEDesign` class:
 
    * group names, contrast names, number of samples
+   * Implemented as `print.SEDesign()` (S7 objects bypass the classic
+   S4 `show` generic for console auto-printing).
 
 * S4 object `SEStats`
 

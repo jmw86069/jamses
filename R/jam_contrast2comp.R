@@ -246,26 +246,31 @@
 #'    contrasts2_3way_v2,
 #'    changed=contrast_names_3way != contrasts2_3way_v2);
 #'
-#' @param contrast_names `character` vector of statistical contrasts
+#' @param contrast_names `character` vector of statistical contrasts,
+#'    or `SEDesign` object.
+#'    When `SEDesign` is given, the property 'factors_df' is used
+#'    directly.
 #' @param contrast_delim `character` string delimiter between groups,
-#'    typically `"-"` to indicate subtraction of group means.
+#'    default `'-'` to indicate subtraction of group means.
+#'    Values other than `'-'` may not be supported by downstream tools.
 #' @param contrast_factor_delim `character` string delimiter between
-#'    design factors in a contrast.
+#'    design factors in a contrast, default `'_'` (underscore).
 #' @param comp_factor_delim `character` string delimiter between
-#'    design factors in a comp.
-#' @param factor_order `integer`, `list` of `integer` vectors, or `NULL`.
-#'    When supplied as `integer` vector, it is converted to a `list`
-#'    and expanded to `length()` of the input. The `integer` values
-#'    are used by `comp2contrast()` to force the order of factor
-#'    comparisons for two-way and higher order contrasts.
-#' @param add_attr `logical` indicating whether to add attributes to
+#'    design factors in a comp, default `':'` (colon).
+#'    * This value may not be supported by downstream tools, for example
+#'    when used `colnames()` in a contrast matrix.
+#'    * Some tools may convert the contrast `colnames()` using
+#'    `make.names()` which converts `':'` (colon) to `'.'` (period).
+#' @param add_attr `logical`, default FALSE, whether to add attributes to
 #'    the output, containing the input values provided.
-#' @param abbreviate `logical` indicating whether to abbreviate factors,
+#' @param abbreviate `logical`, default FALSE, whether to abbreviate factors,
 #'    by calling `shortest_unique_abbreviation()`.
-#'    Note this option prevents output from being reversible, since
+#'    The main purpose is to shorten extremely long labels, or to shorten
+#'    labels to single-character whenever possible.
+#'    * Note this option prevents output from being reversible, since
 #'    the abbreviated term will not match the original factor level.
-#' @param verbose `logical` indicating whether to print verbose output,
-#'    or for much more verbose output use `verbose=2`.
+#' @param verbose `logical` whether to print verbose output.
+#'    For even more detail use `verbose=2`.
 #' @param ... additional arguments are ignored.
 #'
 #' @export
@@ -279,6 +284,14 @@ contrast2comp <- function
  verbose=FALSE,
  ...)
 {
+   # SEDesign input will use factors_df directly
+   if (inherits(contrast_names, "SEDesign")) {
+      contrasts_df <- contrast_names@contrasts_df;
+      comps <- jamba::pasteByRow(
+         x = contrasts_df,
+         sep = comp_factor_delim)
+      return(comps)
+   }
    # validate delim all have 1 character
    check_delim <- function(x){
       (!is.list(x) && length(x) == 1 && !is.na(x) && nchar(x) == 1 &&

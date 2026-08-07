@@ -273,9 +273,49 @@ sedesign_to_factors <- function
    return(samples_df)
 }
 
-#' Convert SEDesign contrasts to data.frame of design factors
+#' Convert contrasts to data.frame of design factors
 #'
-#' Convert SEDesign contrasts to data.frame of design factors
+#' Convert contrasts to data.frame of design factors, each factor
+#' in a column, with factor levels or with factor level contrasts.
+#' 
+#' This function is intended to summarize contrasts by factor columns,
+#' with factor levels or with factor level contrasts, to make
+#' it easier to review which factor or factors are being compared
+#' in each contrast.
+#' 
+#' **Note:** It assumes all contrasts are "proper", which is defined
+#' as a contrast where only one factor is compared at a time for
+#' each contrast.
+#' 
+#' A proper contrast:
+#' 
+#' * `'A_B-C_B'`
+#' 
+#'    * This contrast compares 'factor1': `(A-C)`,
+#'    both with 'factor2': `B`
+#' 
+#' An improper contrast:
+#' 
+#' * `'A_B-C_D'`
+#' 
+#'    * This contrast compares 'factor1': `(A-C)`, while
+#'    'factor2' is also changing: `(B-D)`.
+#'    * However, it is "improper" because the factors are not
+#'    independently controlled, instead the factors are
+#'    confounded into one contrast.
+#'    * The "proper" form, for the purpose of the assumptions
+#'    in this function, is defined as a "two-way" style
+#'    contrast, a "diff of diffs":
+#'    
+#'    `(A_B-C_B)-(A_D-B_D)`
+#' 
+#' ## Todo
+#' 
+#' * Currently, "improper" contrasts are returned in the first column,
+#' with no additional information.
+#' * In future, "improper" contrasts should be flagged, or handled
+#' in a way that preserves the factor levels represented while still
+#' representing the original contrast.
 #'
 #' @family jam experiment design
 #'
@@ -283,7 +323,8 @@ sedesign_to_factors <- function
 #'    indicating either individual factor levels, or comparison
 #'    of two factor levels.
 #'
-#' @param contrast_names `character` vector of contrast names
+#' @param contrast_names `character` vector of contrast names, or
+#'    `SEDesign` object, which is equivalent to argument 'sedesign'.
 #' @param sedesign `SEDesign` object, used when `contrast_names` is
 #'    not supplied.
 #' @param factor_sep `character` string delimited between factors
@@ -314,20 +355,31 @@ contrasts_to_factors <- function
 {
    # validate input data
    rowname <- match.arg(rowname);
-   if (length(contrast_names) == 1 && "SEDesign" %in% class(contrast_names)) {
-      if (verbose) {
-         jamba::printDebug("contrasts_to_factors(): ",
-            "Accepting SEDesign input in contrast_names.")
-      }
+   if (inherits(contrast_names, "SEDesign")) {
       sedesign <- contrast_names;
       contrast_names <- NULL;
    }
+   if (inherits(sedesign, "SEDesign")) {
+      contrasts_df <- sedesign@contrasts_df;
+      if (inherits(contrasts_df, "data.frame") && nrow(contrasts_df) > 0) {
+         return(contrasts_df)
+      }
+      if (length(factor_names) == 0) {
+         factor_names <- factors(sedesign)
+      }
+   }
+
    if (length(contrast_names) == 0) {
       if (length(sedesign) == 0) {
-         stop("You must supply either contrast_names or sedesign.")
+         cli::cli_abort(paste0(
+            "You must supply either {.var contrast_names}",
+            " or {.var sedesign}"
+         ))
       }
-      if (!"SEDesign" %in% class(sedesign)) {
-         stop("sedesign must be class 'SEDesign'.")
+      if (!inherits(sedesign, "SEDesign")) {
+         cli::cli_abort(paste0(
+            "{.var sedesign} must be class {.cls SEDesign}."
+         ))
       }
       if (verbose) {
          jamba::printDebug("contrasts_to_factors(): ",

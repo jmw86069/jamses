@@ -1,3 +1,46 @@
+# jamses 0.0.77.900
+
+* Refactored `SEDesign` from S4 to S7 object.
+* Removed 'matrixStats' dependency.
+
+## New functions
+
+* `sort_contrasts()` sorts by depth, then factors and levels.
+* `factors()` returns factor names for `SEDesign`.
+* `print.SEDesign()` for a compact console summary: number of
+samples, groups, contrasts; and factor levels (in order) for each
+underlying experimental factor.
+
+## Changes to existing functions
+
+* `SEDesign`
+
+   * Converted from an S4 class to an S7 class (`S7::new_class()`).
+   * Accessors and generics work as before:
+   `samples()`, `groups()`, `design()`, `contrasts()`, `contrastnames()`,
+   `contrast_names()`, `[` subsetting, and their `<-` setter forms.
+   * The most common entrypoint is still `groups_to_sedesign()`.
+   * Objects can be created with
+   `SEDesign(design=, contrasts=, samples=, factors=)` instead of
+   `new("SEDesign", ...)`.
+   * New internal property `design_df` as `data.frame` with one row
+   per design group as from `groups(sedesign)`.
+   It provides a way to store factor labels, e.g. 'Treatment', 'Time',
+   'Genotype', 'Dose', etc.
+   * Factor labels have new generics `factors()` and `factors()<-`
+   for `character` vector of labels per factor.
+   Factor labels are edited with `factors()<-`, and are not shown in
+   the design or contrasts otherwise.
+   * New internal-use property `contrasts_df` (accessed via
+   `@contrasts_df`): cached result of `contrasts_to_factors()`, which
+   can be slow to compute; it is refreshed automatically whenever
+   `design()` or `contrasts()` change.
+   * `design()<-` and `contrasts()<-` are now stricter: `colnames(value)`
+   (for `design()<-`) or `rownames(value)` (for `contrasts()<-`) must
+   match `groups(sedesign)` exactly, or the assignment fails with an
+   informative error.
+
+
 # jamses 0.0.76.900
 
 * Added 'ggplot2' to Enhances, used by `heatmap_profile_plot()`.

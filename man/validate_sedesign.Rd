@@ -76,7 +76,7 @@ icontrasts2 <- matrix(icon,
       icontrastnames))
 icontrasts2
 
-condes2 <- new("SEDesign",
+condes2 <- SEDesign(
    design=mm2,
    contrasts=icontrasts2)
 condes2
@@ -95,18 +95,31 @@ condes2[, c("one", "two")]
 
 }
 \seealso{
-Other jam experiment design: 
-\code{\link{check_sedesign}()},
-\code{\link{contrast2comp}()},
-\code{\link{contrast_colors_by_group}()},
-\code{\link{contrast_names_to_sedesign}()},
-\code{\link{contrasts_to_factors}()},
-\code{\link{contrasts_to_venn_setlists}()},
-\code{\link{draw_oneway_contrast}()},
-\code{\link{draw_twoway_contrast}()},
-\code{\link{filter_contrast_names}()},
-\code{\link{groups_to_sedesign}()},
-\code{\link{plot_sedesign}()},
-\code{\link{sedesign_to_factors}()}
+Other jam experiment design:
+\code{\link[=SEDesign]{SEDesign()}},
+\code{\link{[,SEDesign-method}},
+\code{\link[=check_sedesign]{check_sedesign()}},
+\code{\link[=contrast2comp]{contrast2comp()}},
+\code{\link[=contrast_colors_by_group]{contrast_colors_by_group()}},
+\code{\link[=contrast_names_to_sedesign]{contrast_names_to_sedesign()}},
+\code{\link[=contrastnames]{contrastnames()}},
+\code{\link[=contrasts]{contrasts()}},
+\code{\link[=contrasts<-]{contrasts<-()}},
+\code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
+\code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
+\code{\link{design,SEDesign-method}},
+\code{\link{design<-,SEDesign,matrix-method}},
+\code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
+\code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
+\code{\link[=factors]{factors()}},
+\code{\link[=filter_contrast_names]{filter_contrast_names()}},
+\code{\link[=groups]{groups()}},
+\code{\link[=groups_to_sedesign]{groups_to_sedesign()}},
+\code{\link[=plot.SEDesign]{plot.SEDesign()}},
+\code{\link[=plot_sedesign]{plot_sedesign()}},
+\code{\link[=print.SEDesign]{print.SEDesign()}},
+\code{\link[=samples]{samples()}},
+\code{\link[=sedesign_to_factors]{sedesign_to_factors()}},
+\code{\link[=sort_contrasts]{sort_contrasts()}}
 }
 \concept{jam experiment design}

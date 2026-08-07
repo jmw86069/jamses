@@ -762,7 +762,7 @@ se_contrast_stats <- function
             # new imatrix_ng only uses igenes,samples in this normgroup
             imatrix_ng <- imatrix[normgroup_igenes, normgroup_samples, drop=FALSE];
             sestats_ng <- validate_sedesign(
-               new("SEDesign",
+               SEDesign(
                   design=idesign,
                   contrasts=icontrasts),
                samples=normgroup_samples);

@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.76.900
+Version: 0.0.77.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -18,22 +18,24 @@ Imports: jamba (>= 1.0.4),
    colorjam (>= 0.0.28.900),
    SummarizedExperiment (>= 1.16.1),
    data.table,
-   matrixStats,
    BiocGenerics,
    limma,
    ComplexHeatmap (>= 2.13.4),
    multienrichjam (>= 0.0.90.950),
    amap,
    cli,
-   gridtext
+   gridtext,
+   methods,
+   S7
 Suggests:
-   genejam (>= 0.0.16.900),
-   venndir (>= 0.0.40.900),
-   farrisdata,
+   venndir (>= 0.0.59.900),
    testthat (>= 3.0.0),
    statmod,
-   edgeR
+   edgeR,
+   knitr
 Enhances:
+   genejam (>= 0.0.20.900),
+   farrisdata,
    ggplot2 (>= 4.0.0)
 License: GPL-3
 Encoding: UTF-8
@@ -50,5 +52,5 @@ URL: http://github.com/jmw86069/jamses
 BugReports: http://github.com/jmw86069/jamses/issues
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0.9000

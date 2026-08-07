@@ -51,35 +51,43 @@ names_comp2contrast(
 )
 }
 \arguments{
-\item{contrast_names}{\code{character} vector of statistical contrasts}
+\item{contrast_names}{\code{character} vector of statistical contrasts,
+or \code{SEDesign} object.
+When \code{SEDesign} is given, the property 'factors_df' is used
+directly.}
 
 \item{contrast_delim}{\code{character} string delimiter between groups,
-typically \code{"-"} to indicate subtraction of group means.}
+default \code{'-'} to indicate subtraction of group means.
+Values other than \code{'-'} may not be supported by downstream tools.}
 
 \item{contrast_factor_delim}{\code{character} string delimiter between
-design factors in a contrast.}
+design factors in a contrast, default \code{'_'} (underscore).}
 
 \item{comp_factor_delim}{\code{character} string delimiter between
-design factors in a comp.}
+design factors in a comp, default \code{':'} (colon).
+\itemize{
+\item This value may not be supported by downstream tools, for example
+when used \code{colnames()} in a contrast matrix.
+\item Some tools may convert the contrast \code{colnames()} using
+\code{make.names()} which converts \code{':'} (colon) to \code{'.'} (period).
+}}
 
-\item{add_attr}{\code{logical} indicating whether to add attributes to
+\item{add_attr}{\code{logical}, default FALSE, whether to add attributes to
 the output, containing the input values provided.}
 
-\item{abbreviate}{\code{logical} indicating whether to abbreviate factors,
+\item{abbreviate}{\code{logical}, default FALSE, whether to abbreviate factors,
 by calling \code{shortest_unique_abbreviation()}.
-Note this option prevents output from being reversible, since
-the abbreviated term will not match the original factor level.}
+The main purpose is to shorten extremely long labels, or to shorten
+labels to single-character whenever possible.
+\itemize{
+\item Note this option prevents output from being reversible, since
+the abbreviated term will not match the original factor level.
+}}
 
-\item{verbose}{\code{logical} indicating whether to print verbose output,
-or for much more verbose output use \code{verbose=2}.}
+\item{verbose}{\code{logical} whether to print verbose output.
+For even more detail use \code{verbose=2}.}
 
 \item{...}{additional arguments are ignored.}
-
-\item{factor_order}{\code{integer}, \code{list} of \code{integer} vectors, or \code{NULL}.
-When supplied as \code{integer} vector, it is converted to a \code{list}
-and expanded to \code{length()} of the input. The \code{integer} values
-are used by \code{comp2contrast()} to force the order of factor
-comparisons for two-way and higher order contrasts.}
 }
 \description{
 Convert contrast to short-form comp, and convert comp back to original contrast.
@@ -340,18 +348,31 @@ data.frame(contrast_names_3way,
 
 }
 \seealso{
-Other jam experiment design: 
-\code{\link{check_sedesign}()},
-\code{\link{contrast_colors_by_group}()},
-\code{\link{contrast_names_to_sedesign}()},
-\code{\link{contrasts_to_factors}()},
-\code{\link{contrasts_to_venn_setlists}()},
-\code{\link{draw_oneway_contrast}()},
-\code{\link{draw_twoway_contrast}()},
-\code{\link{filter_contrast_names}()},
-\code{\link{groups_to_sedesign}()},
-\code{\link{plot_sedesign}()},
-\code{\link{sedesign_to_factors}()},
-\code{\link{validate_sedesign}()}
+Other jam experiment design:
+\code{\link[=SEDesign]{SEDesign()}},
+\code{\link{[,SEDesign-method}},
+\code{\link[=check_sedesign]{check_sedesign()}},
+\code{\link[=contrast_colors_by_group]{contrast_colors_by_group()}},
+\code{\link[=contrast_names_to_sedesign]{contrast_names_to_sedesign()}},
+\code{\link[=contrastnames]{contrastnames()}},
+\code{\link[=contrasts]{contrasts()}},
+\code{\link[=contrasts<-]{contrasts<-()}},
+\code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
+\code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
+\code{\link{design,SEDesign-method}},
+\code{\link{design<-,SEDesign,matrix-method}},
+\code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
+\code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
+\code{\link[=factors]{factors()}},
+\code{\link[=filter_contrast_names]{filter_contrast_names()}},
+\code{\link[=groups]{groups()}},
+\code{\link[=groups_to_sedesign]{groups_to_sedesign()}},
+\code{\link[=plot.SEDesign]{plot.SEDesign()}},
+\code{\link[=plot_sedesign]{plot_sedesign()}},
+\code{\link[=print.SEDesign]{print.SEDesign()}},
+\code{\link[=samples]{samples()}},
+\code{\link[=sedesign_to_factors]{sedesign_to_factors()}},
+\code{\link[=sort_contrasts]{sort_contrasts()}},
+\code{\link[=validate_sedesign]{validate_sedesign()}}
 }
 \concept{jam experiment design}

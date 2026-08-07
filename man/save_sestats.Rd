@@ -226,16 +226,16 @@ heatmap_se(se, sestats=sestats, rows=rownames(se))
 
 }
 \seealso{
-Other jamses stats: 
-\code{\link{ebayes2dfs}()},
-\code{\link{format_hits}()},
-\code{\link{handle_na_values}()},
-\code{\link{hit_array_to_list}()},
-\code{\link{process_sestats_to_hitim}()},
-\code{\link{run_limma_replicate}()},
-\code{\link{se_contrast_stats}()},
-\code{\link{sestats_to_df}()},
-\code{\link{sestats_to_dfs}()},
-\code{\link{voom_jam}()}
+Other jamses stats:
+\code{\link[=ebayes2dfs]{ebayes2dfs()}},
+\code{\link[=format_hits]{format_hits()}},
+\code{\link[=handle_na_values]{handle_na_values()}},
+\code{\link[=hit_array_to_list]{hit_array_to_list()}},
+\code{\link[=process_sestats_to_hitim]{process_sestats_to_hitim()}},
+\code{\link[=run_limma_replicate]{run_limma_replicate()}},
+\code{\link[=se_contrast_stats]{se_contrast_stats()}},
+\code{\link[=sestats_to_df]{sestats_to_df()}},
+\code{\link[=sestats_to_dfs]{sestats_to_dfs()}},
+\code{\link[=voom_jam]{voom_jam()}}
 }
 \concept{jamses stats}

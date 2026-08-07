@@ -266,85 +266,77 @@
 #'    axis1=1, axis2=3, axis3=2)
 #'
 #' @export
-plot_sedesign <- function
-(sedesign,
- se=NULL,
- factor_names=NULL,
- factor_sep="_",
- contrast_sep="-",
- axis1=NULL,
- axis2=NULL,
- axis3=NULL,
- axis4=NULL,
- which_contrasts=NULL,
- contrast_style=c("comp",
-    "contrast",
-    "none"),
- contrast_labels=NULL,
- oneway_position=0.9,
- twoway_position=0.5,
- contrast_position=NULL,
- contrast_depths=NULL,
- sestats=NULL,
- sestats_style=c("label",
-    "number",
-    "simple label"),
- assay_names=NULL,
- cutoff_names=NULL,
- label_cex=1,
- arrow_ex=NULL,
- flip_twoway=FALSE,
- colorset=NULL,
- twoway_lwd=5,
- extend_ex=0.5,
- extend_angle=10,
- bump_factor=1,
- group_buffer=0.02,
- group_border="grey65",
- group_fill="grey95",
- replicate_color="grey40",
- replicate_cex=0.8,
- do_plot=TRUE,
- plot_margins=c(0.1, 0.1, 0.1, 0.1),
- plot_type=c("base",
-    "grid"),
- verbose=FALSE,
- debug=FALSE,
- ...)
-{
-   plot_type <- match.arg(plot_type);
-   contrast_style <- match.arg(contrast_style);
-   sestats_style <- match.arg(sestats_style);
+plot_sedesign <- function(
+   sedesign,
+   se = NULL,
+   factor_names = NULL,
+   factor_sep = "_",
+   contrast_sep = "-",
+   axis1 = NULL,
+   axis2 = NULL,
+   axis3 = NULL,
+   axis4 = NULL,
+   which_contrasts = NULL,
+   contrast_style = c("comp", "contrast", "none"),
+   contrast_labels = NULL,
+   oneway_position = 0.9,
+   twoway_position = 0.5,
+   contrast_position = NULL,
+   contrast_depths = NULL,
+   sestats = NULL,
+   sestats_style = c("label", "number", "simple label"),
+   assay_names = NULL,
+   cutoff_names = NULL,
+   label_cex = 1,
+   arrow_ex = NULL,
+   flip_twoway = FALSE,
+   colorset = NULL,
+   twoway_lwd = 5,
+   extend_ex = 0.5,
+   extend_angle = 10,
+   bump_factor = 1,
+   group_buffer = 0.02,
+   group_border = "grey65",
+   group_fill = "grey95",
+   replicate_color = "grey40",
+   replicate_cex = 0.8,
+   do_plot = TRUE,
+   plot_margins = c(0.1, 0.1, 0.1, 0.1),
+   plot_type = c("base", "grid"),
+   verbose = FALSE,
+   debug = FALSE,
+   ...
+) {
+   plot_type <- match.arg(plot_type)
+   contrast_style <- match.arg(contrast_style)
+   sestats_style <- match.arg(sestats_style)
 
    # convert group names to factor summary table
    # TODO: call sedesign_to_factors()
-   group_names <- groups(sedesign);
-   factors_df <- data.frame(check.names=FALSE,
-      stringsAsFactors=FALSE,
-      jamba::rbindList(strsplit(group_names, factor_sep)))
+   group_names <- groups(sedesign)
+   factors_df <- data.frame(
+      check.names = FALSE,
+      stringsAsFactors = FALSE,
+      jamba::rbindList(strsplit(group_names, factor_sep))
+   )
 
    # determine group sizes
-   im2list_internal <- function
-   (x,
-    empty=0,
-    ...)
-   {
+   im2list_internal <- function(x, empty = 0, ...) {
       # the reciprocal of list2im()
-      x_rows <- rownames(x);
-      x_cols <- colnames(x);
-      l <- lapply(jamba::nameVector(x_cols), function(i){
-         i_empty <- as(empty, class(x[,i]));
-         has_value <- (!x[,i] %in% i_empty);
-         x_rows[has_value];
-      });
-      return(l);
+      x_rows <- rownames(x)
+      x_cols <- colnames(x)
+      l <- lapply(jamba::nameVector(x_cols), function(i) {
+         i_empty <- as(empty, class(x[, i]))
+         has_value <- (!x[, i] %in% i_empty)
+         x_rows[has_value]
+      })
+      return(l)
    }
    groups_list <- im2list_internal(design(sedesign))
-   groups_n <- lengths(groups_list);
+   groups_n <- lengths(groups_list)
    if (verbose) {
-      jamba::printDebug("plot_sedesign(): ",
-         "groups_n:");
-      print(groups_n);
+      jamba::printDebug("plot_sedesign(): ", "groups_n:")
+      print(groups_n)
    }
 
    # factor_names
@@ -352,21 +344,23 @@ plot_sedesign <- function
       # assign temporary factor_names
       factor_names <- jamba::makeNames(
          rep("factor", ncol(factors_df)),
-         suffix="");
+         suffix = ""
+      )
    } else {
       # assign given factor_names
       factor_names <- jamba::makeNames(
-         rep(factor_names, length.out=ncol(factors_df)),
-         startN=2,
-         renameFirst=FALSE)
+         rep(factor_names, length.out = ncol(factors_df)),
+         startN = 2,
+         renameFirst = FALSE
+      )
    }
-   colnames(factors_df) <- factor_names;
-   rownames(factors_df) <- jamba::pasteByRow(factors_df);
+   colnames(factors_df) <- factor_names
+   rownames(factors_df) <- jamba::pasteByRow(factors_df)
 
    # attempt to recognize colnames(colData(se))
-   if (length(se) > 0 && inherits(se, what="SummarizedExperiment")) {
-      colData_colnames <- colnames(SummarizedExperiment::colData(se));
-      use_colData_colnames <- intersect(factor_names, colData_colnames);
+   if (length(se) > 0 && inherits(se, what = "SummarizedExperiment")) {
+      colData_colnames <- colnames(SummarizedExperiment::colData(se))
+      use_colData_colnames <- intersect(factor_names, colData_colnames)
       # if any colnames match, use factor levels from colData(se)
       if (length(use_colData_colnames) > 0) {
          for (icol in use_colData_colnames) {
@@ -375,16 +369,20 @@ plot_sedesign <- function
                # but allow additional values if present
                use_levels <- unique(c(
                   levels(SummarizedExperiment::colData(se)[[icol]]),
-                  factors_df[[icol]]));
+                  factors_df[[icol]]
+               ))
             } else {
                # use values in the order they appear in group names,
                # include additional values from colData(se) if present
                use_levels <- unique(c(
                   factors_df[[icol]],
-                  unique(SummarizedExperiment::colData(se)[[icol]])));
+                  unique(SummarizedExperiment::colData(se)[[icol]])
+               ))
             }
-            factors_df[[icol]] <- factor(factors_df[[icol]],
-               levels=use_levels)
+            factors_df[[icol]] <- factor(
+               factors_df[[icol]],
+               levels = use_levels
+            )
          }
       }
    }
@@ -393,29 +391,32 @@ plot_sedesign <- function
    # by coercing to character, then assigning levels in the order they appear
    for (icol in factor_names) {
       if (!is.factor(factors_df[[icol]])) {
-         use_levels <- unique(as.character(factors_df[[icol]]));
-         factors_df[[icol]] <- factor(as.character(factors_df[[icol]]),
-            levels=use_levels)
+         use_levels <- unique(as.character(factors_df[[icol]]))
+         factors_df[[icol]] <- factor(
+            as.character(factors_df[[icol]]),
+            levels = use_levels
+         )
       }
    }
 
    # add group sizes to factors_df
-   group_match <- match(rownames(factors_df), names(groups_n));
-   factors_df$n <- jamba::rmNA(groups_n[group_match],
-      naValue=0)
+   group_match <- match(rownames(factors_df), names(groups_n))
+   factors_df$n <- jamba::rmNA(groups_n[group_match], naValue = 0)
 
    # now all columns in factors_df should be factors with levels
    if (verbose) {
-      jamba::printDebug("plot_sedesign(): ",
-         "factors_df:");
-      print(factors_df);
+      jamba::printDebug("plot_sedesign(): ", "factors_df:")
+      print(factors_df)
    }
 
    # define axis factor values
    # custom function to apply logic
-   handle_axis_values <- function
-   (axisN, axis_values, factor_names, assign_default=FALSE)
-   {
+   handle_axis_values <- function(
+      axisN,
+      axis_values,
+      factor_names,
+      assign_default = FALSE
+   ) {
       #
       if (length(axisN) > 0) {
          if (is.numeric(axisN)) {
@@ -427,55 +428,44 @@ plot_sedesign <- function
       if (TRUE %in% assign_default && length(axisN) == 0) {
          axisN <- head(setdiff(factor_names, axis_values), 1)
       }
-      axisN <- setdiff(axisN, c(axis_values, NA));
+      axisN <- setdiff(axisN, c(axis_values, NA))
       return(axisN)
    }
-   axis_values <- character(0);
+   axis_values <- character(0)
    # if all are empty, define some suitable defaults
-   assign_default <- FALSE;
+   assign_default <- FALSE
    if (length(c(axis1, axis2, axis3, axis3)) == 0) {
-      assign_default <- TRUE;
+      assign_default <- TRUE
    }
-   axis1 <- handle_axis_values(axis1,
-      axis_values,
-      factor_names,
-      assign_default)
-   axis_values <- c(axis_values, axis1);
-   axis2 <- handle_axis_values(axis2,
-      axis_values,
-      factor_names,
-      assign_default)
-   axis_values <- c(axis_values, axis2);
-   axis3 <- handle_axis_values(axis3,
-      axis_values,
-      factor_names,
-      assign_default)
-   axis_values <- c(axis_values, axis3);
-   axis4 <- handle_axis_values(axis4,
-      axis_values,
-      factor_names,
-      assign_default)
-   axis_values <- c(axis_values, axis4);
+   axis1 <- handle_axis_values(axis1, axis_values, factor_names, assign_default)
+   axis_values <- c(axis_values, axis1)
+   axis2 <- handle_axis_values(axis2, axis_values, factor_names, assign_default)
+   axis_values <- c(axis_values, axis2)
+   axis3 <- handle_axis_values(axis3, axis_values, factor_names, assign_default)
+   axis_values <- c(axis_values, axis3)
+   axis4 <- handle_axis_values(axis4, axis_values, factor_names, assign_default)
+   axis_values <- c(axis_values, axis4)
 
    axis_values <- c(axis1, axis2, axis3, axis4)
-   remaining_names <- setdiff(factor_names,
-      axis_values)
+   remaining_names <- setdiff(factor_names, axis_values)
    # add convenient label to align with axis labels
    factors_df$label <- jamba::pasteByRowOrdered(
-      factors_df[, axis_values, drop=FALSE])
+      factors_df[, axis_values, drop = FALSE]
+   )
    # sort factors which helps axis1,axis3 ordering, not axis2,axis4
-   factors_df <- jamba::mixedSortDF(factors_df,
-      byCols=c("label", factor_names))
-
+   factors_df <- jamba::mixedSortDF(
+      factors_df,
+      byCols = c("label", factor_names)
+   )
 
    if (verbose) {
-      jamba::printDebug("plot_sedesign(): ",
-         "axis_values:",
-         axis_values);
+      jamba::printDebug("plot_sedesign(): ", "axis_values:", axis_values)
       if (length(remaining_names) > 0) {
-         jamba::printDebug("plot_sedesign(): ",
+         jamba::printDebug(
+            "plot_sedesign(): ",
             "remaining_names:",
-            remaining_names);
+            remaining_names
+         )
       }
    }
 
@@ -487,98 +477,112 @@ plot_sedesign <- function
       # jamba::printDebug("plot_sedesign(): ",
       #    "group_labels:",
       #    group_labels);
-      jamba::printDebug("plot_sedesign(): ",
-         "factors_df:");
-      print(factors_df);
+      jamba::printDebug("plot_sedesign(): ", "factors_df:")
+      print(factors_df)
    }
 
-   axis1values <- jamba::pasteByRowOrdered(factors_df[, axis1, drop=FALSE])
-   axis2values <- jamba::pasteByRowOrdered(factors_df[, axis2, drop=FALSE])
-   axis3values <- jamba::pasteByRowOrdered(factors_df[, axis3, drop=FALSE])
-   axis4values <- jamba::pasteByRowOrdered(factors_df[, axis4, drop=FALSE])
+   axis1values <- jamba::pasteByRowOrdered(factors_df[, axis1, drop = FALSE])
+   axis2values <- jamba::pasteByRowOrdered(factors_df[, axis2, drop = FALSE])
+   axis3values <- jamba::pasteByRowOrdered(factors_df[, axis3, drop = FALSE])
+   axis4values <- jamba::pasteByRowOrdered(factors_df[, axis4, drop = FALSE])
    remaining_values <- jamba::pasteByRowOrdered(
-      factors_df[, remaining_names, drop=FALSE])
+      factors_df[, remaining_names, drop = FALSE]
+   )
    # optionally print verbose summary
    if (verbose) {
-      jamba::printDebug("plot_sedesign(): ",
-         "axis1values:");
-      print(axis1values);
-      jamba::printDebug("plot_sedesign(): ",
-         "axis2values:");
-      print(axis2values);
-      jamba::printDebug("plot_sedesign(): ",
-         "axis3values:");
-      print(axis3values);
-      jamba::printDebug("plot_sedesign(): ",
-         "axis4values:");
-      print(axis4values);
-      jamba::printDebug("plot_sedesign(): ",
-         "remaining_values:");
-      print(remaining_values);
+      jamba::printDebug("plot_sedesign(): ", "axis1values:")
+      print(axis1values)
+      jamba::printDebug("plot_sedesign(): ", "axis2values:")
+      print(axis2values)
+      jamba::printDebug("plot_sedesign(): ", "axis3values:")
+      print(axis3values)
+      jamba::printDebug("plot_sedesign(): ", "axis4values:")
+      print(axis4values)
+      jamba::printDebug("plot_sedesign(): ", "remaining_values:")
+      print(remaining_values)
    }
 
    # bottom/top axis
    axis13df <- jamba::mixedSortDF(
-      unique(as.data.frame(jamba::rmNULL(nullValue=NA,
-         list(axis1=axis1values, axis3=axis3values)))))
-   axis13df[,"x_coord"] <- seq_len(nrow(axis13df));
+      unique(as.data.frame(jamba::rmNULL(
+         nullValue = NA,
+         list(axis1 = axis1values, axis3 = axis3values)
+      )))
+   )
+   axis13df[, "x_coord"] <- seq_len(nrow(axis13df))
    # left/right axis
    axis24df <- jamba::mixedSortDF(
-      unique(as.data.frame(jamba::rmNULL(nullValue=NA,
-         list(axis2=axis2values, axis4=axis4values)))))
-   axis24df[,"y_coord"] <- seq_len(nrow(axis24df));
+      unique(as.data.frame(jamba::rmNULL(
+         nullValue = NA,
+         list(axis2 = axis2values, axis4 = axis4values)
+      )))
+   )
+   axis24df[, "y_coord"] <- seq_len(nrow(axis24df))
 
-   axis_df <- data.frame(check.names=FALSE,
-      stringsAsFactors=FALSE,
-      row.names=NULL,
+   axis_df <- data.frame(
+      check.names = FALSE,
+      stringsAsFactors = FALSE,
+      row.names = NULL,
       axis13df,
-      axis24df[rep(axis24df$y_coord, each=nrow(axis13df)), , drop=FALSE])
+      axis24df[rep(axis24df$y_coord, each = nrow(axis13df)), , drop = FALSE]
+   )
    # if (length(remaining_values) > 0) {
    #    axis_df$remaining_names <- remaining_values;
    # }
-   use_axis_colnames <- intersect(c(paste0("axis", 1:4), "remaining_values"),
-      colnames(axis_df));
+   use_axis_colnames <- intersect(
+      c(paste0("axis", 1:4), "remaining_values"),
+      colnames(axis_df)
+   )
    axis_df$label <- jamba::pasteByRow(
-      axis_df[, c("axis1", "axis2", "axis3", "axis4"), drop=FALSE]);
+      axis_df[, c("axis1", "axis2", "axis3", "axis4"), drop = FALSE]
+   )
 
    # merge group counts into axis_df
-   axis_match <- match(axis_df$label, factors_df$label);
-   axis_df$n <- factors_df$n[axis_match];
+   axis_match <- match(axis_df$label, factors_df$label)
+   axis_df$n <- factors_df$n[axis_match]
 
    # add group name to axis_df for convenience
-   fmatch <- match(as.character(axis_df$label),
-      as.character(factors_df$label))
-   axis_df$group <- rownames(factors_df)[fmatch];
-   if (names(group_fill) == 0 ||
-         !all(axis_df$group %in% names(group_fill))) {
+   fmatch <- match(as.character(axis_df$label), as.character(factors_df$label))
+   axis_df$group <- rownames(factors_df)[fmatch]
+   if (
+      names(group_fill) == 0 ||
+         !all(axis_df$group %in% names(group_fill))
+   ) {
       missing_groups <- setdiff(axis_df$group, names(group_fill))
-      group_fill[missing_groups] <- rep(group_fill,
-         length.out=length(missing_groups));
-      group_fill <- rep(group_fill, length.out=length(axis_df$group));
-      names(group_fill) <- axis_df$group;
+      group_fill[missing_groups] <- rep(
+         group_fill,
+         length.out = length(missing_groups)
+      )
+      group_fill <- rep(group_fill, length.out = length(axis_df$group))
+      names(group_fill) <- axis_df$group
    }
-   if (names(group_border) == 0 ||
-         !all(axis_df$group %in% names(group_border))) {
+   if (
+      names(group_border) == 0 ||
+         !all(axis_df$group %in% names(group_border))
+   ) {
       missing_groups <- setdiff(axis_df$group, names(group_border))
-      group_border[missing_groups] <- rep(group_border,
-         length.out=length(missing_groups));
-      group_border <- rep(group_border, length.out=length(axis_df$group));
-      names(group_border) <- axis_df$group;
+      group_border[missing_groups] <- rep(
+         group_border,
+         length.out = length(missing_groups)
+      )
+      group_border <- rep(group_border, length.out = length(axis_df$group))
+      names(group_border) <- axis_df$group
    }
    # jamba::printDebug("factors_df:");print(factors_df);# debug
    # jamba::printDebug("axis_df:");print(axis_df);# debug
 
    # layout is defined here
    if (verbose) {
-      jamba::printDebug("plot_sedesign(): ",
-         "axis_df:");
-      print(axis_df);
+      jamba::printDebug("plot_sedesign(): ", "axis_df:")
+      print(axis_df)
    }
 
    # define contrasts
    contrast_names <- unique(contrast_names(sedesign))
-   contrast_numbers <- jamba::nameVector(seq_along(contrast_names),
-      contrast_names);
+   contrast_numbers <- jamba::nameVector(
+      seq_along(contrast_names),
+      contrast_names
+   )
    if (length(which_contrasts) > 0) {
       if (is.logical(which_contrasts)) {
          contrast_names <- contrast_names[which_contrasts]
@@ -590,8 +594,10 @@ plot_sedesign <- function
             stop("Numeric which_contrasts did not include any contrast_names.")
          }
       } else {
-         contrast_names <- intersect(as.character(which_contrasts),
-            contrast_names)
+         contrast_names <- intersect(
+            as.character(which_contrasts),
+            contrast_names
+         )
          if (length(contrast_names) == 0) {
             stop("Character which_contrasts did not match any contrast_names.")
          }
@@ -601,36 +607,38 @@ plot_sedesign <- function
    # define contrast_labels when sestats is supplied
    if (length(sestats) > 0) {
       if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
-         hit_list <- hit_array_to_list(sestats,
-            assay_names=assay_names,
-            cutoff_names=cutoff_names)
-         contrast_labels_hits <- NULL;
+         hit_list <- hit_array_to_list(
+            sestats,
+            assay_names = assay_names,
+            cutoff_names = cutoff_names
+         )
+         contrast_labels_hits <- NULL
          if (sestats_style %in% c("label", "simple label")) {
-            contrast_labels_hits <- format_hits(hits=hit_list,
-               style="text");
+            contrast_labels_hits <- format_hits(hits = hit_list, style = "text")
             if (sestats_style %in% "simple label") {
                # remove directional part of the label
                contrast_labels_hits <- jamba::nameVector(
-                  gsub(" [(].+", "",
-                     contrast_labels_hits),
-                  names(contrast_labels_hits));
+                  gsub(" [(].+", "", contrast_labels_hits),
+                  names(contrast_labels_hits)
+               )
             }
          } else if (sestats_style %in% "number") {
             # use only the number of hits
             contrast_labels_hits <- jamba::nameVector(
                jamba::formatInt(lengths(hit_list)),
-               names(hit_list));
+               names(hit_list)
+            )
          }
          if (length(contrast_labels) == 0) {
-            contrast_labels <- contrast_labels_hits;
+            contrast_labels <- contrast_labels_hits
          } else {
             # combine custom and contrast labels into a list
             all_labels <- jamba::nameVector(unique(c(
                names(contrast_labels),
-               names(contrast_labels_hits))));
-            contrast_labels <- lapply(all_labels, function(iname){
-               c(contrast_labels[[iname]],
-                  contrast_labels_hits[[iname]])
+               names(contrast_labels_hits)
+            )))
+            contrast_labels <- lapply(all_labels, function(iname) {
+               c(contrast_labels[[iname]], contrast_labels_hits[[iname]])
             })
          }
       }
@@ -638,55 +646,62 @@ plot_sedesign <- function
 
    # handle contrast_position
    if (length(oneway_position) == 0) {
-      oneway_position <- 0.5;
+      oneway_position <- 0.5
    }
    if (length(twoway_position) == 0) {
-      twoway_position <- 0.5;
+      twoway_position <- 0.5
    }
    is_twoway <- grepl("[(]", contrast_names)
    if (length(contrast_position) == 0) {
       if (verbose) {
-         jamba::printDebug("plot_sedesign(): ",
-            "Applying one-way and two-way label position defaults.")
+         jamba::printDebug(
+            "plot_sedesign(): ",
+            "Applying one-way and two-way label position defaults."
+         )
       }
       contrast_position <- jamba::nameVector(
-         ifelse(is_twoway,
-            twoway_position,
-            oneway_position),
-         contrast_names)
+         ifelse(is_twoway, twoway_position, oneway_position),
+         contrast_names
+      )
    } else if (length(names(contrast_position)) == 0) {
       if (verbose) {
-         jamba::printDebug("plot_sedesign(): ",
+         jamba::printDebug(
+            "plot_sedesign(): ",
             "Expanding ",
             "contrast_position",
-            " as provided to all contrasts.")
+            " as provided to all contrasts."
+         )
       }
       contrast_position <- jamba::nameVector(
-         rep(contrast_position,
-            length.out=length(contrast_names)),
-         contrast_names)
+         rep(contrast_position, length.out = length(contrast_names)),
+         contrast_names
+      )
    } else {
       if (verbose) {
-         jamba::printDebug("plot_sedesign(): ",
+         jamba::printDebug(
+            "plot_sedesign(): ",
             "Applying ",
             "contrast_position",
-            " to matching contrast_names.")
+            " to matching contrast_names."
+         )
       }
       # define 0.5 for all contrasts
       use_contrast_position <- jamba::nameVector(
-         ifelse(is_twoway,
-            twoway_position,
-            oneway_position),
-         contrast_names)
+         ifelse(is_twoway, twoway_position, oneway_position),
+         contrast_names
+      )
       # substitute custom values where defined
-      use_names <- setdiff(names(use_contrast_position),
-         names(contrast_position))
+      use_names <- setdiff(
+         names(use_contrast_position),
+         names(contrast_position)
+      )
       if (length(use_names) > 0) {
-         contrast_position[use_names] <- use_contrast_position;
+         contrast_position[use_names] <- use_contrast_position
       }
    }
    if (debug) {
-      jamba::printDebug("resolved contrast_position:");print(contrast_position);# debug
+      jamba::printDebug("resolved contrast_position:")
+      print(contrast_position) # debug
    }
 
    # optionally "flip" two-way contrasts
@@ -694,19 +709,25 @@ plot_sedesign <- function
    if (TRUE %in% flip_twoway && TRUE %in% is_twoway) {
       twoway_split <- strsplit(
          gsub("[()]", "", contrast_names[is_twoway]),
-         "-")
-      twoway_flipped <- jamba::cPaste(lapply(twoway_split, function(icon){
-         paste0(c("(", ""), icon[c(1, 3, 2, 4)], c("", ")"))
-      }), sep="-")
-      names(twoway_flipped) <- contrast_names[is_twoway];
-      contrast_names[is_twoway] <- twoway_flipped;
+         "-"
+      )
+      twoway_flipped <- jamba::cPaste(
+         lapply(twoway_split, function(icon) {
+            paste0(c("(", ""), icon[c(1, 3, 2, 4)], c("", ")"))
+         }),
+         sep = "-"
+      )
+      names(twoway_flipped) <- contrast_names[is_twoway]
+      contrast_names[is_twoway] <- twoway_flipped
       # flip the contrast name format in names(contrast_labels)
       if (length(contrast_labels) > 0) {
          labeled_flip <- names(contrast_labels) %in% names(twoway_flipped)
          if (any(labeled_flip)) {
-            flip_match <- match(names(contrast_labels)[labeled_flip],
-               names(twoway_flipped))
-            names(contrast_labels)[labeled_flip] <- twoway_flipped[flip_match];
+            flip_match <- match(
+               names(contrast_labels)[labeled_flip],
+               names(twoway_flipped)
+            )
+            names(contrast_labels)[labeled_flip] <- twoway_flipped[flip_match]
          }
       }
       # flip the contrast name format in names(contrast_position)
@@ -714,9 +735,11 @@ plot_sedesign <- function
          labeled_flip <- names(contrast_position) %in% names(twoway_flipped)
          # jamba::printDebug("pre-flipped contrast_position:");print(contrast_position);# debug
          if (any(labeled_flip)) {
-            flip_match <- match(names(contrast_position)[labeled_flip],
-               names(twoway_flipped))
-            names(contrast_position)[labeled_flip] <- twoway_flipped[flip_match];
+            flip_match <- match(
+               names(contrast_position)[labeled_flip],
+               names(twoway_flipped)
+            )
+            names(contrast_position)[labeled_flip] <- twoway_flipped[flip_match]
             # jamba::printDebug("flipped contrast_position:");print(contrast_position);# debug
          }
       }
@@ -728,101 +751,123 @@ plot_sedesign <- function
       oneway_contrast_names <- unlist(
          strsplit(
             gsub("^[(]|[)]$", "", contrast_names[is_twoway]),
-            "[)]-[(]"))
+            "[)]-[(]"
+         )
+      )
       # ensure one-way contrasts appear before two-way contrasts
-      new_oneway_contrast_names <- setdiff(oneway_contrast_names,
-         contrast_names[!is_twoway]);
+      new_oneway_contrast_names <- setdiff(
+         oneway_contrast_names,
+         contrast_names[!is_twoway]
+      )
       if (length(new_oneway_contrast_names) > 0) {
-         contrast_names <- unique(c(contrast_names[!is_twoway],
+         contrast_names <- unique(c(
+            contrast_names[!is_twoway],
             new_oneway_contrast_names,
-            contrast_names[is_twoway]))
+            contrast_names[is_twoway]
+         ))
       }
-      new_oneway_contrast_position <- setdiff(oneway_contrast_names,
-         names(contrast_position));
+      new_oneway_contrast_position <- setdiff(
+         oneway_contrast_names,
+         names(contrast_position)
+      )
       if (length(new_oneway_contrast_position) > 0) {
          contrast_position[new_oneway_contrast_position] <- jamba::nameVector(
-            rep(oneway_position,
-               length.out=length(new_oneway_contrast_position)),
-            new_oneway_contrast_position)
+            rep(
+               oneway_position,
+               length.out = length(new_oneway_contrast_position)
+            ),
+            new_oneway_contrast_position
+         )
       }
    }
 
    split_contrast_names <- function(contrast_names, factors_df) {
-      is_twoway <- grepl("[(]", contrast_names);
+      is_twoway <- grepl("[(]", contrast_names)
       split_names <- as.list(rep(NA, length(contrast_names)))
       if (any(is_twoway)) {
          twoway_list <- strsplit(contrast_names[is_twoway], "[)]-[(]")
-         twoway_split <- rep(seq_along(twoway_list), lengths(twoway_list));
+         twoway_split <- rep(seq_along(twoway_list), lengths(twoway_list))
          oneway_contrasts <- gsub("^[(]|[)]$", "", unlist(twoway_list))
-         oneway_split_contrasts <- split_contrast_names(oneway_contrasts,
-            factors_df)
+         oneway_split_contrasts <- split_contrast_names(
+            oneway_contrasts,
+            factors_df
+         )
          twoway_split_list <- split(oneway_split_contrasts, twoway_split)
-         split_names[is_twoway] <- twoway_split_list;
+         split_names[is_twoway] <- twoway_split_list
       }
       split_contrasts <- strsplit(contrast_names[!is_twoway], "-")
       # apply labels
-      split_contrasts <- lapply(split_contrasts, function(igroups){
+      split_contrasts <- lapply(split_contrasts, function(igroups) {
          jamba::nameVector(
             factors_df[match(igroups, rownames(factors_df)), "label"],
-            igroups);
+            igroups
+         )
       })
-      split_names[!is_twoway] <- split_contrasts;
-      names(split_names) <- contrast_names;
+      split_names[!is_twoway] <- split_contrasts
+      names(split_names) <- contrast_names
       return(split_names)
    }
    contrast_group_list <- split_contrast_names(contrast_names, factors_df)
-   contrast_group_dfs <- lapply(names(contrast_group_list), function(iname){
-      i <- contrast_group_list[[iname]];
+   contrast_group_dfs <- lapply(names(contrast_group_list), function(iname) {
+      i <- contrast_group_list[[iname]]
       if (is.list(i)) {
          # two-way contrasts
-         idf <- jamba::rbindList(lapply(i, function(j){
-            jdf <- data.frame(check.names=FALSE,
-               stringsAsFactors=FALSE,
-               contrast=iname,
-               axis_df[match(j, axis_df$label), , drop=FALSE])
+         idf <- jamba::rbindList(lapply(i, function(j) {
+            jdf <- data.frame(
+               check.names = FALSE,
+               stringsAsFactors = FALSE,
+               contrast = iname,
+               axis_df[match(j, axis_df$label), , drop = FALSE]
+            )
             if (length(unique(jdf$x_coord)) > 1) {
                if (length(unique(jdf$y_coord)) > 1) {
-                  jdf$angle <- jamba::rad2deg(atan2(y=diff(jdf$y_coord),
-                     x=diff(jdf$x_coord)))
+                  jdf$angle <- jamba::rad2deg(atan2(
+                     y = diff(jdf$y_coord),
+                     x = diff(jdf$x_coord)
+                  ))
                   islope <- diff(jdf$y_coord) / diff(jdf$x_coord)
-                  jdf$intercept <- (islope * (-jdf$x_coord[1])) + jdf$y_coord;
+                  jdf$intercept <- (islope * (-jdf$x_coord[1])) + jdf$y_coord
                } else {
                   if (jdf$x_coord[1] > jdf$x_coord[2]) {
                      jdf$angle <- 180
                   } else {
                      jdf$angle <- 0
                   }
-                  jdf$intercept <- jdf$y_coord;
+                  jdf$intercept <- jdf$y_coord
                }
             } else if (length(unique(jdf$y_coord)) > 1) {
                if (jdf$y_coord[1] > jdf$y_coord[2]) {
-                  jdf$angle <- 270;
+                  jdf$angle <- 270
                } else {
-                  jdf$angle <- 90;
+                  jdf$angle <- 90
                }
-               jdf$intercept <- jdf$x_coord;
+               jdf$intercept <- jdf$x_coord
             } else {
-               jdf$angle <- 0;
-               jdf$intercept <- jdf$y_coord;
+               jdf$angle <- 0
+               jdf$intercept <- jdf$y_coord
             }
-            jdf$depth <- 2;
-            jdf$oneway_contrast <- jamba::cPaste(j, sep=contrast_sep);
+            jdf$depth <- 2
+            jdf$oneway_contrast <- jamba::cPaste(j, sep = contrast_sep)
             # Manhattan distance
             jdf$distance <- abs(diff(range(jdf$x_coord))) +
-               abs(diff(range(jdf$y_coord)));
+               abs(diff(range(jdf$y_coord)))
             jdf
          }))
       } else {
-         idf <- data.frame(check.names=FALSE,
-            stringsAsFactors=FALSE,
-            contrast=iname,
-            axis_df[match(i, axis_df$label), , drop=FALSE])
+         idf <- data.frame(
+            check.names = FALSE,
+            stringsAsFactors = FALSE,
+            contrast = iname,
+            axis_df[match(i, axis_df$label), , drop = FALSE]
+         )
          if (length(unique(idf$x_coord)) > 1) {
             if (length(unique(idf$y_coord)) > 1) {
-               idf$angle <- jamba::rad2deg(atan2(y=diff(idf$y_coord),
-                  x=diff(idf$x_coord)))
+               idf$angle <- jamba::rad2deg(atan2(
+                  y = diff(idf$y_coord),
+                  x = diff(idf$x_coord)
+               ))
                islope <- diff(idf$y_coord) / diff(idf$x_coord)
-               idf$intercept <- (islope * (-idf$x_coord[1])) + idf$y_coord;
+               idf$intercept <- (islope * (-idf$x_coord[1])) + idf$y_coord
                # idf$distance <- sqrt(diff(idf$x_coord)^2 + diff(idf$y_coord)^2)
             } else {
                if (idf$x_coord[1] > idf$x_coord[2]) {
@@ -830,105 +875,132 @@ plot_sedesign <- function
                } else {
                   idf$angle <- 0
                }
-               idf$intercept <- idf$y_coord;
+               idf$intercept <- idf$y_coord
                # idf$distance <- abs(diff(idf$x_coord))
             }
          } else if (length(unique(idf$y_coord)) > 1) {
             if (idf$y_coord[1] > idf$y_coord[2]) {
-               idf$angle <- 270;
+               idf$angle <- 270
             } else {
-               idf$angle <- 90;
+               idf$angle <- 90
             }
-            idf$intercept <- idf$x_coord;
+            idf$intercept <- idf$x_coord
             # idf$distance <- abs(diff(idf$y_coord))
          } else {
-            idf$angle <- 0;
-            idf$intercept <- idf$y_coord;
+            idf$angle <- 0
+            idf$intercept <- idf$y_coord
          }
-         idf$depth <- 1;
-         idf$oneway_contrast <- jamba::cPaste(i, sep=contrast_sep);
+         idf$depth <- 1
+         idf$oneway_contrast <- jamba::cPaste(i, sep = contrast_sep)
          # Manhattan distance (x + y)
          idf$distance <- abs(diff(idf$x_coord)) + abs(diff(idf$y_coord))
-         idf;
+         idf
       }
    })
    contrast_group_df <- jamba::rbindList(contrast_group_dfs)
 
    # sort contrasts by increasing distance,
    # so shorter contrasts are not bumped as much
-   contrast_group_df <- jamba::mixedSortDF(contrast_group_df,
-      byCols="distance");
-
+   contrast_group_df <- jamba::mixedSortDF(
+      contrast_group_df,
+      byCols = "distance"
+   )
 
    # determine which contrast should be labeled,
    # assuming a contrast may be present multiple times, and
    # only needs a label the last time it is rendered.
-   oneway_seq <- seq(from=1, to=nrow(contrast_group_df), by=2);
-   oneway_render <- rep(rev(!duplicated(
-      rev(contrast_group_df$oneway_contrast[oneway_seq]))), each=2);
-   contrast_group_df$render_contrast <- oneway_render;
+   oneway_seq <- seq(from = 1, to = nrow(contrast_group_df), by = 2)
+   oneway_render <- rep(
+      rev(
+         !duplicated(
+            rev(contrast_group_df$oneway_contrast[oneway_seq])
+         )
+      ),
+      each = 2
+   )
+   contrast_group_df$render_contrast <- oneway_render
    # jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
    # if (nrow(contrast_group_df) == 48) {contrast_group_df <- contrast_group_df[-17:-24,]}
    # return(contrast_group_df);
 
    # apply "bump"
    contrast_group_df$bump_set <- jamba::pasteByRow(
-      contrast_group_df[,c("angle", "intercept"), drop=FALSE]);
-   contrast_group_df$bump <- 0;
+      contrast_group_df[, c("angle", "intercept"), drop = FALSE]
+   )
+   contrast_group_df$bump <- 0
    for (ibump in unique(contrast_group_df$bump_set)) {
-      ibump_rows <- which(contrast_group_df$bump_set %in% ibump &
-            !grepl("[(]", contrast_group_df$contrast))
+      ibump_rows <- which(
+         contrast_group_df$bump_set %in%
+            ibump &
+            !grepl("[(]", contrast_group_df$contrast)
+      )
       if (length(ibump_rows) > 1) {
-         ibump_values <- seq_len(length(ibump_rows)/2)
+         ibump_values <- seq_len(length(ibump_rows) / 2)
          ibump_values <- ibump_values - mean(ibump_values)
-         contrast_group_df[ibump_rows, "bump"] <- rep(ibump_values, each=2);
+         contrast_group_df[ibump_rows, "bump"] <- rep(ibump_values, each = 2)
       }
    }
 
-   contrast_group_split <- split(contrast_group_df,
-      factor(contrast_group_df$contrast,
-         levels=unique(contrast_group_df$contrast)))
-   xlim <- range(contrast_group_df$x_coord, na.rm=TRUE)
-   ylim <- range(contrast_group_df$y_coord, na.rm=TRUE)
-   xlim <- range(axis_df$x_coord, na.rm=TRUE)
-   ylim <- range(axis_df$y_coord, na.rm=TRUE)
+   contrast_group_split <- split(
+      contrast_group_df,
+      factor(
+         contrast_group_df$contrast,
+         levels = unique(contrast_group_df$contrast)
+      )
+   )
+   xlim <- range(contrast_group_df$x_coord, na.rm = TRUE)
+   ylim <- range(contrast_group_df$y_coord, na.rm = TRUE)
+   xlim <- range(axis_df$x_coord, na.rm = TRUE)
+   ylim <- range(axis_df$y_coord, na.rm = TRUE)
 
    # define buffer between groups
-   group_buffer <- jamba::noiseFloor(group_buffer,
-      minimum=0,
-      ceiling=0.5);
-   use_group_buffer <- 0.5 - group_buffer;
+   group_buffer <- jamba::noiseFloor(group_buffer, minimum = 0, ceiling = 0.5)
+   use_group_buffer <- 0.5 - group_buffer
 
    # adjust bump_factor proportional to group_buffer
    if (length(bump_factor) == 0) {
-      bump_factor <- 1;
+      bump_factor <- 1
    }
-   bump_factor <- rep(bump_factor, length.out=2);
-   use_bump_factor <- jamba::noiseFloor(bump_factor,
-      minimum=0,
-      ceiling=1.5) * (use_group_buffer * 2)
-   max_x_bump <- (1.5 / use_bump_factor[2]) * (2 + max(subset(contrast_group_df,
-      !angle %in% c(0, 180))$bump));
-   max_y_bump <- (1.5 / use_bump_factor[1]) * (2 + max(subset(contrast_group_df,
-      angle %in% c(0, 180))$bump));
+   bump_factor <- rep(bump_factor, length.out = 2)
+   use_bump_factor <- jamba::noiseFloor(
+      bump_factor,
+      minimum = 0,
+      ceiling = 1.5
+   ) *
+      (use_group_buffer * 2)
+   print("Debug 1") # debug
+   # subset contrast_group_df
+   sub_contrast_group_df <- subset(contrast_group_df, !angle %in% c(0, 180))
+   sub_contrast_group_df2 <- subset(contrast_group_df, angle %in% c(0, 180))
+   
+   max_x_bump <- (1.5 / use_bump_factor[2]) *
+      (2 + max(c(0, sub_contrast_group_df$bump)))
+   max_y_bump <- (1.5 / use_bump_factor[1]) *
+      (2 + max(c(0, sub_contrast_group_df2$bump)))
    # define arrow_ex
    if (length(arrow_ex) == 0 || !is.numeric(arrow_ex)) {
       max_x_bumps <- jamba::noiseFloor(
-         2 * (0.5 + max(subset(contrast_group_df, !angle %in% c(0, 180))$bump)),
-         minimum=1,
-         ceiling=20);
+         2 * (0.5 + max(c(0, sub_contrast_group_df$bump))),
+         minimum = 1,
+         ceiling = 20
+      )
       max_y_bumps <- jamba::noiseFloor(
-         2 * (0.5 + max(subset(contrast_group_df, angle %in% c(0, 180))$bump)),
-         minimum=1,
-         ceiling=20);
-      use_arrow_ex <- 1 / sqrt(jamba::rmNA(naValue=1,
-         max(c(max_x_bumps, max_y_bumps), na.rm=TRUE)))
+         2 * (0.5 + max(c(0, sub_contrast_group_df2$bump))),
+         minimum = 1,
+         ceiling = 20
+      )
+      use_arrow_ex <- 1 /
+         sqrt(jamba::rmNA(
+            naValue = 1,
+            max(c(max_x_bumps, max_y_bumps), na.rm = TRUE)
+         ))
    } else {
-      use_arrow_ex <- arrow_ex;
+      use_arrow_ex <- arrow_ex
    }
    # return(invisible(contrast_group_list));
    if (debug) {
-      jamba::printDebug("contrast_group_df:");print(contrast_group_df);# debug
+      jamba::printDebug("contrast_group_df:")
+      print(contrast_group_df) # debug
    }
 
    # custom function to handle contrast labeling
@@ -940,26 +1012,31 @@ plot_sedesign <- function
    #'    * `"contrast"`: uses the contrast as-is
    #'    * `"none"`: hides the contrast label, appending `contrast_labels`
    #'    when provided
-   handle_contrast_label <- function
-   (contrast,
-    contrast_labels,
-    contrast_style=c("comp", "contrast", "none"))
-   {
-      contrast_style <- match.arg(contrast_style);
+   handle_contrast_label <- function(
+      contrast,
+      contrast_labels,
+      contrast_style = c("comp", "contrast", "none")
+   ) {
+      contrast_style <- match.arg(contrast_style)
       # initial label to use
       if ("comp" %in% contrast_style) {
          use_label1 <- contrast2comp(contrast)
       } else if ("contrast" %in% contrast_style) {
          use_label1 <- contrast
       } else {
-         use_label1 <- NULL;
+         use_label1 <- NULL
       }
-      if (length(contrast_labels) > 0 &&
-            contrast %in% names(contrast_labels)) {
-         use_label1 <- jamba::cPaste(c(
-            use_label1,
-            contrast_labels[[contrast]]),
-            sep="\n")
+      if (
+         length(contrast_labels) > 0 &&
+            contrast %in% names(contrast_labels)
+      ) {
+         use_label1 <- jamba::cPaste(
+            c(
+               use_label1,
+               contrast_labels[[contrast]]
+            ),
+            sep = "\n"
+         )
       }
       if (length(use_label1) == 0) {
          use_label1 <- ""
@@ -967,279 +1044,344 @@ plot_sedesign <- function
       return(use_label1)
    }
 
-
    if ("base" %in% plot_type && TRUE %in% do_plot) {
       if (length(plot_margins) > 0) {
-         plot_margins <- rep(plot_margins, length.out=4)
-         opar <- par(mar=plot_margins)
-         on.exit(par(opar), add=TRUE)
+         plot_margins <- rep(plot_margins, length.out = 4)
+         opar <- par(mar = plot_margins)
+         on.exit(par(opar), add = TRUE)
       }
-      jamba::nullPlot(xlim=xlim + c(-1, 1),
-         ylim=ylim + c(-1, 1),
-         doBoxes=FALSE,
-         asp=1)
+      jamba::nullPlot(
+         xlim = xlim + c(-1, 1),
+         ylim = ylim + c(-1, 1),
+         doBoxes = FALSE,
+         asp = 1
+      )
 
       # jamba::printDebug("axis_df:");print(axis_df);# debug
       if (any(!is.na(axis_df$axis1))) {
          jamba::groupedAxis(
-            side=1,
-            las=1,
-            pos=0.45,
-            x=unique(axis_df[,c("axis1", "x_coord")])$axis1,
-            nudge=use_group_buffer,
-            group_style="grouped")
+            side = 1,
+            las = 1,
+            pos = 0.45,
+            x = unique(axis_df[, c("axis1", "x_coord")])$axis1,
+            nudge = use_group_buffer,
+            group_style = "grouped"
+         )
       }
       if (any(!is.na(axis_df$axis2))) {
          jamba::groupedAxis(
-            side=2,
-            pos=0.45,
-            x=unique(axis_df[,c("axis2", "y_coord")])$axis2,
-            nudge=use_group_buffer,
-            group_style="grouped")
+            side = 2,
+            pos = 0.45,
+            x = unique(axis_df[, c("axis2", "y_coord")])$axis2,
+            nudge = use_group_buffer,
+            group_style = "grouped"
+         )
       }
       if (any(!is.na(axis_df$axis3))) {
          if (debug) {
-            jamba::printDebug("axis3:");# debug
-            print(unique(axis_df[,c("axis3", "x_coord")]));# debug
+            jamba::printDebug("axis3:") # debug
+            print(unique(axis_df[, c("axis3", "x_coord")])) # debug
          }
          jamba::groupedAxis(
-            side=3,
-            las=1,
-            pos=max(axis_df$y_coord, na.rm=TRUE) + 0.55,
-            x=unique(axis_df[,c("axis3", "x_coord")])$axis3,
-            nudge=use_group_buffer,
-            group_style="grouped")
+            side = 3,
+            las = 1,
+            pos = max(axis_df$y_coord, na.rm = TRUE) + 0.55,
+            x = unique(axis_df[, c("axis3", "x_coord")])$axis3,
+            nudge = use_group_buffer,
+            group_style = "grouped"
+         )
       }
       if (any(!is.na(axis_df$axis4))) {
          jamba::groupedAxis(
-            side=4,
-            pos=max(axis_df$x_coord, na.rm=TRUE) + 0.55,
-            x=unique(axis_df[,c("axis4", "y_coord")])$axis4,
-            nudge=use_group_buffer,
-            group_style="grouped")
+            side = 4,
+            pos = max(axis_df$x_coord, na.rm = TRUE) + 0.55,
+            x = unique(axis_df[, c("axis4", "y_coord")])$axis4,
+            nudge = use_group_buffer,
+            group_style = "grouped"
+         )
       }
 
-      is_twoway <- grepl("[(]", contrast_names);
+      is_twoway <- grepl("[(]", contrast_names)
       if (length(colorset) == 0) {
          colorset <- colorjam::rainbowJam(
-            n=sum(!is_twoway),
-            Crange=c(60, 90),
-            Lrange=c(44, 80))
-         names(colorset) <- contrast_names[!is_twoway];
+            n = sum(!is_twoway),
+            Crange = c(60, 90),
+            Lrange = c(44, 80)
+         )
+         names(colorset) <- contrast_names[!is_twoway]
       } else {
          if (length(names(colorset)) > 0) {
-            missing_names <- setdiff(contrast_names[!is_twoway],
-               names(colorset))
+            missing_names <- setdiff(
+               contrast_names[!is_twoway],
+               names(colorset)
+            )
             if (length(missing_names) > 0) {
                new_colorset <- colorjam::rainbowJam(
-                  n=length(missing_names),
-                  Crange=c(60, 90),
-                  Lrange=c(44, 80))
-               names(new_colorset) <- missing_names;
-               colorset[names(missing_names)] <- new_colorset;
+                  n = length(missing_names),
+                  Crange = c(60, 90),
+                  Lrange = c(44, 80)
+               )
+               names(new_colorset) <- missing_names
+               colorset[names(missing_names)] <- new_colorset
             }
          } else {
-            colorset <- rep(colorset,
-               length.out=sum(!is_twoway))
-            names(colorset) <- contrast_names[!is_twoway];
+            colorset <- rep(colorset, length.out = sum(!is_twoway))
+            names(colorset) <- contrast_names[!is_twoway]
          }
       }
       # jamba::printDebug(colorset, sep=",\n");# debug
 
       # iterate each group to draw a visible square around each group
       if (verbose > 1) {
-         jamba::printDebug("axis_df:");print(axis_df);
-         print(data.frame(xleft=axis_df$x_coord - use_group_buffer,
-            xright=axis_df$x_coord + use_group_buffer,
-            ybottom=axis_df$y_coord - use_group_buffer,
-            ytop=axis_df$y_coord + use_group_buffer))
+         jamba::printDebug("axis_df:")
+         print(axis_df)
+         print(data.frame(
+            xleft = axis_df$x_coord - use_group_buffer,
+            xright = axis_df$x_coord + use_group_buffer,
+            ybottom = axis_df$y_coord - use_group_buffer,
+            ytop = axis_df$y_coord + use_group_buffer
+         ))
       }
-      rect(xleft=axis_df$x_coord - use_group_buffer,
-         xright=axis_df$x_coord + use_group_buffer,
-         ybottom=axis_df$y_coord - use_group_buffer,
-         ytop=axis_df$y_coord + use_group_buffer,
-         col=ifelse(is.na(axis_df$n),
+      rect(
+         xleft = axis_df$x_coord - use_group_buffer,
+         xright = axis_df$x_coord + use_group_buffer,
+         ybottom = axis_df$y_coord - use_group_buffer,
+         ytop = axis_df$y_coord + use_group_buffer,
+         col = ifelse(
+            is.na(axis_df$n),
             "transparent",
-            group_fill[axis_df$group]),
-         border=ifelse(is.na(axis_df$n),
+            group_fill[axis_df$group]
+         ),
+         border = ifelse(
+            is.na(axis_df$n),
             "transparent",
-            group_border[axis_df$group]))
+            group_border[axis_df$group]
+         )
+      )
       # optionally add number of replicates as labels
       text(
-         x=axis_df$x_coord - use_group_buffer + 0.04,
-         y=axis_df$y_coord + use_group_buffer - 0.04,
-         adj=c(0, 1),
-         labels=ifelse(is.na(axis_df$n), "",
-            paste0("n=", axis_df$n)),
-         col=replicate_color,
-         cex=replicate_cex)
+         x = axis_df$x_coord - use_group_buffer + 0.04,
+         y = axis_df$y_coord + use_group_buffer - 0.04,
+         adj = c(0, 1),
+         labels = ifelse(is.na(axis_df$n), "", paste0("n=", axis_df$n)),
+         col = replicate_color,
+         cex = replicate_cex
+      )
 
       # generate summary of pairwise contrasts
       contrast_summary_df <- jamba::rbindList(
-         lapply(seq_along(contrast_group_split), function(i){
-            idf <- contrast_group_split[[i]];
-            idf$color <- colorset[as.character(idf$oneway_contrast)];
+         lapply(seq_along(contrast_group_split), function(i) {
+            idf <- contrast_group_split[[i]]
+            idf$color <- colorset[as.character(idf$oneway_contrast)]
             if (nrow(idf) == 2) {
-               data.frame(from=idf$label[1],
-                  to=idf$label[2],
-                  contrast=idf$contrast[1],
-                  full_contrast=idf$contrast[1],
-                  color=colorset[idf$contrast[1]],
-                  depth="one-way",
-                  contrast_depth=1)
+               data.frame(
+                  from = idf$label[1],
+                  to = idf$label[2],
+                  contrast = idf$contrast[1],
+                  full_contrast = idf$contrast[1],
+                  color = colorset[idf$contrast[1]],
+                  depth = "one-way",
+                  contrast_depth = 1
+               )
             } else if (nrow(idf) == 4) {
-               idf$group <- strsplit(gsub("[()]", "", idf$contrast[1]),
-                  contrast_sep)[[1]];
+               idf$group <- strsplit(
+                  gsub("[()]", "", idf$contrast[1]),
+                  contrast_sep
+               )[[1]]
                colorset_key <- jamba::cPaste(
-                  list(idf$group[c(1, 3)],
-                     idf$group[c(2, 4)]),
-                  sep="-");
-               use_colors <- jamba::rmNA(colorset[colorset_key],
-                  naValue="grey");
-               names(use_colors) <- colorset_key;
-               data.frame(from=idf$label[c(1, 3)],
-                  to=idf$label[c(2, 4)],
-                  contrast=paste0(idf$group[c(1, 3)], "-",
-                     idf$group[c(2, 4)]),
-                  full_contrast=idf$contrast[1],
-                  color=use_colors,
-                  depth="two-way",
-                  contrast_depth=2)
+                  list(idf$group[c(1, 3)], idf$group[c(2, 4)]),
+                  sep = "-"
+               )
+               use_colors <- jamba::rmNA(
+                  colorset[colorset_key],
+                  naValue = "grey"
+               )
+               names(use_colors) <- colorset_key
+               data.frame(
+                  from = idf$label[c(1, 3)],
+                  to = idf$label[c(2, 4)],
+                  contrast = paste0(
+                     idf$group[c(1, 3)],
+                     "-",
+                     idf$group[c(2, 4)]
+                  ),
+                  full_contrast = idf$contrast[1],
+                  color = use_colors,
+                  depth = "two-way",
+                  contrast_depth = 2
+               )
             } else {
-               data.frame(from="a",
-                  to="a",
-                  contrast="a",
-                  full_contrast="a",
-                  color="a",
-                  depth="a",
-                  contrast_depth=0)[0,]
+               data.frame(
+                  from = "a",
+                  to = "a",
+                  contrast = "a",
+                  full_contrast = "a",
+                  color = "a",
+                  depth = "a",
+                  contrast_depth = 0
+               )[0, ]
             }
-         }));
+         })
+      )
 
       # iterate each contrast
       use_contrasts <- seq_along(contrast_group_split)
       # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
       # jamba::printDebug("contrast_group_split:");print(contrast_group_split);# debug
       if (debug) {
-         jamba::printDebug("contrast_group_split cgs_df:");
+         jamba::printDebug("contrast_group_split cgs_df:")
          # print(contrast_group_split);# debug
-         cgs_df <- jamba::rbindList(contrast_group_split);
-         rownames(cgs_df) <- NULL;
-         cgs_df$num <- as.numeric(factor(cgs_df$contrast,
-            levels=unique(cgs_df$contrast)))
-         print(cgs_df);# debug
+         cgs_df <- jamba::rbindList(contrast_group_split)
+         rownames(cgs_df) <- NULL
+         cgs_df$num <- as.numeric(factor(
+            cgs_df$contrast,
+            levels = unique(cgs_df$contrast)
+         ))
+         print(cgs_df) # debug
       }
       for (i in seq_along(contrast_group_split)[use_contrasts]) {
-         idf <- contrast_group_split[[i]];
+         idf <- contrast_group_split[[i]]
          if (length(contrast_depths) > 0 && is.numeric(contrast_depths)) {
             if (!contrast_depths %in% idf$depth) {
                if (verbose) {
-                  jamba::printDebug("plot_sedesign(): ",
-                     "Skipping contrast with depth=", head(idf$depth, 1));
+                  jamba::printDebug(
+                     "plot_sedesign(): ",
+                     "Skipping contrast with depth=",
+                     head(idf$depth, 1)
+                  )
                }
-               next;
+               next
             }
          }
          if (idf$angle[1] %in% c(0, 180)) {
-            idf$y_coord <- idf$y_coord + idf$bump / max_y_bump;
+            idf$y_coord <- idf$y_coord + idf$bump / max_y_bump
          } else if (idf$angle[1] %in% c(90, 270)) {
-            idf$x_coord <- idf$x_coord + idf$bump / max_x_bump;
+            idf$x_coord <- idf$x_coord + idf$bump / max_x_bump
          }
          if (nrow(idf) == 2) {
             if (TRUE %in% idf$render_contrast) {
                # assemble custom contrast label as relevant
                # jamba::printDebug("idf oneway contrast:");print(idf);# debug
                use_label <- handle_contrast_label(
-                  contrast=idf$contrast[1],
-                  contrast_labels=contrast_labels,
-                  contrast_style=contrast_style)
+                  contrast = idf$contrast[1],
+                  contrast_labels = contrast_labels,
+                  contrast_style = contrast_style
+               )
                # draw the contrast
                draw_oneway_contrast(
-                  x=idf$x_coord[1],
-                  x1=idf$x_coord[2],
-                  y=idf$y_coord[1],
-                  y1=idf$y_coord[2],
-                  plot_type="base",
-                  color=colorset[idf$contrast[1]],
-                  label=use_label,
-                  label_cex=label_cex,
-                  oneway_position=contrast_position[idf$contrast[1]],
-                  arrow_ex=use_arrow_ex,
-                  verbose=verbose,
-                  ...);
+                  x = idf$x_coord[1],
+                  x1 = idf$x_coord[2],
+                  y = idf$y_coord[1],
+                  y1 = idf$y_coord[2],
+                  plot_type = "base",
+                  color = colorset[idf$contrast[1]],
+                  label = use_label,
+                  label_cex = label_cex,
+                  oneway_position = contrast_position[idf$contrast[1]],
+                  arrow_ex = use_arrow_ex,
+                  verbose = verbose,
+                  ...
+               )
             }
          } else if (nrow(idf) == 4) {
             # match with each pairwise contrast
             # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
-            summary_df1 <- subset(contrast_summary_df,
-               full_contrast %in% idf$contrast[1])
+            summary_df1 <- subset(
+               contrast_summary_df,
+               full_contrast %in% idf$contrast[1]
+            )
             # jamba::printDebug("summary_df1:");print(summary_df1);# debug
-            summary_df <- subset(contrast_summary_df,
-               contrast %in% summary_df1$contrast &
-               depth %in% "one-way")
+            summary_df <- subset(
+               contrast_summary_df,
+               contrast %in% summary_df1$contrast & depth %in% "one-way"
+            )
             if (nrow(summary_df) == 0) {
-               summary_df <- subset(contrast_summary_df,
-                  contrast %in% summary_df1$contrast &
-                     depth %in% "two-way")
+               summary_df <- subset(
+                  contrast_summary_df,
+                  contrast %in% summary_df1$contrast & depth %in% "two-way"
+               )
             }
             # jamba::printDebug("summary_df:");print(summary_df);# debug
-            summary_df <- summary_df[match(summary_df1$contrast,
-               summary_df$contrast), , drop=FALSE];
-            colorset_twoway <- summary_df$color;
+            summary_df <- summary_df[
+               match(summary_df1$contrast, summary_df$contrast),
+               ,
+               drop = FALSE
+            ]
+            colorset_twoway <- summary_df$color
             if (any("grey" %in% colorset_twoway) && TRUE %in% debug) {
-               jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
-               jamba::printDebug("idf:");print(idf);# debug
-               jamba::printDebug("summary_df1:");print(summary_df1);# debug
-               jamba::printDebug("summary_df:");print(summary_df);# debug
+               jamba::printDebug("contrast_summary_df:")
+               print(contrast_summary_df) # debug
+               jamba::printDebug("idf:")
+               print(idf) # debug
+               jamba::printDebug("summary_df1:")
+               print(summary_df1) # debug
+               jamba::printDebug("summary_df:")
+               print(summary_df) # debug
             }
-            contrast_dfs <- lapply(jamba::nameVector(as.character(summary_df1$contrast)), function(jname){
-               jdf <- contrast_group_split[[jname]];
-               if (debug && length(jdf) == 0) {
-                  jamba::printDebug("contrast_group_split:");print(contrast_group_split);# debug
-                  jamba::printDebug("summary_df1$contrast:");print(summary_df1$contrast);# debug
-                  jamba::printDebug("contrast_group_split (jdf):");print(jdf);# debug
+            contrast_dfs <- lapply(
+               jamba::nameVector(as.character(summary_df1$contrast)),
+               function(jname) {
+                  jdf <- contrast_group_split[[jname]]
+                  if (debug && length(jdf) == 0) {
+                     jamba::printDebug("contrast_group_split:")
+                     print(contrast_group_split) # debug
+                     jamba::printDebug("summary_df1$contrast:")
+                     print(summary_df1$contrast) # debug
+                     jamba::printDebug("contrast_group_split (jdf):")
+                     print(jdf) # debug
+                  }
+                  jmatch <- match(jdf$oneway_contrast, idf$oneway_contrast)
+                  jdf[, "render_contrast"] <- idf[jmatch, "render_contrast"]
+                  if (jdf$angle[1] %in% c(0, 180)) {
+                     jdf$y_coord <- jdf$y_coord + jdf$bump / max_y_bump
+                  } else if (idf$angle[1] %in% c(90, 270)) {
+                     jdf$x_coord <- jdf$x_coord + jdf$bump / max_x_bump
+                  }
+                  jdf
                }
-               jmatch <- match(jdf$oneway_contrast, idf$oneway_contrast);
-               jdf[, "render_contrast"] <- idf[jmatch, "render_contrast"];
-               if (jdf$angle[1] %in% c(0, 180)) {
-                  jdf$y_coord <- jdf$y_coord + jdf$bump / max_y_bump;
-               } else if (idf$angle[1] %in% c(90, 270)) {
-                  jdf$x_coord <- jdf$x_coord + jdf$bump / max_x_bump;
-               }
-               jdf;
-            })
+            )
             # call draw_twoway_contrast()
 
             # assemble custom contrast label as relevant
-            icontrast1 <- head(contrast_dfs[[1]]$contrast, 1);
+            icontrast1 <- head(contrast_dfs[[1]]$contrast, 1)
             use_label1 <- handle_contrast_label(
-               contrast=icontrast1,
-               contrast_labels=contrast_labels,
-               contrast_style=contrast_style)
-            icontrast2 <- head(contrast_dfs[[2]]$contrast, 1);
+               contrast = icontrast1,
+               contrast_labels = contrast_labels,
+               contrast_style = contrast_style
+            )
+            icontrast2 <- head(contrast_dfs[[2]]$contrast, 1)
             use_label2 <- handle_contrast_label(
-               contrast=icontrast2,
-               contrast_labels=contrast_labels,
-               contrast_style=contrast_style)
+               contrast = icontrast2,
+               contrast_labels = contrast_labels,
+               contrast_style = contrast_style
+            )
             if (debug) {
-               jamba::printDebug("icontrast1:", icontrast1,
-                  ", use_label1:", use_label1,
-                  ", icontrast2:", icontrast2,
-                  ", use_label2:", use_label2)# debug
+               jamba::printDebug(
+                  "icontrast1:",
+                  icontrast1,
+                  ", use_label1:",
+                  use_label1,
+                  ", icontrast2:",
+                  icontrast2,
+                  ", use_label2:",
+                  use_label2
+               ) # debug
             }
 
             # draw the contrast
             if (verbose) {
-               jamba::printDebug("plot_sedesign(): ",
-                  "draw_twoway_contrast()");
+               jamba::printDebug("plot_sedesign(): ", "draw_twoway_contrast()")
             }
             if (debug) {
-               jamba::printDebug("contrast_dfs:");print(contrast_dfs);# debug
+               jamba::printDebug("contrast_dfs:")
+               print(contrast_dfs) # debug
             }
-            use_twoway_label <- NULL;
-            if (length(contrast_labels) > 0 &&
-                  idf$contrast[1] %in% names(contrast_labels)) {
-               use_twoway_label <- contrast_labels[idf$contrast[1]];
+            use_twoway_label <- NULL
+            if (
+               length(contrast_labels) > 0 &&
+                  idf$contrast[1] %in% names(contrast_labels)
+            ) {
+               use_twoway_label <- contrast_labels[idf$contrast[1]]
             }
             # jamba::printDebug("idf$contrast[1]:");print(idf$contrast[1]);# debug
             # jamba::printDebug("use_twoway_label:", use_twoway_label);# debug
@@ -1259,43 +1401,84 @@ plot_sedesign <- function
             #    color=colorset_twoway))
             use_position <- contrast_position[c(
                contrast_dfs[[1]]$contrast[1],
-               contrast_dfs[[2]]$contrast[1])];
-            use_twoway_position <- contrast_position[idf$contrast[1]];
+               contrast_dfs[[2]]$contrast[1]
+            )]
+            use_twoway_position <- contrast_position[idf$contrast[1]]
             draw_twoway_contrast(
-               x0=c(contrast_dfs[[1]]$x_coord[1],
-                  contrast_dfs[[2]]$x_coord[1]),
-               x1=c(contrast_dfs[[1]]$x_coord[2],
-                  contrast_dfs[[2]]$x_coord[2]),
-               y0=c(contrast_dfs[[1]]$y_coord[1],
-                  contrast_dfs[[2]]$y_coord[1]),
-               y1=c(contrast_dfs[[1]]$y_coord[2],
-                  contrast_dfs[[2]]$y_coord[2]),
-               color=colorset_twoway,
+               x0 = c(
+                  contrast_dfs[[1]]$x_coord[1],
+                  contrast_dfs[[2]]$x_coord[1]
+               ),
+               x1 = c(
+                  contrast_dfs[[1]]$x_coord[2],
+                  contrast_dfs[[2]]$x_coord[2]
+               ),
+               y0 = c(
+                  contrast_dfs[[1]]$y_coord[1],
+                  contrast_dfs[[2]]$y_coord[1]
+               ),
+               y1 = c(
+                  contrast_dfs[[1]]$y_coord[2],
+                  contrast_dfs[[2]]$y_coord[2]
+               ),
+               color = colorset_twoway,
                # border=border,
-               draw_oneway=TRUE,
-               twoway_label=use_twoway_label,
-               extend_ex=extend_ex,
-               arrow_ex=use_arrow_ex,
-               extend_angle=extend_angle,
-               label=c(use_label1,
-                  use_label2),
-               label_cex=label_cex,
-               oneway_position=use_position,
-               twoway_position=use_twoway_position,
-               twoway_lwd=twoway_lwd,
-               ...)
+               draw_oneway = TRUE,
+               twoway_label = use_twoway_label,
+               extend_ex = extend_ex,
+               arrow_ex = use_arrow_ex,
+               extend_angle = extend_angle,
+               label = c(use_label1, use_label2),
+               label_cex = label_cex,
+               oneway_position = use_position,
+               twoway_position = use_twoway_position,
+               twoway_lwd = twoway_lwd,
+               ...
+            )
             # jamba::printDebug("contrast_position[idf$contrast[1]]:", contrast_position[idf$contrast[1]]);# debug
             # jamba::printDebug("contrast_position:");print(contrast_position);# debug
             # jamba::printDebug("idf$contrast[1]:");print(idf$contrast[1]);
             # jamba::printDebug("twoway_position:");print(contrast_position[idf$contrast[1]]);# debug
          }
       }
-      attr(contrast_group_split, "max_x_bump") <- max_x_bump;
-      attr(contrast_group_split, "max_y_bump") <- max_y_bump;
+      attr(contrast_group_split, "max_x_bump") <- max_x_bump
+      attr(contrast_group_split, "max_y_bump") <- max_y_bump
       return(invisible(contrast_group_split))
-   } else if ("grid" %in% plot_type) {
-   }
+   } else if ("grid" %in% plot_type) {}
+}
 
+#' Plot method for SEDesign objects
+#'
+#' `plot()` method for `SEDesign` objects, a thin wrapper around
+#' `plot_sedesign()`. S7 objects retain their class in the S3 `class()`
+#' vector (see `print.SEDesign()`), so this S3 method is dispatched by
+#' the base `plot()` generic for `SEDesign` objects.
+#'
+#' @family jam experiment design
+#'
+#' @returns see `plot_sedesign()`.
+#'
+#' @param x `SEDesign` object as returned by `groups_to_sedesign()`.
+#' @param ... additional arguments passed to `plot_sedesign()`.
+#'
+#' @examples
+#' isamples_1 <- paste0(
+#'    rep(c("DMSO", "Etop", "DMSO", "Etop"), each=6),
+#'    "_",
+#'    rep(c("NF", "Flag"), each=12),
+#'    "_",
+#'    rep(c("WT", "KO", "WT", "KO", "WT", "D955N", "WT", "D955N"), each=3),
+#'    "_",
+#'    LETTERS[1:3])
+#' idf <- data.frame(jamba::rbindList(strsplit(isamples_1, "_")))[,1:3]
+#' rownames(idf) <- isamples_1;
+#' sedesign_1 <- groups_to_sedesign(idf)
+#'
+#' plot(sedesign_1)
+#'
+#' @export
+plot.SEDesign <- function(x, ...) {
+   plot_sedesign(x, ...)
 }
 
 #' Make block arrow polygon coordinates for line segments

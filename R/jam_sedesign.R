@@ -1,6 +1,9 @@
 #
 # contrast design object
 
+#' @import methods
+NULL
+
 #' Check SEDesign object
 #'
 #' Check whether a SEDesign object is valid
@@ -39,7 +42,7 @@ check_sedesign <- function
    errors <- character();
    if (length(object@samples) > 0 && !all(is.na(object@samples))) {
       if (length(object@design) > 0) {
-         if (!all(object@samples) %in% rownames(object@design)) {
+         if (!all(object@samples %in% rownames(object@design))) {
             msg <- paste0("Failed: all(samples %in% rownames(design))");
             errors <- c(errors, msg);
          }
@@ -67,20 +70,158 @@ check_sedesign <- function
 }
 
 
-setClass("SEDesign",
-   slots=c(
-      design="matrix",
-      contrasts="matrix",
-      samples="character"
+# S7 class type used for the design/contrasts matrix properties
+.class_matrix <- S7::new_S3_class("matrix");
+
+#' Build internal per-group factor decomposition data.frame
+#'
+#' For internal use. Splits `group_names` (`colnames(design)`, i.e.
+#' `groups(object)`) on `"_"` into one column per underlying experimental
+#' factor. Column names default to `"factor1"`, `"factor2"`, etc., unless
+#' `factor_labels` is supplied with a matching length, in which case it
+#' is used instead (this is how user-customized `factors()` labels are
+#' applied).
+#'
+#' @noRd
+.sedesign_build_design_df <- function
+(group_names,
+ factor_labels=character(0))
+{
+   if (length(group_names) == 0) {
+      return(data.frame());
+   }
+   design_matrix <- jamba::rbindList(strsplit(group_names, "_", fixed=TRUE));
+   design_matrix <- matrix(design_matrix,
+      nrow=length(group_names));
+   if (length(factor_labels) == ncol(design_matrix)) {
+      colnames(design_matrix) <- factor_labels;
+   } else {
+      colnames(design_matrix) <- paste0("factor", seq_len(ncol(design_matrix)));
+   }
+   design_df <- data.frame(check.names=FALSE,
+      stringsAsFactors=FALSE,
+      design_matrix);
+   rownames(design_df) <- group_names;
+   return(design_df);
+}
+
+#' Build (or refresh) the cached contrasts_to_factors() data.frame
+#'
+#' For internal use. This step can be slow, so its result is cached
+#' on the `SEDesign` object in the `contrasts_df` property, and is
+#' only recomputed when `factors`, `design`, or `contrasts` change.
+#'
+#' @noRd
+.sedesign_build_contrasts_df <- function
+(object)
+{
+   if (length(object@contrasts) == 0 || ncol(object@contrasts) == 0) {
+      return(data.frame());
+   }
+   tryCatch({
+      contrasts_to_factors(object);
+   }, error=function(e){
+      data.frame();
+   });
+}
+
+#' Refresh internal design_df and contrasts_df caches
+#'
+#' `design_df` is rebuilt from `colnames(design(object))` (i.e.
+#' `groups(object)`), reusing existing `factors()` labels when their
+#' count still matches the number of underlying factor columns; the
+#' `factors` property is then synced to whatever labels were actually
+#' used (custom, or auto-generated `"factor1"`, `"factor2"`, etc.).
+#' `contrasts_df` depends only on `design`/`contrasts`, not `factors`.
+#'
+#' @noRd
+.sedesign_refresh_caches <- function
+(object)
+{
+   group_names <- colnames(object@design);
+   if (is.null(group_names)) {
+      group_names <- character(0);
+   }
+   design_df <- .sedesign_build_design_df(group_names, object@factors);
+   object@design_df <- design_df;
+   object@factors <- colnames(design_df);
+   object@contrasts_df <- .sedesign_build_contrasts_df(object);
+   return(object);
+}
+
+
+#' SEDesign: experiment design and contrasts object (S7 class)
+#'
+#' `SEDesign` enforces the relationship between individual samples,
+#' design groups, and groups involved in statistical contrasts.
+#'
+#' In addition to the four constructor arguments below, `SEDesign` objects
+#' carry two internal-use properties, accessible via `@`:
+#'
+#' * `design_df`: `data.frame` with one row per design group
+#'    (`groups(object)`, i.e. `colnames(design)`), derived by splitting
+#'    each group name on `"_"` into one column per underlying
+#'    experimental factor. Column names default to `"factor1"`,
+#'    `"factor2"`, etc., and can be customized via `factors()<-`.
+#' * `contrasts_df`: `data.frame`, cached result of `contrasts_to_factors()`,
+#'    refreshed whenever `design` or `contrasts` are updated.
+#'
+#' @param design `matrix` with rownames as samples, colnames as
+#'    design groups, containing 0/1 sample-to-group association values.
+#' @param contrasts `matrix` with rownames matching `colnames(design)`,
+#'    and colnames as contrast names, containing contrast coefficients.
+#' @param samples `character` vector of sample identifiers, typically
+#'    equal to `rownames(design)`.
+#' @param factors `character` vector of labels for the underlying
+#'    experimental factors, equivalent to `colnames(design_df)`, i.e.
+#'    the columns produced by splitting each design group name
+#'    (`groups(object)`) on `"_"`. When empty, or when its length does
+#'    not match the number of underlying factors, it is auto-populated
+#'    with `"factor1"`, `"factor2"`, etc. Editing `factors()` only
+#'    renames these labels (used primarily by `print()`); it has no
+#'    effect on `design`, `contrasts`, or `groups()`.
+#'
+#' @family jam experiment design
+#'
+#' @export
+SEDesign <- S7::new_class("SEDesign",
+   package=NULL,
+   properties=list(
+      design=.class_matrix,
+      contrasts=.class_matrix,
+      samples=S7::class_character,
+      factors=S7::class_character,
+      design_df=S7::class_data.frame,
+      contrasts_df=S7::class_data.frame
    ),
-   prototype=prototype(
-      design=NULL,
-      contrasts=NULL,
-      samples=character(0)
-   ),
-   validity=check_sedesign
+   constructor=function
+   (design=matrix(nrow=0, ncol=0),
+    contrasts=matrix(nrow=0, ncol=0),
+    samples=character(0),
+    factors=character(0))
+   {
+      object <- S7::new_object(S7::S7_object(),
+         design=design,
+         contrasts=contrasts,
+         samples=samples,
+         factors=factors,
+         design_df=data.frame(),
+         contrasts_df=data.frame());
+      .sedesign_refresh_caches(object);
+   },
+   validator=function(self) {
+      result <- check_sedesign(self);
+      if (isTRUE(result)) {
+         NULL
+      } else {
+         result
+      }
+   }
 );
 
+# register SEDesign as an S4 class, so existing S4 setGeneric/setMethod
+# machinery (used for design(), contrasts(), "[", etc.) continues to work.
+S7::S4_register(SEDesign);
 
 
 #' Validate SEDesign object contents
@@ -140,7 +281,7 @@ setClass("SEDesign",
 #'       icontrastnames))
 #' icontrasts2
 #'
-#' condes2 <- new("SEDesign",
+#' condes2 <- SEDesign(
 #'    design=mm2,
 #'    contrasts=icontrasts2)
 #' condes2
@@ -167,17 +308,44 @@ validate_sedesign <- function
  verbose=FALSE,
  ...)
 {
+   # S7 validates on every single `@<-` assignment (unlike S4, which only
+   # validates at construction). .validate_sedesign_core() below performs
+   # a sequence of property mutations that can be transiently "invalid"
+   # partway through (e.g. design and samples briefly out of sync), so
+   # the whole operation is wrapped in valid_eventually() to suppress
+   # validation until the final, fully-reconciled object is produced.
+   S7::valid_eventually(object, function(object) {
+      .validate_sedesign_core(object,
+         min_reps=min_reps,
+         samples=samples,
+         groups=groups,
+         contrasts=contrasts,
+         verbose=verbose,
+         ...)
+   })
+}
+
+#' @noRd
+.validate_sedesign_core <- function
+(object,
+ min_reps=1,
+ samples=NULL,
+ groups=NULL,
+ contrasts=NULL,
+ verbose=FALSE,
+ ...)
+{
    newmsg <- character();
 
-   # convert NA to NULL
+   # convert NA to empty
    if (length(object@samples) > 0 && all(is.na(object@samples))) {
-      object@samples <- NULL;
+      object@samples <- character(0);
    }
    if (length(object@design) > 0 && all(is.na(object@design))) {
-      object@design <- NULL;
+      object@design <- matrix(nrow=0, ncol=0);
    }
    if (length(object@contrasts) > 0 && all(is.na(object@contrasts))) {
-      object@contrasts <- NULL;
+      object@contrasts <- matrix(nrow=0, ncol=0);
    }
 
    # check samples
@@ -387,47 +555,71 @@ validate_sedesign <- function
       }
    }
 
+   # keep design_df, contrasts_df caches synchronized with any
+   # changes made to design/contrasts above.
+   object <- .sedesign_refresh_caches(object);
+
    #
    return(object)
 }
 
+#' Subset a SEDesign object by samples and/or design groups
+#'
+#' @param x `SEDesign` object
+#' @param i,j optional `character` or `integer` vectors used to subset
+#'    samples (`i`) and/or design groups (`j`). See `validate_sedesign()`.
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
 #' @export
-setMethod("[",
-   signature=c(x="SEDesign",
-      i="ANY",
-      j="ANY"),
-   definition=function(x, i=NULL, j=NULL, ...) {
-      if (missing(i)) {
-         i <- NULL;
-      }
-      if (missing(j)) {
-         j <- NULL;
-      }
-      validate_sedesign(x,
-         samples=i,
-         groups=j)
+S7::method(`[`, SEDesign) <- function(x, i=NULL, j=NULL, ...) {
+   if (missing(i)) {
+      i <- NULL;
    }
-)
-
-
-setGeneric("samples", function(object) {standardGeneric("samples")})
-
-#' @export
-setMethod("samples",
-   signature=c(object="SEDesign"),
-   definition=function(object) {
-      rownames(object@design);
+   if (missing(j)) {
+      j <- NULL;
    }
-)
+   validate_sedesign(x,
+      samples=i,
+      groups=j)
+}
 
 
-setGeneric("samples<-", function(object, value) {standardGeneric("samples<-")})
+#' Sample identifiers for SEDesign objects
+#'
+#' `samples()` returns sample identifiers, equivalent to
+#' `rownames(design(object))`. `samples()<-` renames samples, and
+#' updates `rownames(design(object))` to match. It accepts a `character`
+#' vector `value` with length equal to `length(samples(object))`.
+#'
+#' @param object `SEDesign` object
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
+#' @export
+samples <- S7::new_generic("samples", "object")
 
 #' @export
-setMethod("samples<-",
-   signature=c(object="SEDesign",
-      value="character"),
-   definition=function(object, value) {
+S7::method(samples, SEDesign) <- function(object) {
+   rownames(object@design);
+}
+
+
+#' @rdname samples
+#' @param value `character` vector, length equal to `length(samples(object))`
+#'
+#' @export
+`samples<-` <- S7::new_generic("samples<-", "object")
+
+#' @export
+S7::method(`samples<-`, SEDesign) <- function(object, value) {
+   value <- as.character(value);
+   # renaming samples and rownames(design) together can be transiently
+   # inconsistent between the two assignments, so both are performed
+   # inside valid_eventually() and only validated once, at the end.
+   S7::valid_eventually(object, function(object) {
       if (length(object@samples) > 0) {
          if (length(value) != length(object@samples)) {
             stop("length(value) must equal length(object@samples)")
@@ -447,65 +639,165 @@ setMethod("samples<-",
          object@samples <- value;
       }
       object;
-   }
-)
+   })
+}
 
-setGeneric("groups", function(object) {standardGeneric("groups")})
+#' Design group names for SEDesign objects
+#'
+#' `groups()` returns the design group names, equivalent to
+#' `colnames(design(object))`. `groups()<-` renames design groups,
+#' updating `colnames(design)` and `rownames(contrasts)` together.
+#'
+#' In principle, design groups are derived identifiers and should not
+#' need to be renamed directly (prefer re-running `groups_to_sedesign()`
+#' with updated inputs). `groups()<-` is provided for convenience, but
+#' use it with care: `design_df` (and therefore `factors()` labels
+#' derived from group names) is rebuilt from the new group names, which
+#' resets any customized `factors()<-` labels if the number of
+#' underlying factors changes.
+#'
+#' @param object `SEDesign` object
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
+#' @export
+groups <- S7::new_generic("groups", "object")
 
 #' @export
-setMethod("groups",
-   signature=c(object="SEDesign"),
-   definition=function(object) {
-      colnames(object@design);
-   }
-)
+S7::method(groups, SEDesign) <- function(object) {
+   colnames(object@design);
+}
 
-setGeneric("groups<-", function(object, value) {standardGeneric("groups<-")})
+#' @rdname groups
+#' @param value `character` vector, length equal to `ncol(design(object))`
+#'
+#' @export
+`groups<-` <- S7::new_generic("groups<-", "object")
 
 #' @export
-setMethod("groups<-",
-   signature=c(object="SEDesign",
-      value="character"),
-   definition=function(object, value) {
-      if (length(value) != ncol(object@design)) {
-         stop("length(value) must equal ncol(object@design)")
+S7::method(`groups<-`, SEDesign) <- function(object, value) {
+   value <- as.character(value);
+   if (any(duplicated(value))) {
+      stop("groups must not contain duplicated values.")
+   }
+   # colnames(design) and rownames(contrasts) are transiently out of
+   # sync between these two assignments, so both are performed inside
+   # valid_eventually() and only validated once, at the end.
+   S7::valid_eventually(object, function(object) {
+      if (length(object@design) > 0) {
+         if (length(value) != ncol(object@design)) {
+            stop("length(value) must equal ncol(object@design)")
+         }
+         colnames(object@design) <- value;
+         if (length(object@contrasts) > 0) {
+            rownames(object@contrasts) <- value;
+         }
       }
-      colnames(object@design) <- value;
-      if (length(object@contrasts) > 0) {
-         rownames(object@contrasts) <- value;
-      }
-      object;
-   }
-)
+      .sedesign_refresh_caches(object);
+   })
+}
 
-setGeneric("contrastnames", function(object) {standardGeneric("contrastnames")})
+#' Experimental factor labels for SEDesign objects
+#'
+#' `factors()` returns the labels of the underlying experimental
+#' factors, equivalent to `colnames(x@design_df)`, i.e. the columns
+#' produced by splitting each design group name (`groups(object)`) on
+#' `"_"`. `factors()<-` renames these labels; it has no effect on
+#' `design`, `contrasts`, `groups()`, or `contrasts_df` -- it is used
+#' only for internal bookkeeping and for the `print()` summary.
+#'
+#' @param object `SEDesign` object
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
+#' @export
+factors <- S7::new_generic("factors", "object")
 
 #' @export
-setMethod("contrastnames",
-   signature=c(object="SEDesign"),
-   definition=function(object) {
-      colnames(object@contrasts);
-   }
-)
+S7::method(factors, SEDesign) <- function(object) {
+   colnames(object@design_df);
+}
 
-setGeneric("contrastnames<-", function(object, value) {standardGeneric("contrastnames<-")})
+#' @rdname factors
+#' @param value `character` vector, length equal to `ncol(x@design_df)`
+#'    (the number of underlying experimental factors)
+#'
+#' @export
+`factors<-` <- S7::new_generic("factors<-", "object")
 
 #' @export
-setMethod("contrastnames<-",
-   signature=c(object="SEDesign",
-      value="character"),
-   definition=function(object, value) {
-      if (length(value) != ncol(object@contrasts)) {
-         stop("length(value) must equal ncol(object@contrasts)")
-      }
-      colnames(object@contrasts) <- value;
-      object;
+S7::method(`factors<-`, SEDesign) <- function(object, value) {
+   value <- as.character(value)
+   if (any(duplicated(value))) {
+      stop("factors must not contain duplicated values.")
    }
-)
+   if (ncol(object@design_df) > 0) {
+      if (length(value) != ncol(object@design_df)) {
+         cli::cli_abort(paste0(
+            "{.val length(value)} must equal ",
+            "{.val ncol(object@design_df)},",
+            " the number of underlying experimental factors."
+         ))
+      }
+      colnames(object@design_df) <- value
+   }
+   if (ncol(object@contrasts_df) > 0) {
+      colnames(object@contrasts_df) <- value
+   }
+   object@factors <- value
+   object
+}
 
-# setGeneric("design", function(object) {standardGeneric("design")})
-# setGeneric("design", function(object, ...) {standardGeneric("design")})
+#' Contrast names for SEDesign objects
+#'
+#' `contrastnames()` and `contrast_names()` are equivalent, returning
+#' `colnames(contrasts(object))`. `contrastnames()<-` renames contrast
+#' columns directly, accepting a `character` vector `value` with length
+#' equal to `ncol(contrasts(object))`. `contrast_names()<-` instead
+#' rebuilds the contrasts matrix using `limma::makeContrasts()`, accepting
+#' a `character` vector `value` of contrast names (must not contain
+#' duplicated values).
+#'
+#' @param object `SEDesign` object
+#' @param ... additional arguments are ignored
+#' @param value `character` vector: contrast column names (for
+#'    `contrastnames<-`) or contrast names to rebuild via
+#'    `limma::makeContrasts()` (for `contrast_names<-`)
+#'
+#' @family jam experiment design
+#'
+#' @export
+contrastnames <- S7::new_generic("contrastnames", "object")
 
+#' @export
+S7::method(contrastnames, SEDesign) <- function(object) {
+   colnames(object@contrasts);
+}
+
+#' @rdname contrastnames
+#' @export
+`contrastnames<-` <- S7::new_generic("contrastnames<-", "object")
+
+#' @export
+S7::method(`contrastnames<-`, SEDesign) <- function(object, value) {
+   value <- as.character(value);
+   if (length(value) != ncol(object@contrasts)) {
+      stop("length(value) must equal ncol(object@contrasts)")
+   }
+   colnames(object@contrasts) <- value;
+   object <- .sedesign_refresh_caches(object);
+   object;
+}
+
+#' Design matrix accessor for SEDesign objects
+#'
+#' @param object `SEDesign` object
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
 #' @import BiocGenerics
 #' @export
 setMethod("design",
@@ -515,19 +807,49 @@ setMethod("design",
    }
 )
 
-#setGeneric("design<-", function(object) {standardGeneric("design<-")})
-
+#' Design matrix setter for SEDesign objects
+#'
+#' @param object `SEDesign` object
+#' @param value `matrix` whose `colnames` must match `groups(object)`
+#'    exactly (when `groups(object)` is already defined); use
+#'    `groups(object) <- ...` to rename design groups instead.
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
 #' @importFrom BiocGenerics design
 #' @export
 setMethod("design<-",
    signature=c(object="SEDesign",
       value="matrix"),
    definition=function(object, ..., value) {
-      object@design <- value;
-      validate_sedesign(object);
+      current_groups <- groups(object);
+      value_colnames <- colnames(value);
+      if (length(current_groups) > 0 && length(value_colnames) > 0 &&
+            !identical(value_colnames, current_groups)) {
+         stop(paste0("colnames(value) must match groups(object) exactly. ",
+            "Use groups(object) <- ... to rename design groups."));
+      }
+      # replacing design can transiently break the samples/design
+      # alignment (fixed up by .validate_sedesign_core()), so both
+      # steps happen inside valid_eventually() and are only validated
+      # once, at the end.
+      S7::valid_eventually(object, function(object) {
+         object@design <- value;
+         .validate_sedesign_core(object);
+      })
    }
 )
 
+#' Contrast matrix accessor for SEDesign objects
+#'
+#' @param x `SEDesign` object
+#' @param contrasts,sparse arguments retained for compatibility with the
+#'    base `stats::contrasts()` generic signature; ignored for `SEDesign`.
+#'
+#' @family jam experiment design
+#'
+#' @export
 # S4 generic to dispatch S3 classes
 setGeneric("contrasts")
 
@@ -539,6 +861,17 @@ setMethod("contrasts",
    }
 )
 
+#' Contrast matrix setter for SEDesign objects
+#'
+#' @param x `SEDesign` object
+#' @param how.many,value arguments retained for compatibility with the
+#'    base `stats::contrasts<-()` generic signature; `value` (or
+#'    `how.many` when `value` is not supplied) must be a `matrix` whose
+#'    `rownames` match `groups(x)` exactly.
+#'
+#' @family jam experiment design
+#'
+#' @export
 # S4 generic to dispatch S3 classes
 setGeneric("contrasts<-")
 
@@ -548,50 +881,97 @@ setMethod("contrasts<-",
       how.many="ANY",
       value="ANY"),
    definition=function(x, how.many, value) {
-      if (!missing(value)) {
-         x@contrasts <- value;
-      } else if (!missing(how.many)) {
-         x@contrasts <- how.many;
+      new_contrasts <- if (!missing(value)) value else how.many;
+      current_groups <- groups(x);
+      new_rownames <- rownames(new_contrasts);
+      if (length(current_groups) > 0 && length(new_rownames) > 0 &&
+            !identical(new_rownames, current_groups)) {
+         stop(paste0("rownames(value) must match groups(x) exactly. ",
+            "Use groups(x) <- ... to rename design groups."));
       }
-      validate_sedesign(x);
+      S7::valid_eventually(x, function(x) {
+         x@contrasts <- new_contrasts;
+         .validate_sedesign_core(x);
+      })
    }
 )
 
 
-setGeneric("contrast_names", function(object) {standardGeneric("contrast_names")})
+#' @rdname contrastnames
+#' @export
+contrast_names <- S7::new_generic("contrast_names", "object")
 
 #' @export
-setMethod("contrast_names",
-   signature=c(object="SEDesign"),
-   definition=function(object) {
-      colnames(object@contrasts);
+S7::method(contrast_names, SEDesign) <- function(object) {
+   colnames(object@contrasts);
+}
+
+#' @rdname contrastnames
+#' @export
+`contrast_names<-` <- S7::new_generic("contrast_names<-", "object")
+
+#' @export
+S7::method(`contrast_names<-`, SEDesign) <- function(object, value) {
+   if (any(duplicated(value))) {
+      stop("contrast_names cannot be duplicated.")
    }
-)
-
-setGeneric("contrast_names<-", function(object, value) {standardGeneric("contrast_names<-")})
-
-#' @export
-setMethod("contrast_names<-",
-   signature=c(object="SEDesign",
-      value="ANY"),
-   definition=function(object, value) {
-      if (any(duplicated(value))) {
-         stop("contrast_names cannot be duplicated.")
-      }
-      object <- tryCatch({
+   object <- tryCatch({
+      S7::valid_eventually(object, function(object) {
          object@contrasts <- limma::makeContrasts(
             contrasts=value,
             levels=object@design)
-         validate_sedesign(object);
-      }, error=function(e){
-         cli::cli_alert_danger(paste(
-            "{.field contrast_names} were not compatible with",
-            "{.field design(sedesign)}.",
-            "No subsetting was performed."))
-         cli::cli_alert_danger(
-            cli::format_error(e))
-         object
+         .validate_sedesign_core(object);
       })
+   }, error=function(e){
+      cli::cli_alert_danger(paste(
+         "{.field contrast_names} were not compatible with",
+         "{.field design(sedesign)}.",
+         "No subsetting was performed."))
+      cli::cli_alert_danger(
+         cli::format_error(e))
       object
+   })
+   object
+}
+
+#' Print / show method for SEDesign objects
+#'
+#' S7 objects bypass the classic S4 `show` generic for console
+#' auto-printing; a plain S3 `print.SEDesign` method is used instead,
+#' since S7 objects retain "SEDesign" in their S3 `class()` vector.
+#' 
+#' The summary includes:
+#' 
+#' * the number of samples, groups, and contrasts
+#' * Each factor name, with factor levels.
+#' 
+#' Factor levels are printed in order, so that the first entry
+#' is prioritized as the control in subsequent contrasts.
+#' 
+#' For example: 'level1', 'level2', 'level3' should always produce
+#' contrasts 'level2-level1', 'level3-level1', 'level3-level2'.
+#' It should not produce a contrast 'level2-level3'.
+#'
+#' @param x `SEDesign` object
+#' @param ... additional arguments are ignored
+#'
+#' @family jam experiment design
+#'
+#' @export
+print.SEDesign <- function(x, ...) {
+   cat(sprintf("<SEDesign> %d samples, %d groups, %d contrasts\n",
+      length(samples(x)),
+      length(groups(x)),
+      ncol(x@contrasts)));
+   design_df <- x@design_df;
+   if (ncol(design_df) > 0) {
+      cat("factors:\n");
+      for (icol in colnames(design_df)) {
+         ilevels <- unique(design_df[[icol]]);
+         cat(sprintf("  - %s: %s\n",
+            icol,
+            jamba::cPaste(ilevels, sep=", ")));
+      }
    }
-)
+   invisible(x);
+}

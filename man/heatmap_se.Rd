@@ -1115,9 +1115,9 @@ heatmap_column_group_labels(
 
 }
 \seealso{
-Other jamses heatmaps: 
-\code{\link{detect_heatmap_components}()},
-\code{\link{heatmap_column_group_labels}()},
-\code{\link{heatmap_profile_plot}()}
+Other jamses heatmaps:
+\code{\link[=detect_heatmap_components]{detect_heatmap_components()}},
+\code{\link[=heatmap_column_group_labels]{heatmap_column_group_labels()}},
+\code{\link[=heatmap_profile_plot]{heatmap_profile_plot()}}
 }
 \concept{jamses heatmaps}

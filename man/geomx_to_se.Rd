@@ -34,15 +34,15 @@ Each data matrix in \code{assayData} from GeoMx is stored into the
 corresponding \code{assays} entry in the output object.
 }
 \seealso{
-Other jamses SE utilities: 
-\code{\link{make_se_test}()},
-\code{\link{se_collapse_by_column}()},
-\code{\link{se_collapse_by_row}()},
-\code{\link{se_detected_rows}()},
-\code{\link{se_normalize}()},
-\code{\link{se_rbind}()},
-\code{\link{se_to_assay_data}()},
-\code{\link{se_to_assay_names}()},
-\code{\link{se_to_rowcoldata}()}
+Other jamses SE utilities:
+\code{\link[=make_se_test]{make_se_test()}},
+\code{\link[=se_collapse_by_column]{se_collapse_by_column()}},
+\code{\link[=se_collapse_by_row]{se_collapse_by_row()}},
+\code{\link[=se_detected_rows]{se_detected_rows()}},
+\code{\link[=se_normalize]{se_normalize()}},
+\code{\link[=se_rbind]{se_rbind()}},
+\code{\link[=se_to_assay_data]{se_to_assay_data()}},
+\code{\link[=se_to_assay_names]{se_to_assay_names()}},
+\code{\link[=se_to_rowcoldata]{se_to_rowcoldata()}}
 }
 \concept{jamses SE utilities}

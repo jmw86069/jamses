@@ -36,10 +36,15 @@ design factor, and rownames are recognized as sample identifiers.
 \code{factor_sep}, and names are recognized as sample identifiers.
 }}
 
-\item{group_colnames}{\code{character} vector or \code{NULL}, used to
-define a subset of columns to use when \code{ifactors} is supplied
-as a \code{data.frame}. When \code{ifactors} is supplied as a \code{character}
-vector, this argument is used to define the \code{colnames}.}
+\item{group_colnames}{\code{character} vector or \code{NULL},
+defines a subset of columns to use when \code{ifactors} is supplied
+as a \code{data.frame}.
+\itemize{
+\item When \code{ifactors} is supplied as a \code{character}
+vector, this argument is used to define the \code{colnames}.
+\item \code{group_colnames} will become the \code{factors()} of the \code{SEDesign},
+and can be edited later using \verb{factors()<-}.
+}}
 
 \item{isamples}{\code{character} vector or \code{NULL}, optionally used to subset
 the sample identifiers used in subsequent steps. Note that only
@@ -207,7 +212,7 @@ igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
 igroups <- factor(igroups, levels=unique(igroups));
 igroups;
 
-sedesign <- groups_to_sedesign(igroups);
+sedesign <- groups_to_sedesign(igroups, group_colnames=c("Genotype", "Treatment"));
 design(sedesign);
 contrasts(sedesign);
 
@@ -296,18 +301,31 @@ plot_sedesign(groups_to_sedesign(df_test,
 
 }
 \seealso{
-Other jam experiment design: 
-\code{\link{check_sedesign}()},
-\code{\link{contrast2comp}()},
-\code{\link{contrast_colors_by_group}()},
-\code{\link{contrast_names_to_sedesign}()},
-\code{\link{contrasts_to_factors}()},
-\code{\link{contrasts_to_venn_setlists}()},
-\code{\link{draw_oneway_contrast}()},
-\code{\link{draw_twoway_contrast}()},
-\code{\link{filter_contrast_names}()},
-\code{\link{plot_sedesign}()},
-\code{\link{sedesign_to_factors}()},
-\code{\link{validate_sedesign}()}
+Other jam experiment design:
+\code{\link[=SEDesign]{SEDesign()}},
+\code{\link{[,SEDesign-method}},
+\code{\link[=check_sedesign]{check_sedesign()}},
+\code{\link[=contrast2comp]{contrast2comp()}},
+\code{\link[=contrast_colors_by_group]{contrast_colors_by_group()}},
+\code{\link[=contrast_names_to_sedesign]{contrast_names_to_sedesign()}},
+\code{\link[=contrastnames]{contrastnames()}},
+\code{\link[=contrasts]{contrasts()}},
+\code{\link[=contrasts<-]{contrasts<-()}},
+\code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
+\code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
+\code{\link{design,SEDesign-method}},
+\code{\link{design<-,SEDesign,matrix-method}},
+\code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
+\code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
+\code{\link[=factors]{factors()}},
+\code{\link[=filter_contrast_names]{filter_contrast_names()}},
+\code{\link[=groups]{groups()}},
+\code{\link[=plot.SEDesign]{plot.SEDesign()}},
+\code{\link[=plot_sedesign]{plot_sedesign()}},
+\code{\link[=print.SEDesign]{print.SEDesign()}},
+\code{\link[=samples]{samples()}},
+\code{\link[=sedesign_to_factors]{sedesign_to_factors()}},
+\code{\link[=sort_contrasts]{sort_contrasts()}},
+\code{\link[=validate_sedesign]{validate_sedesign()}}
 }
 \concept{jam experiment design}

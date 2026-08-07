@@ -37,28 +37,28 @@ split(icolsplit, newsplit3)
 
 }
 \seealso{
-Other jamses utilities: 
-\code{\link{choose_annotation_colnames}()},
-\code{\link{combine_sestats}()},
-\code{\link{contrast2comp_dev}()},
-\code{\link{fold_to_log2fold}()},
-\code{\link{intercalate}()},
-\code{\link{list2im_opt}()},
-\code{\link{list_to_sestats}()},
-\code{\link{log2fold_to_fold}()},
-\code{\link{make_block_arrow_polygon}()},
-\code{\link{mark_stat_hits}()},
-\code{\link{matrix_normalize}()},
-\code{\link{merge_statdf_all_test}()},
-\code{\link{point_handedness}()},
-\code{\link{point_slope_intercept}()},
-\code{\link{shortest_unique_abbreviation}()},
-\code{\link{shrinkDataFrame}()},
-\code{\link{shrink_df}()},
-\code{\link{shrink_matrix}()},
-\code{\link{sort_samples}()},
-\code{\link{strsplitOrdered}()},
-\code{\link{update_function_params}()},
-\code{\link{update_list_elements}()}
+Other jamses utilities:
+\code{\link[=choose_annotation_colnames]{choose_annotation_colnames()}},
+\code{\link[=combine_sestats]{combine_sestats()}},
+\code{\link[=contrast2comp_dev]{contrast2comp_dev()}},
+\code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
+\code{\link[=intercalate]{intercalate()}},
+\code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list_to_sestats]{list_to_sestats()}},
+\code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
+\code{\link[=make_block_arrow_polygon]{make_block_arrow_polygon()}},
+\code{\link[=mark_stat_hits]{mark_stat_hits()}},
+\code{\link[=matrix_normalize]{matrix_normalize()}},
+\code{\link[=merge_statdf_all_test]{merge_statdf_all_test()}},
+\code{\link[=point_handedness]{point_handedness()}},
+\code{\link[=point_slope_intercept]{point_slope_intercept()}},
+\code{\link[=shortest_unique_abbreviation]{shortest_unique_abbreviation()}},
+\code{\link[=shrinkDataFrame]{shrinkDataFrame()}},
+\code{\link[=shrink_df]{shrink_df()}},
+\code{\link[=shrink_matrix]{shrink_matrix()}},
+\code{\link[=sort_samples]{sort_samples()}},
+\code{\link[=strsplitOrdered]{strsplitOrdered()}},
+\code{\link[=update_function_params]{update_function_params()}},
+\code{\link[=update_list_elements]{update_list_elements()}}
 }
 \concept{jamses utilities}

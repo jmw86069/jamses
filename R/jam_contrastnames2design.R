@@ -93,14 +93,14 @@ contrast_names_to_sedesign <- function
       idf
    })
 
-   ## for display, model the layout using vcd::mosaic options
-   i <- 1;
-   vcdm <- vcd::mosaic(
-      vcd::structable(factor_df_list[[i]],
-         split_vertical=rep(
-            c(FALSE, TRUE, TRUE),
-            length.out=ncol(factor_df_list[[i]]))),
-      shade=FALSE,
-      labeling=vcd::labeling_values)
+   # ## for display, model the layout using vcd::mosaic options
+   # i <- 1;
+   # vcdm <- vcd::mosaic(
+   #    vcd::structable(factor_df_list[[i]],
+   #       split_vertical=rep(
+   #          c(FALSE, TRUE, TRUE),
+   #          length.out=ncol(factor_df_list[[i]]))),
+   #    shade=FALSE,
+   #    labeling=vcd::labeling_values)
 
 }

@@ -76,10 +76,13 @@
 #'    * When `character` vector is supplied, it is converted to
 #'    `data.frame` by splitting values with a delimiter
 #'    `factor_sep`, and names are recognized as sample identifiers.
-#' @param group_colnames `character` vector or `NULL`, used to
-#'    define a subset of columns to use when `ifactors` is supplied
-#'    as a `data.frame`. When `ifactors` is supplied as a `character`
+#' @param group_colnames `character` vector or `NULL`,
+#'    defines a subset of columns to use when `ifactors` is supplied
+#'    as a `data.frame`.
+#'    * When `ifactors` is supplied as a `character`
 #'    vector, this argument is used to define the `colnames`.
+#'    * `group_colnames` will become the `factors()` of the `SEDesign`,
+#'    and can be edited later using `factors()<-`.
 #' @param isamples `character` vector or `NULL`, optionally used to subset
 #'    the sample identifiers used in subsequent steps. Note that only
 #'    groups and contrasts that contain samples will be defined.
@@ -154,7 +157,7 @@
 #' igroups <- factor(igroups, levels=unique(igroups));
 #' igroups;
 #'
-#' sedesign <- groups_to_sedesign(igroups);
+#' sedesign <- groups_to_sedesign(igroups, group_colnames=c("Genotype", "Treatment"));
 #' design(sedesign);
 #' contrasts(sedesign);
 #'
@@ -242,29 +245,27 @@
 #'    pre_control_terms=c("Untreated")))
 #'
 #' @export
-groups_to_sedesign <- function
-(ifactors,
- group_colnames=NULL,
- isamples=NULL,
- idesign=NULL,
- factor_order=NULL,
- omit_grep="[-,]",
- max_depth=2,
- factor_sep="_",
- contrast_sep="-",
- remove_pairs=NULL,
- pre_control_terms=NULL,
- add_contrastdf=NULL,
- contrast_names=NULL,
- current_depth=1,
- rename_first_depth=TRUE,
- return_sedesign=TRUE,
- default_order=c("asis",
-    "sort_samples",
-    "mixedSort"),
- verbose=FALSE,
- ...)
-{
+groups_to_sedesign <- function(
+   ifactors,
+   group_colnames = NULL,
+   isamples = NULL,
+   idesign = NULL,
+   factor_order = NULL,
+   omit_grep = "[-,]",
+   max_depth = 2,
+   factor_sep = "_",
+   contrast_sep = "-",
+   remove_pairs = NULL,
+   pre_control_terms = NULL,
+   add_contrastdf = NULL,
+   contrast_names = NULL,
+   current_depth = 1,
+   rename_first_depth = TRUE,
+   return_sedesign = TRUE,
+   default_order = c("asis", "sort_samples", "mixedSort"),
+   verbose = FALSE,
+   ...
+) {
    ## Purpose is to take a data.frame, whose rows are groups,
    ## and whose columns are factors with factor levels as column values,
    ## and generate pairwise contrast names where only one factor changes
@@ -314,252 +315,337 @@ groups_to_sedesign <- function
    # if (!suppressPackageStartupMessages(require(limma))) {
    #    stop("limma is required for groups_to_sedesign()).");
    # }
-   sample2group <- NULL;
+   sample2group <- NULL
 
    # validate default_order
-   default_order <- match.arg(default_order);
+   default_order <- match.arg(default_order)
 
    ## Handle remove_pairs by expanding to both orientations of contrast
    if (!is.null(remove_pairs)) {
       if (!is.list(remove_pairs)) {
-         stop("remove_pairs must be a list of 1- or 2-member character vectors");
+         stop("remove_pairs must be a list of 1- or 2-member character vectors")
       }
       remove_pairsFull <- jamba::cPasteS(remove_pairs)
       if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            "remove_pairsFull:");
-         print(remove_pairsFull);
+         jamba::printDebug("groups_to_sedesign(): ", "remove_pairsFull:")
+         print(remove_pairsFull)
       }
    }
 
    ## Handle DataFrame,DFrame input
    if (inherits(ifactors, c("DataFrame", "DFrame"))) {
-      ifactors <- data.frame(check.names=FALSE,
-         ifactors);
+      ifactors <- data.frame(check.names = FALSE, ifactors)
    }
 
    ## Special case where one data.frame column is sent, which is delimited.
    ## Mainly we treat as a vector, except that we keep the rownames
    ## so we can derive isamples.
-   if ("SummarizedExperiment" %in% class(ifactors)) {
-      se <- ifactors;
+   if (inherits(ifactors, c("SummarizedExperiment"))) {
+      se <- ifactors
       if (length(isamples) == 0) {
          isamples <- colnames(se)
+      } else {
+         isamples <- intersect(isamples, colnames(se))
       }
-      group_colnames <- intersect(group_colnames,
-         colnames(SummarizedExperiment::colData(se)));
-      if (length(group_colnames) > 0) {
-         ifactors <- data.frame(check.names=FALSE,
-            stringsAsFactors=FALSE,
-            SummarizedExperiment::colData(se)[,group_colnames, drop=FALSE])
-         rownames(ifactors) <- colnames(se);
-         ifactors <- ifactors[match(isamples, rownames(ifactors)),,drop=FALSE];
+      colData_se <- se_to_rowcoldata(se[, isamples])[["colData_se"]]
+      if (length(group_colnames) == 0) {
+         # By default, use all columns (?)
+         # Todo: Warn if too many columns.
+         group_colnames <- colnames(colData_se)
       }
+      group_colnames <- intersect(
+         group_colnames,
+         colnames(colData_se)
+      )
+      if (length(group_colnames) == 0) {
+         cli::cli_abort(paste0(
+            "{.var group_colnames} must be present in ",
+            "{.var colnames(ifactors)} when supplying ",
+            "{.cls SummarizedExperiment} equivalent input."
+         ))
+      }
+      # data.frame
+      ifactors <- data.frame(
+         check.names = FALSE,
+         stringsAsFactors = FALSE,
+         colData_se[, group_colnames, drop = FALSE]
+      )
+      rownames(ifactors) <- colnames(se)
+      # rows are in proper order from se_to_rowcoldata()
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "ifactors from SummarizedExperiment input:");
-         print(ifactors);
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "ifactors from SummarizedExperiment input:"
+         )
+         print(ifactors)
       }
    }
-   if (jamba::igrepHas("data.frame|matrix", class(ifactors)) &&
+   # Single-column is treated as vector to allow delimiters
+   if (inherits(ifactors, c("data.frame", "matrix")) &&
          ncol(ifactors) == 1) {
-      ifactors <- jamba::nameVector(ifactors[,1], rownames(ifactors));
+      ifactors <- jamba::nameVector(ifactors[, 1],
+         rownames(ifactors))
    }
 
-   if (jamba::igrepHas("factor|character", class(ifactors))) {
+   if (inherits(ifactors, c("character", "factor"))) {
       #####################################################
       # Vector input
       #
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "splitting vector into groups");
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "splitting vector into groups"
+         )
       }
       if (length(names(ifactors)) == 0) {
          if (length(isamples) == 0) {
             ## Create isamples
-            isamples <- jamba::makeNames(rep("sample", length(ifactors)));
-            names(ifactors) <- isamples;
+            # 0.0.77.900 - use ifactors instead of sample# to fill names
+            isamples <- jamba::makeNames(as.character(ifactors))
+            # isamples <- jamba::makeNames(rep("sample", length(ifactors)))
          } else if (length(isamples) != length(ifactors)) {
-            stop(paste0("length(isamples) must be equal length(ifactors) ",
-               "when there are no names(ifactors)."));
+            stop(paste0(
+               "length(isamples) must be equal length(ifactors) ",
+               "when there are no names(ifactors)."
+            ))
          }
-         names(ifactors) <- isamples;
+         names(ifactors) <- isamples
       } else if (length(isamples) == 0) {
-         isamples <- names(ifactors);
+         isamples <- names(ifactors)
       } else {
-         if (!any(isamples %in% names(ifactors)) && length(isamples) == length(ifactors)) {
+         if (
+            !any(isamples %in% names(ifactors)) &&
+               length(isamples) == length(ifactors)
+         ) {
             ## Use isamples as-is
-            names(ifactors) <- isamples;
+            names(ifactors) <- isamples
          } else if (!all(isamples %in% names(ifactors))) {
-            stop(paste0("isamples is present in some not not all names(ifactors). ",
-               "isamples must either: all be present in names(ifactors); or ",
-               "present in none of names(ifactors) and length(isamples) == length(ifactors)."))
+            cli::cli_abort(
+               message = c(
+                  "{.var isamples} is present in some {.code names(ifactors)}. ",
+                  "i" = "{.var isamples} must either be:",
+                  "*" = "present in all of {.code names(ifactors)}",
+                  "*" = paste(
+                     "present in none of {.code names(ifactors)} and",
+                     " have equal length {.code length(isamples) == length(ifactors)}."
+                  )
+               )
+            )
          } else {
             ## Re-order ifactors to match isamples
-            ifactors <- ifactors[match(isamples, names(ifactors))];
+            ifactors <- ifactors[match(isamples, names(ifactors))]
          }
       }
       if (jamba::igrepHas("factor", class(ifactors))) {
          # Convert factor to a data.frame where each column
          # is a factor with ordered levels that match the order
          # the factor levels appear in the original factor.
-         iFactorsL <- strsplitOrdered(ifactors, factor_sep);
-         names(iFactorsL) <- names(ifactors);
-         iFactorsLevels <- levels(iFactorsL[[1]]);
-         ifactors <- data.frame(check.names=FALSE,
-            stringsAsFactors=FALSE,
+         iFactorsL <- strsplitOrdered(ifactors, factor_sep)
+         names(iFactorsL) <- names(ifactors)
+         iFactorsLevels <- levels(iFactorsL[[1]])
+         # create data.frame
+         ifactors <- data.frame(
+            check.names = FALSE,
+            stringsAsFactors = FALSE,
             jamba::rbindList(
-               strsplit(as.character(ifactors),
-                  factor_sep)));
-         rownames(ifactors) <- names(iFactorsL);
+               strsplit(as.character(ifactors), factor_sep)
+            )
+         )
+         rownames(ifactors) <- names(iFactorsL)
          for (i in seq_len(ncol(ifactors))) {
-            factor_levels <- intersect(iFactorsLevels, ifactors[,i]);
+            factor_levels <- intersect(iFactorsLevels, ifactors[, i])
             if (length(pre_control_terms) > 0) {
                # when pre_control_terms are supplied, sort them first
                factor_levels <- unique(c(
                   intersect(pre_control_terms, factor_levels),
-                  factor_levels))
+                  factor_levels
+               ))
             }
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "factor_levels (", i, "): ", factor_levels);
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "factor_levels (",
+                  i,
+                  "): ",
+                  factor_levels
+               )
             }
-            ifactors[,i] <- factor(ifactors[,i],
-               levels=factor_levels);
+            ifactors[, i] <- factor(ifactors[, i], levels = factor_levels)
          }
       } else {
          # split into data.frame
-         ifactors <- data.frame(check.names=FALSE,
-            stringsAsFactors=FALSE,
-            jamba::rbindList(strsplit(ifactors, factor_sep)));
+         ifactors <- data.frame(
+            check.names = FALSE,
+            stringsAsFactors = FALSE,
+            jamba::rbindList(strsplit(ifactors, factor_sep))
+         )
          # Convert each column to factor for proper sort order
          for (iCol in seq_len(ncol(ifactors))) {
             if ("asis" %in% default_order) {
-               factor_levels <- unique(ifactors[,iCol]);
+               factor_levels <- unique(ifactors[, iCol])
                if (length(pre_control_terms) > 0) {
                   # when pre_control_terms are supplied, sort them first
                   factor_levels <- unique(c(
                      intersect(pre_control_terms, factor_levels),
-                     factor_levels))
+                     factor_levels
+                  ))
                }
             } else if ("sort_samples" %in% default_order) {
-               factor_levels <- sort_samples(unique(ifactors[[iCol]]),
-                  pre_control_terms=pre_control_terms,
-                  ...)
+               factor_levels <- sort_samples(
+                  unique(ifactors[[iCol]]),
+                  pre_control_terms = pre_control_terms,
+                  ...
+               )
             } else {
-               factor_levels <- jamba::mixedSort(unique(ifactors[[iCol]]),
-                  ...);
+               factor_levels <- jamba::mixedSort(unique(ifactors[[iCol]]), ...)
                if (length(pre_control_terms) > 0) {
                   factor_levels <- unique(c(
                      intersect(pre_control_terms, factor_levels),
-                     factor_levels));
+                     factor_levels
+                  ))
                }
             }
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "factor_levels (", iCol, "): ", factor_levels);
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "factor_levels (",
+                  iCol,
+                  "): ",
+                  factor_levels
+               )
             }
-            ifactors[,iCol] <- factor(ifactors[,iCol],
-               levels=factor_levels);
+            ifactors[, iCol] <- factor(ifactors[, iCol], levels = factor_levels)
          }
       }
       if (length(group_colnames) > 0) {
-         colnames(ifactors) <- jamba::makeNames(rep(group_colnames,
-            length.out=ncol(ifactors)),
-            renameFirst=FALSE);
+         colnames(ifactors) <- jamba::makeNames(
+            rep(group_colnames, length.out = ncol(ifactors)),
+            renameFirst = FALSE
+         )
       } else {
          colnames(ifactors) <- jamba::makeNames(
-            rep("factor",
-               length.out=ncol(ifactors)),
-            renameOnes=TRUE);
+            rep("factor", length.out = ncol(ifactors)),
+            suffix = "",
+            renameOnes = TRUE
+         )
       }
+      group_colnames <- colnames(ifactors);
       if (length(rownames(ifactors)) == 0) {
          rownames(ifactors) <- jamba::makeNames(
-            jamba::pasteByRow(ifactors, sep=factor_sep),
-            suffix="_rep");
+            jamba::pasteByRow(ifactors, sep = factor_sep),
+            suffix = "_rep"
+         )
       }
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "head(ifactors, 40) as recognized:");
-         print(head(ifactors, 40));
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "head(ifactors, 40) as recognized:"
+         )
+         print(head(ifactors, 40))
       }
 
       # Assume sample rows and group columns
-      rowGroups <- jamba::pasteByRowOrdered(ifactors, sep=factor_sep);
-      sample2group <- split(rownames(ifactors), rowGroups);
+      rowGroups <- jamba::pasteByRowOrdered(ifactors, sep = factor_sep)
+      sample2group <- split(rownames(ifactors), rowGroups)
       if (length(idesign) == 0) {
-         idesign <- list2im_opt(sample2group, do_sparse=FALSE)[
-            rownames(ifactors), levels(rowGroups),drop=FALSE];
+         idesign <- list2im_opt(sample2group, do_sparse = FALSE)[
+            rownames(ifactors),
+            levels(rowGroups),
+            drop = FALSE
+         ]
       }
-   } else if (jamba::igrepHas("data.frame|dataframe|tbl", class(ifactors)) ||
-         ("matrix" %in% class(ifactors) & !is.numeric(ifactors))) {
+   } else if (
+      jamba::igrepHas("data.frame|dataframe|tbl", class(ifactors)) ||
+         ("matrix" %in% class(ifactors) & !is.numeric(ifactors))
+   ) {
       #####################################################
       # data.frame input, or matrix with non-numeric data
       #
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "using existing data.frame");
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "using existing data.frame"
+         )
       }
       if (length(rownames(ifactors)) == 0) {
          if (length(isamples) == 0) {
             # Create isamples
-            isamples <- jamba::makeNames(rep("sample", nrow(ifactors)));
+            isamples <- jamba::makeNames(rep("sample", nrow(ifactors)))
          } else if (length(isamples) == nrow(ifactors)) {
             # use isamples as-is
          } else {
-            stop(paste0("ifactors has no rownames, and ",
+            stop(paste0(
+               "ifactors has no rownames, and ",
                "length(isamples) != nrow(ifactors). ",
-               "Please make length(isamples) == nrow(iFactor)"));
+               "Please make length(isamples) == nrow(iFactor)"
+            ))
          }
       } else {
          if (length(isamples) == 0) {
-            isamples <- rownames(ifactors);
+            isamples <- rownames(ifactors)
          } else {
-            if (!any(isamples %in% ifactors) && length(isamples) == nrow(ifactors)) {
+            if (
+               !any(isamples %in% ifactors) &&
+                  length(isamples) == nrow(ifactors)
+            ) {
                ## use isamples as-is
             } else if (!all(isamples %in% rownames(ifactors))) {
-               stop(paste0("isamples is not present in all rownames(ifactors). ",
+               stop(paste0(
+                  "isamples is not present in all rownames(ifactors). ",
                   "Either: all isamples must be present in rownames(ifactors); or ",
                   "no isamples are present in rownames(ifactors) and ",
-                  "length(isamples) == nrow(ifactors)."));
+                  "length(isamples) == nrow(ifactors)."
+               ))
             } else {
                ## Subset or re-order ifactors using matching isamples
-               ifactors <- ifactors[match(isamples, rownames(ifactors)),,drop=FALSE];
+               ifactors <- ifactors[
+                  match(isamples, rownames(ifactors)),
+                  ,
+                  drop = FALSE
+               ]
                if (verbose) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     indent=(current_depth-1)*5,
-                     "Specifying ifactors[isamples,]");
-                  print(head(ifactors));
+                  jamba::printDebug(
+                     "groups_to_sedesign(): ",
+                     indent = (current_depth - 1) * 5,
+                     "Specifying ifactors[isamples,]"
+                  )
+                  print(head(ifactors))
                }
             }
          }
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "head(ifactors):");
-            print(head(ifactors, 100));
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "head(ifactors):"
+            )
+            print(head(ifactors, 100))
          }
       }
       if (length(group_colnames) == 0) {
          if (length(colnames(ifactors)) == 0) {
             ## Create colnames
             group_colnames <- jamba::makeNames(
-               renameOnes=TRUE,
-               rep("factor",
-                  length.out=ncol(ifactors)));
-            colnames(ifactors) <- group_colnames;
+               renameOnes = TRUE,
+               suffix = "",
+               rep("factor", length.out = ncol(ifactors))
+            )
+            colnames(ifactors) <- group_colnames
          } else {
-            group_colnames <- colnames(ifactors);
+            group_colnames <- colnames(ifactors)
          }
       } else {
          if (!all(group_colnames %in% colnames(ifactors))) {
-            stop(paste0("Not all group_colnames are in colnames(ifactors), please remedy."));
+            cli::cli_abort(paste0(
+               "Not all group_colnames are in ",
+               "{.code colnames(ifactors)}, please remedy."
+            ))
          }
          ## Use ifactors as-is
          #ifactors <- ifactors[,group_colnames,drop=FALSE];
@@ -568,251 +654,336 @@ groups_to_sedesign <- function
          # jamba::printDebug("groups_to_sedesign(): ",
          #    indent=(current_depth-1)*5,
          #    "Specifying ifactors[, group_colnames, drop=FALSE]");
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
             "group_colnames:",
-            group_colnames);
+            group_colnames
+         )
       }
 
       # default_order == "asis" will convert character columns to factor
       #    using the observed order of terms as factor levels
       for (icol in group_colnames) {
          if ("factor" %in% class(ifactors[, icol])) {
-            factor_levels <- levels(ifactors[, icol]);
+            factor_levels <- levels(ifactors[, icol])
             if (length(pre_control_terms) > 0) {
                factor_levels <- unique(c(
                   intersect(pre_control_terms, factor_levels),
-                  factor_levels));
-               ifactors[, icol] <- factor(ifactors[, icol],
-                  levels=factor_levels,
-                  exclude=NULL);
+                  factor_levels
+               ))
+               ifactors[, icol] <- factor(
+                  ifactors[, icol],
+                  levels = factor_levels,
+                  exclude = NULL
+               )
             }
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "factor_levels (", icol, "): ", factor_levels);
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "factor_levels (",
+                  icol,
+                  "): ",
+                  factor_levels
+               )
             }
          } else {
             if ("asis" %in% default_order) {
                if (verbose) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     indent=(current_depth-1)*5,
-                     "Converting '", icol, "' to factor using default_order: ", "asis");
+                  jamba::printDebug(
+                     "groups_to_sedesign(): ",
+                     indent = (current_depth - 1) * 5,
+                     "Converting '",
+                     icol,
+                     "' to factor using default_order: ",
+                     "asis"
+                  )
                }
-               factor_levels <- unique(ifactors[,icol]);
+               factor_levels <- unique(ifactors[, icol])
                if (length(pre_control_terms) > 0) {
                   factor_levels <- unique(c(
                      intersect(pre_control_terms, factor_levels),
-                     factor_levels));
+                     factor_levels
+                  ))
                }
             } else if ("sort_samples" %in% default_order) {
                if (verbose) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     indent=(current_depth-1)*5,
-                     "Converting '", icol, "' to factor using default_order: ", "sort_samples");
+                  jamba::printDebug(
+                     "groups_to_sedesign(): ",
+                     indent = (current_depth - 1) * 5,
+                     "Converting '",
+                     icol,
+                     "' to factor using default_order: ",
+                     "sort_samples"
+                  )
                }
-               factor_levels <- sort_samples(unique(ifactors[,icol]),
-                  pre_control_terms=pre_control_terms,
-                  ...);
+               factor_levels <- sort_samples(
+                  unique(ifactors[, icol]),
+                  pre_control_terms = pre_control_terms,
+                  ...
+               )
             } else {
                if (verbose) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     indent=(current_depth-1)*5,
-                     "Converting '", icol, "' to factor using default_order: ", "mixedSort");
+                  jamba::printDebug(
+                     "groups_to_sedesign(): ",
+                     indent = (current_depth - 1) * 5,
+                     "Converting '",
+                     icol,
+                     "' to factor using default_order: ",
+                     "mixedSort"
+                  )
                }
-               factor_levels <- jamba::mixedSort(unique(ifactors[, icol]),
-                  ...);
+               factor_levels <- jamba::mixedSort(unique(ifactors[, icol]), ...)
                if (length(pre_control_terms) > 0) {
                   factor_levels <- unique(c(
                      intersect(pre_control_terms, factor_levels),
-                     factor_levels));
+                     factor_levels
+                  ))
                }
             }
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "factor_levels (", icol, "): ", factor_levels);
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "factor_levels (",
+                  icol,
+                  "): ",
+                  factor_levels
+               )
             }
-            ifactors[, icol] <- factor(ifactors[, icol],
-               levels=factor_levels,
-               exclude=NULL);
+            ifactors[, icol] <- factor(
+               ifactors[, icol],
+               levels = factor_levels,
+               exclude = NULL
+            )
          }
       }
       # default_order == "mixedSort" will use alphanumeric sort
       # jamba::mixedSortDF() will honor factor level orders when present,
       # otherwise will use alphanumeric sort order.
       # To influence the sort order, use factors with ordered levels.
-      ifactors <- jamba::mixedSortDF(ifactors,
-         honorFactor=TRUE,
-         byCols=group_colnames);
+      ifactors <- jamba::mixedSortDF(
+         ifactors,
+         honorFactor = TRUE,
+         byCols = group_colnames
+      )
       if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "ifactors:");
-         print(head(ifactors));
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "ifactors:"
+         )
+         print(head(ifactors))
       }
 
       ## rowGroups is the unique set of group names, used to keep the original order
       #rowGroups <- jamba::pasteByRowOrdered(ifactors[,group_colnames,drop=FALSE],
       #   sep=factor_sep);
       ## Unclear whether to re-order columns to match group_colnames, for now we do not
-      rowGroups <- jamba::pasteByRowOrdered(ifactors,
-         sep=factor_sep);
+      rowGroups <- jamba::pasteByRowOrdered(ifactors, sep = factor_sep)
       if (length(rownames(ifactors)) == 0) {
-         iFactors_names <- jamba::makeNames(rowGroups,
-            suffix="_rep");
-         rownames(ifactors) <- iFactors_names;
+         iFactors_names <- jamba::makeNames(rowGroups, suffix = "_rep")
+         rownames(ifactors) <- iFactors_names
       } else {
-         iFactors_names <- rownames(ifactors);
+         iFactors_names <- rownames(ifactors)
       }
       ## Assume for now sample rows and group columns
-      sample2group <- split(iFactors_names, rowGroups);
+      sample2group <- split(iFactors_names, rowGroups)
       if (length(idesign) == 0) {
-         idesign <- list2im_opt(sample2group,
-            do_sparse=FALSE)[iFactors_names, as.character(unique(rowGroups)), drop=FALSE];
+         idesign <- list2im_opt(sample2group, do_sparse = FALSE)[
+            iFactors_names,
+            as.character(unique(rowGroups)),
+            drop = FALSE
+         ]
          if (all(isamples %in% iFactors_names)) {
-            idesign <- idesign[match(isamples, iFactors_names),,drop=FALSE];
+            idesign <- idesign[match(isamples, iFactors_names), , drop = FALSE]
          }
       } else {
          if (length(isamples) > 0) {
-            idesign <- idesign[match(isamples, rownames(idesign)),,drop=FALSE];
+            idesign <- idesign[
+               match(isamples, rownames(idesign)),
+               ,
+               drop = FALSE
+            ]
          }
       }
-   } else if ("matrix" %in% class(ifactors) && all(c(0,1) %in% ifactors)) {
+   } else if (inherits(ifactors, "matrix") && all(c(0, 1) %in% ifactors)) {
       ##################################
       # design matrix input
       #
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "converting idesign into ifactors data.frame");
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "converting idesign into ifactors data.frame"
+         )
       }
       ## Assume for now, idesign matrix with sample rows and group columns
-      sample2group <- split(rownames(ifactors),
-         sapply(seq_len(nrow(ifactors)), function(i){
-            colnames(ifactors)[which(ifactors[i,] != 0)];
-         }));
-      idesign <- list2im_opt(sample2group, do_sparse=FALSE)[
-         rownames(ifactors),names(sample2group)];
-      iFactorsCols <- colnames(ifactors);
-      ifactors <- data.frame(check.names=FALSE,
-         stringsAsFactors=FALSE,
-         jamba::rbindList(strsplit(iFactorsCols, factor_sep)));
-      if (!is.null(group_colnames)) {
+      sample2group <- split(
+         rownames(ifactors),
+         sapply(seq_len(nrow(ifactors)), function(i) {
+            colnames(ifactors)[which(ifactors[i, ] != 0)]
+         })
+      )
+      idesign <- list2im_opt(sample2group, do_sparse = FALSE)[
+         rownames(ifactors),
+         names(sample2group)
+      ]
+      iFactorsCols <- colnames(ifactors)
+      ifactors <- data.frame(
+         check.names = FALSE,
+         stringsAsFactors = FALSE,
+         jamba::rbindList(strsplit(iFactorsCols, factor_sep))
+      )
+      if (length(group_colnames) > 0) {
          colnames(ifactors) <- jamba::makeNames(
-            rep(group_colnames, length.out=ncol(ifactors)),
-            renameFirst=FALSE);
+            rep(group_colnames, length.out = ncol(ifactors)),
+            renameFirst = FALSE
+         )
       } else {
          colnames(ifactors) <- jamba::makeNames(
-            rep("groupFactor",
-               length.out=ncol(ifactors)),
-            renameOnes=TRUE,
-            suffix="_");
+            rep("factor", length.out = ncol(ifactors)),
+            renameOnes = TRUE,
+            suffix = ""
+         )
       }
-      group_colnames <- colnames(ifactors);
+      group_colnames <- colnames(ifactors)
       rownames(ifactors) <- unname(
-         jamba::pasteByRow(ifactors, sep=factor_sep));
+         jamba::pasteByRow(ifactors, sep = factor_sep)
+      )
 
       # define factor order
       for (icol in group_colnames) {
          if ("asis" %in% default_order) {
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "Converting '", icol, "' to factor using default_order: ", "asis");
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "Converting '",
+                  icol,
+                  "' to factor using default_order: ",
+                  "asis"
+               )
             }
-            factor_levels <- unique(ifactors[,icol]);
+            factor_levels <- unique(ifactors[, icol])
             if (length(pre_control_terms) > 0) {
                factor_levels <- unique(c(
                   intersect(pre_control_terms, factor_levels),
-                  factor_levels));
+                  factor_levels
+               ))
             }
          } else if ("sort_samples" %in% default_order) {
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "Converting '", icol, "' to factor using default_order: ", "sort_samples");
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "Converting '",
+                  icol,
+                  "' to factor using default_order: ",
+                  "sort_samples"
+               )
             }
-            factor_levels <- sort_samples(unique(ifactors[,icol]),
-               pre_control_terms=pre_control_terms,
-               ...);
+            factor_levels <- sort_samples(
+               unique(ifactors[, icol]),
+               pre_control_terms = pre_control_terms,
+               ...
+            )
          } else {
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "Converting '", icol, "' to factor using default_order: ", "mixedSort");
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "Converting '",
+                  icol,
+                  "' to factor using default_order: ",
+                  "mixedSort"
+               )
             }
-            factor_levels <- jamba::mixedSort(unique(ifactors[, icol]),
-               ...);
+            factor_levels <- jamba::mixedSort(unique(ifactors[, icol]), ...)
             if (length(pre_control_terms) > 0) {
                factor_levels <- unique(c(
                   intersect(pre_control_terms, factor_levels),
-                  factor_levels));
+                  factor_levels
+               ))
             }
          }
          if (verbose) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "factor_levels (", icol, "): ", factor_levels);
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "factor_levels (",
+               icol,
+               "): ",
+               factor_levels
+            )
          }
-         ifactors[, icol] <- factor(ifactors[, icol],
-            levels=factor_levels,
-            exclude=NULL);
+         ifactors[, icol] <- factor(
+            ifactors[, icol],
+            levels = factor_levels,
+            exclude = NULL
+         )
       }
 
       if (verbose) {
-         jamba::printDebug("ifactors:",
-            indent=(current_depth-1)*5)
-         print(ifactors);
+         jamba::printDebug("ifactors:", indent = (current_depth - 1) * 5)
+         print(ifactors)
       }
    }
    if (verbose >= 2) {
-      jamba::printDebug("groups_to_sedesign(): ",
-         indent=(current_depth-1)*5,
-         "ifactors:");
-      print(head(ifactors));
+      jamba::printDebug(
+         "groups_to_sedesign(): ",
+         indent = (current_depth - 1) * 5,
+         "ifactors:"
+      )
+      print(head(ifactors))
       if (!is.null(sample2group)) {
-         jamba::printDebug("sample2group:",
-            indent=(current_depth-1)*5)
-         print(head(sample2group));
+         jamba::printDebug("sample2group:", indent = (current_depth - 1) * 5)
+         print(head(sample2group))
       }
    }
 
    ##########################################################
    ## Check to make sure no factor levels contain "-"
    for (i in colnames(ifactors)) {
-      if (jamba::igrepHas("-", ifactors[,i])) {
-         ifactors[,i] <- gsub("-", ".", ifactors[,i]);
+      if (jamba::igrepHas("-", ifactors[, i])) {
+         ifactors[, i] <- gsub("-", ".", ifactors[, i])
       }
    }
 
    ##########################################################
    ## First check to make sure the ifactors values are unique
    ## and if not, use only unique entries
-   iContrastGroupsUse <- colnames(ifactors);
-   iFactorsV <- jamba::pasteByRow(ifactors, sep=factor_sep);
-   iKeepRows <- match(unique(iFactorsV), iFactorsV);
-   ifactors <- ifactors[iKeepRows,,drop=FALSE];
-   if (rename_first_depth && current_depth==1) {
-      rownames(ifactors) <- jamba::pasteByRow(ifactors, sep=factor_sep);
+   iContrastGroupsUse <- colnames(ifactors)
+   iFactorsV <- jamba::pasteByRow(ifactors, sep = factor_sep)
+   iKeepRows <- match(unique(iFactorsV), iFactorsV)
+   ifactors <- ifactors[iKeepRows, , drop = FALSE]
+   if (rename_first_depth && current_depth == 1) {
+      rownames(ifactors) <- jamba::pasteByRow(ifactors, sep = factor_sep)
    }
 
    if (verbose >= 2) {
-      jamba::printDebug("groups_to_sedesign(): ",
-         indent=(current_depth-1)*5,
-         "ifactors:");
-      print(head(ifactors));
+      jamba::printDebug(
+         "groups_to_sedesign(): ",
+         indent = (current_depth - 1) * 5,
+         "ifactors:"
+      )
+      print(head(ifactors))
    }
 
-
    if (verbose) {
-      jamba::printDebug("groups_to_sedesign(): ",
-         indent=(current_depth-1)*5,
+      jamba::printDebug(
+         "groups_to_sedesign(): ",
+         indent = (current_depth - 1) * 5,
          "current_depth:",
-         current_depth);
-      jamba::printDebug("groups_to_sedesign(): ",
-         indent=(current_depth-1)*5,
-         "return_sedesign: ", return_sedesign)
+         current_depth
+      )
+      jamba::printDebug(
+         "groups_to_sedesign(): ",
+         indent = (current_depth - 1) * 5,
+         "return_sedesign: ",
+         return_sedesign
+      )
    }
 
    ##########################################################
@@ -824,126 +995,165 @@ groups_to_sedesign <- function
    if (length(contrast_names) == 0) {
       factor_order <- factor_order[factor_order <= ncol(ifactors)]
       if (length(factor_order) == 0) {
-         factor_order <- seq_along(colnames(ifactors));
+         factor_order <- seq_along(colnames(ifactors))
       }
       # ensure max_depth is no larger than the number of factors
       max_depth <- min(c(max_depth, length(factor_order)))
 
       ##
       if (verbose) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
             "factor_order values:",
-            colnames(ifactors)[factor_order]);
+            colnames(ifactors)[factor_order]
+         )
       }
       ###################################
       # Define iContrastNames
-      iContrastNames <- data.frame(check.names=FALSE,
-         stringsAsFactors=FALSE,
-         jamba::rbindList(lapply(factor_order, function(iChange){
+      iContrastNames <- data.frame(
+         check.names = FALSE,
+         stringsAsFactors = FALSE,
+         jamba::rbindList(lapply(factor_order, function(iChange) {
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
                   "factor_order iChange:",
-                  colnames(ifactors)[iChange]);
+                  colnames(ifactors)[iChange]
+               )
             }
-            iNoChange <- setdiff(seq_len(ncol(ifactors)), iChange);
+            iNoChange <- setdiff(seq_len(ncol(ifactors)), iChange)
             ## Optionally omit certain values from consideration,
             ## notably for "," or "-" which already contain changing factors
-            iFactorUseRows <- jamba::unigrep(omit_grep, ifactors[,iChange]);
+            iFactorUseRows <- jamba::unigrep(omit_grep, ifactors[, iChange])
 
             if (length(iNoChange) == 0) {
-               iSplit <- rep("", length(iFactorUseRows));
+               iSplit <- rep("", length(iFactorUseRows))
             } else {
-               iSplit <- jamba::pasteByRowOrdered(ifactors[iFactorUseRows,iNoChange,drop=FALSE],
-                  sep=factor_sep);
+               iSplit <- jamba::pasteByRowOrdered(
+                  ifactors[iFactorUseRows, iNoChange, drop = FALSE],
+                  sep = factor_sep
+               )
             }
 
             ## Split rows by constant values in non-changing factor columns
-            iSplitL <- split(iFactorUseRows, iSplit);
-            iSplitL <- iSplitL[lengths(iSplitL) > 1];
+            iSplitL <- split(iFactorUseRows, iSplit)
+            iSplitL <- iSplitL[lengths(iSplitL) > 1]
             ## Only consider contrasts when there are multiple rows
             if (length(iSplitL) > 0) {
                iDF <- jamba::rbindList(lapply(iSplitL, function(iSplitRows) {
-                  use_factor_order <- unique(c(factor_order,
-                     seq_len(ncol(ifactors))));
-                  iFactorsSub <- ifactors[iSplitRows, use_factor_order, drop=FALSE];
+                  use_factor_order <- unique(c(
+                     factor_order,
+                     seq_len(ncol(ifactors))
+                  ))
+                  iFactorsSub <- ifactors[
+                     iSplitRows,
+                     use_factor_order,
+                     drop = FALSE
+                  ]
                   if (verbose >= 2) {
-                     jamba::printDebug("groups_to_sedesign(): ",
-                        indent=(current_depth-1)*5,
+                     jamba::printDebug(
+                        "groups_to_sedesign(): ",
+                        indent = (current_depth - 1) * 5,
                         "   iSplitRows:",
                         iSplitRows,
-                        ", use_factor_order:", use_factor_order);
-                     jamba::printDebug("groups_to_sedesign(): ",
-                        indent=(current_depth-1)*5,
-                        "   iFactorsSub:");
-                     print(iFactorsSub);
+                        ", use_factor_order:",
+                        use_factor_order
+                     )
+                     jamba::printDebug(
+                        "groups_to_sedesign(): ",
+                        indent = (current_depth - 1) * 5,
+                        "   iFactorsSub:"
+                     )
+                     print(iFactorsSub)
                   }
-                  iFactorVals <- iFactorsSub[,colnames(ifactors)[iChange]];
+                  iFactorVals <- iFactorsSub[, colnames(ifactors)[iChange]]
                   iMatch <- match(
-                     sort_samples(iFactorVals,
-                        pre_control_terms=pre_control_terms),
-                     iFactorVals);
+                     sort_samples(
+                        iFactorVals,
+                        pre_control_terms = pre_control_terms
+                     ),
+                     iFactorVals
+                  )
                   # 0.0.27.900: fix for one factor column input
                   if (length(iMatch) < 2) {
                      return(NULL)
                   }
-                  iCombn <- combn(iMatch, 2);
-                  iGrp1 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[2,]]),
-                     paste0("(", rownames(iFactorsSub)[iCombn[2,]], ")"),
-                     rownames(iFactorsSub)[iCombn[2,]]);
-                  iGrp2 <- ifelse(grepl("-", rownames(iFactorsSub)[iCombn[1,]]),
-                     paste0("(", rownames(iFactorsSub)[iCombn[1,]], ")"),
-                     rownames(iFactorsSub)[iCombn[1,]]);
-                  iContrastName <- paste0(iGrp1, "-", iGrp2);
-                  icondf <- iFactorsSub[intercalate(iCombn[2,], iCombn[1,]),,drop=FALSE];
-                  iconfac <- factor(rep(iContrastName, each=2),
-                     levels=unique(iContrastName));
-                  iContrastDF <- data.frame(check.names=FALSE,
-                     stringsAsFactors=FALSE,
-                     lapply(jamba::nameVector(colnames(icondf)), function(i){
-                        jamba::cPasteU(split(icondf[,i], iconfac))
+                  iCombn <- combn(iMatch, 2)
+                  iGrp1 <- ifelse(
+                     grepl("-", rownames(iFactorsSub)[iCombn[2, ]]),
+                     paste0("(", rownames(iFactorsSub)[iCombn[2, ]], ")"),
+                     rownames(iFactorsSub)[iCombn[2, ]]
+                  )
+                  iGrp2 <- ifelse(
+                     grepl("-", rownames(iFactorsSub)[iCombn[1, ]]),
+                     paste0("(", rownames(iFactorsSub)[iCombn[1, ]], ")"),
+                     rownames(iFactorsSub)[iCombn[1, ]]
+                  )
+                  iContrastName <- paste0(iGrp1, "-", iGrp2)
+                  icondf <- iFactorsSub[
+                     intercalate(iCombn[2, ], iCombn[1, ]),
+                     ,
+                     drop = FALSE
+                  ]
+                  iconfac <- factor(
+                     rep(iContrastName, each = 2),
+                     levels = unique(iContrastName)
+                  )
+                  iContrastDF <- data.frame(
+                     check.names = FALSE,
+                     stringsAsFactors = FALSE,
+                     lapply(jamba::nameVector(colnames(icondf)), function(i) {
+                        jamba::cPasteU(split(icondf[, i], iconfac))
                      }),
-                     contrastName=iContrastName,
-                     row.names=iContrastName);
+                     contrastName = iContrastName,
+                     row.names = iContrastName
+                  )
 
                   # Create a string representing the combination of factors.
                   # which we will use to prevent re-creating the same contrasts.
                   #
                   # Modified the string to include colname, to ensure that two
                   # factors which may share some levels, will not be confused.
-                  iContrastDF[,"contrastString"] <- jamba::pasteByRow(
-                     iContrastDF[,colnames(iFactorsSub),drop=FALSE],
-                     includeNames=TRUE,
-                     sep=";",
-                     sepName=":");
-                  iContrastDF;
-               }));
-               rownames(iDF) <- iDF[,"contrastName"];
+                  iContrastDF[, "contrastString"] <- jamba::pasteByRow(
+                     iContrastDF[, colnames(iFactorsSub), drop = FALSE],
+                     includeNames = TRUE,
+                     sep = ";",
+                     sepName = ":"
+                  )
+                  iContrastDF
+               }))
+               rownames(iDF) <- iDF[, "contrastName"]
                if (verbose) {
-                  jamba::printDebug("groups_to_sedesign(): ",
-                     indent=(current_depth-1)*5,
+                  jamba::printDebug(
+                     "groups_to_sedesign(): ",
+                     indent = (current_depth - 1) * 5,
                      "   new contrasts:\n",
                      rownames(iDF),
-                     sep=",\n");
+                     sep = ",\n"
+                  )
                }
-               iDF;
+               iDF
             } else {
-               NULL;
+               NULL
             }
-         })));
+         }))
+      )
       # Define iContrastNames (end)
       ###################################
 
       ## Optionally spike in some pre-defined non-standard contrasts
       if (!is.null(add_contrastdf)) {
          if (verbose) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
                "Adding custom ",
-               "add_contrastdf");
+               "add_contrastdf"
+            )
          }
-         iContrastNames <- rbind(iContrastNames, add_contrastdf);
+         iContrastNames <- rbind(iContrastNames, add_contrastdf)
       }
 
       # Always make each row unique in terms of the factors compared.
@@ -951,118 +1161,168 @@ groups_to_sedesign <- function
       # if (make_unique) {
       if (TRUE) {
          iDFcomponents <- jamba::pasteByRow(
-            iContrastNames[,setdiff(colnames(iContrastNames), "contrastName"),drop=FALSE],
-            sep="!");
+            iContrastNames[,
+               setdiff(colnames(iContrastNames), "contrastName"),
+               drop = FALSE
+            ],
+            sep = "!"
+         )
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
                "iDFcomponents:\n",
-               iDFcomponents, sep="\n");
-            jamba::printDebug("groups_to_sedesign(): ",
+               iDFcomponents,
+               sep = "\n"
+            )
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
                "unique(iDFcomponents):\n",
-               unique(iDFcomponents), sep="\n");
+               unique(iDFcomponents),
+               sep = "\n"
+            )
          }
          if (verbose && any(duplicated(iDFcomponents))) {
-            dupe_comps <- iDFcomponents[duplicated(iDFcomponents)];
+            dupe_comps <- iDFcomponents[duplicated(iDFcomponents)]
             dupe_kept_df <- data.frame(
-               stringsAsFactors=FALSE,
-               dupe_comp=iDFcomponents[iDFcomponents %in% dupe_comps],
-               contrast=rownames(subset(iContrastNames, iDFcomponents %in% dupe_comps)),
-               outcome=ifelse(!duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]), "(kept)", "(removed)"))
-            dupe_kept_df <- jamba::mixedSortDF(byCols=1, dupe_kept_df);
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "   removed duplicate (equivalent) contrasts:");
-            print(dupe_kept_df[,-1, drop=FALSE]);
+               stringsAsFactors = FALSE,
+               dupe_comp = iDFcomponents[iDFcomponents %in% dupe_comps],
+               contrast = rownames(subset(
+                  iContrastNames,
+                  iDFcomponents %in% dupe_comps
+               )),
+               outcome = ifelse(
+                  !duplicated(iDFcomponents[iDFcomponents %in% dupe_comps]),
+                  "(kept)",
+                  "(removed)"
+               )
+            )
+            dupe_kept_df <- jamba::mixedSortDF(byCols = 1, dupe_kept_df)
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "   removed duplicate (equivalent) contrasts:"
+            )
+            print(dupe_kept_df[, -1, drop = FALSE])
          }
-         iContrastNames <- subset(iContrastNames, !duplicated(iDFcomponents));
+         iContrastNames <- subset(iContrastNames, !duplicated(iDFcomponents))
       }
 
       if ("contrastName" %in% colnames(iContrastNames)) {
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "tcount(iContrastNames$contrastName):")
-            print(jamba::tcount(iContrastNames[,"contrastName"]));
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "tcount(iContrastNames$contrastName):"
+            )
+            print(jamba::tcount(iContrastNames[, "contrastName"]))
          }
-         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[,"contrastName"]);
+         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[,
+            "contrastName"
+         ])
       }
 
       # Optionally remove contrasts with factor pairs in remove_pairs
       if (length(remove_pairs) > 0) {
          if (verbose) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "Processing any remove_pairs contrasts.");
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "Processing any remove_pairs contrasts."
+            )
          }
          for (iCol in setdiff(colnames(iContrastNames), "contrastName")) {
             if (verbose) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "   Checking for remove_pairs in column:", iCol);
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "   Checking for remove_pairs in column:",
+                  iCol
+               )
             }
-            iColVals <- jamba::cPasteS(strsplit(as.character(iContrastNames[[iCol]]), ","));
+            iColVals <- jamba::cPasteS(strsplit(
+               as.character(iContrastNames[[iCol]]),
+               ","
+            ))
             if (any(iColVals %in% remove_pairsFull)) {
-               iWhich1 <- which(iColVals %in% remove_pairsFull);
-               iWhich <- which(!iColVals %in% remove_pairsFull);
+               iWhich1 <- which(iColVals %in% remove_pairsFull)
+               iWhich <- which(!iColVals %in% remove_pairsFull)
                if (verbose) {
-                  jamba::printDebug("      removedPair with values:\n",
-                     indent=(current_depth-1)*5,
+                  jamba::printDebug(
+                     "      removedPair with values:\n",
+                     indent = (current_depth - 1) * 5,
                      unique(iColVals[iWhich1]),
-                     fgText=c("yellow", "purple"), sep="\n");
+                     fgText = c("yellow", "purple"),
+                     sep = "\n"
+                  )
                }
-               iContrastNames <- iContrastNames[iWhich,,drop=FALSE];
+               iContrastNames <- iContrastNames[iWhich, , drop = FALSE]
             }
          }
          if (nrow(iContrastNames) == 0) {
-            warning("No contrasts remain after filtering remove_pairs.");
-            return(NULL);
+            warning("No contrasts remain after filtering remove_pairs.")
+            return(NULL)
          }
       }
 
       if (verbose >= 2) {
-         jamba::printDebug("groups_to_sedesign(): ",
-            indent=(current_depth-1)*5,
-            "iContrastNames:");
-         print(head(iContrastNames, 100));
+         jamba::printDebug(
+            "groups_to_sedesign(): ",
+            indent = (current_depth - 1) * 5,
+            "iContrastNames:"
+         )
+         print(head(iContrastNames, 100))
       }
 
       ##################################################
       # Interaction contrasts (iterative processing)
-      if (length(setdiff(colnames(iContrastNames), "contrastName")) > 1 &&
-            current_depth < max_depth) {
-         iContrastNamesUse <- iContrastNames[,iContrastGroupsUse,drop=FALSE];
+      if (
+         length(setdiff(colnames(iContrastNames), "contrastName")) > 1 &&
+            current_depth < max_depth
+      ) {
+         iContrastNamesUse <- iContrastNames[, iContrastGroupsUse, drop = FALSE]
          for (i in iContrastGroupsUse) {
-            j <- jamba::provigrep(c("^[^,]+$", "."), iContrastNamesUse[[i]]);
-            iContrastNamesUse[[i]] <- factor(iContrastNamesUse[[i]],
-               levels=unique(j));
+            j <- jamba::provigrep(c("^[^,]+$", "."), iContrastNamesUse[[i]])
+            iContrastNamesUse[[i]] <- factor(
+               iContrastNamesUse[[i]],
+               levels = unique(j)
+            )
          }
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "   Defining interactions contrasts.");
-            print(head(iContrastNamesUse[,iContrastGroupsUse,drop=FALSE], 100));
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "   Defining interactions contrasts."
+            )
+            print(head(
+               iContrastNamesUse[, iContrastGroupsUse, drop = FALSE],
+               100
+            ))
          }
-         iContrastNamesInt <- groups_to_sedesign(iContrastNamesUse,
-            omit_grep=omit_grep,
-            current_depth=current_depth + 1,
-            max_depth=max_depth,
-            return_sedesign=FALSE,
-            factor_sep=factor_sep,
-            factor_order=rev(factor_order),
-            contrast_sep=contrast_sep,
-            rename_first_depth=rename_first_depth,
-            remove_pairs=remove_pairs,
-            pre_control_terms=pre_control_terms,
-            verbose=verbose,
-            ...);
+         iContrastNamesInt <- groups_to_sedesign(
+            iContrastNamesUse,
+            omit_grep = omit_grep,
+            current_depth = current_depth + 1,
+            max_depth = max_depth,
+            return_sedesign = FALSE,
+            factor_sep = factor_sep,
+            factor_order = rev(factor_order),
+            contrast_sep = contrast_sep,
+            rename_first_depth = rename_first_depth,
+            remove_pairs = remove_pairs,
+            pre_control_terms = pre_control_terms,
+            verbose = verbose,
+            ...
+         )
          # return value should be list with contrast_df, contrast_names, idesign
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
                "length(iContrastNamesInt):",
-               length(iContrastNamesInt));
-            print(iContrastNamesInt);
+               length(iContrastNamesInt)
+            )
+            print(iContrastNamesInt)
          }
          ## removed 0.0.31.900
          # If length==0 then there are no valid interaction contrasts
@@ -1071,88 +1331,124 @@ groups_to_sedesign <- function
          #    return(iContrastNamesInt);
          # }
          ## updated 0.0.31.900: although not sure why there might be NA values
-         if (length(iContrastNamesInt) > 0 &&
+         if (
+            length(iContrastNamesInt) > 0 &&
                ncol(iContrastNamesInt$contrast_df) > 1 &&
-               any(is.na(iContrastNamesInt$contrast_df[,1]))) {
-            iContrastNamesInt$contrast_df <- subset(iContrastNamesInt$contrast_df,
-               !is.na(iContrastNamesInt$contrast_df[,1]));
+               any(is.na(iContrastNamesInt$contrast_df[, 1]))
+         ) {
+            iContrastNamesInt$contrast_df <- subset(
+               iContrastNamesInt$contrast_df,
+               !is.na(iContrastNamesInt$contrast_df[, 1])
+            )
          }
          ## updated 0.0.31.900: if there are interaction contrasts, append them
-         if (length(iContrastNamesInt$contrast_df) > 0 &&
-               ncol(iContrastNamesInt$contrast_df) > 1) {
+         if (
+            length(iContrastNamesInt$contrast_df) > 0 &&
+               ncol(iContrastNamesInt$contrast_df) > 1
+         ) {
             if (verbose >= 1) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "Combining iContrastNames with iContrastNamesInt.");
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "Combining iContrastNames with iContrastNamesInt."
+               )
             }
             if (verbose >= 2) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "head(iContrastNames):");
-               print(head(iContrastNames));
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "begin(iContrastNamesInt):");
-               print(head(iContrastNamesInt));
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "head(iContrastNames):"
+               )
+               print(head(iContrastNames))
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "begin(iContrastNamesInt):"
+               )
+               print(head(iContrastNamesInt))
                # jamba::printDebug("  end iContrastNamesInt:");
             }
-            iContrastNames <- jamba::rbindList(list(iContrastNames,
-               iContrastNamesInt$contrast_df));
+            iContrastNames <- jamba::rbindList(list(
+               iContrastNames,
+               iContrastNamesInt$contrast_df
+            ))
             if (verbose >= 1) {
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "combined head(iContrastNames):");
-               print(head(iContrastNames));
-               jamba::printDebug("groups_to_sedesign(): ",
-                  indent=(current_depth-1)*5,
-                  "combined tail(iContrastNames):");
-               print(tail(iContrastNames));
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "combined head(iContrastNames):"
+               )
+               print(head(iContrastNames))
+               jamba::printDebug(
+                  "groups_to_sedesign(): ",
+                  indent = (current_depth - 1) * 5,
+                  "combined tail(iContrastNames):"
+               )
+               print(tail(iContrastNames))
             }
          }
       } else {
          # no interaction contrasts to be defined
          if (verbose >= 2) {
-            jamba::printDebug("groups_to_sedesign(): ",
-               indent=(current_depth-1)*5,
-               "   Skipping interactions");
-            jamba::printDebug("      ncol(iContrastNames):",
-               indent=(current_depth-1)*5,
-               ncol(iContrastNames));
-            jamba::printDebug("      head(iContrastNames):");
-            print(head(iContrastNames));
+            jamba::printDebug(
+               "groups_to_sedesign(): ",
+               indent = (current_depth - 1) * 5,
+               "   Skipping interactions"
+            )
+            jamba::printDebug(
+               "      ncol(iContrastNames):",
+               indent = (current_depth - 1) * 5,
+               ncol(iContrastNames)
+            )
+            jamba::printDebug("      head(iContrastNames):")
+            print(head(iContrastNames))
          }
       }
       if ("contrastName" %in% colnames(iContrastNames)) {
-         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[["contrastName"]]);
-         contrast_names <- unique(iContrastNames[["contrastName"]]);
+         rownames(iContrastNames) <- jamba::makeNames(iContrastNames[[
+            "contrastName"
+         ]])
+         contrast_names <- unique(iContrastNames[["contrastName"]])
       }
    }
    # end of automatic contrast definition
    ######################################################
 
-   retvals <- list();
+   retvals <- list()
    if (TRUE %in% return_sedesign && current_depth == 1) {
-      icontrasts <- NULL;
+      icontrasts <- matrix(nrow = 0, ncol = 0)
       if (!is.null(idesign) && length(contrast_names) > 0) {
-         icontrasts <- limma::makeContrasts(contrasts=contrast_names,
-            levels=idesign);
+         icontrasts <- limma::makeContrasts(
+            contrasts = contrast_names,
+            levels = idesign
+         )
+      }
+      if (is.null(idesign)) {
+         idesign <- matrix(nrow = 0, ncol = 0)
       }
       retvals <- validate_sedesign(
-         new("SEDesign",
-            design=idesign,
-            contrasts=icontrasts));
+         SEDesign(
+            design = idesign,
+            contrasts = icontrasts,
+            factors = group_colnames
+         )
+      )
    } else {
-      retvals$contrast_df <- iContrastNames;
-      retvals$contrast_names <- contrast_names;
-      retvals$idesign <- idesign;
+      retvals$contrast_df <- iContrastNames
+      retvals$contrast_names <- contrast_names
+      retvals$idesign <- idesign
    }
    if (verbose) {
-      jamba::printDebug("groups_to_sedesign(): ",
-         indent=(current_depth-1)*5,
-         "current_depth: ", current_depth,
-         ", return_sedesign: ", return_sedesign)
+      jamba::printDebug(
+         "groups_to_sedesign(): ",
+         indent = (current_depth - 1) * 5,
+         "current_depth: ",
+         current_depth,
+         ", return_sedesign: ",
+         return_sedesign
+      )
    }
-   return(retvals);
+   return(retvals)
 }
 
 

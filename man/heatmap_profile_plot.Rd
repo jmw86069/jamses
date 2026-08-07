@@ -141,9 +141,9 @@ HeatmapProfilePlot(hm, FALSE)
 
 }
 \seealso{
-Other jamses heatmaps: 
-\code{\link{detect_heatmap_components}()},
-\code{\link{heatmap_column_group_labels}()},
-\code{\link{heatmap_se}()}
+Other jamses heatmaps:
+\code{\link[=detect_heatmap_components]{detect_heatmap_components()}},
+\code{\link[=heatmap_column_group_labels]{heatmap_column_group_labels()}},
+\code{\link[=heatmap_se]{heatmap_se()}}
 }
 \concept{jamses heatmaps}
