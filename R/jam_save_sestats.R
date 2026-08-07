@@ -45,15 +45,15 @@
 #'
 #' @family jamses stats
 #'
-#' @param sestats `list` object output from `se_contrast_stats()`
+#' @param sestats `SEStats` or `list` output from `se_contrast_stats()`
 #' @param file `character` string indicating the filename to save.
 #'    When `file` is `NULL`, output is returned as a `list`, equivalent
 #'    to `type="list"`.
 #' @param assay_names `character` string indicating which assay names
-#'    to save, stored in `dimnames(sestats$hit_array)$Signal`.
+#'    to save, stored in `dimnames(sestats@hit_array)$Signal`.
 #'    When `NULL` then all assay names are saved.
 #' @param contrast_names `character` string indicating which contrasts
-#'    to save, stored in `dimnames(sestats$hit_array)$Contrasts`.
+#'    to save, stored in `dimnames(sestats@hit_array)$Contrasts`.
 #'    The default `NULL` will save all contrasts.
 #' @param type `character` string indicating the type of file to save.
 #'    * `"xlsx"` - saves an Excel xlsx file using `jamba::writeOpenxlsx()`.
@@ -201,20 +201,26 @@ save_sestats <- function
    if (length(file) == 0) {
       type <- "list";
    }
+   if (inherits(sestats, "list")) {
+      sestats <- SEStats(
+         stats_dfs = sestats[["stats_dfs"]],
+         hit_array = sestats[["hit_array"]]
+      )
+   }
 
    # determine which results to save
    # validate assay_names
    assay_names <- intersect(assay_names,
-      dimnames(sestats$hit_array)$Signal);
+      dimnames(sestats@hit_array)$Signal);
    if (length(assay_names) == 0) {
-      assay_names <- dimnames(sestats$hit_array)$Signal;
+      assay_names <- dimnames(sestats@hit_array)$Signal;
    }
 
    # validate contrast_names
    contrast_names <- intersect(contrast_names,
-      dimnames(sestats$hit_array)$Contrasts);
+      dimnames(sestats@hit_array)$Contrasts);
    if (length(contrast_names) == 0) {
-      contrast_names <- dimnames(sestats$hit_array)$Contrasts;
+      contrast_names <- dimnames(sestats@hit_array)$Contrasts;
    }
    if (verbose) {
       jamba::printDebug("save_sestats(): ",
@@ -223,9 +229,9 @@ save_sestats <- function
 
    # validate cutoff_names
    cutoff_names <- intersect(cutoff_names,
-      dimnames(sestats$hit_array)$Cutoffs);
+      dimnames(sestats@hit_array)$Cutoffs);
    if (length(cutoff_names) == 0) {
-      cutoff_names <- head(dimnames(sestats$hit_array)$Cutoffs, 1);
+      cutoff_names <- head(dimnames(sestats@hit_array)$Cutoffs, 1);
    }
 
    # assembly export_df to describe what data will be exported
@@ -428,7 +434,7 @@ save_sestats <- function
          iDF[, 1] <- as.character(iDF[, 1]);
          attr(iDF, "nameColumns") <- name_colnames;
       } else {
-         iDF <- sestats$stats_dfs[[assay_name]][[contrast_name]];
+         iDF <- sestats@stats_dfs[[assay_name]][[contrast_name]];
          # optionally keep only max_rows rows
          if (length(max_rows) > 0) {
             iDF <- head(iDF,

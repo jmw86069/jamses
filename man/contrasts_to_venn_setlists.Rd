@@ -21,8 +21,8 @@ contrasts_to_venn_setlists(
 \item{contrast_names}{\code{character} vector of contrast names, used
 as the priority input when supplied.}
 
-\item{sestats}{\code{list} output from \code{se_contrast_stats()}, used only when
-\code{contrast_names} is not supplied.}
+\item{sestats}{\code{SEStats} or \code{list} output from \code{se_contrast_stats()},
+used only when \code{contrast_names} is not supplied.}
 
 \item{sedesign}{\code{SEDesign} object, used only when neither \code{contrast_names}
 nor \code{sestats} are supplied.}

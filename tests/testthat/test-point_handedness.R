@@ -1,5 +1,4 @@
 
-context("point_handedness")
 
 testthat::test_that("point_handedness vector input", {
    testthat::expect_equal(

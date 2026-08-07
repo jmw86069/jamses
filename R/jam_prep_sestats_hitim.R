@@ -7,6 +7,7 @@
 #'
 #' @param sestats one of the following:
 #'    * `list` object output from `se_contrast_stats()`, containing `"hit_array"`
+#'    * `SEStats` object output from `se_contrast_stats()`,
 #'    * `array` in format `"hit_array"` with dimnames
 #'    `"Cutoffs","Contrasts","Signals"`.
 #'    * `list` of `character` vectors representing `rownames(se)` for
@@ -44,7 +45,7 @@ process_sestats_to_hitim <- function
    # it is not sestats
    gene_hits_im <- NULL;
    hit_array <- NULL;
-   if ("list" %in% class(sestats) && !"hit_array" %in% names(sestats)) {
+   if (inherits(sestats, "list") && !"hit_array" %in% names(sestats)) {
       # assume input is a hit list
       if (is.numeric(sestats[[1]]) && length(names(sestats[[1]])) > 0) {
          # assume named directional sestats
@@ -63,10 +64,12 @@ process_sestats_to_hitim <- function
          gene_hits_im <- venndir::list2im_opt(sestats,
             do_sparse=FALSE);
       }
-   } else if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
+   } else if (inherits(sestats, "SEStats")) {
+      hit_array <- sestats@hit_array;
+   } else if (inherits(sestats, "list") && "hit_array" %in% names(sestats)) {
       # if input is list, and does contain name "hit_array"
       # it is sestats, so we grab hit_array
-      hit_array <- sestats$hit_array;
+      hit_array <- sestats[["hit_array"]];
    } else if ("matrix" %in% class(sestats)) {
       # if input is matrix, use directly as gene_hits_im
       gene_hits_im <- sestats;
@@ -129,7 +132,8 @@ process_sestats_to_hitim <- function
       if (length(rows_use) > 0) {
          rows_use_match1 <- match(rows_use, rownames(rows_im));
          rows_use_match2 <- match(rows_use, rownames(gene_hits_im));
-         rows_im[rows_use_match1, colnames(gene_hits_im)] <- gene_hits_im[rows_use_match2, colnames(gene_hits_im), drop=FALSE];
+         rows_im[rows_use_match1, colnames(gene_hits_im)] <- (
+            gene_hits_im[rows_use_match2, colnames(gene_hits_im), drop=FALSE]);
          gene_hits_im <- rows_im;
       }
    }

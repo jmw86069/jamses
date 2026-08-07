@@ -20,12 +20,12 @@
 #'
 #' @family jamses stats
 #'
-#' @param sestats `list` object output from `se_contrast_stats()`
+#' @param sestats `SEStats` or `list` output from `se_contrast_stats()`
 #' @param assay_names `character` string indicating which assay names
-#'    to save, stored in `dimnames(sestats$hit_array)$Signal`.
+#'    to save, stored in `dimnames(sestats@hit_array)$Signal`.
 #'    When `NULL` then all assay names are saved.
 #' @param contrast_names `character` string indicating which contrasts
-#'    to save, stored in `dimnames(sestats$hit_array)$Contrasts`.
+#'    to save, stored in `dimnames(sestats@hit_array)$Contrasts`.
 #'    The default `NULL` will save all contrasts.
 #' @param data_content `character` string describing the data content
 #'    to include:
@@ -59,7 +59,7 @@
 #'
 sestats_to_dfs <- function
 (sestats,
- assay_names,
+ assay_names=NULL,
  contrast_names=NULL,
  data_content=c("contrasts",
     "hits"),
@@ -74,7 +74,7 @@ sestats_to_dfs <- function
    #
    df_list <- save_sestats(sestats=sestats,
       assay_names=assay_names,
-      contrast_namescontrast_names,
+      contrast_names=contrast_names,
       data_content=data_content,
       type="list",
       hits_use_lfc=hits_use_lfc,

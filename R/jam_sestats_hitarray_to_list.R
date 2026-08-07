@@ -14,8 +14,8 @@
 #'    hits by combining entries across the `cutoff_names` and `assay_names`
 #'    for each contrast.
 #'
-#' @param hit_array `array` output from `se_contrast_stats()`, list element
-#'    `"hit_array"`.
+#' @param hit_array `SEStats` or `list` with 'hit_array' element, or
+#'    `array` with `dimnames()`: 'Cutoffs', 'Contrasts', 'Signals'.
 #' @param contrast_names `character` vector of contrasts.
 #'
 #' @export
@@ -27,7 +27,9 @@ hit_array_to_list <- function
  ...)
 {
    # accept sestats as input
-   if ("list" %in% class(hit_array) && "hit_array" %in% names(hit_array)) {
+   if (inherits(hit_array, "SEStats")) {
+      hit_array <- hit_array@hit_array;
+   } else if (inherits(hit_array, "list") && "hit_array" %in% names(hit_array)) {
       hit_array <- hit_array$hit_array;
    }
    # validate subset arguments

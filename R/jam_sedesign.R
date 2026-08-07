@@ -375,15 +375,22 @@ validate_sedesign <- function
       if (length(samples) > 0) {
          if (is.numeric(samples)) {
             if (max(samples) > length(object@samples)) {
-               stop("samples is greater than length(object@samples)");
+               cli::cli_abort(paste0(
+                  "{.var samples} is greater than {.code length(object@samples)}"
+               ))
             }
             if (!all(samples == round(samples))) {
-               stop("samples must contain only integer values when supplied as numeric");
+               cli::cli_abort(paste0(
+                  "{.var samples} must contain only integer values when ",
+                  "supplied as {.cls numeric}"
+               ))
             }
             samples <- object@samples[round(samples)];
          }
          if (!all(samples %in% object@samples)) {
-            stop("samples supplied must be present in object@samples")
+            cli::cli_abort(paste0(
+               "{.var samples} supplied must be present in {.code object@samples}"
+            ))
          }
          # subset by this method in order to retain names
          newmsg <- c(newmsg,
@@ -400,17 +407,23 @@ validate_sedesign <- function
                   paste0("assigned: rownames(design) <- samples"));
                rownames(object@design) <- object@samples;
             } else {
-               stop("rownames(design) is empty, and nrow(design) must equal length(samples)");
+               cli::cli_abort(paste0(
+                  "{.code rownames(design)} is empty, and ",
+                  "{.code nrow(design)} must equal {.code length(samples)}"
+               ))
             }
          } else if (length(object@samples) != nrow(object@design) ||
             !all(object@samples == rownames(object@design))) {
+            # confirm all samples are present in rownames
             if (all(object@samples %in% rownames(object@design))) {
                # re-order design rows using samples
                newmsg <- c(newmsg,
                   paste0("re-ordered rows: design <- design[samples, , drop=FALSE]"));
                object@design <- object@design[object@samples, , drop=FALSE];
             } else {
-               stop("all values in samples must be present in rownames(design)");
+               cli::cli_abort(paste0(
+                  "all values in {.var samples} must be present in {.code rownames(design)}"
+               ))
             }
          } else {
             # all samples == rownames(design)
@@ -463,15 +476,21 @@ validate_sedesign <- function
       if (length(groups) > 0) {
          if (is.numeric(groups)) {
             if (max(groups) > ncol(object@design)) {
-               stop("groups is greater than ncol(object@design)");
+               cli::cli_abort(paste0(
+                  "{.var groups} is greater than {.code ncol(object@design)}"
+               ))
             }
             if (!all(groups == round(groups))) {
-               stop("groups must contain only integer values when supplied as numeric");
+               cli::cli_abort(paste0(
+                  "{.var groups} must contain only integer values when supplied as {.cls numeric}"
+               ))
             }
             groups <- colnames(object@design)[round(groups)];
          }
          if (!all(groups %in% colnames(object@design))) {
-            stop("groups must be present in colnames(object@design)")
+            cli::cli_abort(paste0(
+               "{.var groups} must be present in {.code colnames(object@design)}"
+            ))
          }
          if (!all(colnames(object@design) %in% groups) ||
                !all(colnames(object@design) == groups)) {
@@ -493,44 +512,83 @@ validate_sedesign <- function
             # (we are choosing not to subset design groups by contrast groups)
             stop("colnames(design) must be defined in rownames(contrasts)")
          } else {
-            if (!all(colnames(object@design) == rownames(object@contrasts))) {
-               if (!length(colnames(object@design)) == length(rownames(object@contrasts))) {
+            if (ncol(object@design) != nrow(object@contrasts) ||
+                  !all(colnames(object@design) == rownames(object@contrasts)))
+            {
+               if (
+                  !length(colnames(object@design)) ==
+                     length(rownames(object@contrasts))
+               ) {
                   # design groups are a subset of contrast groups
-                  contrast_group_drop <- setdiff(rownames(object@contrasts),
-                     colnames(object@design));
+                  contrast_group_drop <- setdiff(
+                     rownames(object@contrasts),
+                     colnames(object@design)
+                  )
                   if (verbose > 1) {
-                     jamba::printDebug("Dropped contrast groups: ",
-                        contrast_group_drop);
+                     jamba::printDebug(
+                        "Dropped contrast groups: ",
+                        contrast_group_drop
+                     )
                   }
                   if (length(contrast_group_drop) > 0) {
-                     newmsg <- c(newmsg,
-                        paste0("dropped contrast groups: ",
-                           jamba::cPaste(contrast_group_drop,
-                              sep=", ")));
-                     contrast_drop <- Reduce("|", lapply(contrast_group_drop, function(i){
-                        !object@contrasts[i,] %in% c(0, NA)
-                     }));
+                     newmsg <- c(
+                        newmsg,
+                        paste0(
+                           "dropped contrast groups: ",
+                           jamba::cPaste(contrast_group_drop, sep = ", ")
+                        )
+                     )
+                     contrast_drop <- Reduce(
+                        "|",
+                        lapply(contrast_group_drop, function(i) {
+                           !object@contrasts[i, ] %in% c(0, NA)
+                        })
+                     )
                      if (any(contrast_drop)) {
                         if (verbose > 1) {
-                           jamba::printDebug("Dropped contrasts: ",
-                              colnames(object@contrasts)[contrast_drop]);
+                           jamba::printDebug(
+                              "Dropped contrasts: ",
+                              colnames(object@contrasts)[contrast_drop]
+                           )
                         }
-                        newmsg <- c(newmsg,
-                           paste0("dropped contrasts: ",
-                              jamba::cPaste(colnames(object@contrasts)[contrast_drop],
-                                 sep=", ")));
+                        newmsg <- c(
+                           newmsg,
+                           paste0(
+                              "dropped contrasts: ",
+                              jamba::cPaste(
+                                 colnames(object@contrasts)[contrast_drop],
+                                 sep = ", "
+                              )
+                           )
+                        )
                      }
                   } else {
-                     contrast_drop <- rep(FALSE, ncol(object@contrasts));
-                     newmsg <- c(newmsg,
-                        paste0("re-ordered: contrasts <- contrasts[colnames(design), , drop=FALSE]"));
+                     contrast_drop <- rep(FALSE, ncol(object@contrasts))
+                     newmsg <- c(
+                        newmsg,
+                        paste0(
+                           "re-ordered: contrasts <- contrasts[colnames(design), , drop=FALSE]"
+                        )
+                     )
                   }
-                  object@contrasts <- object@contrasts[colnames(object@design), !contrast_drop, drop=FALSE];
+                  object@contrasts <- object@contrasts[
+                     colnames(object@design),
+                     !contrast_drop,
+                     drop = FALSE
+                  ]
                } else {
                   # re-order object@contrasts
-                  newmsg <- c(newmsg,
-                     paste0("re-ordered: contrasts <- contrasts[colnames(design), , drop=FALSE]"));
-                  object@contrasts <- object@contrasts[colnames(object@design), , drop=FALSE];
+                  newmsg <- c(
+                     newmsg,
+                     paste0(
+                        "re-ordered: contrasts <- contrasts[colnames(design), , drop=FALSE]"
+                     )
+                  )
+                  object@contrasts <- object@contrasts[
+                     colnames(object@design),
+                     ,
+                     drop = FALSE
+                  ]
                }
             } else {
                # all design groups match contrast groups

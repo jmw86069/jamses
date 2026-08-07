@@ -1,5 +1,4 @@
 
-context("shrink_df")
 
 testthat::test_that("shrink_df basic arguments", {
    testdf <- data.frame(check.names=FALSE,

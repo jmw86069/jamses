@@ -132,16 +132,16 @@
 #' @param contrast_depths `numeric` with one or more values used to
 #'    display only contrasts of the given depth: 1=oneway, 2=twoway.
 #'    When `NULL` all contrasts are displayed.
-#' @param sestats `list` object that contains element `"hit_array"` as
+#' @param sestats `SEStats` or `list` object with element `'hit_array'`
 #'    produced by `se_contrast_stats()`, with statistical hits for
 #'    each contrast, after applying statistical cutoffs.
 #'    When supplied, statistical hits are included in each contrast label.
 #'    The three relevant optional values used to specify specific hits:
-#'    * `"assay_name"`: this argument defines the values from
+#'    * `'assay_name'`: this argument defines the values from
 #'    `SummarizedExperiment::assays()` that were used in the contrasts.
-#'    * `"cutoff_name"`: this argument defines a specific cutoff to
+#'    * `'cutoff_name'`: this argument defines a specific cutoff to
 #'    use, otherwise hits from any applied cutoff are included.
-#'    * `"contrast_name"`: this value uses argument `which_contrasts`
+#'    * `'contrast_name'`: this value uses argument `which_contrasts`
 #' @param sestats_style `character` string indicating how to present the
 #'    number of hits for each contrast.
 #'    * `"label"`: uses the full label: number hits (number up, number down)"
@@ -310,6 +310,17 @@ plot_sedesign <- function(
    plot_type <- match.arg(plot_type)
    contrast_style <- match.arg(contrast_style)
    sestats_style <- match.arg(sestats_style)
+   if (inherits(sedesign, "list") &&
+      all(c("hit_array", "idesign", "icontrasts") %in% names(sedesign))) {
+      if (length(sestats) == 0) {
+         sestats <- sedesign;
+      }
+      sedesign <- SEDesign(design=sedesign$idesign,
+         contrasts=sedesign$icontrasts)
+   } else if (inherits(sedesign, "SEStats")) {
+      sestats <- sedesign;
+      sedesign <- sestats@sedesign;
+   }
 
    # convert group names to factor summary table
    # TODO: call sedesign_to_factors()
@@ -606,7 +617,8 @@ plot_sedesign <- function(
 
    # define contrast_labels when sestats is supplied
    if (length(sestats) > 0) {
-      if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
+      if (inherits(sestats, "SEStats") ||
+         (inherits(sestats, "list") && "hit_array" %in% names(sestats))) {
          hit_list <- hit_array_to_list(
             sestats,
             assay_names = assay_names,
@@ -1445,7 +1457,7 @@ plot_sedesign <- function(
       attr(contrast_group_split, "max_y_bump") <- max_y_bump
       return(invisible(contrast_group_split))
    } else if ("grid" %in% plot_type) {}
-}
+   }
 
 #' Plot method for SEDesign objects
 #'

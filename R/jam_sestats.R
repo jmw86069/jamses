@@ -14,7 +14,7 @@
 #' TODO: The order of `dimnames(hit_array)` should be user-customizable.
 #' The series of dimnames in each lapply should use this order.
 #'
-#' @param sestats `list` output from `se_contrast_stats()`
+#' @param sestats `SEStats` or `list` output from `se_contrast_stats()`
 #' @param style `character` string indicating what values to use:
 #'    * `"text"`: number of hits (number up, number down)
 #'    * `"integer"`: only the integer number of hits
@@ -56,7 +56,9 @@ sestats_to_df <- function
    style <- match.arg(style);
 
    #
-   if ("list" %in% class(sestats) && "hit_array" %in% names(sestats)) {
+   if (inherits(sestats, "SEStats")) {
+      hit_array <- sestats@hit_array;
+   } else if (inherits(sestats, "list") && "hit_array" %in% names(sestats)) {
       hit_array <- sestats$hit_array;
    } else {
       hit_array <- sestats;

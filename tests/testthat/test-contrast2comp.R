@@ -1,5 +1,4 @@
 
-context("contrast2comp")
 
 testthat::test_that("contrast2comp one factor", {
    contrast_names_1fac <- c(

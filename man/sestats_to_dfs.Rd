@@ -6,7 +6,7 @@
 \usage{
 sestats_to_dfs(
   sestats,
-  assay_names,
+  assay_names = NULL,
   contrast_names = NULL,
   data_content = c("contrasts", "hits"),
   hits_use_lfc = FALSE,
@@ -19,14 +19,14 @@ sestats_to_dfs(
 )
 }
 \arguments{
-\item{sestats}{\code{list} object output from \code{se_contrast_stats()}}
+\item{sestats}{\code{SEStats} or \code{list} output from \code{se_contrast_stats()}}
 
 \item{assay_names}{\code{character} string indicating which assay names
-to save, stored in \code{dimnames(sestats$hit_array)$Signal}.
+to save, stored in \code{dimnames(sestats@hit_array)$Signal}.
 When \code{NULL} then all assay names are saved.}
 
 \item{contrast_names}{\code{character} string indicating which contrasts
-to save, stored in \code{dimnames(sestats$hit_array)$Contrasts}.
+to save, stored in \code{dimnames(sestats@hit_array)$Contrasts}.
 The default \code{NULL} will save all contrasts.}
 
 \item{data_content}{\code{character} string describing the data content

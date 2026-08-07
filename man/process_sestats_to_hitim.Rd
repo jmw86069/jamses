@@ -20,6 +20,7 @@ process_sestats_to_hitim(
 \item{sestats}{one of the following:
 \itemize{
 \item \code{list} object output from \code{se_contrast_stats()}, containing \code{"hit_array"}
+\item \code{SEStats} object output from \code{se_contrast_stats()},
 \item \code{array} in format \code{"hit_array"} with dimnames
 \verb{"Cutoffs","Contrasts","Signals"}.
 \item \code{list} of \code{character} vectors representing \code{rownames(se)} for

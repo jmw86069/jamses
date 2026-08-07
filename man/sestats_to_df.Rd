@@ -13,7 +13,7 @@ sestats_to_df(
 )
 }
 \arguments{
-\item{sestats}{\code{list} output from \code{se_contrast_stats()}}
+\item{sestats}{\code{SEStats} or \code{list} output from \code{se_contrast_stats()}}
 
 \item{style}{\code{character} string indicating what values to use:
 \itemize{

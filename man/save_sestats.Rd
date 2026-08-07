@@ -33,18 +33,18 @@ save_sestats(
 )
 }
 \arguments{
-\item{sestats}{\code{list} object output from \code{se_contrast_stats()}}
+\item{sestats}{\code{SEStats} or \code{list} output from \code{se_contrast_stats()}}
 
 \item{file}{\code{character} string indicating the filename to save.
 When \code{file} is \code{NULL}, output is returned as a \code{list}, equivalent
 to \code{type="list"}.}
 
 \item{assay_names}{\code{character} string indicating which assay names
-to save, stored in \code{dimnames(sestats$hit_array)$Signal}.
+to save, stored in \code{dimnames(sestats@hit_array)$Signal}.
 When \code{NULL} then all assay names are saved.}
 
 \item{contrast_names}{\code{character} string indicating which contrasts
-to save, stored in \code{dimnames(sestats$hit_array)$Contrasts}.
+to save, stored in \code{dimnames(sestats@hit_array)$Contrasts}.
 The default \code{NULL} will save all contrasts.}
 
 \item{type}{\code{character} string indicating the type of file to save.

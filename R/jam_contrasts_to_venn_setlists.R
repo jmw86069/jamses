@@ -44,8 +44,8 @@
 #'
 #' @param contrast_names `character` vector of contrast names, used
 #'    as the priority input when supplied.
-#' @param sestats `list` output from `se_contrast_stats()`, used only when
-#'    `contrast_names` is not supplied.
+#' @param sestats `SEStats` or `list` output from `se_contrast_stats()`,
+#'    used only when `contrast_names` is not supplied.
 #' @param sedesign `SEDesign` object, used only when neither `contrast_names`
 #'    nor `sestats` are supplied.
 #' @param include_multifactor `logical` indicating whether to include
@@ -130,11 +130,18 @@ contrasts_to_venn_setlists <- function
    if (length(contrast_names) == 0) {
       if (length(sestats) == 0) {
          if (length(sedesign) == 0) {
-            stop("Must supply one of: contrast_names, sestats, sedesign")
+            cli::cli_abort(paste0(
+               "Must supply one of: {.var contrast_names}, ",
+               "{.var sestats}, {.var sedesign}"
+            ))
          }
          contrast_names <- contrast_names(sedesign);
       } else {
-         contrast_names <- dimnames(sestats$hit_array)$Contrasts;
+         if (inherits(sestats, "SEStats")) {
+            contrast_names <- dimnames(sestats@hit_array)$Contrasts;
+         } else {
+            contrast_names <- dimnames(sestats[["hit_array"]])$Contrasts;
+         }
       }
    }
    # ensure contrast_names are unique

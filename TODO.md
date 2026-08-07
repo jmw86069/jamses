@@ -1,10 +1,38 @@
 
 # TODO for jamses
 
-## 06aug2026
+## 07aug2026
+
+* Write `dim()` function for `SEDesign` which returns the number
+of samples, groups, contrasts.
+* Extend `SEDesign` for optional additional data. Consider new
+property 'metadata' as a `list`, so it can be extended without
+changing the S7 object.
+
+   * 'blocking': blocking factor data.
+   Store as `data.frame` for consistency, with `rownames()` to
+   match `rownames(design)`. If user inputs `character` vector,
+   store it as a one column `data.frame` with default colnames 'block'.
+   Accessor `blocking()` returns object@metadata@blocking.
+   Setter `blocking()<-` stores into object@metadata@blocking.
+   * 'normgroup': It should work the same as 'blocking'.
+   * When subsetting or re-ordering `SEDesign` by sample, also
+   subset or re-order 'blocking' and 'normgroup' if they are not NULL.
 
 * Port `heatmap_column_group_labels()` from 'gridtext' to 'marquee'.
 Remove 'gridtext' dependency.
+* Port 'sestats' to S7 object `SEStats`
+
+   * For now, ignore supporting functions such as:
+   `sestats_to_dfs()`, `save_sestats()`,
+   `list_to_sestats()`, `combine_sestats()`, `process_sestats_to_hitim()`.
+
+* Consider `SEStatsList` to contain `list` of `SEStats`.
+Would help support multiple results in other workflows, e.g.
+`save_sestatslist()`.
+
+## 06aug2026
+
 * `SEDesign`
 
    * DONE. Consider converting to S7 object. Converted to `S7::new_class()`,

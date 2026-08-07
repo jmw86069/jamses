@@ -13,8 +13,8 @@ hit_array_to_list(
 )
 }
 \arguments{
-\item{hit_array}{\code{array} output from \code{se_contrast_stats()}, list element
-\code{"hit_array"}.}
+\item{hit_array}{\code{SEStats} or \code{list} with 'hit_array' element, or
+\code{array} with \code{dimnames()}: 'Cutoffs', 'Contrasts', 'Signals'.}
 
 \item{contrast_names}{\code{character} vector of contrasts.}
 }

@@ -13,6 +13,9 @@ merge_statdf_all_test(
 }
 \arguments{
 \item{sestats_all}{\code{list} with sestats data from \code{se_contrast_stats()}
+which used "all rows" of the source data, along with \code{define_hits=FALSE}.}
+
+\item{sestats_test}{\code{list} with sestats data from \code{se_contrast_stats()}
 which used a subset of rows, usually "detected rows" for the statistical
 test.}
 
@@ -34,9 +37,12 @@ the non-P-value statistics such as group mean, max group mean (mgm),
 fold, and logFC.
 }
 \details{
-The \code{sestats_test} object should contain the stats results to retain,
-while \code{sestats_all} object should contain all rows.
-The \code{sestats_all} will exclude stats columns with "P.val" in the name.
+\itemize{
+\item \code{sestats_all} should have all rows, not just those tested.
+It will specifically exclude stats columns with \code{'P.val'} or
+\code{'^hit '} in the name, using argument \code{exclude_from_all}.
+\item \code{sestats_test} should have only the subset of rows tested.
+}
 
 This function may be used internally within jamses to automate
 the job of testing a subset of rows, but reporting summary

@@ -1,3 +1,22 @@
+# jamses 0.0.78.900
+
+`SEDesign` and `SEStats` are both S7 objects now, which may
+introduce errors with any code that assumed S4 or `list` objects,
+respectively.
+* When re-loading previous data, the `list` form of `sestats`
+should be converted to a minimal `SEStats` sufficient for
+the function purpose.
+* Previous S4 `SEDesign` may not smoothly operate in S7
+environment, however it should be possible to use data
+in the previous object to create a new object with `SEDesign()`.
+
+
+## Changes
+
+* `SEStats` is a new S7 object, filling the role of `list`
+output from `se_contrast_stats()` previously.
+* Updated surrounding functions and tests to handle S7 object.
+
 # jamses 0.0.77.900
 
 * Refactored `SEDesign` from S4 to S7 object.

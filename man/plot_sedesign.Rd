@@ -108,17 +108,17 @@ where defined by \code{contrast_position}.}
 display only contrasts of the given depth: 1=oneway, 2=twoway.
 When \code{NULL} all contrasts are displayed.}
 
-\item{sestats}{\code{list} object that contains element \code{"hit_array"} as
+\item{sestats}{\code{SEStats} or \code{list} object with element \code{'hit_array'}
 produced by \code{se_contrast_stats()}, with statistical hits for
 each contrast, after applying statistical cutoffs.
 When supplied, statistical hits are included in each contrast label.
 The three relevant optional values used to specify specific hits:
 \itemize{
-\item \code{"assay_name"}: this argument defines the values from
+\item \code{'assay_name'}: this argument defines the values from
 \code{SummarizedExperiment::assays()} that were used in the contrasts.
-\item \code{"cutoff_name"}: this argument defines a specific cutoff to
+\item \code{'cutoff_name'}: this argument defines a specific cutoff to
 use, otherwise hits from any applied cutoff are included.
-\item \code{"contrast_name"}: this value uses argument \code{which_contrasts}
+\item \code{'contrast_name'}: this value uses argument \code{which_contrasts}
 }}
 
 \item{sestats_style}{\code{character} string indicating how to present the
