@@ -12,7 +12,7 @@ Description: Jam SummarizedExperiment Stats methods to
    individual samples, design groups, and groups involved
    in statistical contrasts.
 biocViews:
-Depends: R (>= 3.6.0)
+Depends: R (>= 4.1.0)
 Imports: jamba (>= 1.0.4),
    jamma (>= 0.0.33.900),
    colorjam (>= 0.0.28.900),

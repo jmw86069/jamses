@@ -2,6 +2,7 @@
 
 * Refactored `SEDesign` from S4 to S7 object.
 * Removed 'matrixStats' dependency.
+* Bumped R dependency to 4.1.0.
 
 ## New functions
 
