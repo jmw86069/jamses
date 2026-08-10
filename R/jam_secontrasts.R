@@ -1341,7 +1341,8 @@ se_contrast_stats <- function(
    stats_df <- lapply(jamba::rmNULL(stats_hits_dfs1), function(i) {
       i$stats_df
    })
-   ret_list <- list(stats_df = stats_df)
+   ret_list <- list();
+   ret_list$stats_df = stats_df;
 
    ## Assemble list of statsDFs
    stats_dfs <- lapply(stats_hits_dfs1, function(i) {

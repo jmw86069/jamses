@@ -1,6 +1,14 @@
 
 # TODO for jamses
 
+## 10aug2026
+
+* Method to combine multiple 'stats_dfs' into one 'stat_df',
+removing the need to include in the `SEStats` object.
+* Clean up methods to create/edit the 'hit_array' as 3-dimensional
+array object. Perhaps write wrapper function.
+* Clean up process by which multiple `SEStats` can be combined.
+
 ## 07aug2026
 
 * Write `dim()` function for `SEDesign` which returns the number
@@ -21,14 +29,13 @@ changing the S7 object.
 
 * Port `heatmap_column_group_labels()` from 'gridtext' to 'marquee'.
 Remove 'gridtext' dependency.
-* Port 'sestats' to S7 object `SEStats`
+* DONE. Port 'sestats' to S7 object `SEStats`
 
    * For now, ignore supporting functions such as:
-   `sestats_to_dfs()`, `save_sestats()`,
    `list_to_sestats()`, `combine_sestats()`, `process_sestats_to_hitim()`.
 
-* Consider `SEStatsList` to contain `list` of `SEStats`.
-Would help support multiple results in other workflows, e.g.
+* Consider new `SEStatsList` to contain `list` of `SEStats`.
+Would help support the use of multiple `SEStats` in other workflows, e.g.
 `save_sestatslist()`.
 
 ## 06aug2026
@@ -47,15 +54,12 @@ Would help support multiple results in other workflows, e.g.
    experimental factor, via new `factors()`/`design_df` (see below).
    Still TODO: indicate whether a blocking factor was used, and the
    depth of contrasts (oneway, twoway, etc.).
-   * Added `factors()`/`factors()<-`: labels for the underlying
+   * DONE. Add `factors()`/`factors()<-`: labels for the underlying
    experimental factors (`colnames(design_df)`), used only for display
    purposes; editing them has no effect on `design`, `contrasts`, or
    `groups()`. `design_df` (per-group factor decomposition) and
    `contrasts_df` (cached `contrasts_to_factors()` result) are new
    internal-use properties, refreshed automatically as needed.
-   * `design()<-`/`contrasts()<-` are now stricter, validating against
-   `groups(sedesign)` exactly; use `groups(sedesign) <- ...` to rename
-   design groups (not generally recommended, but supported).
 
 * Scope out something like 'SEDataList' to store
 collection of analysis-related data in one convenient object.

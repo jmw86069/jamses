@@ -1,21 +1,33 @@
 # jamses 0.0.78.900
 
+## New SEDesign
 `SEDesign` and `SEStats` are both S7 objects now, which may
 introduce errors with any code that assumed S4 or `list` objects,
 respectively.
-* When re-loading previous data, the `list` form of `sestats`
-should be converted to a minimal `SEStats` sufficient for
-the function purpose.
-* Previous S4 `SEDesign` may not smoothly operate in S7
-environment, however it should be possible to use data
-in the previous object to create a new object with `SEDesign()`.
+* Previous S4 form `SEDesign` may not smoothly operate in the
+new S7 environment. Use data in the previous S4 object to
+create a new object via `SEDesign()`.
 
+## New SEStats S7 object
+
+* When re-loading previous data, 'sestats' was `list`.
+Most methods will convert that to minimal `SEStats`
+sufficient for use.
+* **Other accessors should change '$' to '@'**. For example,
+use `sestats@hit_array` or `sestats@stats_dfs`.
 
 ## Changes
 
 * `SEStats` is a new S7 object, filling the role of `list`
 output from `se_contrast_stats()` previously.
 * Updated surrounding functions and tests to handle S7 object.
+* Added utility methods to SEStats: `dimnames()`, `samples()`,
+`groups()`, `factors()` (via embedded `SEDesign`),
+`contrast_names()` (via `SEDesign`).
+* Added utility method `dimnames()` to `SEDesign` with:
+samples, groups, contrast_names.
+* `heatmap_se()` now tolerates more missing 'sample_color_list'
+edge cases.
 
 # jamses 0.0.77.900
 

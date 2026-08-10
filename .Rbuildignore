@@ -3,3 +3,13 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^LICENSE\.md$
+^TODO.*
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^doc$
+^Meta$
+^\.git$
+^\.github$
+^\.gitignore$
+^jamses-manual.*$

@@ -974,13 +974,14 @@ plot_sedesign <- function(
       bump_factor <- 1
    }
    bump_factor <- rep(bump_factor, length.out = 2)
-   use_bump_factor <- jamba::noiseFloor(
-      bump_factor,
-      minimum = 0,
-      ceiling = 1.5
-   ) *
-      (use_group_buffer * 2)
-   print("Debug 1") # debug
+   use_bump_factor <- (
+      jamba::noiseFloor(
+         bump_factor,
+         minimum = 0,
+         ceiling = 1.5
+      ) *
+      (use_group_buffer * 2))
+   
    # subset contrast_group_df
    sub_contrast_group_df <- subset(contrast_group_df, !angle %in% c(0, 180))
    sub_contrast_group_df2 <- subset(contrast_group_df, angle %in% c(0, 180))

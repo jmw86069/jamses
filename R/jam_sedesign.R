@@ -1033,3 +1033,37 @@ print.SEDesign <- function(x, ...) {
    }
    invisible(x);
 }
+
+
+#' Get dimnames from SEDesign
+#'
+#' Extract the dimension names (samples, groups, contrast_names) from an
+#' SEDesign object, similar to how `dimnames()` works on arrays or matrices.
+#'
+#' @param x An `SEDesign` object
+#'
+#' @details
+#' Returns a `list` with three named elements:
+#' - `samples`: Sample names (from `samples(x)`)
+#' - `groups`: Group names (from `groups(x)`)
+#' - `contrasts`: Contrast names (from `contrast_names(x)`)
+#'
+#' This provides a unified way to access all dimension names from a SEDesign
+#' object, consistent with base R's `dimnames()` function for arrays and
+#' matrices.
+#'
+#' @returns `list` with named elements: `$samples`, `$groups`, `$contrasts`
+#'
+#' @examples
+#' if (FALSE) {
+#'   dimnames(sedesign)
+#' }
+#'
+#' @export
+S7::method(dimnames, SEDesign) <- function(x) {
+  list(
+    samples = samples(x),
+    groups = groups(x),
+    contrasts = contrast_names(x)
+  )
+}

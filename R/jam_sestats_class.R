@@ -47,43 +47,44 @@
 .class_list <- S7::new_S3_class("list")
 
 SEStats <- S7::new_class(
-  name = "SEStats",
-  properties = list(
-    sedesign = S7::new_property(
-      class = S7::new_union(S7::new_S3_class("NULL"), S7::new_S3_class("SEDesign")),
-      default = NULL
-    ),
-    stats_dfs = S7::new_property(
-      class = .class_list,
-      default = list()
-    ),
-    stats_objects = S7::new_property(
-      class = .class_list,
-      default = list()
-    ),
-    hit_array = S7::new_property(
-      class = S7::new_union(S7::new_S3_class("NULL"), S7::new_S3_class("array")),
-      default = NULL
-    ),
-    metadata = S7::new_property(
-      class = .class_list,
-      default = list()
-    )
-  ),
-  constructor = function(sedesign = NULL,
-                         stats_dfs = list(),
-                         stats_objects = list(),
-                         hit_array = NULL,
-                         metadata = list()) {
-    S7::new_object(
+   package = NULL,
+   name = "SEStats",
+   properties = list(
+      sedesign = S7::new_property(
+         class = S7::new_union(S7::new_S3_class("NULL"), S7::new_S3_class("SEDesign")),
+         default = NULL
+      ),
+      stats_dfs = S7::new_property(
+         class = .class_list,
+         default = list()
+      ),
+      stats_objects = S7::new_property(
+         class = .class_list,
+         default = list()
+      ),
+      hit_array = S7::new_property(
+         class = S7::new_union(S7::new_S3_class("NULL"), S7::new_S3_class("array")),
+         default = NULL
+      ),
+      metadata = S7::new_property(
+         class = .class_list,
+         default = list()
+      )
+   ),
+   constructor = function(sedesign = NULL,
+                           stats_dfs = list(),
+                           stats_objects = list(),
+                           hit_array = NULL,
+                           metadata = list()) {
+      S7::new_object(
       S7::S7_object(),
       sedesign = sedesign,
       stats_dfs = stats_dfs,
       stats_objects = stats_objects,
       hit_array = hit_array,
       metadata = metadata
-    )
-  }
+      )
+   }
 )
 
 #' Print SEStats Object
