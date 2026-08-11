@@ -412,7 +412,7 @@ heatmap_se(se,
    sestats=sestats)
 
 # review stats table
-stats_df <- sestats$stats_dfs$counts[["Treated-Vehicle"]]
+stats_df <- sestats@stats_dfs$counts[["Treated-Vehicle"]]
 head(stats_df)
 
 # volcano plot for one contrast

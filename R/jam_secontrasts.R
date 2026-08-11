@@ -261,8 +261,9 @@
 #'
 #' @family jamses stats
 #'
-#' @examples
+#' @examplesIf (suppressPackageStartupMessages(requireNamespace("SummarizedExperiment", quietly=TRUE)))
 #' set.seed(123)
+#' suppressPackageStartupMessages(require("SummarizedExperiment", quietly=TRUE))
 #' expr <- rnorm(20) + 7;
 #' noise <- rnorm(120) / 5;
 #' fold <- rnorm(20) / 2.5;
@@ -314,7 +315,7 @@
 #'    sestats=sestats)
 #'
 #' # review stats table
-#' stats_df <- sestats$stats_dfs$counts[["Treated-Vehicle"]]
+#' stats_df <- sestats@stats_dfs$counts[["Treated-Vehicle"]]
 #' head(stats_df)
 #'
 #' # volcano plot for one contrast

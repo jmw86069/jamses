@@ -15,7 +15,7 @@ se_collapse_by_row(
   keepNULLlevels = FALSE,
   delim = "[ ]*[;,]+[ ]*",
   data_transform = c("none", "log2p+sqrt", "log2+sqrt", "log2p", "log2"),
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }

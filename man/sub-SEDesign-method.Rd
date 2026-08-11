@@ -5,7 +5,7 @@
 \title{Subset a SEDesign object by samples and/or design groups}
 \usage{
 ## S7 method for class <SEDesign>
-x[i = NULL, j = NULL, ...]
+x[i = NULL, j = NULL, k = NULL, ...]
 }
 \arguments{
 \item{x}{\code{SEDesign} object}

@@ -91,7 +91,7 @@ validate_sedesign(condes2,
 
 validate_sedesign(condes2, groups=c("one", "two"))
 
-condes2[, c("one", "two")]
+condes2[, c("one", "two"), ]
 
 }
 \seealso{

@@ -171,7 +171,6 @@ draw_oneway_contrast <- function
             label_split <- paste0(label_angle[which_labels], "_",
                oneway_position[which_labels], "_",
                as.character(angle_flip[which_labels]))
-            # print(data.frame(label_split, label_angle[which_labels], oneway_position[which_labels], which_labels));# debug
             k_list <- split(which_labels, label_split)
             # TODO: use jamba::drawLabels() with rotation and shadowText
             # or gridtext::richtext_grob() with rounded corners and styling
@@ -525,7 +524,6 @@ draw_twoway_contrast <- function
    # new_contrast_angles[k2] <- (360 - new_contrast_angles[k2]) %% 360;
    # new_contrast_angles <- (360 - new_contrast_angles) %% 360;
 
-   # jamba::printDebug("new_contrast_angles:", new_contrast_angles); # debug
    xadj <- cos(jamba::deg2rad(new_contrast_angles))
    yadj <- sin(jamba::deg2rad(new_contrast_angles))
 
@@ -541,9 +539,9 @@ draw_twoway_contrast <- function
    #   x1.5 (midpoint) or
    #   x2.5 (opposite contrast)
    # - test whether "handedness" changes relative to those points
-   x12_rows <- jamba::igrep("^x1.2", rownames(lines_df));
-   x15_rows <- jamba::igrep("^x1.5", rownames(lines_df));
-   x25_rows <- jamba::igrep("^x2.5", rownames(lines_df));
+   x12_rows <- jamba::igrep("^x1[.]2", rownames(lines_df));
+   x15_rows <- jamba::igrep("^x1[.]5", rownames(lines_df));
+   x25_rows <- jamba::igrep("^x2[.]5", rownames(lines_df));
    new_hand_25 <- point_handedness(
       pt1=as.matrix(lines_df[x12_rows, , drop=FALSE]),
       pt2=as.matrix(lines_df[x25_rows, , drop=FALSE]),
@@ -587,7 +585,7 @@ draw_twoway_contrast <- function
          rep(seq_len(length(x0)/2), each=4));
       twoway_distances <- sapply(xym1_split, function(irows){
          dm <- as.matrix(dist(xym1[irows, , drop=FALSE]))
-         acols <- grepl("con1", colnames(dm));
+         acols <- c(TRUE, TRUE, FALSE, FALSE);
          max(c(0.5,
             min(dm[!acols, acols, drop=FALSE], na.rm=TRUE)))
       })
@@ -600,7 +598,8 @@ draw_twoway_contrast <- function
       # mirror the second angle?
       # if (any(changed_hands_25)) {
       extend_ex <- rep(extend_ex, length.out=length(contrast_angles))
-      do_loop <- ("loop" %in% contingency_output);
+      # do_loop <- ("loop" %in% contingency_output);
+      do_loop <- (contingency_output %in% "loop");
       if (any(do_loop)) {
          k1_changed <- k1[do_loop];
          k2_changed <- k2[do_loop];
@@ -610,23 +609,25 @@ draw_twoway_contrast <- function
          # extend_ex[k2_changed] <- extend_ex[k2_changed] * 2;
          extend_ex[k2_changed] <- sqrt(twoway_distances[do_loop]);
          # extend_ex[k2_changed] <- twoway_distances[do_loop] / 1;
+         ## Next line has inconsistent lengths
          new_contrast_angles[k2_changed] <- (contrast_angles[k2_changed] -
                # angle_diff) %% 360
-               angle_diff * sqrt(twoway_distances[do_loop])) %% 360
+               angle_diff[k2_changed] * sqrt(twoway_distances[do_loop])) %% 360
          # new_contrast_angles[k2_changed] <- (360 -
          #       new_contrast_angles[k2_changed]) %% 360;
          new_contrast_angles[k1_changed] <- (contrast_angles[k1_changed] +
-               60 * sign(angle_diff)) %% 360
+               60 * sign(angle_diff[k2_changed])) %% 360
       }
       # if (any(changed_hands_15 & !changed_hands_25)) {
-      do_scrunch <- ("scrunch" %in% contingency_output)
+      # do_scrunch <- ("scrunch" %in% contingency_output)
+      do_scrunch <- (contingency_output %in% "scrunch")
       if (any(do_scrunch)) {
          k1_changed <- k1[do_scrunch];
          k2_changed <- k2[do_scrunch];
          new_contrast_angles[k1_changed] <- (contrast_angles[k1_changed] +
-               angle_diff / 3);
+               angle_diff[k1_changed] / 3);
          new_contrast_angles[k2_changed] <- (contrast_angles[k2_changed] +
-               angle_diff / 3);
+               angle_diff[k2_changed] / 3);
       }
       xadj <- cos(jamba::deg2rad(new_contrast_angles))
       yadj <- sin(jamba::deg2rad(new_contrast_angles))
@@ -832,7 +833,6 @@ draw_twoway_contrast <- function
          # (most noticeable when one is 91 and the other is 89,
          # and the labels are flipped left/right)
          vector_angle <- round(vector_angle / 22.5) * 22.5;
-         # jamba::printDebug("vector_angle:", vector_angle);# debug
          # round to integer values
          twoway_label_angle <- round(
             ((vector_angle + 90) %% 180 - 90) %% 360);

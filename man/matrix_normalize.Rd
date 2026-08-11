@@ -21,7 +21,7 @@ matrix_normalize(
   normgroup_rows = NULL,
   subset_columns = NULL,
   debug = FALSE,
-  verbose = TRUE,
+  verbose = FALSE,
   ...
 )
 }
@@ -275,9 +275,10 @@ normalization according to the \code{method} being used.
 
 \examples{
 # use farrisdata real world data if available
-if (jamba::check_pkg_installed("farrisdata")) {
+if (requireNamespace("farrisdata", quiet=TRUE)) {
 
-   suppressPackageStartupMessages(library(SummarizedExperiment))
+   suppressPackageStartupMessages(suppressWarnings(
+      library(SummarizedExperiment)))
 
    # test matrix_normalize()
    GeneSE <- farrisdata::farrisGeneSE;

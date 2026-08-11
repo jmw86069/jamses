@@ -90,25 +90,25 @@
 #' jamba::sdim(venn_setlists)
 #'
 #' # plot the contrasts included in one particular Venn setlist
-#' par("mfrow"=c(2, 2));
-#' for (n in 1:4) {
-#' setest <- sedesign;
-#' contrast_names(setest) <- venn_setlists[[n]];
+#' withr::with_par(list("mfrow"=c(2, 3)), {
+#' for (n in 1:5) {
+#' setest <- sedesign[, , comp2contrast(venn_setlists[[n]])]
 #' plot_sedesign(setest, contrast_style="none")
 #' }
-#' par("mfrow"=c(1, 1))
-#'
-#' venn_set_comps <- contrasts_to_venn_setlists(sedesign=sedesign,
+#' })
+#' 
+#' # subset some groups to simplify
+#' x <- jamba::unvigrep("Ins|SF", groups(sedesign));
+#' sedesignsub <- validate_sedesign(sedesign, groups=x)
+#' venn_set_comps <- contrasts_to_venn_setlists(sedesign=sedesignsub,
 #'    contrast_style="comp",
-#'    factor_names=c("Genotype", "Treatment"))
-#' venn_set_comps
-#' data.frame(names(venn_set_comps))
-#'
-#' venn_set_factors <- contrasts_to_venn_setlists(sedesign=sedesign,
-#'    contrast_style="factors",
-#'    factor_names=c("Genotype", "Treatment"))
-#' venn_set_factors
-#' data.frame(names(venn_set_factors))
+#'    include_multifactor=FALSE)
+#' withr::with_par(list("mfrow"=c(2, 3)), {
+#' for (n in 1:6 + 6) {
+#' setest <- sedesignsub[, , comp2contrast(venn_set_comps[[n]])]
+#' plot_sedesign(setest, contrast_style="none")
+#' }
+#' })
 #'
 #' @export
 contrasts_to_venn_setlists <- function

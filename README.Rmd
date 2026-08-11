@@ -191,7 +191,7 @@ jamba::kable_coloring(
 
 For convenience, SEDesign can be visualized using `plot_sedesign()`:
 
-```{r plot_sedesign, collapse=TRUE}
+```{r plot_sedesign, collapse=TRUE, alt="Plot of the 'SEDesign' object, using squares to indicate groups, and block arrows to indicate contrasts."}
 # plot the design and contrasts
 plot_sedesign(sedesign);
 title(main="plot_sedesign(sedesign)\noutput:")

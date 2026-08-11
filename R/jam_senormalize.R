@@ -742,9 +742,10 @@ se_normalize <- function
 #'
 #' @examples
 #' # use farrisdata real world data if available
-#' if (jamba::check_pkg_installed("farrisdata")) {
+#' if (requireNamespace("farrisdata", quiet=TRUE)) {
 #'
-#'    suppressPackageStartupMessages(library(SummarizedExperiment))
+#'    suppressPackageStartupMessages(suppressWarnings(
+#'       library(SummarizedExperiment)))
 #'
 #'    # test matrix_normalize()
 #'    GeneSE <- farrisdata::farrisGeneSE;
@@ -890,7 +891,7 @@ matrix_normalize <- function
  normgroup_rows=NULL,
  subset_columns=NULL,
  debug=FALSE,
- verbose=TRUE,
+ verbose=FALSE,
  ...)
 {
    method <- match.arg(method);

@@ -135,18 +135,16 @@ check_sedesign <- function
 #' `contrasts_df` depends only on `design`/`contrasts`, not `factors`.
 #'
 #' @noRd
-.sedesign_refresh_caches <- function
-(object)
-{
-   group_names <- colnames(object@design);
+.sedesign_refresh_caches <- function(object) {
+   group_names <- colnames(object@design)
    if (is.null(group_names)) {
-      group_names <- character(0);
+      group_names <- character(0)
    }
-   design_df <- .sedesign_build_design_df(group_names, object@factors);
-   object@design_df <- design_df;
-   object@factors <- colnames(design_df);
-   object@contrasts_df <- .sedesign_build_contrasts_df(object);
-   return(object);
+   design_df <- .sedesign_build_design_df(group_names, object@factors)
+   object@design_df <- design_df
+   object@factors <- colnames(design_df)
+   object@contrasts_df <- .sedesign_build_contrasts_df(object)
+   return(object)
 }
 
 
@@ -296,7 +294,7 @@ S7::S4_register(SEDesign);
 #'
 #' validate_sedesign(condes2, groups=c("one", "two"))
 #'
-#' condes2[, c("one", "two")]
+#' condes2[, c("one", "two"), ]
 #'
 #' @export
 validate_sedesign <- function
@@ -326,26 +324,26 @@ validate_sedesign <- function
 }
 
 #' @noRd
-.validate_sedesign_core <- function
-(object,
- min_reps=1,
- samples=NULL,
- groups=NULL,
- contrasts=NULL,
- verbose=FALSE,
- ...)
-{
-   newmsg <- character();
+.validate_sedesign_core <- function(
+   object,
+   min_reps = 1,
+   samples = NULL,
+   groups = NULL,
+   contrasts = NULL,
+   verbose = FALSE,
+   ...
+) {
+   newmsg <- character()
 
    # convert NA to empty
    if (length(object@samples) > 0 && all(is.na(object@samples))) {
-      object@samples <- character(0);
+      object@samples <- character(0)
    }
    if (length(object@design) > 0 && all(is.na(object@design))) {
-      object@design <- matrix(nrow=0, ncol=0);
+      object@design <- matrix(nrow = 0, ncol = 0)
    }
    if (length(object@contrasts) > 0 && all(is.na(object@contrasts))) {
-      object@contrasts <- matrix(nrow=0, ncol=0);
+      object@contrasts <- matrix(nrow = 0, ncol = 0)
    }
 
    # check samples
@@ -356,9 +354,8 @@ validate_sedesign <- function
       if (length(object@design) > 0) {
          if (length(rownames(object@design)) > 0) {
             # rownames(design) used to populate samples
-            newmsg <- c(newmsg,
-               paste0("assigned: samples <- rownames(design)"));
-            object@samples <- rownames(object@design);
+            newmsg <- c(newmsg, paste0("assigned: samples <- rownames(design)"))
+            object@samples <- rownames(object@design)
          } else {
             # no samples, no rownames(design)
             # therefore only integer subsetting is permitted
@@ -385,7 +382,7 @@ validate_sedesign <- function
                   "supplied as {.cls numeric}"
                ))
             }
-            samples <- object@samples[round(samples)];
+            samples <- object@samples[round(samples)]
          }
          if (!all(samples %in% object@samples)) {
             cli::cli_abort(paste0(
@@ -393,9 +390,11 @@ validate_sedesign <- function
             ))
          }
          # subset by this method in order to retain names
-         newmsg <- c(newmsg,
-            paste0("subset, re-order: object@samples <- samples"));
-         object@samples <- object@samples[match(samples, object@samples)];
+         newmsg <- c(
+            newmsg,
+            paste0("subset, re-order: object@samples <- samples")
+         )
+         object@samples <- object@samples[match(samples, object@samples)]
       }
 
       # check design
@@ -403,23 +402,31 @@ validate_sedesign <- function
          if (length(rownames(object@design)) == 0) {
             if (nrow(object@design) == length(object@samples)) {
                # assign rownames(design) using samples
-               newmsg <- c(newmsg,
-                  paste0("assigned: rownames(design) <- samples"));
-               rownames(object@design) <- object@samples;
+               newmsg <- c(
+                  newmsg,
+                  paste0("assigned: rownames(design) <- samples")
+               )
+               rownames(object@design) <- object@samples
             } else {
                cli::cli_abort(paste0(
                   "{.code rownames(design)} is empty, and ",
                   "{.code nrow(design)} must equal {.code length(samples)}"
                ))
             }
-         } else if (length(object@samples) != nrow(object@design) ||
-            !all(object@samples == rownames(object@design))) {
+         } else if (
+            length(object@samples) != nrow(object@design) ||
+               !all(object@samples == rownames(object@design))
+         ) {
             # confirm all samples are present in rownames
             if (all(object@samples %in% rownames(object@design))) {
                # re-order design rows using samples
-               newmsg <- c(newmsg,
-                  paste0("re-ordered rows: design <- design[samples, , drop=FALSE]"));
-               object@design <- object@design[object@samples, , drop=FALSE];
+               newmsg <- c(
+                  newmsg,
+                  paste0(
+                     "re-ordered rows: design <- design[samples, , drop=FALSE]"
+                  )
+               )
+               object@design <- object@design[object@samples, , drop = FALSE]
             } else {
                cli::cli_abort(paste0(
                   "all values in {.var samples} must be present in {.code rownames(design)}"
@@ -436,9 +443,8 @@ validate_sedesign <- function
       if (length(object@design) > 0) {
          if (length(rownames(object@design)) > 0) {
             # rownames(design) used to populate samples
-            newmsg <- c(newmsg,
-               paste0("assigned: samples <- rownames(design)"));
-            object@samples <- rownames(object@design);
+            newmsg <- c(newmsg, paste0("assigned: samples <- rownames(design)"))
+            object@samples <- rownames(object@design)
          } else {
             # no samples, no rownames(design)
             # therefore only integer subsetting is permitted
@@ -454,20 +460,22 @@ validate_sedesign <- function
       # design is provided
 
       # check design groups have at least one sample
-      design_reps <- colSums(abs(object@design) > 0, na.rm=TRUE);
+      design_reps <- colSums(abs(object@design) > 0, na.rm = TRUE)
       if (any(design_reps < min_reps)) {
          # remove some groups that are not represented by min_reps samples
          # (this step will trigger a filtering step with contrasts later)
-         design_group_drop <- colnames(object@design)[design_reps < min_reps];
+         design_group_drop <- colnames(object@design)[design_reps < min_reps]
          if (verbose > 1) {
-            jamba::printDebug("Dropped design groups: ",
-               design_group_drop);
+            jamba::printDebug("Dropped design groups: ", design_group_drop)
          }
-         newmsg <- c(newmsg,
-            paste0("dropped design groups: ",
-               jamba::cPaste(design_group_drop,
-                  sep=", ")));
-         object@design <- object@design[, design_reps >= min_reps, drop=FALSE];
+         newmsg <- c(
+            newmsg,
+            paste0(
+               "dropped design groups: ",
+               jamba::cPaste(design_group_drop, sep = ", ")
+            )
+         )
+         object@design <- object@design[, design_reps >= min_reps, drop = FALSE]
       } else {
          # all groups are represented
       }
@@ -485,19 +493,23 @@ validate_sedesign <- function
                   "{.var groups} must contain only integer values when supplied as {.cls numeric}"
                ))
             }
-            groups <- colnames(object@design)[round(groups)];
+            groups <- colnames(object@design)[round(groups)]
          }
          if (!all(groups %in% colnames(object@design))) {
             cli::cli_abort(paste0(
                "{.var groups} must be present in {.code colnames(object@design)}"
             ))
          }
-         if (!all(colnames(object@design) %in% groups) ||
-               !all(colnames(object@design) == groups)) {
+         if (
+            !all(colnames(object@design) %in% groups) ||
+               !all(colnames(object@design) == groups)
+         ) {
             # re-order object@contrasts
-            newmsg <- c(newmsg,
-               paste0("subset: design <- design[, groups, drop=FALSE]"));
-            object@design <- object@design[, groups, drop=FALSE];
+            newmsg <- c(
+               newmsg,
+               paste0("subset: design <- design[, groups, drop=FALSE]")
+            )
+            object@design <- object@design[, groups, drop = FALSE]
          } else {
             # groups == colnames(object@design)
             # no further action is necessary
@@ -512,9 +524,10 @@ validate_sedesign <- function
             # (we are choosing not to subset design groups by contrast groups)
             stop("colnames(design) must be defined in rownames(contrasts)")
          } else {
-            if (ncol(object@design) != nrow(object@contrasts) ||
-                  !all(colnames(object@design) == rownames(object@contrasts)))
-            {
+            if (
+               ncol(object@design) != nrow(object@contrasts) ||
+                  !all(colnames(object@design) == rownames(object@contrasts))
+            ) {
                if (
                   !length(colnames(object@design)) ==
                      length(rownames(object@contrasts))
@@ -600,22 +613,39 @@ validate_sedesign <- function
    } else {
       # no design
       if (length(object@contrasts) > 0) {
-         stop("design must be present when SEDesign contains contrasts.");
+         stop("design must be present when SEDesign contains contrasts.")
       }
    }
 
    # optional steps regarding counts per contrast
 
+   # # subset by contrasts, which does not trigger subset of design
+   if (length(contrasts) > 0 && length(object@contrasts) > 0) {
+      #
+      if (!all(contrasts %in% colnames(object@contrasts))) {
+         missing_contrasts <- setdiff(
+            colnames(object@contrasts),
+            contrasts
+         )
+
+         cli::cli_abort(paste0(
+            "Not all {.var contrasts} found in {.var colnames(object@contrasts)}.",
+            " Missing contrasts include: {.val missing_contrasts}"
+         ))
+      }
+      object@contrasts <- object@contrasts[, contrasts, drop = FALSE]
+   }
+
    # print messages
    if (length(newmsg) > 0 && verbose) {
       for (i in newmsg) {
-         jamba::printDebug(i);
+         jamba::printDebug(i)
       }
    }
 
    # keep design_df, contrasts_df caches synchronized with any
    # changes made to design/contrasts above.
-   object <- .sedesign_refresh_caches(object);
+   object <- .sedesign_refresh_caches(object)
 
    #
    return(object)
@@ -631,7 +661,7 @@ validate_sedesign <- function
 #' @family jam experiment design
 #'
 #' @export
-S7::method(`[`, SEDesign) <- function(x, i=NULL, j=NULL, ...) {
+S7::method(`[`, SEDesign) <- function(x, i=NULL, j=NULL, k=NULL, ...) {
    if (missing(i)) {
       i <- NULL;
    }
@@ -640,7 +670,8 @@ S7::method(`[`, SEDesign) <- function(x, i=NULL, j=NULL, ...) {
    }
    validate_sedesign(x,
       samples=i,
-      groups=j)
+      groups=j,
+      contrasts=k)
 }
 
 

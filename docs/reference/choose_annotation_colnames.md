@@ -1,0 +1,169 @@
+# Choose interesting annotation colnames from a data.frame
+
+Choose interesting annotation colnames from a data.frame
+
+## Usage
+
+``` r
+choose_annotation_colnames(
+  df,
+  min_reps = 2,
+  min_values = 2,
+  max_values = Inf,
+  keep_numeric = FALSE,
+  simplify = TRUE,
+  max_colnames = 20,
+  ...
+)
+```
+
+## Arguments
+
+- df:
+
+  `data.frame` with annotations that could be interesting to display at
+  the top or side of a heatmap.
+
+- min_reps:
+
+  `numeric` minimum number of replicates required for a column to be
+  considered interesting. For example, `min_reps=3` would require any
+  value in a column to be repeated at least `3` times for that column to
+  be interesting. This filter is intended to remove columns whose values
+  are all unique, such as row identifiers.
+
+- min_values:
+
+  `numeric` minimum number of unique values required for a column to be
+  considered interesting.
+
+- max_values:
+
+  `numeric` maximum number of unique values required for a column to be
+  considered interesting. Too many values and the interest is lost.
+  Also, too many values, and the color key becomes unbearable with too
+  many labels.
+
+- keep_numeric:
+
+  `logical` indicating whether to keep columns with `numeric` values.
+  When `keep_numeric == TRUE` it will override the rules above.
+
+- simplify:
+
+  `logical` indicating whether to filter out columns whose data already
+  matches another column with 1:1 cardinality. This step requires
+  [`platjam::cardinality()`](https://rdrr.io/pkg/platjam/man/cardinality.html)
+  until that function is moved into the `jamba` package.
+
+- max_colnames:
+
+  `numeric` maximum number of colnames to return. Note that columns are
+  not sorted for priority, so they will be returned in the order they
+  appear in `df` after applying the relevant criteria.
+
+- ...:
+
+  additional arguments are ignored.
+
+## Value
+
+`character` vector of colnames in `df` that meet the criteria. If no
+colnames meet the criteria, this function returns `NULL`.
+
+## See also
+
+Other jamses utilities: [`combine_sestats()`](combine_sestats.md),
+[`contrast2comp_dev()`](contrast2comp_dev.md),
+[`fold_to_log2fold()`](fold_to_log2fold.md),
+[`intercalate()`](intercalate.md), [`list2im_opt()`](list2im_opt.md),
+[`list_to_sestats()`](list_to_sestats.md),
+[`log2fold_to_fold()`](log2fold_to_fold.md),
+[`make_block_arrow_polygon()`](make_block_arrow_polygon.md),
+[`mark_stat_hits()`](mark_stat_hits.md),
+[`matrix_normalize()`](matrix_normalize.md),
+[`merge_statdf_all_test()`](merge_statdf_all_test.md),
+[`point_handedness()`](point_handedness.md),
+[`point_slope_intercept()`](point_slope_intercept.md),
+[`shortest_unique_abbreviation()`](shortest_unique_abbreviation.md),
+[`shrinkDataFrame()`](shrinkDataFrame.md),
+[`shrink_df()`](shrink_df.md), [`shrink_matrix()`](shrink_matrix.md),
+[`sort_samples()`](sort_samples.md),
+[`strsplitOrdered()`](strsplitOrdered.md),
+[`sub_split_vector()`](sub_split_vector.md),
+[`update_function_params()`](update_function_params.md),
+[`update_list_elements()`](update_list_elements.md)
+
+## Examples
+
+``` r
+df <- data.frame(
+   threereps=paste0("threereps_", letters[c(1,1,1,3,5,7,7)]),
+   time=paste0("time_", letters[c(1:7)]),
+   tworeps=paste0("tworeps_", letters[c(12,12,14,14,15,15,16)]),
+   num=sample(1:7),
+   class=paste0("class_", LETTERS[c(1,1,1,3,5,7,7)]),
+   blah=rep("blah", 7),
+   maxvalues=c("one", "two", "three", "four", "five", "six", "six"))
+df
+#>     threereps   time   tworeps num   class blah maxvalues
+#> 1 threereps_a time_a tworeps_l   5 class_A blah       one
+#> 2 threereps_a time_b tworeps_l   4 class_A blah       two
+#> 3 threereps_a time_c tworeps_n   7 class_A blah     three
+#> 4 threereps_c time_d tworeps_n   2 class_C blah      four
+#> 5 threereps_e time_e tworeps_o   3 class_E blah      five
+#> 6 threereps_g time_f tworeps_o   1 class_G blah       six
+#> 7 threereps_g time_g tworeps_p   6 class_G blah       six
+
+choose_annotation_colnames(df)
+#> [1] "threereps" "tworeps"   "maxvalues"
+df[,choose_annotation_colnames(df)]
+#>     threereps   tworeps maxvalues
+#> 1 threereps_a tworeps_l       one
+#> 2 threereps_a tworeps_l       two
+#> 3 threereps_a tworeps_n     three
+#> 4 threereps_c tworeps_n      four
+#> 5 threereps_e tworeps_o      five
+#> 6 threereps_g tworeps_o       six
+#> 7 threereps_g tworeps_p       six
+
+choose_annotation_colnames(df, max_values=5)
+#> [1] "threereps" "tworeps"  
+df[,choose_annotation_colnames(df, max_values=5)]
+#>     threereps   tworeps
+#> 1 threereps_a tworeps_l
+#> 2 threereps_a tworeps_l
+#> 3 threereps_a tworeps_n
+#> 4 threereps_c tworeps_n
+#> 5 threereps_e tworeps_o
+#> 6 threereps_g tworeps_o
+#> 7 threereps_g tworeps_p
+
+choose_annotation_colnames(df, simplify=FALSE)
+#>   threereps     tworeps       class   maxvalues 
+#> "threereps"   "tworeps"     "class" "maxvalues" 
+df[,choose_annotation_colnames(df, simplify=FALSE)]
+#>     threereps   tworeps   class maxvalues
+#> 1 threereps_a tworeps_l class_A       one
+#> 2 threereps_a tworeps_l class_A       two
+#> 3 threereps_a tworeps_n class_A     three
+#> 4 threereps_c tworeps_n class_C      four
+#> 5 threereps_e tworeps_o class_E      five
+#> 6 threereps_g tworeps_o class_G       six
+#> 7 threereps_g tworeps_p class_G       six
+
+choose_annotation_colnames(df, min_reps=3)
+#> [1] "threereps"
+
+choose_annotation_colnames(df, min_reps=1)
+#> [1] "threereps" "time"      "tworeps"   "maxvalues"
+
+choose_annotation_colnames(df, keep_numeric=TRUE)
+#> [1] "threereps" "tworeps"   "num"       "maxvalues"
+
+choose_annotation_colnames(df, min_reps=1)
+#> [1] "threereps" "time"      "tworeps"   "maxvalues"
+
+choose_annotation_colnames(df, min_reps=1, keep_numeric=TRUE)
+#> [1] "threereps" "time"      "tworeps"   "num"       "maxvalues"
+```

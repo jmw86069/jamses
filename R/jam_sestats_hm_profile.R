@@ -72,6 +72,7 @@
 #' @family jamses heatmaps
 #'
 #' @examples
+#' se <- make_se_test()
 #' hm1 <- heatmap_se(se,
 #'    rowData_colnames="Class",
 #'    row_split=9,
@@ -79,8 +80,8 @@
 #'    show_left_annotation_name="top",
 #'    left_annotation_name_rot=150,
 #'    sample_color_list=list(group=c(groupA="red")))
-#' hm1
-#' heatmap_profile_plot(hm1, summarize_column_split=FALSE);
+#' hm1drawn <- ComplexHeatmap::draw(hm1)
+#' heatmap_profile_plot(hm1drawn, summarize_column_split=FALSE);
 #'
 #' se <- jamses::make_se_test(nrow=200, ngroups=4, nreps=8)
 #' hm <- jamses::heatmap_se(se,
@@ -92,11 +93,11 @@
 #'    row_split=12)
 #' ComplexHeatmap::draw(hm)
 #'
-#' HeatmapProfilePlot(hm, strip.position="top", sep=" ")
+#' heatmap_profile_plot(hm, strip.position="top")
 #'
-#' HeatmapProfilePlot(hm, FALSE, strip.position="top", sep=" ")
+#' heatmap_profile_plot(hm, summarize_column_split=FALSE, strip.position="top")
 #'
-#' HeatmapProfilePlot(hm, FALSE)
+#' heatmap_profile_plot(hm, summarize_column_split=FALSE)
 #'
 #' @export
 heatmap_profile_plot <- function
@@ -180,6 +181,11 @@ heatmap_profile_plot <- function
       return(hrov)
    }
 
+   # accept HeatmapList
+   if (inherits(hm, "HeatmapList")) {
+      hml <- hm;
+      hm <- hml@ht_list[[1]];
+   }
    # row order and groupings
    hro <- jamba::heatmap_row_order(hm)
    hrov <- column_order_to_vector(hro,

@@ -357,10 +357,20 @@ contrasts_to_factors <- function
    rowname <- match.arg(rowname);
    if (inherits(contrast_names, "SEDesign")) {
       sedesign <- contrast_names;
-      contrast_names <- NULL;
+      contrast_names <- colnames(sedesign@contrasts);
+      # contrast_names <- NULL;
    }
    if (inherits(sedesign, "SEDesign")) {
       contrasts_df <- sedesign@contrasts_df;
+      if (nrow(sedesign@contrasts_df) != ncol(contrasts(sedesign)) ||
+         !all(rownames(sedesign@contrasts_df) == colnames(contrasts(sedesign)))) {
+         if (all(colnames(contrasts(sedesign)) %in% rownames(sedesign@contrasts_df))) {
+            contrasts_df <- contrasts_df[colnames(contrasts(sedesign)), , drop = FALSE];
+            return(contrasts_df);
+         } else {
+            contrasts_df <- contrasts_df[0, , drop = FALSE]
+         };
+      }
       if (inherits(contrasts_df, "data.frame") && nrow(contrasts_df) > 0) {
          return(contrasts_df)
       }

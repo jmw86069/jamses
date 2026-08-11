@@ -218,11 +218,13 @@ heatmap_se(stat_dfs[[2]], column_names_rot=80,
 heatmap_se(se, sestats=sestats, rows=rownames(se))
 
 set.seed(12)
+suppressWarnings({
 heatmap_se(stat_dfs[[2]], column_names_rot=80,
    column_cex=0.2, row_cex=0.5) +
 heatmap_se(stat_dfs1[[2]], column_names_rot=80,
    column_cex=0.2, row_cex=0.5) +
 heatmap_se(se, sestats=sestats, rows=rownames(se))
+})
 
 }
 \seealso{

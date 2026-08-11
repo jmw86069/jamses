@@ -113,6 +113,7 @@ The argument \code{summarize_column_split=TRUE} will optionally calculate
 group mean per column group, but the default is \code{FALSE}.
 }
 \examples{
+se <- make_se_test()
 hm1 <- heatmap_se(se,
    rowData_colnames="Class",
    row_split=9,
@@ -120,8 +121,8 @@ hm1 <- heatmap_se(se,
    show_left_annotation_name="top",
    left_annotation_name_rot=150,
    sample_color_list=list(group=c(groupA="red")))
-hm1
-heatmap_profile_plot(hm1, summarize_column_split=FALSE);
+hm1drawn <- ComplexHeatmap::draw(hm1)
+heatmap_profile_plot(hm1drawn, summarize_column_split=FALSE);
 
 se <- jamses::make_se_test(nrow=200, ngroups=4, nreps=8)
 hm <- jamses::heatmap_se(se,
@@ -133,11 +134,11 @@ hm <- jamses::heatmap_se(se,
    row_split=12)
 ComplexHeatmap::draw(hm)
 
-HeatmapProfilePlot(hm, strip.position="top", sep=" ")
+heatmap_profile_plot(hm, strip.position="top")
 
-HeatmapProfilePlot(hm, FALSE, strip.position="top", sep=" ")
+heatmap_profile_plot(hm, summarize_column_split=FALSE, strip.position="top")
 
-HeatmapProfilePlot(hm, FALSE)
+heatmap_profile_plot(hm, summarize_column_split=FALSE)
 
 }
 \seealso{

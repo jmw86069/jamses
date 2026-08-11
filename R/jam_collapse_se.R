@@ -153,7 +153,7 @@ se_collapse_by_row <- function
     "log2+sqrt",
     "log2p",
     "log2"),
- verbose=TRUE,
+ verbose=FALSE,
  ...)
 {
    ## Purpose is to collapse rows of a SummarizedExperiment object, intended

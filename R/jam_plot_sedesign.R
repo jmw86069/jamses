@@ -960,6 +960,7 @@ plot_sedesign <- function(
          levels = unique(contrast_group_df$contrast)
       )
    )
+   
    xlim <- range(contrast_group_df$x_coord, na.rm = TRUE)
    ylim <- range(contrast_group_df$y_coord, na.rm = TRUE)
    xlim <- range(axis_df$x_coord, na.rm = TRUE)
@@ -1458,7 +1459,7 @@ plot_sedesign <- function(
       attr(contrast_group_split, "max_y_bump") <- max_y_bump
       return(invisible(contrast_group_split))
    } else if ("grid" %in% plot_type) {}
-   }
+}
 
 #' Plot method for SEDesign objects
 #'
@@ -1602,8 +1603,8 @@ plot.SEDesign <- function(x, ...) {
 #' arrowxy <- make_block_arrow_polygon(
 #'    x=x[k], y=y[k],
 #'    x1=x1[k], y1=y1[k],
-#'    head_ex=rep(c(1, 3, 1), c(1, 1, 9)),
-#'    arrow_ex=rep(c(1, 2, 1), c(2, 1, 8)),
+#'    head_ex=rep(c(1, 3, 1), c(1, 1, 10))[k],
+#'    arrow_ex=rep(c(1, 2, 1), c(2, 1, 9))[k],
 #'    data_format="base")
 #' polygon(x=arrowxy$x, y=arrowxy$y,
 #'    col=colorset[k])
