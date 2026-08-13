@@ -8,9 +8,12 @@ Description: Jam SummarizedExperiment Stats methods to
    experiment design, visualize the experiment design,
    define statistical contrasts,
    perform differential analysis (via other packages).
-   S4 object SEDesign enforces relationship between
+   S7 object SEDesign enforces relationship between
    individual samples, design groups, and groups involved
-   in statistical contrasts.
+   in statistical contrasts. S7 object SEStats stores
+   multiple contrast statistical results in one
+   convenient object, to apply cutoffs and summarize
+   altogether.
 biocViews:
 Depends: R (>= 4.1.0)
 Imports: jamba (>= 1.0.4),
