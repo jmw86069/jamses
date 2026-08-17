@@ -1,0 +1,162 @@
+---
+title: "How to Make a Heatmap"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How to Make a Heatmap}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(jamses)
+```
+
+# How to Make a Heatmap
+
+> **Still in Progress**
+>
+> This document is still in draft form, and is being actively
+> updated.
+
+The `jamses` package provides `heatmap_se()` which is intended
+to "make heatmaps easy" when used with a `SummarizedExperiment`
+object.
+
+You can use a `numeric` matrix, but it won't have many of the
+fancy extra features.
+
+## About SummarizedExperiment Objects
+
+(See [SummarizedExperiment vignette](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html)
+for more details on the object design.)
+
+A `SummarizedExperiment` is just a fancy matrix, with these additions:
+
+* It can store more than one `numeric` matrix.
+* It stores `SummarizedExperiment::colData()` with column
+annotations.
+* It stores `SummarizedExperiment::rowData()` with row
+annotations.
+
+Column annotations are used by `heatmap_se()`:
+
+* Column values can split the heatmap.
+* Column values can define row-centering subgroups.
+* Column annotations can be colorized at the top of a heatmap.
+
+Row annotations are used by `heatmap_se()`:
+
+* Rows can be used to split the heatmap.
+* Rows can be used to label specific rows.
+* Row annotations can be colorized beside the heatmap.
+
+Several types of data can be converted to `SummarizedExperiment`,
+including `ExpressionSet`, `DGEList`, `DESeqDataset`.
+
+
+## Design Philosophy
+
+The `heatmap_se()` is "opinionated".
+Default behavior should make a heatmap very close to ideal.
+
+Most options have exceptions.
+There are a lot of exceptions.
+
+We start with `ComplexHeatmap::Heatmap()`. It is amazing.
+And complex.
+`heatmap_se()` tries to make it easy.
+
+
+* Data are assumed to be log2-transformed.
+* Data are row-centered by default.
+
+   * Data are displayed as row-centered values by default.
+   It therefore shows "log2 differences", which are
+   equivalent to saying "log2 fold changes".
+
+* **Data are not row-scaled.**
+
+   * Magnitude is an important component of Omics data.
+   It is helpful for critical review of the data,
+   which is the main purpose of a heatmap.
+   * Row-scaling attempts to show patterns relative
+   to the variability on each row.
+   Ultimately, row-scaling is straightforward, it does not require
+   transformation or centering. We feel that it obscures
+   important information about the signal:noise in *most*
+   Omics datasets.
+   For low signal, it assumes that the pattern and noise
+   scale together.
+   It assumes the patterns are therefore not noise.
+   It attempts to allow large and small magnitude effects
+   to have similar influence, which is an important goal.
+   We aim to achieve this goal without scaling.
+
+* The color scale is blue-white-red, white at zero.
+
+   * Red is `'Up'` because this is a *heat* map.
+
+* The color scale uses a fixed-range.
+
+   * The default heatmap shows a consistent color profile,
+   based on biologically relevant changes for *most* Omics
+   experiments.
+   * The default range spans -8 to +8 fold.
+   * Values outside the range appear as the max color.
+   * The range may be expanded as needed.
+   * The fixed-range is intended to avoid affects by outliers,
+   and to avoid over-emphasizing small changes.
+
+* Data centering is a core process:
+
+   * Centering is performed "versus controls".
+   * By default, all samples are the controls.
+   * Centering is performed within "centerby groups".
+   * By default, there is one centerby group.
+   * Examples of centerby groups:
+
+      * design factor(s)
+      * sample type
+      * tissue type
+      * cell line
+      * processing batch
+      * pairing factor
+
+   * Each centerby group may have its own controls.
+   For example, you may use "Time 0" as the control
+   group for a time series with "Time 1", "Time 2",
+   "Time 3", etc.
+
+* Row and Column annotations are "easy".
+
+   * `top_colnames` adds annotations to the top.
+   * `rowData_colnames` adds annotations to the left.
+
+* Row `'stat hits'` are "easy" with `sestats`.
+
+   * `sestats` holds statistical hits as an
+   as incidence `matrix`, a `list` of rows, or a
+   `list` of numeric `sign()` values named by rownames.
+   * Hits are shown on the left, colored by direction.
+   * By default, the heatmap shows only the hits.
+
+* Rows are grouped using `row_split`.
+
+   * `integer` to split into N groups.
+   * `character` to pick annotation columns.
+
+* Columns are grouped using `column_split`.
+* Row and column order is "easy".
+
+   * `jamba::heatmap_row_order()`
+   * `jamba::heatmap_column_order()`
+
+
+## Heatmap Basics

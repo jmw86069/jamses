@@ -1,6 +1,10 @@
 
 # TODO for jamses
 
+## 13aug2026
+
+* Add vignette: "How to Make a Heatmap"
+
 ## 10aug2026
 
 * Method to combine multiple 'stats_dfs' into one 'stat_df',

@@ -1372,8 +1372,10 @@ heatmap_se <- function
       ## 0.0.76.900 - always validate color list
       #
       top_color_list <- lapply(jamba::nameVector(top_colnames), function(top_colname){
-         sample_colors <- jamba::rmNULL(nullValue=character(0),
-            sample_color_list[[top_colname]]);
+         sample_colors <- sample_color_list[[top_colname]];
+         if (length(sample_colors) == 0) {
+            sample_colors <- character(0)
+         }
          if (!is.function(sample_colors)) {
             # Handle numeric values
             if (is.numeric(top_df[isamples, top_colname]) &&

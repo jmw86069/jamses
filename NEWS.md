@@ -1,6 +1,14 @@
+# jamses 0.0.78.950
+
+## Hotfix
+
+* Fixed regression in `heatmap_se()` which failed when supplying
+`sample_color_list` containing `function` entries.
+
 # jamses 0.0.78.900
 
 ## New SEDesign
+
 `SEDesign` and `SEStats` are both S7 objects now, which may
 introduce errors with any code that assumed S4 or `list` objects,
 respectively.

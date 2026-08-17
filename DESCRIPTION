@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.78.900
+Version: 0.0.78.950
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -31,11 +31,12 @@ Imports: jamba (>= 1.0.4),
    methods,
    S7
 Suggests:
-   venndir (>= 0.0.59.900),
-   testthat (>= 3.0.0),
-   statmod,
-   edgeR,
-   knitr
+    venndir (>= 0.0.59.900),
+    testthat (>= 3.0.0),
+    statmod,
+    edgeR,
+    knitr,
+    rmarkdown
 Enhances:
    genejam (>= 0.0.20.900),
    farrisdata,
