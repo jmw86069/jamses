@@ -1,3 +1,5 @@
+
+
 #' SEStats S7 Object
 #'
 #' S7 object for storing statistical results from comparative analysis.
@@ -8,11 +10,11 @@
 #' results at different cutoff thresholds, and a 3-dimensional hit array
 #' that summarizes significant findings across multiple dimensions.
 #'
-#' @slot sedesign An `SEDesign` object containing the experimental design
+#' @slot sedesign `SEDesign` object containing the experimental design
 #'   and contrast information.
-#' @slot stats_dfs A nested `list` structure organizing data.frames of
+#' @slot stats_dfs nested `list` structure organizing `data.frame` of
 #'   statistical results. The structure is `stats_dfs[[signal]][[contrast]]`
-#'   where each data.frame contains detailed statistical metrics for a
+#'   where each `data.frame` contains detailed statistical metrics for a
 #'   specific signal type (assay) and contrast comparison.
 #' @slot stats_objects An optional `list` for storing raw statistical
 #'   objects or intermediate result objects used to generate `stats_dfs`.
@@ -27,7 +29,7 @@
 #'
 #' @details
 #' The `hit_array` is the central data structure, a 3-dimensional array where:
-#' - **Cutoffs** are derived from column names in `stats_dfs` data.frames
+#' - **Cutoffs** are derived from column names in each `data.frame` of `stats_dfs` 
 #'   (columns beginning with "hit ")
 #' - **Contrasts** are the names within each stats_dfs element
 #' - **Signal** values are the top-level names in stats_dfs
@@ -42,10 +44,6 @@
 #'
 #' @docType class
 #' @export
-
-# Define S3 class wrappers for non-S7 types
-.class_list <- S7::new_S3_class("list")
-
 SEStats <- S7::new_class(
    package = NULL,
    name = "SEStats",
@@ -55,11 +53,11 @@ SEStats <- S7::new_class(
          default = NULL
       ),
       stats_dfs = S7::new_property(
-         class = .class_list,
+         class = S7::new_S3_class("list"),
          default = list()
       ),
       stats_objects = S7::new_property(
-         class = .class_list,
+         class = S7::new_S3_class("list"),
          default = list()
       ),
       hit_array = S7::new_property(
@@ -67,7 +65,7 @@ SEStats <- S7::new_class(
          default = NULL
       ),
       metadata = S7::new_property(
-         class = .class_list,
+         class = S7::new_S3_class("list"),
          default = list()
       )
    ),
@@ -113,7 +111,7 @@ S7::method(print, SEStats) <- function(x, ...) {
   if (!is.null(sedesign) && length(sedesign) > 0) {
     # Try to extract design info - handle both S4 and other objects
     n_samples <- tryCatch({
-      if (is.S4(sedesign)) {
+      if (isS4(sedesign)) {
         length(sedesign@samples)
       } else {
         length(sedesign$samples)
@@ -121,7 +119,7 @@ S7::method(print, SEStats) <- function(x, ...) {
     }, error = function(e) 0)
     
     n_groups <- tryCatch({
-      if (is.S4(sedesign)) {
+      if (isS4(sedesign)) {
         length(sedesign@groups)
       } else {
         length(sedesign$groups)
@@ -129,7 +127,7 @@ S7::method(print, SEStats) <- function(x, ...) {
     }, error = function(e) 0)
     
     n_contrasts <- tryCatch({
-      if (is.S4(sedesign)) {
+      if (isS4(sedesign)) {
         ncol(sedesign@contrasts)
       } else {
         ncol(sedesign$contrasts)

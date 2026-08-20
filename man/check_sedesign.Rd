@@ -9,6 +9,9 @@ check_sedesign(object)
 \arguments{
 \item{object}{\code{SEDesign} object}
 }
+\value{
+\code{logical} TRUE if valid, or \code{character} vector of errors.
+}
 \description{
 Check whether a SEDesign object is valid
 }
@@ -59,7 +62,7 @@ Other jam experiment design:
 \code{\link[=groups_to_sedesign]{groups_to_sedesign()}},
 \code{\link[=plot.SEDesign]{plot.SEDesign()}},
 \code{\link[=plot_sedesign]{plot_sedesign()}},
-\code{\link[=print.SEDesign]{print.SEDesign()}},
+\code{\link{print,SEDesign-method}},
 \code{\link[=samples]{samples()}},
 \code{\link[=sedesign_to_factors]{sedesign_to_factors()}},
 \code{\link[=sort_contrasts]{sort_contrasts()}},

@@ -30,7 +30,7 @@ if (FALSE) {
 }
 \seealso{
 Other SEStats objects:
-\code{\link{.class_list}},
+\code{\link[=SEStats]{SEStats()}},
 \code{\link{factors,SEStats-method}},
 \code{\link{groups,SEStats-method}},
 \code{\link{print,SEStats-method}},

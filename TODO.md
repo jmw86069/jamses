@@ -4,20 +4,60 @@
 ## 13aug2026
 
 * Add vignette: "How to Make a Heatmap"
+* Add testthat for `heatmap_se()` using `vdiffr`.
+
+   * confirm `sample_color_list` with `character` and `function`.
 
 ## 10aug2026
 
 * Method to combine multiple 'stats_dfs' into one 'stat_df',
 removing the need to include in the `SEStats` object.
-* Clean up methods to create/edit the 'hit_array' as 3-dimensional
-array object. Perhaps write wrapper function.
-* Clean up process by which multiple `SEStats` can be combined.
+* Methods to edit `'hit_array'` as a 3-dimensional array.
+* `SEStats` method to "freshen gene annotations".
+Propagate changes to `'hit_array'`, `'stats_dfs'`.
+* `SEStats` accessor for `'stats_dfs'`
+* `SEStats` method to change cutoffs.
+Option to specify contrast_names, assay_names, etc.
+* `SEStats` method to subset by Cutoff, Contrasts, Signal.
+* Consider refactoring `'hit_array'`.
+
+   * 4-dimension: Cutoffs, Contrasts, Signal, **Model**
+   * Where would 'Model' go for 
+   * Consider storing as nested `list` and assemble array
+   only when needed.
+   * Easier to add new dimension if ever needed.
+
+`SEStats` methods to `combine()`, with use cases:
+
+* Simple bind-type operations.
+
+   * Append Contrasts, effectively `cbind()`.
+   Append contrast_names to 'hit_array', append to 'stats_dfs'.
+   * Append Signal, effectively `rbind()` or `sbind()`.
+   Append assay_names to 'hit_array', append to 'stats_dfs'.
+   * Cutoffs can be adjusted by other means, no bind needed.
+
+* Multiple `SEDesign` models.
+
+   * Is it better to use `SEStatsList` to manage multiple
+   models, or tools, or whatever?
+
+      * It makes it explicit that they could be compatible or not.
+      * It makes each `SEStats` object behave as usual.
+      * Combining `SEStats` is considered the special case.
+
+   * Or add dimensions to 'hit_array' and 'stats_dfs'?
+
+      * Cutoffs, Contrasts, Signal, Model?
+      * Where 'Model' holds model and tool info?
+      * Easier when each Model has the same contrast_names.
+
 
 ## 07aug2026
 
-* Write `dim()` function for `SEDesign` which returns the number
+* DONE. Write `dim()` function for `SEDesign` which returns the number
 of samples, groups, contrasts.
-* Extend `SEDesign` for optional additional data. Consider new
+* DEFER. Extend `SEDesign` for optional additional data. Consider new
 property 'metadata' as a `list`, so it can be extended without
 changing the S7 object.
 
@@ -31,8 +71,8 @@ changing the S7 object.
    * When subsetting or re-ordering `SEDesign` by sample, also
    subset or re-order 'blocking' and 'normgroup' if they are not NULL.
 
-* Port `heatmap_column_group_labels()` from 'gridtext' to 'marquee'.
-Remove 'gridtext' dependency.
+* Port `heatmap_column_group_labels()` from 'gridtext' to 'marquee',
+then remove 'gridtext' dependency.
 * DONE. Port 'sestats' to S7 object `SEStats`
 
    * For now, ignore supporting functions such as:
@@ -56,7 +96,7 @@ Would help support the use of multiple `SEStats` in other workflows, e.g.
    not print out all the data. `print.SEDesign()` now shows sample/group/
    contrast counts, and factor levels (in order) for each underlying
    experimental factor, via new `factors()`/`design_df` (see below).
-   Still TODO: indicate whether a blocking factor was used, and the
+   * DEFER: indicate whether a blocking factor was used, and the
    depth of contrasts (oneway, twoway, etc.).
    * DONE. Add `factors()`/`factors()<-`: labels for the underlying
    experimental factors (`colnames(design_df)`), used only for display
@@ -65,8 +105,7 @@ Would help support the use of multiple `SEStats` in other workflows, e.g.
    `contrasts_df` (cached `contrasts_to_factors()` result) are new
    internal-use properties, refreshed automatically as needed.
 
-* Scope out something like 'SEDataList' to store
-collection of analysis-related data in one convenient object.
+* Consider new `SEDataList` to store analysis-related objects.
 
    * Driving use case: Need to pick up where we left off, using
    expression data, statistical results, support multiple SEDesign
@@ -82,10 +121,12 @@ only for display and not use as a design matrix.
 * DONE. Consider moving to S7 objects. See `jamses 0.0.77.900` in NEWS.md.
 * DONE. Consider proper `SEDesign` creation. `SEDesign()` is now a proper
 S7 constructor function.
-* Consider `SEDesignList` with `list` of `SEDesign`.
-* Consider method to automate "showing DEG heatmaps", various
+* DENY. Consider `SEDesignList` with `list` of `SEDesign`.
+Instead, consider `SEStatsList`, keep each `SEDesign` independent.
+* DEFER. Consider method to automate "showing DEG heatmaps", various
 centering styles, with Rmd or Qmd tabset output.
-* Consider suite of methods to print Rmd/Qmd-tabset output:
+Push into platjam.
+* DEFER. Consider suite of methods to print Rmd/Qmd-tabset output:
 
    * `SEDesign` design/Contrast matrices
    * `SEDesignList` design/contrast matrices for each model

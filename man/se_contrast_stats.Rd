@@ -360,7 +360,9 @@ A subset of genes (\code{rownames(se)}) or samples (\code{colnames(se)}) can
 be defined, to restrict calculations to use only the subset data.
 }
 \examples{
+\dontshow{if ((suppressPackageStartupMessages(requireNamespace("SummarizedExperiment", quietly=TRUE)))) withAutoprint(\{ # examplesIf}
 set.seed(123)
+suppressPackageStartupMessages(require("SummarizedExperiment", quietly=TRUE))
 expr <- rnorm(20) + 7;
 noise <- rnorm(120) / 5;
 fold <- rnorm(20) / 2.5;
@@ -520,7 +522,7 @@ jamba::sdim(hit_list);
 
 # vo <- venndir::venndir(hit_list, expand_fraction=0.1, proportional=TRUE)
 # venndir::venndir_legender(venndir_out=vo, setlist=hit_list)
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 Other jamses stats:

@@ -27,7 +27,7 @@ The print method displays:
 }
 \seealso{
 Other SEStats objects:
-\code{\link{.class_list}},
+\code{\link[=SEStats]{SEStats()}},
 \code{\link{contrast_names,SEStats-method}},
 \code{\link{factors,SEStats-method}},
 \code{\link{groups,SEStats-method}},

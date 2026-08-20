@@ -98,3 +98,19 @@ test_that("print.SEDesign runs without error", {
    sd_full <- SEDesign(design=mm2, contrasts=icontrasts2)
    expect_output(print(sd_full), "SEDesign");
 })
+
+test_that("SEDesign from matrices adds samples", {
+   idesign <- matrix(c(1, 1, 0, 0, 0, 0, 1, 1), ncol=2)
+   colnames(idesign) <- c("A", "B")
+   rownames(idesign) <- c("A1", "A2", "B1", "B2")
+
+   icontrasts <- matrix(c(-1, 1), ncol=1)
+   colnames(icontrasts) <- c("B-A")
+   rownames(icontrasts) <- c("A", "B")
+
+   sedesign <- SEDesign(design=idesign, contrasts=icontrasts)
+   expect_equal(
+      samples(sedesign),
+      c("A1", "A2", "B1", "B2")
+   )
+})

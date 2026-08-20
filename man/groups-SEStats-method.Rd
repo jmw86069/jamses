@@ -22,7 +22,7 @@ the SEDesign object stored in the SEStats object.
 }
 \seealso{
 Other SEStats objects:
-\code{\link{.class_list}},
+\code{\link[=SEStats]{SEStats()}},
 \code{\link{contrast_names,SEStats-method}},
 \code{\link{factors,SEStats-method}},
 \code{\link{print,SEStats-method}},

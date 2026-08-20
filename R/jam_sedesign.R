@@ -34,33 +34,36 @@ NULL
 #' @param object `SEDesign` object
 #'
 #' @family jam experiment design
+#' @returns `logical` TRUE if valid, or `character` vector of errors.
 #'
 #' @export
-check_sedesign <- function
-(object)
-{
-   errors <- character();
-   if (length(object@samples) > 0 && !all(is.na(object@samples))) {
-      if (length(object@design) > 0) {
-         if (!all(object@samples %in% rownames(object@design))) {
-            msg <- paste0("Failed: all(samples %in% rownames(design))");
-            errors <- c(errors, msg);
-         }
-      }
+check_sedesign <- function(object) {
+   errors <- character()
+   if (
+      length(object@samples) > 0 &&
+         !all(is.na(object@samples)) &&
+         length(object@design) > 0 &&
+         !all(object@samples %in% rownames(object@design))
+   ) {
+      msg <- paste0("Failed: all(samples %in% rownames(design))")
+      errors <- c(errors, msg)
    }
-   if (length(object@design) > 0) {
-      if (length(object@contrasts) > 0) {
-         if (!all(colnames(object@design) %in% rownames(object@contrasts))) {
-            msg <- paste0("Failed: colnames(design) %in% rownames(contrasts)");
-            errors <- c(errors, msg);
-         }
-      }
+   if (
+      length(object@design) > 0 &&
+         length(object@contrasts) > 0 &&
+         !all(colnames(object@design) %in% rownames(object@contrasts))
+   ) {
+      msg <- paste0("Failed: colnames(design) %in% rownames(contrasts)")
+      errors <- c(errors, msg)
    }
-   if (length(object@contrasts) > 0) {
-      if (length(object@design) == 0) {
-         msg <- paste0("Error: contrasts is provided without design, design is required");
-         errors <- c(errors, msg);
-      }
+   if (
+      length(object@contrasts) > 0 &&
+         length(object@design) == 0
+   ) {
+      msg <- paste0(
+         "Error: contrasts is provided without design, design is required"
+      )
+      errors <- c(errors, msg)
    }
    if (length(errors) == 0) {
       TRUE
@@ -192,12 +195,15 @@ SEDesign <- S7::new_class("SEDesign",
       design_df=S7::class_data.frame,
       contrasts_df=S7::class_data.frame
    ),
-   constructor=function
-   (design=matrix(nrow=0, ncol=0),
-    contrasts=matrix(nrow=0, ncol=0),
-    samples=character(0),
-    factors=character(0))
-   {
+   constructor=function(
+      design=matrix(nrow=0, ncol=0),
+      contrasts=matrix(nrow=0, ncol=0),
+      samples=character(0),
+      factors=character(0)
+   ) {
+      if (length(samples) == 0) {
+         samples <- rownames(design)
+      }
       object <- S7::new_object(S7::S7_object(),
          design=design,
          contrasts=contrasts,
@@ -438,7 +444,7 @@ validate_sedesign <- function
       } else {
          # no design provided
       }
-   } else if (FALSE) {
+   } else if (sqrt(5) == 2) {
       # no samples provided
       if (length(object@design) > 0) {
          if (length(rownames(object@design)) > 0) {
@@ -529,7 +535,7 @@ validate_sedesign <- function
                   !all(colnames(object@design) == rownames(object@contrasts))
             ) {
                if (
-                  !length(colnames(object@design)) ==
+                  length(colnames(object@design)) !=
                      length(rownames(object@contrasts))
                ) {
                   # design groups are a subset of contrast groups
@@ -627,10 +633,10 @@ validate_sedesign <- function
             colnames(object@contrasts),
             contrasts
          )
-
-         cli::cli_abort(paste0(
+         missing_contrasts <- missing_contrasts;
+         cli::cli_abort(c(
             "Not all {.var contrasts} found in {.var colnames(object@contrasts)}.",
-            " Missing contrasts include: {.val missing_contrasts}"
+            " Missing contrasts include: {missing_contrasts}"
          ))
       }
       object@contrasts <- object@contrasts[, contrasts, drop = FALSE]
@@ -767,7 +773,7 @@ S7::method(groups, SEDesign) <- function(object) {
 #' @export
 S7::method(`groups<-`, SEDesign) <- function(object, value) {
    value <- as.character(value);
-   if (any(duplicated(value))) {
+   if (anyDuplicated(value)) {
       stop("groups must not contain duplicated values.")
    }
    # colnames(design) and rownames(contrasts) are transiently out of
@@ -819,7 +825,7 @@ S7::method(factors, SEDesign) <- function(object) {
 #' @export
 S7::method(`factors<-`, SEDesign) <- function(object, value) {
    value <- as.character(value)
-   if (any(duplicated(value))) {
+   if (anyDuplicated(value)) {
       stop("factors must not contain duplicated values.")
    }
    if (ncol(object@design_df) > 0) {
@@ -1001,7 +1007,7 @@ S7::method(contrast_names, SEDesign) <- function(object) {
 
 #' @export
 S7::method(`contrast_names<-`, SEDesign) <- function(object, value) {
-   if (any(duplicated(value))) {
+   if (anyDuplicated(value)) {
       stop("contrast_names cannot be duplicated.")
    }
    object <- tryCatch({
@@ -1045,9 +1051,10 @@ S7::method(`contrast_names<-`, SEDesign) <- function(object, value) {
 #' @param ... additional arguments are ignored
 #'
 #' @family jam experiment design
-#'
+#' @returns This function is called for its output to console.
+#'    It invisibly returns the input object.
 #' @export
-print.SEDesign <- function(x, ...) {
+S7::method(print, SEDesign) <- function(x, ...) {
    cat(sprintf("<SEDesign> %d samples, %d groups, %d contrasts\n",
       length(samples(x)),
       length(groups(x)),
@@ -1097,4 +1104,32 @@ S7::method(dimnames, SEDesign) <- function(x) {
     groups = groups(x),
     contrasts = contrast_names(x)
   )
+}
+
+#' Get dimensions for SEDesign
+#'
+#' Summarize the dimensions using samples, groups, contrast_names from an
+#' `SEDesign` object.
+#'
+#' @param x An `SEDesign` object
+#'
+#' @details
+#' Returns a `list` with three named elements:
+#' - `samples`: Sample names (from `samples(x)`)
+#' - `groups`: Group names (from `groups(x)`)
+#' - `contrasts`: Contrast names (from `contrast_names(x)`)
+#'
+#' This method provides a unified way to access all dimensions for an
+#' `SEDesign` object.
+#'
+#' @returns `integer` vector with lengths of `samples`, `groups`, `contrasts`
+#'
+#' @examples
+#' if (FALSE) {
+#'   dim(sedesign)
+#' }
+#'
+#' @export
+S7::method(dim, SEDesign) <- function(x) {
+   lengths(dimnames(x))
 }

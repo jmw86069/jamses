@@ -104,214 +104,280 @@
 #' @param ... additional arguments are ignored.
 #'
 #' @export
-list_to_sestats <- function
-(stats_dfs,
- use_assay_name="norm",
- p_cutoff=1,
- adjp_cutoff=0.05,
- fold_cutoff=1.5,
- mgm_cutoff=0,
- hit_pattern="hit",
- fold_pattern="fold",
- lfc_pattern="^logFC|^log2F|^logfold|^log.fold|^lfc",
- p_pattern="p.{0,1}val(ue|)",
- adjp_pattern="adj.{0,1}p.{0,1}val(ue|)|p.{0,1}adj|fdr|q.{0,1}val(ue|)",
- mgm_pattern="mgm|max.{0,1}group.{0,1}mean",
- contrast_pattern="^.*[ ]([^ ]+-[^ ]+)$",
- verbose=FALSE,
- ...)
-{
+list_to_sestats <- function(
+   stats_dfs,
+   use_assay_name = "norm",
+   p_cutoff = 1,
+   adjp_cutoff = 0.05,
+   fold_cutoff = 1.5,
+   mgm_cutoff = 0,
+   hit_pattern = "hit",
+   fold_pattern = "fold",
+   lfc_pattern = "^logFC|^log2F|^logfold|^log.fold|^lfc",
+   p_pattern = "p.{0,1}val(ue|)",
+   adjp_pattern = "adj.{0,1}p.{0,1}val(ue|)|p.{0,1}adj|fdr|q.{0,1}val(ue|)",
+   mgm_pattern = "mgm|max.{0,1}group.{0,1}mean",
+   contrast_pattern = "^.*[ ]([^ ]+-[^ ]+)$",
+   verbose = FALSE,
+   ...
+) {
    #
    ## start with stats_dfs and intuit the hit columns
 
+   ## check for older list-style sestats
+   if (
+      inherits(stats_dfs, "list") &&
+         all(c("stats_dfs", "hit_array") %in% names(stats_dfs))
+   ) {
+      # Create SEStats
+      sedesign <- NULL
+
+      if ("sedesign" %in% names(stats_dfs)) {
+         sedesign <- stats_dfs$sedesign
+      } else if (all(c("idesign", "icontrasts") %in% names(stats_dfs))) {
+         sedesign <- SEDesign(
+            design = stats_dfs$idesign,
+            contrasts = stats_dfs$icontrasts
+         )
+      }
+      sestats <- SEStats(
+         sedesign = sedesign,
+         stats_dfs = stats_dfs$stats_dfs,
+         hit_array = stats_dfs$hit_array
+      )
+      return(sestats)
+   }
+
    ## check whether input data is a list per assay_name
-   if ("data.frame" %in% class(stats_dfs[[1]])) {
-      stats_dfs <- list(assay=stats_dfs);
-      names(stats_dfs) <- use_assay_name;
+   if (inherits(stats_dfs[[1]], "data.frame")) {
+      stats_dfs <- list(assay = stats_dfs)
+
+      names(stats_dfs) <- use_assay_name
    }
 
    ## confirm stats_dfs
-   stats_dfs <- lapply(stats_dfs, function(iDFs){
+   stats_dfs <- lapply(stats_dfs, function(iDFs) {
       if (length(names(iDFs)) == 0) {
-         names(iDFs) <- paste0("contrast",
-            jamba::padInteger(seq_along(iDFs)))
+         names(iDFs) <- paste0("contrast", jamba::padInteger(seq_along(iDFs)))
       }
-      unlist(recursive=FALSE, lapply(names(iDFs), function(iname){
-         iDF <- iDFs[[iname]];
-         use_hit_pattern <- paste0("^(", hit_pattern, ")[^ ]*[ ]{0,1}");
-         iHitCols <- jamba::nameVector(
-            jamba::provigrep("^hit[ .]", colnames(iDF)));
+      unlist(
+         recursive = FALSE,
+         lapply(names(iDFs), function(iname) {
+            iDF <- iDFs[[iname]]
+            use_hit_pattern <- paste0("^(", hit_pattern, ")[^ ]*[ ]{0,1}")
+            iHitCols <- jamba::nameVector(
+               jamba::provigrep(use_hit_pattern, colnames(iDF))
+            )
+            # jamba::provigrep("^hit[ .]", colnames(iDF)));
 
-         ## recognize stat colnames where possible
-         # fold change
-         use_fold_pattern <- paste0("^(", fold_pattern, ")[^ ]*[ ]{0,1}");
-         fc_colname <- head(jamba::vigrep(use_fold_pattern,
-            colnames(iDF)), 1)
-         use_lfc_pattern <- paste0("^(", lfc_pattern, ")[^ ]*[ ]{0,1}");
-         lfc_colname <- head(jamba::vigrep(use_lfc_pattern,
-            colnames(iDF)), 1);
-         # P-value
-         use_p_pattern <- paste0("^(", p_pattern, ")[^ ]*[ ]{0,1}");
-         p_colname <- head(vigrep(use_p_pattern, colnames(iDF)), 1);
-         use_adjp_pattern <- paste0("^(", adjp_pattern, ")[^ ]*[ ]{0,1}");
-         adjp_colname <- head(vigrep(use_adjp_pattern, colnames(iDF)), 1);
-         # mgm - max group mean
-         use_mgm_pattern <- paste0("^(", mgm_pattern, ")[^ ]*[ ]{0,1}");
-         mgm_colname <- head(vigrep(use_mgm_pattern, colnames(iDF)), 1);
+            ## recognize stat colnames where possible
+            # fold change
+            use_fold_pattern <- paste0("^(", fold_pattern, ")[^ ]*[ ]{0,1}")
+            fc_colname <- head(
+               jamba::vigrep(use_fold_pattern, colnames(iDF)),
+               1
+            )
+            use_lfc_pattern <- paste0("^(", lfc_pattern, ")[^ ]*[ ]{0,1}")
+            lfc_colname <- head(
+               jamba::vigrep(use_lfc_pattern, colnames(iDF)),
+               1
+            )
+            # P-value
+            use_p_pattern <- paste0("^(", p_pattern, ")[^ ]*[ ]{0,1}")
+            p_colname <- head(jamba::vigrep(use_p_pattern, colnames(iDF)), 1)
+            use_adjp_pattern <- paste0("^(", adjp_pattern, ")[^ ]*[ ]{0,1}")
+            adjp_colname <- head(
+               jamba::vigrep(use_adjp_pattern, colnames(iDF)),
+               1
+            )
+            # mgm - max group mean
+            use_mgm_pattern <- paste0("^(", mgm_pattern, ")[^ ]*[ ]{0,1}")
+            mgm_colname <- head(
+               jamba::vigrep(use_mgm_pattern, colnames(iDF)),
+               1
+            )
 
-         # extract contrast name from stat columns if possible
-         use_colnames <- c(p_colname,
-            adjp_colname,
-            fc_colname,
-            lfc_colname,
-            mgm_colname)
-         use_contrast <- NULL;
-         if (jamba::igrepHas(contrast_pattern, use_colnames)) {
-            use_contrast <- gsub(contrast_pattern, "\\1",
-               head(jamba::vigrep(contrast_pattern, use_colnames), 1));
-         }
-         if (length(use_contrast) == 0) {
-            use_contrast <- iname;
-         }
-         # convert comp to contrast if necessary
-         if (jamba::igrepHas(":", use_contrast)) {
-            use_contrast <- jamses::contrast2comp(use_contrast);
-         }
-
-         # Prepare hit column if needed
-         if (length(iHitCols) == 0) {
-            iHitCol <- paste0("hit");
-            if (length(mgm_cutoff) > 0) {
-               iHitCol <- paste0(iHitCol, " mgm", mgm_cutoff);
+            # extract contrast name from stat columns if possible
+            use_colnames <- c(
+               p_colname,
+               adjp_colname,
+               fc_colname,
+               lfc_colname,
+               mgm_colname
+            )
+            use_contrast <- NULL
+            if (jamba::igrepHas(contrast_pattern, use_colnames)) {
+               use_contrast <- gsub(
+                  contrast_pattern,
+                  "\\1",
+                  head(jamba::vigrep(contrast_pattern, use_colnames), 1)
+               )
             }
-            if (length(p_cutoff) > 0 && p_cutoff > 0) {
-               iHitCol <- paste0(iHitCol, " p", p_cutoff);
+            if (length(use_contrast) == 0) {
+               use_contrast <- iname
             }
-            if (length(adjp_cutoff) > 0 && adjp_cutoff > 0) {
-               iHitCol <- paste0(iHitCol, " adjp", adjp_cutoff);
+            # convert comp to contrast if necessary
+            if (jamba::igrepHas(":", use_contrast)) {
+               use_contrast <- jamses::contrast2comp(use_contrast)
             }
 
-            ## Fold change
-            if (length(fold_cutoff) > 0 && fold_cutoff >= 1) {
-               iHitCol <- paste0(iHitCol, " fc", fold_cutoff);
-            }
-            if (length(fc_colname) == 0) {
-               # prepare fold from log fold
-               if (length(lfc_colname) == 0 &&
-                     length(fold_cutoff) > 0 &&
-                     any(fold_cutoff > 1)) {
-                  cli::cli_abort(paste0(
-                     "Cannot find column matching {.var fold_pattern} or ",
-                     "{.var lfc_pattern}."))
-                  stop("Cannot find fold,logFC column to apply fold_cutoff.")
+            # Prepare hit column if needed
+            if (length(iHitCols) == 0) {
+               iHitCol <- paste0("hit")
+               if (length(mgm_cutoff) > 0) {
+                  iHitCol <- paste0(iHitCol, " mgm", mgm_cutoff)
                }
-               # create fold column from lfc_colname
-               fc_colname <- gsub("^[ ]+|[ ]+$", "",
-                  gsub(uselfc_pattern, "fold ", lfc_colname));
-               # convert log2 fold to fold
-               iDF[[fc_colname]] <- jamses::fold_to_log2fold(
-                  iDF[[lfc_colname]]);
-            }
+               if (length(p_cutoff) > 0 && p_cutoff > 0) {
+                  iHitCol <- paste0(iHitCol, " p", p_cutoff)
+               }
+               if (length(adjp_cutoff) > 0 && adjp_cutoff > 0) {
+                  iHitCol <- paste0(iHitCol, " adjp", adjp_cutoff)
+               }
 
-            iHitCol <- paste0(iHitCol, " ", use_contrast);
-            is_hit <- rep(TRUE, nrow(iDF));
-            if (length(fc_colname) == 1 &&
-                  length(fold_cutoff) == 1 &&
-                  fold_cutoff > 1) {
-               is_hit <- is_hit & abs(iDF[[fc_colname]]) >= fold_cutoff;
+               ## Fold change
+               if (length(fold_cutoff) > 0 && fold_cutoff >= 1) {
+                  iHitCol <- paste0(iHitCol, " fc", fold_cutoff)
+               }
+               if (length(fc_colname) == 0) {
+                  # prepare fold from log fold
+                  if (
+                     length(lfc_colname) == 0 &&
+                        length(fold_cutoff) > 0 &&
+                        any(fold_cutoff > 1)
+                  ) {
+                     cli::cli_abort(paste0(
+                        "Cannot find column matching {.var fold_pattern} or ",
+                        "{.var lfc_pattern}."
+                     ))
+                     stop("Cannot find fold,logFC column to apply fold_cutoff.")
+                  }
+                  # create fold column from lfc_colname
+                  fc_colname <- gsub(
+                     "^[ ]+|[ ]+$",
+                     "",
+                     gsub(use_lfc_pattern, "fold ", lfc_colname)
+                  )
+                  # convert log2 fold to fold
+                  iDF[[fc_colname]] <- jamses::fold_to_log2fold(
+                     iDF[[lfc_colname]]
+                  )
+               }
+
+               iHitCol <- paste0(iHitCol, " ", use_contrast)
+               is_hit <- rep(TRUE, nrow(iDF))
+               if (
+                  length(fc_colname) == 1 &&
+                     length(fold_cutoff) == 1 &&
+                     fold_cutoff > 1
+               ) {
+                  is_hit <- is_hit & abs(iDF[[fc_colname]]) >= fold_cutoff
+               }
+               if (
+                  length(p_colname) == 1 &&
+                     length(p_cutoff) == 1 &&
+                     p_cutoff < 1
+               ) {
+                  is_hit <- is_hit & iDF[[p_colname]] <= p_cutoff
+               }
+               if (
+                  length(adjp_colname) == 1 &&
+                     length(adjp_cutoff) == 1 &&
+                     adjp_cutoff < 1
+               ) {
+                  is_hit <- is_hit & iDF[[adjp_colname]] <= adjp_cutoff
+               }
+               if (
+                  length(mgm_colname) == 1 &&
+                     length(mgm_cutoff) == 1
+               ) {
+                  is_hit <- is_hit & iDF[[mgm_colname]] >= mgm_cutoff
+               }
+               iDF[[iHitCol]] <- is_hit * sign(iDF[[fc_colname]])
+               iHitCols <- c(iHitCols, iHitCol)
             }
-            if (length(p_colname) == 1 &&
-                  length(p_cutoff) == 1 &&
-                  p_cutoff < 1) {
-               is_hit <- is_hit & iDF[[p_colname]] <= p_cutoff;
+            if (verbose > 1) {
+               jamba::printDebug(
+                  "prepare_sestats(): ",
+                  "added iHitCols:",
+                  iHitCols
+               )
             }
-            if (length(adjp_colname) == 1 &&
-                  length(adjp_cutoff) == 1 &&
-                  adjp_cutoff < 1) {
-               is_hit <- is_hit & iDF[[adjp_colname]] <= adjp_cutoff;
+            # assign rownames
+            if (!anyDuplicated(iDF[[1]])) {
+               rownames(iDF) <- iDF[[1]]
             }
-            if (length(mgm_colname) == 1 &&
-                  length(mgm_cutoff) == 1) {
-               is_hit <- is_hit & iDF[[mgm_colname]] >= mgm_cutoff;
-            }
-            iDF[[iHitCol]] <- is_hit * sign(iDF[[fc_colname]]);
-            iHitCols <- c(iHitCols, iHitCol);
-         }
-         if (verbose > 1) {
-            jamba::printDebug("prepare_sestats(): ",
-               "added iHitCols:", iHitCols);
-         }
-         # assign rownames
-         if (!any(duplicated(iDF[[1]]))) {
-            rownames(iDF) <- iDF[[1]];
-         }
-         setNames(object=list(iDF),
-            nm=use_contrast)
-      }))
+            setNames(object = list(iDF), nm = use_contrast)
+         })
+      )
    })
 
    ## list of named lists
-   stats_hits <- lapply(stats_dfs, function(iDFs){
-      lapply(iDFs, function(iDF){
+   stats_hits <- lapply(stats_dfs, function(iDFs) {
+      lapply(iDFs, function(iDF) {
          iHitCols <- jamba::nameVector(
-            jamba::provigrep("^hit[ .]", colnames(iDF)));
+            jamba::provigrep("^hit[ .]", colnames(iDF))
+         )
          if (verbose) {
-            jamba::printDebug("prepare_sestats(): ",
-               "iHitCols:", iHitCols);
+            jamba::printDebug("prepare_sestats(): ", "iHitCols:", iHitCols)
          }
-         lapply(iHitCols, function(iHitCol){
-            iHitRows <- (!is.na(iDF[,iHitCol]) & iDF[,iHitCol] != 0);
+         lapply(iHitCols, function(iHitCol) {
+            iHitRows <- (!is.na(iDF[, iHitCol]) & iDF[, iHitCol] != 0)
             jamba::nameVector(
-               iDF[iHitRows,iHitCol],
-               rownames(iDF)[iHitRows]);
-         });
-      });
-   });
+               iDF[iHitRows, iHitCol],
+               rownames(iDF)[iHitRows]
+            )
+         })
+      })
+   })
 
    ## array of named lists
-   all_cutoffs_list <- lapply(stats_hits[[1]], function(i){
+   all_cutoffs_list <- lapply(stats_hits[[1]], function(i) {
       gsub("[ ]+[^ ]+$", "", names(i))
    })
-   all_cutoffs <- unique(unlist(all_cutoffs_list));
-   arrayDim <- c(length(all_cutoffs),
+   all_cutoffs <- unique(unlist(all_cutoffs_list))
+   arrayDim <- c(
+      length(all_cutoffs),
       length(stats_hits[[1]]),
-      length(stats_hits));
-   arrayDimnames <- list(all_cutoffs,
-      names(stats_hits[[1]]),
-      names(stats_hits));
-   names(arrayDimnames) <- c("Cutoffs",
-      "Contrasts",
-      "Signal");
+      length(stats_hits)
+   )
+   arrayDimnames <- list(all_cutoffs, names(stats_hits[[1]]), names(stats_hits))
+   names(arrayDimnames) <- c("Cutoffs", "Contrasts", "Signal")
 
    ## assemble hit_array
    # - allow for missing entries
    # first define the array indices
-   kji <- jamba::rbindList(lapply(names(stats_hits), function(i){
-      jamba::rbindList(lapply(names(stats_hits[[i]]), function(j){
-         jamba::rbindList(lapply(names(stats_hits[[i]][[j]]), function(k){
-            k1 <- gsub("[ ][^ ]+$", "", k);
-            kji <- cbind(match(k1, arrayDimnames[[1]]),
+   kji <- jamba::rbindList(lapply(names(stats_hits), function(i) {
+      jamba::rbindList(lapply(names(stats_hits[[i]]), function(j) {
+         jamba::rbindList(lapply(names(stats_hits[[i]][[j]]), function(k) {
+            k1 <- gsub("[ ][^ ]+$", "", k)
+            kji <- cbind(
+               match(k1, arrayDimnames[[1]]),
                match(j, arrayDimnames[[2]]),
-               match(i, arrayDimnames[[3]]))
+               match(i, arrayDimnames[[3]])
+            )
             kji
          }))
       }))
    }))
-   hit_array <- array(dim=arrayDim,
-      dimnames=arrayDimnames);
+   hit_array <- array(dim = arrayDim, dimnames = arrayDimnames)
    # fill data into the array, which somehow converts it into a list
-   hit_array[kji] <- unlist(recursive=FALSE,
-      unlist(recursive=FALSE,
-         stats_hits))
+   hit_array[kji] <- unlist(
+      recursive = FALSE,
+      unlist(recursive = FALSE, stats_hits)
+   )
    # create the array again using the list data
-   hit_array <- array(dim=arrayDim,
-      data=hit_array,
-      dimnames=arrayDimnames);
+   hit_array <- array(
+      dim = arrayDim,
+      data = hit_array,
+      dimnames = arrayDimnames
+   )
 
+   ## SEStats
 
    ## return the owl
    list(
-      stats_dfs=stats_dfs,
-      hit_list=stats_hits,
-      hit_array=hit_array)
+      stats_dfs = stats_dfs,
+      hit_list = stats_hits,
+      hit_array = hit_array
+   )
 }

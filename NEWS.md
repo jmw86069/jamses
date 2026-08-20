@@ -1,9 +1,13 @@
-# jamses 0.0.78.950
+# jamses 0.0.78.960
 
-## Hotfix
+## Hotfixes
 
 * Fixed regression in `heatmap_se()` which failed when supplying
 `sample_color_list` containing `function` entries.
+* Various changes like `any(duplicated())` to `anyDuplicated()`.
+* `SEDesign()` constructor adds 'samples' when not provided,
+using `rownames(design)`.
+* Fixed `SEDesign` show/print method.
 
 # jamses 0.0.78.900
 
