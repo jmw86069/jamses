@@ -276,7 +276,7 @@
 #' @param cutoff_name `character` or `integer` index used to define the
 #'    specific statistical cutoffs to use from `sestats$hit_array`. This
 #'    argument is passed to `hit_array_to_list()` as `cutoff_names`.
-#' @param alt_sestats,alt_assay_name,alt_contrast_names,alt_contrast_suffix
+#' @param alt_sestats,alt_assay_name,alt_contrast_names,alt_contrast_suffix,alt_cutoff_name
 #'    arguments analogous to those described above for `sestats` which
 #'    are used when `alt_sestats` is supplied.
 #' @param isamples `character` vector of `colnames(se)` used to visualize a
@@ -594,13 +594,27 @@
 #'    are some identifier that is not user-friendly, and where another column
 #'    in the data may provide a more helpful label, for example `"SYMBOL"`
 #'    to display gene symbol instead of accession number.
-#' @param cluster_columns,cluster_rows `logical` indicating whether
-#'    to cluster columns by hierarchical clustering; or `function` with
-#'    a specific function that produces `hclust` or `dendrogram` output,
-#'    given a `numeric` matrix. Note that `cluster_rows` default will replace
-#'    `NA` values with zero `0` to avoid errors with missing data, and
-#'    uses `amap::hcluster()` by default which is a one-step compiled
-#'    process to perform distance calculation and hierarchical clustering.
+#' @param cluster_columns,cluster_rows `logical`, `function`, `hclust` or
+#'    `dendrogram`.
+#'    Anything except `FALSE` will cluster columns or rows, respectively.
+#'    Example input by type:
+#'    * `TRUE` uses 'Jam' default, which replaces NA with zero `0`, then
+#'    applies:
+#'    `amap::hcluster(x, method="euclidean", link="ward")`.
+#'    * `FALSE` performs no clustering.
+#'    * `function` must take a `numeric` matrix input,
+#'    and return either `hclust` or `dendrogram`.
+#'    * `hclust` or `dendrogram` input must exactly match the columns or
+#'    rows, as appropriate. It does not support use of
+#'    `column_km` or `row_km` alongside clustering, however these arguments
+#'    can be used alongside `function`.
+#' @param cluster_column_slices,cluster_row_slices `logical` default FALSE,
+#'    whether to cluster columns and rows, respectively, when also using
+#'    `column_split` or `row_split`.
+#' 
+#'    Note that `TRUE` implies the respective `cluster_columns` or
+#'    `cluster_rows` is TRUE or is a `function` that returns `hclust`
+#'    or `dendrogram` output.
 #' @param column_names_gp `gpar` to define custom column name settings.
 #'    When `"fontsize"` is not defined, the automatic font size calculation
 #'    is added to the `column_names_gp` supplied.
@@ -997,7 +1011,9 @@ heatmap_se <- function
  debug=FALSE,
  ...)
 {
+   # validate some arguments
    #
+   # check packages
    if (!jamba::check_pkg_installed("ComplexHeatmap")) {
       stop("This function requires Bioconductor package ComplexHeatmap.");
    }
@@ -1042,7 +1058,7 @@ heatmap_se <- function
                which(se_sclass %in% c("numeric", "integer"))), 1);
             rownames(se) <- jamba::makeNames(se[[se_namecol]])
          }
-      } else if (any(duplicated(rownames(se)))) {
+      } else if (anyDuplicated(rownames(se))) {
          rownames(se) <- jamba::makeNames(rownames(se),
             renameFirst=FALSE)
       }
@@ -1246,8 +1262,10 @@ heatmap_se <- function
             i
          } else {
             i <- i[!is.na(i) & !is.na(names(i))];
-            i_is_hex <- grepl("^#", i);
-            if (any(!i_is_hex)) {
+            i_is_hex <- startsWith("#", i);
+            # i_is_hex <- grepl("^#", i);
+            # if (any(!i_is_hex)) {
+            if (!all(i_is_hex)) {
                i[!i_is_hex] <- jamba::rgb2col(alpha=FALSE,
                   col2rgb(i[!i_is_hex]))
             }
@@ -1263,6 +1281,11 @@ heatmap_se <- function
    # Note: This process does not subset by `rows` or `isamples` yet
    ## Experimental: convert Seurat to SingleCellExperiment
    if (inherits(se, "Seurat")) {
+      if (!requireNamespace("Seurat", quietly=TRUE)) {
+         cli::cli_abort(c(
+            "{.pkg Seurat} is required to support {.cls Seurat} input.")
+         )
+      }
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
             "Converted Seurat input to SingleCellExperiment");
@@ -1303,7 +1326,7 @@ heatmap_se <- function
       }
    } else {
       if (any(c("factor", "character") %in% class(column_split))) {
-         if (!any(duplicated(column_split)) &&
+         if (!anyDuplicated(column_split) &&
                all(column_split %in% colnames(colData_se))) {
             column_split <- jamba::pasteByRowOrdered(
                data.frame(check.names=FALSE,
@@ -1420,7 +1443,7 @@ heatmap_se <- function
                sample_colors <- rep(NA, length.out=length(uniq_values));
                names(sample_colors) <- uniq_values;
             }
-            if (any(is.na(sample_colors))) {
+            if (anyNA(sample_colors)) {
                # fallback plan for missing values is to assign
                # generic rainbow categorical colors
                sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
@@ -1667,7 +1690,7 @@ heatmap_se <- function
                   sample_colors <- rep(NA, length.out=length(uniq_values));
                   names(sample_colors) <- uniq_values;
                }
-               if (any(is.na(sample_colors))) {
+               if (anyNA(sample_colors)) {
                   # fallback plan for missing values is to assign
                   # generic rainbow categorical colors
                   sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
@@ -1699,7 +1722,7 @@ heatmap_se <- function
                      }
                      sample_colors <- sample_colors[uniq_values];
                      names(sample_colors) <- uniq_values;
-                     if (any(is.na(sample_colors))) {
+                     if (anyNA(sample_colors)) {
                         # fallback plan for missing values is to assign
                         # generic rainbow categorical colors
                         sample_colors[is.na(sample_colors)] <- colorjam::rainbowJam(
@@ -1863,7 +1886,7 @@ heatmap_se <- function
       if (TRUE %in% correlation) {
          # correlation uses colData for split
          if (any(c("factor", "character") %in% class(row_split))) {
-            if (!any(duplicated(row_split)) &&
+            if (!anyDuplicated(row_split) &&
                   all(row_split %in% colnames(colData_se))) {
                row_split <- data.frame(check.names=FALSE,
                   colData_se[isamples, row_split, drop=FALSE]);
@@ -1899,7 +1922,7 @@ heatmap_se <- function
                }
                row_split <- row_split[row_split_match, , drop=FALSE];
                rownames(row_split) <- row_split_match;
-            } else if (!any(duplicated(row_split)) &&
+            } else if (!anyDuplicated(row_split) &&
                   all(row_split %in% colnames(rowData_se))) {
                # no duplicated values, and all values match colnames(rowData)
                row_split_cols <- intersect(row_split, colnames(rowData_se))
@@ -2089,18 +2112,18 @@ heatmap_se <- function
          legend_labels <- legend_at;
       } else {
          legend_labels <- round(jamba::exp2signed(legend_at+0.000001, offset=0))
-         if (any(duplicated(legend_labels))) {
+         if (anyDuplicated(legend_labels)) {
             legend_labels <- round(10 * jamba::exp2signed(legend_at+0.000001, offset=0)) / 10;
          }
       }
    }
 
    # cluster_columns
-   if (!is.function(cluster_columns) && cluster_columns %in% TRUE) {
+   if (isTRUE(cluster_columns)) {
+      # Note that the data is transposed during the call:
+      # cluster_columns(t(x))
       cluster_columns <- function(x, ...) {
-         amap::hcluster(jamba::rmNA(naValue=0, x),
-            ...,
-            method="euclidean",
+         amap::hcluster(jamba::rmNA(naValue=0, x), ..., method="euclidean",
             link="ward")}
    }
 
@@ -2205,16 +2228,15 @@ heatmap_se <- function
    }
    if (length(column_split) == 1 &&
          is.numeric(column_split)) {
-      #    is.function(cluster_columns)) {
-      # cluster_columns <- cluster_columns(se_matrix);
       if (is.function(cluster_columns)) {
-         if (verbose) {
-            jamba::printDebug("heatmap_se(): ",
-               paste0("column_split requires for cluster_columns()",
-                  " to be applied to generate a dendrogram."));
-         }
-         cluster_columns <- cluster_columns(se_matrix);
-      } else if (FALSE %in% cluster_columns || length(cluster_columns) == 0) {
+         # Remove need to tell the user
+         # if (verbose) {
+         #    jamba::printDebug("heatmap_se(): ",
+         #       paste0("column_split requires for cluster_columns()",
+         #          " to be applied to generate a dendrogram."));
+         # }
+         cluster_columns <- cluster_columns(t(se_matrix));
+      } else if (isFALSE(cluster_columns) || length(cluster_columns) == 0) {
          if (verbose) {
             jamba::printDebug("heatmap_se(): ",
                "column_split ignored because cluster_columns=FALSE.");
@@ -2250,28 +2272,28 @@ heatmap_se <- function
 
    # define heatmap title using relevant arguments
    row_label <- NULL;
-   if (length(row_type) > 0 && nchar(head(row_type, 1)) > 0) {
+   if (length(row_type) > 0 && nzchar(head(row_type, 1))) {
       row_label <- paste0(
          jamba::formatInt(length(gene_hits)),
          " ",
          head(row_type, 1))
    }
    column_label <- NULL;
-   if (length(column_type) > 0 && nchar(head(column_type, 1)) > 0) {
+   if (length(column_type) > 0 && nzchar(head(column_type, 1))) {
       column_label <- paste0(
          jamba::formatInt(ncol(se_matrix)),
          " ",
          head(column_type, 1))
    }
    dim_label <- paste(c(row_label, column_label), collapse=", ")
-   if (any(nchar(dim_label) > 0)) {
+   if (any(nzchar(dim_label))) {
       dim_label <- paste0(dim_label, "\n")
    }
    if (length(hm_title) == 0) {
       hm_title <- paste0(
          dim_label,
          norm_label,
-         ifelse(any(nchar(centerby_label) > 0),
+         ifelse(any(nzchar(centerby_label)),
             paste0(",\n", centerby_label),
             ""))
    }

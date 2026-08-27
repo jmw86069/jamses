@@ -1,6 +1,6 @@
 Package: jamses
 Title: Jam SummarizedExperiment Stats
-Version: 0.0.78.960
+Version: 0.0.79.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
 Description: Jam SummarizedExperiment Stats methods to
@@ -18,7 +18,7 @@ biocViews:
 Depends: R (>= 4.1.0)
 Imports: jamba (>= 1.0.5),
    jamma (>= 0.0.41.900),
-   colorjam (>= 0.0.28.900),
+   colorjam (>= 0.0.35.900),
    SummarizedExperiment (>= 1.16.1),
    data.table,
    BiocGenerics,
@@ -40,7 +40,8 @@ Suggests:
 Enhances:
    genejam (>= 0.0.20.900),
    farrisdata,
-   ggplot2 (>= 4.0.0)
+   ggplot2 (>= 4.0.0),
+   Seurat
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

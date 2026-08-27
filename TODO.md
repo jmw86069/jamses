@@ -3,6 +3,7 @@
 
 ## 13aug2026
 
+* Fix `heatmap_se()` arg `column_split=3` as integer.
 * Add vignette: "How to Make a Heatmap"
 * Add testthat for `heatmap_se()` using `vdiffr`.
 

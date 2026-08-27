@@ -1,3 +1,16 @@
+# jamses 0.0.79.900
+
+## Updates
+
+* Added 'Seurat' to Enhances, added check.
+* Added vignette "How to Make a Heatmap" with the basics.
+* `heatmap_se()`
+
+   * Fixed error whenever using integer `column_split`,
+   caused by incorrect clustering.
+   * Reworded help docs for 'column_split' and 'cluster_columns'.
+   * Cleaned up some syntax suggested by Arity, nice.
+
 # jamses 0.0.78.960
 
 ## Hotfixes

@@ -219,7 +219,7 @@ two methods for the same set of contrast names, with \code{sestats} and
 specific statistical cutoffs to use from \code{sestats$hit_array}. This
 argument is passed to \code{hit_array_to_list()} as \code{cutoff_names}.}
 
-\item{alt_sestats, alt_assay_name, alt_contrast_names, alt_contrast_suffix}{arguments analogous to those described above for \code{sestats} which
+\item{alt_sestats, alt_assay_name, alt_contrast_names, alt_contrast_suffix, alt_cutoff_name}{arguments analogous to those described above for \code{sestats} which
 are used when \code{alt_sestats} is supplied.}
 
 \item{isamples}{\code{character} vector of \code{colnames(se)} used to visualize a
@@ -614,13 +614,30 @@ are some identifier that is not user-friendly, and where another column
 in the data may provide a more helpful label, for example \code{"SYMBOL"}
 to display gene symbol instead of accession number.}
 
-\item{cluster_columns, cluster_rows}{\code{logical} indicating whether
-to cluster columns by hierarchical clustering; or \code{function} with
-a specific function that produces \code{hclust} or \code{dendrogram} output,
-given a \code{numeric} matrix. Note that \code{cluster_rows} default will replace
-\code{NA} values with zero \code{0} to avoid errors with missing data, and
-uses \code{amap::hcluster()} by default which is a one-step compiled
-process to perform distance calculation and hierarchical clustering.}
+\item{cluster_columns, cluster_rows}{\code{logical}, \code{function}, \code{hclust} or
+\code{dendrogram}.
+Anything except \code{FALSE} will cluster columns or rows, respectively.
+Example input by type:
+\itemize{
+\item \code{TRUE} uses 'Jam' default, which replaces NA with zero \code{0}, then
+applies:
+\code{amap::hcluster(x, method="euclidean", link="ward")}.
+\item \code{FALSE} performs no clustering.
+\item \code{function} must take a \code{numeric} matrix input,
+and return either \code{hclust} or \code{dendrogram}.
+\item \code{hclust} or \code{dendrogram} input must exactly match the columns or
+rows, as appropriate. It does not support use of
+\code{column_km} or \code{row_km} alongside clustering, however these arguments
+can be used alongside \code{function}.
+}}
+
+\item{cluster_column_slices, cluster_row_slices}{\code{logical} default FALSE,
+whether to cluster columns and rows, respectively, when also using
+\code{column_split} or \code{row_split}.
+
+Note that \code{TRUE} implies the respective \code{cluster_columns} or
+\code{cluster_rows} is TRUE or is a \code{function} that returns \code{hclust}
+or \code{dendrogram} output.}
 
 \item{column_names_gp}{\code{gpar} to define custom column name settings.
 When \code{"fontsize"} is not defined, the automatic font size calculation
