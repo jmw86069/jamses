@@ -1262,7 +1262,7 @@ heatmap_se <- function
             i
          } else {
             i <- i[!is.na(i) & !is.na(names(i))];
-            i_is_hex <- startsWith("#", i);
+            i_is_hex <- startsWith(i, "#");
             # i_is_hex <- grepl("^#", i);
             # if (any(!i_is_hex)) {
             if (!all(i_is_hex)) {
@@ -1440,7 +1440,7 @@ heatmap_se <- function
                      uniq_values_add));
             }
             if (length(sample_colors) == 0) {
-               sample_colors <- rep(NA, length.out=length(uniq_values));
+               sample_colors <- rep_len(NA, length(uniq_values));
                names(sample_colors) <- uniq_values;
             }
             if (anyNA(sample_colors)) {
@@ -1561,8 +1561,7 @@ heatmap_se <- function
          show_left_legend <- TRUE;
       }
       if (length(show_left_legend) < 2) {
-         show_left_legend <- rep(show_left_legend,
-            length.out=2);
+         show_left_legend <- rep_len(show_left_legend, 2)
       }
       show_left_legend_v <- logical(0);
       # sestats annotations
@@ -1629,7 +1628,7 @@ heatmap_se <- function
                rowData_colnames);
          }
          show_left_legend_v <- c(show_left_legend_v,
-            rep(show_left_legend, length.out=length(rowData_colnames)))
+            rep_len(show_left_legend, length(rowData_colnames)))
          # subset any factor columns to limit colors shown in the legend
          left_df <- data.frame(check.names=FALSE,
             rowData_se[gene_hits, rowData_colnames, drop=FALSE]);
@@ -1687,7 +1686,7 @@ heatmap_se <- function
                         uniq_values_add));
                }
                if (length(sample_colors) == 0) {
-                  sample_colors <- rep(NA, length.out=length(uniq_values));
+                  sample_colors <- rep_len(NA, length(uniq_values));
                   names(sample_colors) <- uniq_values;
                }
                if (anyNA(sample_colors)) {
