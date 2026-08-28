@@ -53,7 +53,7 @@ Remotes:
    github::jmw86069/multienrichjam,
    github::jmw86069/farrisdata,
    github::jokergoo/ComplexHeatmap
-URL: http://github.com/jmw86069/jamses
+URL: http://github.com/jmw86069/jamses, https://jmw86069.github.io/jamses/
 BugReports: http://github.com/jmw86069/jamses/issues
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

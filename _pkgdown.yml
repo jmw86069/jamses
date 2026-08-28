@@ -1,12 +1,11 @@
+url: https://jmw86069.github.io/jamses/
 template:
   bootstrap: 5
+  bootswatch: cosmo
 figures:
   dev: ragg::agg_png
   fig.height: 8
   fig.width: 8
   fig.retina: 2
   dpi: 96
-template:
-  bootstrap: 5
-  bootswatch: cosmo
-url: https://jmw86069.github.io/jamses/
+
