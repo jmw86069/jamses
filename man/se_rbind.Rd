@@ -137,6 +137,7 @@ Other jamses SE utilities:
 \code{\link[=se_normalize]{se_normalize()}},
 \code{\link[=se_to_assay_data]{se_to_assay_data()}},
 \code{\link[=se_to_assay_names]{se_to_assay_names()}},
-\code{\link[=se_to_rowcoldata]{se_to_rowcoldata()}}
+\code{\link[=se_to_rowcoldata]{se_to_rowcoldata()}},
+\code{\link[=simulate_se_test]{simulate_se_test()}}
 }
 \concept{jamses SE utilities}

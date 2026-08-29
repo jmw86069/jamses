@@ -98,7 +98,7 @@ sestats_to_dfs <- function
 #' @family jamses SE utilities
 #'
 #' @param ngroups `integer` number of experimental groups
-#' @param mreps `integer` number of replicates per group, can be used
+#' @param nreps `integer` number of replicates per group, can be used
 #'    to provide the number of replicates for each group in order.
 #' @param nrow `integer` number of rows (measurements)
 #' @param multiplier `numeric` value multiplied by `rnorm()` to adjust
@@ -169,36 +169,36 @@ sestats_to_dfs <- function
 #' hm2a + hm2b + hm2c
 #'
 #' @export
-make_se_test <- function
-(ngroups=2,
- nreps=3,
- nrow=50,
- multiplier=1,
- offset=7,
- hit_fraction=1/2,
- hit_max=2.8,
- noise_factor=1,
- seed=123,
- assay_name="counts",
- sparsity=0,
- verbose=FALSE,
- ...)
-{
+make_se_test <- function(
+   ngroups = 2,
+   nreps = 3,
+   nrow = 50,
+   multiplier = 1,
+   offset = 7,
+   hit_fraction = 1 / 2,
+   hit_max = 2.8,
+   noise_factor = 1,
+   seed = 123,
+   assay_name = "counts",
+   sparsity = 0,
+   verbose = FALSE,
+   ...
+) {
    #
    # define ncol
    if (length(ngroups) != 1 || ngroups < 1) {
       ngroups <- 1
    }
-   nreps <- rep(nreps, length.out=ngroups)
-   hit_fraction <- rep(hit_fraction, length.out=ngroups)
+   nreps <- rep(nreps, length.out = ngroups)
+   hit_fraction <- rep(hit_fraction, length.out = ngroups)
    if (any(hit_fraction > 1 | is.na(hit_fraction))) {
-      hit_fraction[hit_fraction > 1] <- 1;
+      hit_fraction[hit_fraction > 1] <- 1
    }
    group_names <- rep(paste0("group", head(LETTERS, ngroups)), nreps)
-   names(nreps) <- unique(group_names);
-   names(hit_fraction) <- unique(group_names);
-   sample_names <- jamba::makeNames(group_names);
-   ncol <- length(sample_names);
+   names(nreps) <- unique(group_names)
+   names(hit_fraction) <- unique(group_names)
+   sample_names <- jamba::makeNames(group_names)
+   ncol <- length(sample_names)
 
    # set random seed if provided
    if (length(seed) == 1) {
@@ -206,50 +206,64 @@ make_se_test <- function
    }
 
    # generate data
-   n <- ncol * nrow;
-   expr <- rnorm(nrow) * multiplier + offset;
-   noise <- rnorm(n) * multiplier * 0.2 * noise_factor;
-   m <- matrix(data=expr + noise,
-      ncol=ncol);
-   colnames(m) <- sample_names;
-   rownames(m) <- paste0("row_", jamba::padInteger(seq_len(nrow)));
+   n <- ncol * nrow
+   expr <- rnorm(nrow) * multiplier + offset
+   noise <- rnorm(n) * multiplier * 0.2 * noise_factor
+   m <- matrix(data = expr + noise, ncol = ncol)
+   colnames(m) <- sample_names
+   rownames(m) <- paste0("row_", jamba::padInteger(seq_len(nrow)))
 
    # sparsity
    if (length(sparsity) >= 1 && any(sparsity > 0)) {
-      sparsity <- rep(sparsity, length.out=ngroups);
-      group_list <- split(sample_names, group_names);
+      sparsity <- rep(sparsity, length.out = ngroups)
+      group_list <- split(sample_names, group_names)
       for (i in seq_along(sparsity)) {
-         ivals <- m[, group_list[[i]], drop=FALSE];
-         nvals <- length(ivals);
-         nblank <- ceiling(nvals * sparsity[[i]]);
-         toblank <- sample(seq_len(nvals), size=nblank)
-         ivals[toblank] <- NA;
-         m[, group_list[[i]]] <- ivals;
+         ivals <- m[, group_list[[i]], drop = FALSE]
+         nvals <- length(ivals)
+         nblank <- ceiling(nvals * sparsity[[i]])
+         toblank <- sample(seq_len(nvals), size = nblank)
+         ivals[toblank] <- NA
+         m[, group_list[[i]]] <- ivals
       }
    }
 
    # define hit values
-   hit_vals <- c(-2.8, -1.3, -0.585, -0.485, -0.38,
-      0.38, 0.485, 0.585, 1.3, 2.8) / 2.8 * hit_max;
+   hit_vals <- c(
+      -2.8,
+      -1.3,
+      -0.585,
+      -0.485,
+      -0.38,
+      0.38,
+      0.485,
+      0.585,
+      1.3,
+      2.8
+   ) /
+      2.8 *
+      hit_max
 
    # add known fold changes to group 2 and higher
    if (ngroups > 1) {
-      group_list <- tail(split(sample_names, group_names), -1);
+      group_list <- tail(split(sample_names, group_names), -1)
       for (iname in names(group_list)) {
-         i <- group_list[[iname]];
+         i <- group_list[[iname]]
          irows <- ceiling(nrow * hit_fraction[iname])
-         irowsk <- sample(rownames(m), size=irows);
-         ilfc <- sample(hit_vals,
-            size=irows,
-            replace=TRUE)
+         irowsk <- sample(rownames(m), size = irows)
+         ilfc <- sample(hit_vals, size = irows, replace = TRUE)
          if (verbose) {
-            jamba::printDebug("make_se_test(): ",
-               "iname:", iname,
-               ", irows:", irows,
-               ", ilfc:", ilfc);
+            jamba::printDebug(
+               "make_se_test(): ",
+               "iname:",
+               iname,
+               ", irows:",
+               irows,
+               ", ilfc:",
+               ilfc
+            )
          }
          # fold <- rnorm(length(i) * irows) * multiplier / 2.5;
-         m[irowsk, i] <- m[irowsk, i] + ilfc;
+         m[irowsk, i] <- m[irowsk, i] + ilfc
       }
    }
 
@@ -262,15 +276,16 @@ make_se_test <- function
 
    # create SummarizedExperiment
    se <- SummarizedExperiment::SummarizedExperiment(
-      assays=list(counts=m),
-      colData=data.frame(sample=colnames(m),
-         row.names=colnames(m),
-         group=factor(group_names,
-            levels=unique(group_names))),
-      rowData=data.frame(measurement=rownames(m),
-         row.names=rownames(m)))
-   SummarizedExperiment::assayNames(se) <- head(assay_name, 1);
+      assays = list(counts = m),
+      colData = data.frame(
+         sample = colnames(m),
+         row.names = colnames(m),
+         group = factor(group_names, levels = unique(group_names))
+      ),
+      rowData = data.frame(measurement = rownames(m), row.names = rownames(m))
+   )
+   SummarizedExperiment::assayNames(se) <- head(assay_name, 1)
 
-   se;
+   se
 }
 

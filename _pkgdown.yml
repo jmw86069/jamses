@@ -4,8 +4,18 @@ template:
   bootswatch: cosmo
 figures:
   dev: ragg::agg_png
+  dpi: 96
+  dev.args: []
+  fig.ext: png
+  fig.width: 8
+  fig.height: 8
+  fig.retina: 2
+  fig.asp: 1
+  bg: white
+  dev: ragg::agg_png
   fig.height: 8
   fig.width: 8
   fig.retina: 2
   dpi: 96
-
+pkgdown:
+  as_is: true

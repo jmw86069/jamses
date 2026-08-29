@@ -11,6 +11,9 @@
    * Reworded help docs for 'column_split' and 'cluster_columns'.
    * Cleaned up some syntax suggested by Arity, nice.
 
+* New function: `simulate_se_test()` with rudimentary
+two-factor changes, and adjustable batch effect.
+
 # jamses 0.0.78.960
 
 ## Hotfixes

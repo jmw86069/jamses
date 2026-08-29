@@ -23,6 +23,9 @@ make_se_test(
 \arguments{
 \item{ngroups}{\code{integer} number of experimental groups}
 
+\item{nreps}{\code{integer} number of replicates per group, can be used
+to provide the number of replicates for each group in order.}
+
 \item{nrow}{\code{integer} number of rows (measurements)}
 
 \item{multiplier}{\code{numeric} value multiplied by \code{rnorm()} to adjust
@@ -56,9 +59,6 @@ be simulated by using \code{sparsity=c(0.6, 0, 0)} for three groups.}
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
-
-\item{mreps}{\code{integer} number of replicates per group, can be used
-to provide the number of replicates for each group in order.}
 }
 \value{
 \code{SummarizedExperiment} object
@@ -121,6 +121,7 @@ Other jamses SE utilities:
 \code{\link[=se_rbind]{se_rbind()}},
 \code{\link[=se_to_assay_data]{se_to_assay_data()}},
 \code{\link[=se_to_assay_names]{se_to_assay_names()}},
-\code{\link[=se_to_rowcoldata]{se_to_rowcoldata()}}
+\code{\link[=se_to_rowcoldata]{se_to_rowcoldata()}},
+\code{\link[=simulate_se_test]{simulate_se_test()}}
 }
 \concept{jamses SE utilities}
