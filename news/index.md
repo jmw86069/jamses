@@ -1,5 +1,12 @@
 # Changelog
 
+## jamses 0.0.79.950
+
+### Updates
+
+- Updated vignette: “How to Make a Heatmap”
+- Updated README.
+
 ## jamses 0.0.79.900
 
 ### Updates
@@ -2294,9 +2301,7 @@ model.
   simple method to convert `sestats` output from
   [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md)
   to a `data.frame` summary with number of hits for each comparison. It
-  should be suitable for
-  [`kable()`](https://rdrr.io/pkg/knitr/man/kable.html) output, with row
-  groups by cutoff.
+  should be suitable for `kable()` output, with row groups by cutoff.
 
 ## jamses 0.0.6.900
 

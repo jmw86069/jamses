@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,7 +116,7 @@ The series of dimnames in each lapply should use this order.</p>
 <span class="r-in"><span><span class="va">hitdf_rowindex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">hitdf</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">hitdf</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>   <span class="va">hitdf</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span>, drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span>,</span></span>
-<span class="r-in"><span>   row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>   row.names<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span></span></span>
 <span class="r-in"><span>   <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/group_rows.html" class="external-link">pack_rows</a></span><span class="op">(</span>index<span class="op">=</span><span class="va">hitdf_rowindex</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>

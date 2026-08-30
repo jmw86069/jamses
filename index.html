@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,10 +109,12 @@
 <li>Data are <strong>not scaled</strong>.</li>
 <li>Row and Column annotations are “easy”.</li>
 </ul>
+<details><summary></summary></details>
 </div>
 <div class="section level2">
 <h2 id="approach-for-statistical-contrasts">Approach for Statistical Contrasts<a class="anchor" aria-label="anchor" href="#approach-for-statistical-contrasts"></a>
 </h2>
+
 <p><a href="https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/" class="external-link">The Limma User’s Guide</a> (LUG) is an amazing resource which describes numerous approaches for one-way and two-way contrasts <strong>which are mathematically equivalent</strong>. For a more thorough discussion please review these approaches to confirm that <code>~0 + x</code> is mathematically identical to <code>~ x</code>, and only differs in how estimates are reported.</p>
 <ul>
 <li><p>Jamses uses the <code>~0 + x</code> strategy.</p></li>
@@ -168,71 +170,123 @@
 <p>The example below uses a <code>character</code> vector of group names per sample, with two factors separated by underscore <code>"_"</code>. The same data can be provided as a <code>data.frame</code> with two columns.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://github.com/jmw86069/jamses" class="external-link">jamses</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/nameVector.html" class="external-link">nameVector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">6</span><span class="op">)</span>,</span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Treated"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
 <span>   sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span>,</span>
 <span>   suffix<span class="op">=</span><span class="st">"_rep"</span><span class="op">)</span>;</span>
 <span><span class="va">igroups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">igroups</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span>;</span>
-<span><span class="co"># jamba::kable_coloring(color_cells=FALSE,</span></span>
-<span><span class="co">#    format="markdown",</span></span>
-<span><span class="co">#    caption="Sample to group association",</span></span>
-<span><span class="co">#    data.frame(groups=igroups))</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups<span class="op">=</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
+<span></span>
+<span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span>color_cells<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>   caption<span class="op">=</span><span class="st">"Sample to group association"</span>,</span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>groups<span class="op">=</span><span class="va">igroups</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Sample to group association
+</caption>
 <thead><tr>
-<th align="left"></th>
-<th align="left">groups</th>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+groups
+</th>
 </tr></thead>
 <tbody>
 <tr>
-<td align="left">WT_Control_rep1</td>
-<td align="left">WT_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep1
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control
+</td>
 </tr>
 <tr>
-<td align="left">WT_Control_rep2</td>
-<td align="left">WT_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep2
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control
+</td>
 </tr>
 <tr>
-<td align="left">WT_Control_rep3</td>
-<td align="left">WT_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control_rep3
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Control
+</td>
 </tr>
 <tr>
-<td align="left">WT_Treated_rep1</td>
-<td align="left">WT_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep1
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated
+</td>
 </tr>
 <tr>
-<td align="left">WT_Treated_rep2</td>
-<td align="left">WT_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep2
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated
+</td>
 </tr>
 <tr>
-<td align="left">WT_Treated_rep3</td>
-<td align="left">WT_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated_rep3
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+WT_Treated
+</td>
 </tr>
 <tr>
-<td align="left">KO_Control_rep1</td>
-<td align="left">KO_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep1
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control
+</td>
 </tr>
 <tr>
-<td align="left">KO_Control_rep2</td>
-<td align="left">KO_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep2
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control
+</td>
 </tr>
 <tr>
-<td align="left">KO_Control_rep3</td>
-<td align="left">KO_Control</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control_rep3
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Control
+</td>
 </tr>
 <tr>
-<td align="left">KO_Treated_rep1</td>
-<td align="left">KO_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep1
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated
+</td>
 </tr>
 <tr>
-<td align="left">KO_Treated_rep2</td>
-<td align="left">KO_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep2
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated
+</td>
 </tr>
 <tr>
-<td align="left">KO_Treated_rep3</td>
-<td align="left">KO_Treated</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated_rep3
+</td>
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+KO_Treated
+</td>
 </tr>
 </tbody>
 </table>
@@ -240,7 +294,6 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sedesign</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span>;</span>
 <span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
-<span><span class="co"># knitr::kable(</span></span>
 <span>   colorSub<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`-1`<span class="op">=</span><span class="st">"dodgerblue"</span>, `1`<span class="op">=</span><span class="st">"firebrick"</span><span class="op">)</span>,</span>
 <span>   caption<span class="op">=</span><span class="st">"Design matrix output from design(sedesign)."</span>,</span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>check.names<span class="op">=</span><span class="cn">FALSE</span>, <span class="fu">design</span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>;</span></code></pre></div>
@@ -473,7 +526,6 @@ KO_Treated_rep3
 </table>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co"># knitr::kable(</span></span>
 <span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/kable_coloring.html" class="external-link">kable_coloring</a></span><span class="op">(</span></span>
 <span>   colorSub<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>`-1`<span class="op">=</span><span class="st">"dodgerblue"</span>, `1`<span class="op">=</span><span class="st">"firebrick"</span><span class="op">)</span>,</span>
 <span>   caption<span class="op">=</span><span class="st">"Contrast matrix output from contrasts(sedesign)."</span>,</span>
@@ -588,19 +640,20 @@ KO_Treated
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># plot the design and contrasts</span></span>
 <span><span class="fu"><a href="reference/plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span>;</span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/title.html" class="external-link">title</a></span><span class="op">(</span>main<span class="op">=</span><span class="st">"plot_sedesign(sedesign)\noutput:"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/title.html" class="external-link">title</a></span><span class="op">(</span>main<span class="op">=</span><span class="st">"plot_sedesign(sedesign):"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-plot_sedesign-1.png"><!-- --></p>
 <ul>
-<li>Two-way contrasts are indicated by the “squiggly curved line” which connects the end of one contrast to the beginning of the next contrast. This connection describes the first contrast, subtracted by the second contrast.</li>
-</ul>
-</div>
-</div>
-<div class="section level2">
-<h2 id="future-work">Future work:<a class="anchor" aria-label="anchor" href="#future-work"></a>
-</h2>
+<li><p>One-way contrasts are shown with a wide block arrow.</p></li>
+<li>
+<p>Two-way contrasts are shown by connecting two block arrows with a “squiggly curved line”.</p>
 <ul>
-<li>Enable equivalent analyses using <code>DESeq2</code>, <code>edgeR</code> methodology.</li>
+<li>It connects the end of one contrast<br>
+to the beginning of the next contrast.</li>
+<li>The order indicates that the first contrast is subtracted by the second contrast.</li>
 </ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

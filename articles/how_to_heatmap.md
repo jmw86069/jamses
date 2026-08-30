@@ -5,99 +5,12 @@ Load R packages:
 ``` r
 
 library(jamses)
+suppressPackageStartupMessages(
 library(SummarizedExperiment)
-#> Loading required package: MatrixGenerics
-#> Loading required package: matrixStats
-#> 
-#> Attaching package: 'MatrixGenerics'
-#> The following objects are masked from 'package:matrixStats':
-#> 
-#>     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
-#>     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
-#>     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
-#>     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
-#>     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
-#>     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
-#>     colWeightedMeans, colWeightedMedians, colWeightedSds,
-#>     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
-#>     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
-#>     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
-#>     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
-#>     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
-#>     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
-#>     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
-#>     rowWeightedSds, rowWeightedVars
-#> Loading required package: GenomicRanges
-#> Loading required package: stats4
-#> Loading required package: BiocGenerics
-#> Loading required package: generics
-#> 
-#> Attaching package: 'generics'
-#> The following objects are masked from 'package:base':
-#> 
-#>     as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
-#>     setequal, union
-#> 
-#> Attaching package: 'BiocGenerics'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     IQR, mad, sd, var, xtabs
-#> The following objects are masked from 'package:base':
-#> 
-#>     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
-#>     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
-#>     get, grep, grepl, is.unsorted, lapply, Map, mapply, match, mget,
-#>     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
-#>     rbind, Reduce, rownames, sapply, saveRDS, table, tapply, unique,
-#>     unsplit, which.max, which.min
-#> Loading required package: S4Vectors
-#> 
-#> Attaching package: 'S4Vectors'
-#> The following object is masked from 'package:utils':
-#> 
-#>     findMatches
-#> The following objects are masked from 'package:base':
-#> 
-#>     expand.grid, I, unname
-#> Loading required package: IRanges
-#> Loading required package: Seqinfo
-#> Loading required package: Biobase
-#> Welcome to Bioconductor
-#> 
-#>     Vignettes contain introductory material; view with
-#>     'browseVignettes()'. To cite Bioconductor, see
-#>     'citation("Biobase")', and for packages 'citation("pkgname")'.
-#> 
-#> Attaching package: 'Biobase'
-#> The following object is masked from 'package:MatrixGenerics':
-#> 
-#>     rowMedians
-#> The following objects are masked from 'package:matrixStats':
-#> 
-#>     anyMissing, rowMedians
-#> The following object is masked from 'package:jamses':
-#> 
-#>     samples
+)
+suppressPackageStartupMessages(
 library(ComplexHeatmap)
-#> Loading required package: grid
-#> ========================================
-#> ComplexHeatmap version 2.25.3
-#> Bioconductor page: http://bioconductor.org/packages/ComplexHeatmap/
-#> Github page: https://github.com/jokergoo/ComplexHeatmap
-#> Documentation: http://jokergoo.github.io/ComplexHeatmap-reference
-#> 
-#> If you use it in published research, please cite either one:
-#> - Gu, Z. Complex Heatmap Visualization. iMeta 2022.
-#> - Gu, Z. Complex heatmaps reveal patterns and correlations in multidimensional 
-#>     genomic data. Bioinformatics 2016.
-#> 
-#> 
-#> The new InteractiveComplexHeatmap package can directly export static 
-#> complex heatmaps into an interactive Shiny app with zero effort. Have a try!
-#> 
-#> This message can be suppressed by:
-#>   suppressPackageStartupMessages(library(ComplexHeatmap))
-#> ========================================
+)
 ```
 
 Make the heatmap:
@@ -110,11 +23,12 @@ heatmap_se(se)
 The defaults are very good.  
 The custom options are great.
 
-### Why SummarizedExperiment?
+## Why SummarizedExperiment?
 
 **`SummarizedExperiment` is an enhanced data matrix**
 
-- It stores multiple data matrices. Some examples:
+- It stores multiple data matrices.  
+  Some examples:
   - Raw
   - normalized
   - batch-adjusted
@@ -140,7 +54,7 @@ See the [SummarizedExperiment
 vignette](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html)
 for more detail.
 
-### Heatmap Principles
+## Heatmap Principles
 
 **The `heatmap_se()` is opinionated.**
 

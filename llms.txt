@@ -127,18 +127,16 @@ provided as a `data.frame` with two columns.
 ``` r
 
 library(jamses)
-library(kableExtra)
 
 igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
    rep(c("Control", "Treated"), each=3),
    sep="_"),
    suffix="_rep");
 igroups <- factor(igroups, levels=unique(igroups));
-# jamba::kable_coloring(color_cells=FALSE,
-#    format="markdown",
-#    caption="Sample to group association",
-#    data.frame(groups=igroups))
-knitr::kable(data.frame(groups=igroups))
+
+jamba::kable_coloring(color_cells=FALSE,
+   caption="Sample to group association",
+   data.frame(groups=igroups))
 ```
 
 |                 | groups     |
@@ -156,13 +154,15 @@ knitr::kable(data.frame(groups=igroups))
 | KO_Treated_rep2 | KO_Treated |
 | KO_Treated_rep3 | KO_Treated |
 
+Sample to group association {.table .table
+style="margin-left: auto; margin-right: auto;"}
+
 The resulting design and contrasts matrices are shown below:
 
 ``` r
 
 sedesign <- groups_to_sedesign(igroups);
 jamba::kable_coloring(
-# knitr::kable(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
@@ -189,7 +189,6 @@ style="margin-left: auto; margin-right: auto;"}
 ``` r
 
 
-# knitr::kable(
 jamba::kable_coloring(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Contrast matrix output from contrasts(sedesign).",
@@ -213,19 +212,20 @@ For convenience, SEDesign can be visualized using
 
 # plot the design and contrasts
 plot_sedesign(sedesign);
-title(main="plot_sedesign(sedesign)\noutput:")
+title(main="plot_sedesign(sedesign):")
 ```
 
 ![](reference/figures/README-plot_sedesign-1.png)
 
-- Two-way contrasts are indicated by the “squiggly curved line” which
-  connects the end of one contrast to the beginning of the next
-  contrast. This connection describes the first contrast, subtracted by
-  the second contrast.
+- One-way contrasts are shown with a wide block arrow.
 
-## Future work:
+- Two-way contrasts are shown by connecting two block arrows with a
+  “squiggly curved line”.
 
-- Enable equivalent analyses using `DESeq2`, `edgeR` methodology.
+  - It connects the end of one contrast  
+    to the beginning of the next contrast.
+  - The order indicates that the first contrast is subtracted by the
+    second contrast.
 
 # Package index
 
