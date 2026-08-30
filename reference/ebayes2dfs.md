@@ -114,6 +114,11 @@ ebayes2dfs(
   exactly represent the reported `logFC` value. Sometimes it is helpful
   and comforting to see the exact values used in that calculation.
 
+- transform_means:
+
+  `character` with optional transformation for means when
+  `include_group_means=TRUE`.
+
 - rowData_df:
 
   `data.frame` representing optional rowData annotation to be retained
@@ -144,9 +149,27 @@ ebayes2dfs(
   that contain multiple fold changes, recognized by the presence of more
   than one hypen `"-"` in the contrast name.
 
+- trim_colnames:
+
+  `character` vector of column names to remove in the output. Defaults
+  are columns not typically used, however may be useful for some
+  applications.
+
+- posthoc_test:
+
+  `character` with optional post-hoc test:
+
+  - 'none': default is no post-hoc test.
+
+  - 'DEqMS': for proteomics data, applying the `DEqMS` package approach.
+
 - verbose:
 
   `logical` indicating whether to print verbose output.
+
+- ...:
+
+  additional arguments are ignored.
 
 ## Value
 
@@ -217,5 +240,4 @@ Other jamses stats:
 [`save_sestats()`](https://jmw86069.github.io/jamses/reference/save_sestats.md),
 [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md),
 [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md),
-[`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md),
 [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)

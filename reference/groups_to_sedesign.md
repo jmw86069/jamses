@@ -149,6 +149,18 @@ groups_to_sedesign(
   - `"idesign"`: a `numeric` design matrix as defined by the input data,
     suitable for debugging purposes for example.
 
+- default_order:
+
+  `character` string indicating whether to sort contrasts:
+
+  - 'none' (default) no sort is applied.
+
+  - 'sort_samples' calls
+    [`sort_samples()`](https://jmw86069.github.io/jamses/reference/sort_samples.md)
+
+  - 'mixedSort' calls
+    [`jamba::mixedSort()`](https://jmw86069.github.io/jamba/reference/mixedSort.html)
+
 - verbose:
 
   `logical` indicating whether to print verbose output.
@@ -156,10 +168,6 @@ groups_to_sedesign(
 - ...:
 
   additional arguments are ignored.
-
-- make_unique:
-
-  `logical` indicating whether to make output contrasts unique.
 
 ## Value
 
@@ -250,8 +258,7 @@ Other jam experiment design:
 [`contrasts<-()`](https://jmw86069.github.io/jamses/reference/contrasts-set.md),
 [`contrasts_to_factors()`](https://jmw86069.github.io/jamses/reference/contrasts_to_factors.md),
 [`contrasts_to_venn_setlists()`](https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.md),
-[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design-SEDesign-method.md),
-`design<-,SEDesign,matrix-method`,
+[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design.md),
 [`draw_oneway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_oneway_contrast.md),
 [`draw_twoway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_twoway_contrast.md),
 [`factors()`](https://jmw86069.github.io/jamses/reference/factors.md),

@@ -98,18 +98,23 @@ plot_sedesign(
 
 - contrast_style:
 
-  `character` string deciding how to format the contrast:
+  `character` string indicating how to format contrast labels displayed
+  on each one-way contrast:
 
-  - `"comp"`: calls contrast2comp()
+  - `"comp"`: the abbreviated 'comp' from
+    [`contrast2comp()`](https://jmw86069.github.io/jamses/reference/contrast2comp.md)
 
-  - `"contrast"`: uses the contrast as-is
+  - `"contrast"`: the full contrast name
 
-  - `"none"`: hides the contrast label, appending `contrast_labels` when
-    provided
+  - `"none"`: hides the contrast name
 
 - contrast_labels:
 
-  `character` vector of labels named by contrast
+  `character` vector of optional custom labels to append to each
+  contrast name. The `names(contrast_labels)` are expected to match
+  contrast names obtained from `contrast_names(sedesign)`. Note: When
+  `sestats` is supplied, `contrast_labels` are populated with the number
+  of statistical hits for each contrast.
 
 - oneway_position, twoway_position:
 
@@ -295,10 +300,6 @@ plot_sedesign(
 
   additional arguments are ignored.
 
-- contrast:
-
-  `character` contrast name
-
 ## Value
 
 invisible `list` of `data.frame` representing individual contrasts to be
@@ -419,8 +420,7 @@ Other jam experiment design:
 [`contrasts<-()`](https://jmw86069.github.io/jamses/reference/contrasts-set.md),
 [`contrasts_to_factors()`](https://jmw86069.github.io/jamses/reference/contrasts_to_factors.md),
 [`contrasts_to_venn_setlists()`](https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.md),
-[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design-SEDesign-method.md),
-`design<-,SEDesign,matrix-method`,
+[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design.md),
 [`draw_oneway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_oneway_contrast.md),
 [`draw_twoway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_twoway_contrast.md),
 [`factors()`](https://jmw86069.github.io/jamses/reference/factors.md),

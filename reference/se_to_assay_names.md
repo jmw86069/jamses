@@ -37,4 +37,5 @@ Other jamses SE utilities:
 [`se_normalize()`](https://jmw86069.github.io/jamses/reference/se_normalize.md),
 [`se_rbind()`](https://jmw86069.github.io/jamses/reference/se_rbind.md),
 [`se_to_assay_data()`](https://jmw86069.github.io/jamses/reference/se_to_assay_data.md),
-[`se_to_rowcoldata()`](https://jmw86069.github.io/jamses/reference/se_to_rowcoldata.md)
+[`se_to_rowcoldata()`](https://jmw86069.github.io/jamses/reference/se_to_rowcoldata.md),
+[`simulate_se_test()`](https://jmw86069.github.io/jamses/reference/simulate_se_test.md)

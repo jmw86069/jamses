@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Convert limma eBayes fit to data.frame with annotated hits</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
       <div class="d-none name"><code>ebayes2dfs.Rd</code></div>
     </div>
 
@@ -153,6 +153,11 @@ value. Sometimes it is helpful and comforting to see the exact values
 used in that calculation.</p></dd>
 
 
+<dt id="arg-transform-means">transform_means<a class="anchor" aria-label="anchor" href="#arg-transform-means"></a></dt>
+<dd><p><code>character</code> with optional transformation for
+means when <code>include_group_means=TRUE</code>.</p></dd>
+
+
 <dt id="arg-rowdata-df">rowData_df<a class="anchor" aria-label="anchor" href="#arg-rowdata-df"></a></dt>
 <dd><p><code>data.frame</code> representing optional rowData annotation
 to be retained in the resulting stat <code>data.frame</code>. This argument
@@ -183,8 +188,24 @@ any contrasts that contain multiple fold changes, recognized by the
 presence of more than one hypen <code>"-"</code> in the contrast name.</p></dd>
 
 
+<dt id="arg-trim-colnames">trim_colnames<a class="anchor" aria-label="anchor" href="#arg-trim-colnames"></a></dt>
+<dd><p><code>character</code> vector of column names to remove in the
+output. Defaults are columns not typically used, however may be useful
+for some applications.</p></dd>
+
+
+<dt id="arg-posthoc-test">posthoc_test<a class="anchor" aria-label="anchor" href="#arg-posthoc-test"></a></dt>
+<dd><p><code>character</code> with optional post-hoc test:</p><ul><li><p>'none': default is no post-hoc test.</p></li>
+<li><p>'DEqMS': for proteomics data, applying the <code>DEqMS</code> package approach.</p></li>
+</ul></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p><code>logical</code> indicating whether to print verbose output.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments are ignored.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -242,7 +263,6 @@ merged into one large <code>data.frame</code>, using <code><a href="https://jmw8
 <code><a href="save_sestats.html">save_sestats()</a></code>,
 <code><a href="se_contrast_stats.html">se_contrast_stats()</a></code>,
 <code><a href="sestats_to_df.html">sestats_to_df()</a></code>,
-<code><a href="sestats_to_dfs.html">sestats_to_dfs()</a></code>,
 <code><a href="voom_jam.html">voom_jam()</a></code></p></div>
     </div>
 

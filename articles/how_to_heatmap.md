@@ -1,149 +1,278 @@
 # How to Make a Heatmap
 
+Load R packages:
+
 ``` r
 
 library(jamses)
+library(SummarizedExperiment)
+#> Loading required package: MatrixGenerics
+#> Loading required package: matrixStats
+#> 
+#> Attaching package: 'MatrixGenerics'
+#> The following objects are masked from 'package:matrixStats':
+#> 
+#>     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+#>     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+#>     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+#>     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+#>     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+#>     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+#>     colWeightedMeans, colWeightedMedians, colWeightedSds,
+#>     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+#>     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+#>     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+#>     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+#>     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+#>     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+#>     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+#>     rowWeightedSds, rowWeightedVars
+#> Loading required package: GenomicRanges
+#> Loading required package: stats4
+#> Loading required package: BiocGenerics
+#> Loading required package: generics
+#> 
+#> Attaching package: 'generics'
+#> The following objects are masked from 'package:base':
+#> 
+#>     as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
+#>     setequal, union
+#> 
+#> Attaching package: 'BiocGenerics'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     IQR, mad, sd, var, xtabs
+#> The following objects are masked from 'package:base':
+#> 
+#>     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+#>     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+#>     get, grep, grepl, is.unsorted, lapply, Map, mapply, match, mget,
+#>     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+#>     rbind, Reduce, rownames, sapply, saveRDS, table, tapply, unique,
+#>     unsplit, which.max, which.min
+#> Loading required package: S4Vectors
+#> 
+#> Attaching package: 'S4Vectors'
+#> The following object is masked from 'package:utils':
+#> 
+#>     findMatches
+#> The following objects are masked from 'package:base':
+#> 
+#>     expand.grid, I, unname
+#> Loading required package: IRanges
+#> Loading required package: Seqinfo
+#> Loading required package: Biobase
+#> Welcome to Bioconductor
+#> 
+#>     Vignettes contain introductory material; view with
+#>     'browseVignettes()'. To cite Bioconductor, see
+#>     'citation("Biobase")', and for packages 'citation("pkgname")'.
+#> 
+#> Attaching package: 'Biobase'
+#> The following object is masked from 'package:MatrixGenerics':
+#> 
+#>     rowMedians
+#> The following objects are masked from 'package:matrixStats':
+#> 
+#>     anyMissing, rowMedians
+#> The following object is masked from 'package:jamses':
+#> 
+#>     samples
+library(ComplexHeatmap)
+#> Loading required package: grid
+#> ========================================
+#> ComplexHeatmap version 2.25.3
+#> Bioconductor page: http://bioconductor.org/packages/ComplexHeatmap/
+#> Github page: https://github.com/jokergoo/ComplexHeatmap
+#> Documentation: http://jokergoo.github.io/ComplexHeatmap-reference
+#> 
+#> If you use it in published research, please cite either one:
+#> - Gu, Z. Complex Heatmap Visualization. iMeta 2022.
+#> - Gu, Z. Complex heatmaps reveal patterns and correlations in multidimensional 
+#>     genomic data. Bioinformatics 2016.
+#> 
+#> 
+#> The new InteractiveComplexHeatmap package can directly export static 
+#> complex heatmaps into an interactive Shiny app with zero effort. Have a try!
+#> 
+#> This message can be suppressed by:
+#>   suppressPackageStartupMessages(library(ComplexHeatmap))
+#> ========================================
 ```
 
-The `jamses` package provides
-[`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
-which is intended to “make heatmaps easy” when used with a
-`SummarizedExperiment` object.
+Make the heatmap:
 
-You can use a `numeric` matrix, but it won’t have many of the fancy
-extra features.
+``` r
 
-### About SummarizedExperiment Objects
+heatmap_se(se)
+```
 
-(See [SummarizedExperiment
+The defaults are very good.  
+The custom options are great.
+
+### Why SummarizedExperiment?
+
+**`SummarizedExperiment` is an enhanced data matrix**
+
+- It stores multiple data matrices. Some examples:
+  - Raw
+  - normalized
+  - batch-adjusted
+  - VST-normalized
+  - “counts” (or pseudocounts)
+  - “abundance” (or TPM, FPKM)
+- Columns have annotations in
+  [`colData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html).
+- Rows have annotations in
+  [`rowData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html).
+- Annotations are used in
+  [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md):
+  - display annotations beside the heatmap
+  - split the heatmap by groups
+  - center the data in meaningful ways
+- You can create a `SummarizedExperiment` from any of:
+  - `numeric` matrix
+  - `ExpressionSet`
+  - `DGEList`
+  - `DESeqDataset`
+
+See the [SummarizedExperiment
 vignette](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html)
-for more details on the object design.)
+for more detail.
 
-A `SummarizedExperiment` is just a fancy matrix, with these additions:
+### Heatmap Principles
 
-- It can store more than one `numeric` matrix using
-  [`assays()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html).
-- Column annotations are stored with
-  [`SummarizedExperiment::colData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html).
-- Row annotations are stored with
-  [`SummarizedExperiment::rowData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html).
+**The `heatmap_se()` is opinionated.**
 
-It helps associate rich detail to the columns (biological samples) and
-rows (genes or platform measurements).
+- The default should be very close to ideal.  
+- *There are many custom options.*
 
-Column and Row annotations are used in
-[`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
+**We build upon `ComplexHeatmap::Heatmap()`.**
 
-- to add annotations alongside the heatmap
-- to split the heatmap by useful criteria
-- to center the data in meaningful ways
+- It is amazing. And complex. We know this.
+- You can combine heatmaps:
+  - Add them `+` to display side-by-side.
+  - Use `%v%` to display top-to-bottom.
 
-Several data types can be converted to `SummarizedExperiment`:
-`ExpressionSet`, `DGEList`, `DESeqDataset`, `matrix`.
+**Data are assumed to be log2-transformed.**
 
-### Design Philosophy
+- We recommend `log2(1 + x)`, *ymmv*.
+- log2-transformed values are consistent with many  
+  ’Omics tools which report log2 fold change.
 
-The
-[`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
-is “opinionated”. Default behavior should make a heatmap very close to
-ideal.
+**Data are not scaled.** *(Gasp)*
 
-Most opinions have exceptions.  
-(There are a lot of exceptions.)
+- We believe magnitude of change is important in Omics data.  
+  It is helpful for critical review of the data,  
+  which is the main purpose of a heatmap.  
+  (A heatmap is not itself a decision-making tool,  
+  however it very much helps assess the assumptions  
+  and results obtained from other tools.)
+- Row-scaling adjusts the signal based upon the  
+  variability on each row.  
+  It is particularly effective when the range of  
+  response is different for each row of data,  
+  **and** where the range of response is more closely  
+  associated with technical limitations than with  
+  biological response.  
+  In our experience, most ’Omics platforms are not dominated by this
+  limitation.
+- Row-scaling has the nice benefit that it does not  
+  require log2-transformed data.  
+  It “naturally” transforms data into z-score units.  
+  These units may or may not be biologically meaningful.
+- The z-score units are particularly useful when you  
+  only want to show presence/absence, or high/low  
+  relative to the range of signal on each row.
+- We aim to achieve many of the same goals without  
+  scaling, because we find the actual magnitudes useful.
 
-We start with
-[`ComplexHeatmap::Heatmap()`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html).
-It is amazing. (And complex. Ha!)
+**Data are row-*centered*.**
 
-[`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
-tries to make it easy.
+- The average signal of each row is subtracted from  
+  that row, resulting “difference from average”.
+- We assume log2-transformed data, therefore values are  
+  called “log2 differences”.
+- These log2 differences are commonly shown in volcano plots,  
+  and in MA-plots.
+- The “log2 differences” can be converted to fold changes,  
+  so we use fold change to label the color key.
+- We recommend using the heatmap to display data as  
+  similar as possible to the underlying statistical tests,  
+  consistent with other supporting figures.
 
-#### Default Assumptions
+**Always use a divergent color scale with centered data.**
 
-- Data are assumed to be log2-transformed. Usually `log2(1 + x)`, ymmv.
+- *(The same rule applies to z-scores, and correlations.)*
+- The color scale uses Brewer colors `'RdBu'` in reverse:  
+  blue-white-red  
+  and white is always at zero.
+- **Red is Up** because this is a **HEAT map**.
+- **Blue is Down** because it is **cold**.
+- If **Blue were up**, you should call it a ***COLD map***.  
+  A cold map can be useful, but it is not a heat map.
 
-- **Data are not row-scaled.** *(Gasp)*
+**The color scale uses a fixed range.**
 
-  - We believe magnitude of change is important in Omics data. It is
-    helpful for critical review of the data, which is the main purpose
-    of a heatmap.
-  - Row-scaling shows patterns scaled to the variability on each row. It
-    is particularly effective when the range of response is different
-    for each row of data. Most Omics data platforms do not have this
-    problem, and in fact the magnitude of change is more associated with
-    the biology than to the technology.
-  - Row-scaling has the nice benefit that it does not require
-    log2-transformed data. It “naturally” transforms data into
-    “variance” (z-score) units. These units may not be biologically
-    meaningful.
-  - It attempts to allow large and small magnitude effects to have
-    similar influence, which is an important goal. We aim to achieve
-    this goal without row-scaling.
+- Default range:  
+  **-8 to +8 fold**.
+- It defines a consistent color-to-magnitude relationship.  
+  Two-fold should look like a two-fold change.
+- This range represents biologically relevant changes for  
+  **most** Omics data. (It can be adjusted.)
+- Extremely high values do not adjust the range,  
+  otherwise it would compress the colors of everything else.
+- When the data have small changes, the heatmap will show  
+  them as small changes.
+- The range may be adjusted when needed.
 
-- Data are row-centered.
+**Data centering is flexible, and encouraged:**
 
-  - The average signal of each row is subtracted from the row, revealing
-    “difference from average”.
-  - When using log2-transformed data, the values are “log2 differences”.
-  - These values are equivalent to log2 fold changes as shown in a
-    volcano plot, and equivalent to differences as shown in MA-plots.
-  - Why not display a heatmap using values that are consistent with
-    those used for statistical tests, used in other figures?
+- By default, centering uses all samples.  
+  “Global centering”
+- Centering can be “versus controls”.
+- Centering can be within sub-groups, `'centerby groups'`.  
+  Examples of `'centerby groups'`:
+  - design factor(s),
+  - sample type,
+  - tissue type,
+  - cell line,
+  - processing batch,
+  - pairing factor,
+- Each `'centerby group'` can have its own controls.
+- For example, you may center within each cell line,  
+  then center each sample to its respective control group.
 
-- **Always use a divergent color scale with centered data.**
+**Annotations are “easy”:**
 
-  - The color scale is blue-white-red, white at zero.
-  - **Red is Up** because this is a **HEAT map**.
-  - **Blue is Down** because it is **cold**.
-  - When we see a heatmap with **Blue** as the high color, we refer to
-    it as a *COLD map*.  
-    You can make a cold map, please do not call it a heat map.
+- `top_colnames` adds
+  [`colData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
+  annotations at the top.
+- `rowData_colnames` shows
+  [`rowData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
+  annotations on the left.
+- It will assign categorical colors, or scalar colors,  
+  or divergent colors.
+- You can assign colors every to column individually.
 
-- The color scale uses a fixed range.
+**Statistical hits are “easy”:**
 
-  - The default range: **-8 to +8 fold**.
-  - The default heatmap has consistent color-to-magnitude relationship.
-  - We use this consistent color profile because it fits biologically
-    relevant changes for **most** Omics data.
-  - Extremely high values do not change this range, otherwise it would
-    compress the colors of everything else.
-  - When the data have small changes, the heatmap will show them as
-    small changes.
-  - The range may be expanded when needed.
+- Provide `sestats` to add statistical hits to the left side.
+- Hits are colored by direction (Up/Down).
+- The heatmap will subset to show only these hits.
 
-- Data centering is flexible:
+**Rows and columns can be grouped:**
 
-  - By default, all samples are the controls.
-  - Centering can be “versus controls” using reference samples.
-  - Centering can be performed within independent sub-groups. We call
-    them `'centerby groups'`.
-  - Examples of `'centerby groups'`: design factor(s), sample type,
-    tissue type, cell line, processing batch, pairing factor,
-  - Each `'centerby group'` can have its own controls.
-
-- Annotations are “easy”:
-
-  - `top_colnames` adds
-    [`colData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
-    annotations at the top.
-  - `rowData_colnames` shows
-    [`rowData()`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)
-    annotations on the left.
-
-- Statistical hits are “easy”:
-
-  - `sestats` adds statistical hits to the left.
-  - Hits are colored by direction.
-  - The heatmap is subset to show only these hits.
-
-- Rows and columns can be grouped:
-
-  - `row_split` defines row groups
-  - `column_split` defines column groups
-  - use an `integer` number of groups, or annotation
-    [`colnames()`](https://rdrr.io/r/base/colnames.html).
+- `row_split` defines row groups
+- `column_split` defines column groups
+- use an `integer` number of groups, or annotation
+  [`colnames()`](https://rdrr.io/r/base/colnames.html).
 
 ## Heatmap Walkthrough
+
+Each step in the walkthrough adds some detail. \* Sometimes we
+demonstrate other custom options as well,  
+just to give a flavor for the variety of styles available.
 
 ### Test Data
 
@@ -154,28 +283,37 @@ We generate test data for this demonstration.
 se <- make_se_test(nrow=1000, ngroups=4, nreps=8)
 
 # optionally define factor levels to force the order of labels
-SummarizedExperiment::rowData(se)$Class <- factor(
+rowData(se)$Class <- factor(
    sample(head(LETTERS, 5), size=nrow(se), replace=TRUE))
 ```
 
 ### Basic Heatmap
 
+Provide `se` (SummarizedExperiment data) and it will create the default
+heatmap. \* `top_colnames` are auto-detected by default.
+
 ``` r
 
-hm <- heatmap_se(se, rowData_colnames="Class")
+hm <- heatmap_se(se)
 #> 'magick' package is suggested to install to give better rasterization.
 #> 
 #> Set `ht_opt$message = FALSE` to turn off this message.
 
 # draw by printing hm, or call draw() to add useful options
-ComplexHeatmap::draw(hm,
-   column_title=attr(hm, "hm_title"),
-   merge_legends=TRUE)
+draw(hm)
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_basic-1.png)
 
-### Custom Colors
+### Custom Annotation Colors
+
+- Use `sample_color_list` to provide custom colors.
+  - Provide a `list` named by the annotation column.  
+  - Or use
+    [`colorjam::group2colors()`](https://jmw86069.github.io/colorjam/reference/group2colors.html)
+    to define categorical colors.
+- `rowData_colnames` added row annotations to the left.
+- `left_annotation_name_rot=150` rotated the annotation label.
 
 ``` r
 
@@ -187,11 +325,10 @@ sample_color_list <- list(
       groupD="darkorchid4"
    ),
    Class=colorjam::group2colors(
-      unique(SummarizedExperiment::rowData(se)$Class)))
+      unique(rowData(se)$Class)))
 
 heatmap_se(se,
    rowData_colnames="Class",
-   show_left_annotation_name="top",
    left_annotation_name_rot=150,
    sample_color_list=sample_color_list)
 #> 'magick' package is suggested to install to give better rasterization.
@@ -203,10 +340,15 @@ heatmap_se(se,
 
 ### Heatmap Legend Options
 
-[`ComplexHeatmap::ht_opt()`](https://rdrr.io/pkg/ComplexHeatmap/man/ht_opt.html)
-allows you to customize some stylistic defaults. One common option is:
-`merge_legends=TRUE` which combines the annotation and heatmap color
-legends so they appear together in one column.
+- [`ComplexHeatmap::ht_opt()`](https://rdrr.io/pkg/ComplexHeatmap/man/ht_opt.html)
+  allows some stylistic options  
+  to be default whenever you draw a heatmap.
+  - A common option is: `merge_legends=TRUE` which  
+    combines all color legends into one column.
+- `show_left_annotation_name="top"` places the annotation  
+  label at the top instead of the bottom.
+- Notice you can draw the heatmap directly:
+  [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
 
 ``` r
 
@@ -226,260 +368,311 @@ heatmap_se(se,
 
 ### Split Rows by Annotation
 
+- `row_split="Class"` will group rows by “Class”.
+
 ``` r
 
-heatmap_se(se,
+hm <- heatmap_se(se,
    rowData_colnames="Class",
    row_split="Class",
    sample_color_list=sample_color_list)
 #> 'magick' package is suggested to install to give better rasterization.
 #> 
 #> Set `ht_opt$message = FALSE` to turn off this message.
+
+draw(hm)
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_row_split-1.png)
 
-### Split Rows and Columns Together
+### Split Rows and Columns
+
+- `column_split="group"` splits the columns.
+- `row_split="Class"` splits the rows.
+- You can provide multiple columns if needed.
 
 ``` r
 
-hm2 <- heatmap_se(se,
-   column_split=c("group"),
-   column_title_rot=90,
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+hm <- heatmap_se(se,
+   column_split="group",
+   row_split="Class",
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
 #> 'magick' package is suggested to install to give better rasterization.
 #> 
 #> Set `ht_opt$message = FALSE` to turn off this message.
-hm2drawn <- ComplexHeatmap::draw(hm2, merge_legends=TRUE)
+
+hm2 <- draw(hm)
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_row_column_split-1.png)
 
+### Get the Row Group Order
+
+- Now seems like a good time to get the row order:
+  - `jamba::heatmap_row_order(hm)`
+  - It returns a `list` separated by row group.
+- It works best with the `hm2` drawn heatmap, since  
+  some clustering methods use a random element.
+
 ``` r
 
-# as an example, extract the row order
-# technically you should use hm2drawn, but usually hm2 is enough
-hro <- jamba::heatmap_row_order(hm2drawn);
-jamba::sdim(hro)
-#>   rows     class
-#> A  196 character
-#> B  210 character
-#> C  199 character
-#> D  215 character
-#> E  180 character
-lapply(hro, head, 7)
+hro <- jamba::heatmap_row_order(hm2);
+lengths(hro)
+#>   A   B   C   D   E 
+#> 196 210 199 215 180
+```
+
+See the first five entries per row group:
+
+``` r
+
+lapply(hro, head, 5)
 #> $A
-#>   row_0640   row_0405   row_0417   row_0730   row_0847   row_0582   row_0858 
-#> "row_0640" "row_0405" "row_0417" "row_0730" "row_0847" "row_0582" "row_0858" 
+#>   row_0640   row_0405   row_0417   row_0730   row_0847 
+#> "row_0640" "row_0405" "row_0417" "row_0730" "row_0847" 
 #> 
 #> $B
-#>   row_0087   row_0075   row_0421   row_0624   row_0238   row_0878   row_0090 
-#> "row_0087" "row_0075" "row_0421" "row_0624" "row_0238" "row_0878" "row_0090" 
+#>   row_0087   row_0075   row_0421   row_0624   row_0238 
+#> "row_0087" "row_0075" "row_0421" "row_0624" "row_0238" 
 #> 
 #> $C
-#>   row_0834   row_0593   row_0670   row_0823   row_0066   row_0902   row_0422 
-#> "row_0834" "row_0593" "row_0670" "row_0823" "row_0066" "row_0902" "row_0422" 
+#>   row_0834   row_0593   row_0670   row_0823   row_0066 
+#> "row_0834" "row_0593" "row_0670" "row_0823" "row_0066" 
 #> 
 #> $D
-#>   row_0349   row_0755   row_0633   row_0784   row_0208   row_0265   row_0382 
-#> "row_0349" "row_0755" "row_0633" "row_0784" "row_0208" "row_0265" "row_0382" 
+#>   row_0349   row_0755   row_0633   row_0784   row_0208 
+#> "row_0349" "row_0755" "row_0633" "row_0784" "row_0208" 
 #> 
 #> $E
-#>   row_0948   row_0115   row_0874   row_0165   row_0227   row_0598   row_0781 
-#> "row_0948" "row_0115" "row_0874" "row_0165" "row_0227" "row_0598" "row_0781"
-# (the names will differ from values when `row_labels` are customized)
+#>   row_0948   row_0115   row_0874   row_0165   row_0227 
+#> "row_0948" "row_0115" "row_0874" "row_0165" "row_0227"
 ```
 
 ### Center Using a Control Group
 
-This heatmap calculates the mean for the control samples
-`controlSamples`, then uses that value for data centering.
+- `controlSamples` defines a subset of samples  
+  to be the reference for data centering.
+  - Here we use samples in `"groupA"`.
+  - `control_label="vs GroupA"` describes the control
+- `column_title_rot=90` also rotates the column group  
+  title 90 degrees.
+- We define a new attribute `'hm_title'` as a  
+  convenient heatmap title.
+  - `column_title` adds the title when we
+    [`draw()`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html)  
+    the heatmap.
 
 ``` r
 
-# center by WildType samples
-# - controlSamples
+# center by groupA samples
+use_controlSamples <- rownames(
+      subset(colData(se), group %in% "groupA"))
+
 # - control_label
-hm2 <- heatmap_se(se,
-   controlSamples=rownames(subset(
-      SummarizedExperiment::colData(se), group %in% "groupA")),
+hm3 <- heatmap_se(se,
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
-   column_split=c("group"),
+   column_split="group",
    column_title_rot=90,
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
+   row_split="Class",
+   rowData_colnames="Class",
    cluster_row_slices=FALSE,
    sample_color_list=sample_color_list)
 #> 'magick' package is suggested to install to give better rasterization.
 #> 
 #> Set `ht_opt$message = FALSE` to turn off this message.
-hm2drawn <- ComplexHeatmap::draw(hm2,
-   column_title=attr(hm2, "hm_title"),
-   merge_legends=TRUE)
+
+hm4 <- ComplexHeatmap::draw(hm3,
+   column_title=attr(hm3, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_control_group-1.png)
 
-### Add Callout Labels for a Subset of Rows
+### Add Callout Labels for Some Rows
 
-You can label a subset of genes of interest, useful especially when
-there are too many rows to label everything.
+- `mark_rows` adds labels to the right
+  - Great for labeling genes of interest, especially  
+    when there are too many rows in the heatmap.
+  - We add 5 labels from ‘A’, and 3 labels from ‘D’.
+- In RStudio, you may want to silence some warnings:  
+  `ComplexHeatmap::ht_opt(message=FALSE)`
 
 ``` r
 
 # add "callout" labels for a subset of rows
-mark_rows <- c(sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=5),
-   sample(jamba::heatmap_row_order(hm2drawn)[[1]], size=3));
+hro <- jamba::heatmap_row_order(hm4);
+mark_rows <- c(
+   sample(hro[["A"]], size=5),
+   sample(hro[["D"]], size=3));
 
-# turn off ComplexHeatmap warning when using RStudio
-ComplexHeatmap::ht_opt(message=FALSE)
-
-hm3 <- heatmap_se(se,
+hm5 <- heatmap_se(se,
    mark_rows=mark_rows,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
-   column_split=c("group"),
+   column_split="group",
    column_title_rot=90,
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   row_split="Class",
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm3,
-   column_title=attr(hm3, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm5,
+   column_title=attr(hm5, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_mark_rows-1.png)
 
 ### Display Statistical Hits
 
-The argument `sestats` is used to display statistical hits on the left
-of the heatmap. It can be one of a few data types:
-
-- `list` named by contrast, containing `numeric` vectors
-
-  - Each `numeric` vector is named by `gene`, which should match
-    [`rownames()`](https://rdrr.io/r/base/colnames.html) of the data.
-  - Any non-zero value is considered a “hit”, and usually the vector
-    contains the sign `1` or `-1`.
-
-- `numeric` matrix where
-  [`rownames()`](https://rdrr.io/r/base/colnames.html) match the data,
-  and [`colnames()`](https://rdrr.io/r/base/colnames.html) are used for
-  each comparison.
-
-- `SEStats` object produced by
+- `sestats` enables statistical hits on the left side.
+- It can be a `list` named by contrast, each with:
+  - a `numeric` vector named by `gene` rownames.
+  - values should be `-1` down, or `+1` up.
+  - Any non-zero value is considered a ‘hit’.
+- It can be an incidence matrix.
+  - `rownames` should match some heatmap `rownames`.
+  - `colnames` should be contrast names
+  - values are `numeric`, where `-1` is down, `+1` is up.
+- It can be `SEStats` from
   [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md).
+  - This step is outside the scope, but is convenient!
+  - See [Run Limma Statistics](#Run%20Limma%20Statistics) for an
+    example.
+
+We create a `list` of hit vectors:
 
 ``` r
 
-# sestats can accept list, incidence matrix, hit_array, or sestats
-# this example defines random set of hits
+# define a random set of hits
 sestats_list <- list(
-   contrast1=setNames(sample(c(1, -1), replace=TRUE, size=50),
-      sample(rownames(se), size=50)),
-   contrast2=setNames(sample(c(1, -1), replace=TRUE, size=50),
-      sample(rownames(se), size=50)))
-hm4 <- heatmap_se(se,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+   contrast1=setNames(
+      sample(c(1, -1), replace=TRUE, size=50),
+      sample(rownames(se), size=50)
+   ),
+   contrast2=setNames(
+      sample(c(1, -1), replace=TRUE, size=50),
+      sample(rownames(se), size=50)
+   )
+)
+```
+
+- Now create the heatmap with `sestats`:
+
+``` r
+
+hm6 <- heatmap_se(se,
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
    sestats=sestats_list,
-   column_split=c("group"),
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   column_split="group",
+   row_split="Class",
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm4,
-   column_title=attr(hm4, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm6,
+   column_title=attr(hm6, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_sestats_list-1.png)
 
-### Run Limma Statistics with `se_contrast_stats()`
+### Run Limma Statistics
 
-The
-[`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md)
-function is a wrapper to `limma`, and its supporting functions
-`lmFit()`, `fitContrasts()`, `topTable()`, and even `voom()` when
-appropriate. It also generates stats tables for each contrast in one
-step, then annotates statistical hits that meet the cutoff criteria.
-
-The output is `SEStats` object, which is a convenient way to store
-results from multiple statistical contrasts. It can also perform
-contrasts with multiple `assay_names`.
+- [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md)
+  automates `limma` for multiple contrasts.
+  - It applies `lmFit()`, `fitContrasts()`, `topTable()`,  
+    even `voom()` or `DEqMS` as appropriate.
+  - It analyzes each contrast and assay.
+  - It returns `SEStats`, used directly in the heatmap
 
 ``` r
 
-# it doesn't take much effort to run stats really quick
-sedesign <- groups_to_sedesign(SummarizedExperiment::colData(se)[, "group", drop=FALSE])
+# SEDesign
+sedesign <- groups_to_sedesign(
+   colData(se)[, "group", drop=FALSE])
+# use only "versus groupA"
 contrast_names(sedesign) <- jamba::vigrep("-groupA", contrast_names(sedesign))
-sestats <- se_contrast_stats(se=se,
+
+# run stats
+sestats <- se_contrast_stats(
+   se=se,
    fold_cutoff=4,
-   sedesign=sedesign, assay_name="counts")
-hm4s <- heatmap_se(se,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+   sedesign=sedesign,
+   assay_name="counts")
+```
+
+- Use `SEStats` with
+  [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md):
+
+``` r
+
+hm6s <- heatmap_se(se,
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
    sestats=sestats,
-   column_split=c("group"),
+   column_split="group",
    row_split=6,
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm4s,
-   column_title=attr(hm4s, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm6s,
+   column_title=attr(hm6s, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_se_contrast_stats-1.png)
 
-### Drill Down into a Row Cluster
+### Drill Down by Row Cluster
 
-When clustering rows, it is sometimes useful to look at a particular row
-subcluster to see more detail, perhaps just to read the row labels. The
-argument `row_subcluster` does the work of determining the row order,
-and generating a new heatmap with the same row order, labeled using the
-same cluster names.
+- `row_subcluster="4"` makes it easy to answer  
+  “What is going on with Cluster 4?”
 
 ``` r
 
 # for fun, "drill down" into cluster 5
-hm4s_4 <- heatmap_se(se,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+hm6s_4 <- heatmap_se(se,
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
    sestats=sestats,
-   column_split=c("group"),
+   column_split="group",
    row_split=6,
    row_subcluster=4,
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
 #> Warning: The heatmap has not been initialized. You might have different results
 #> if you repeatedly execute this function, e.g. when row_km/column_km was
 #> set. It is more suggested to do as `ht = draw(ht); row_order(ht)`.
-ComplexHeatmap::draw(hm4s_4,
-   column_title=attr(hm4s_4, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm6s_4,
+   column_title=attr(hm6s_4, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_row_subcluster-1.png)
 
-### Use an Incidence Matrix for `sestats`
+### `sestats` with an Incidence Matrix
+
+- What is an incidence matrix, you say?
+  - We demonstrate what it looks like.
+  - Rows should match `rownames(se)`
+  - Columns are named by statistical contrasts.
 
 ``` r
 
-# sestats can be provided as an incidence matrix
-# convert sestats to list
+# convert sestats to list, then incidence matrix
 sestats_hitlist <- hit_array_to_list(sestats)
-# convert sestats hitlist to incidence matrix
-# - for fun, use only the first two contrasts
 sestats_hitim <- venndir::list2im_value(sestats_hitlist[1:2])
 print(head(sestats_hitim));
 #>          groupB-groupA groupC-groupA
@@ -489,44 +682,33 @@ print(head(sestats_hitim));
 #> row_0075             1             0
 #> row_0080            -1             0
 #> row_0087             1             0
+```
 
-# convert sestats_list to signed incidence matrix
-sestats_im <- venndir::list2im_value(sestats_list)
-print(head(sestats_im, 10));
-#>          contrast1 contrast2
-#> row_0230         1         0
-#> row_0428         1         0
-#> row_0080         1         1
-#> row_0839        -1         0
-#> row_0342        -1         0
-#> row_0370        -1         0
-#> row_0562         1         0
-#> row_0783        -1         0
-#> row_0333         1         0
-#> row_0687        -1         0
-# if the list has items (no direction) use venndir::list2im_opt()
+- Now `sestats_hitim` defines statistical hits.
 
-hm5 <- heatmap_se(se,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+``` r
+
+hm7 <- heatmap_se(se,
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
    sestats=sestats_hitim,
-   column_split=c("group"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   column_split="group",
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm5,
-   column_title=attr(hm5, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm7,
+   column_title=attr(hm7, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_sestats_incidence-1.png)
 
-### Customize Column Label Fonts
+### Customize Column Labels
 
-This option is rarely used, but sometimes helpful. The column labels can
-be customized to use a custom font, bold fontface, or even custom
-colors.
+- Many labels can be customized: size, color, fontface
+  - This example shows how to change the color.
 
 ``` r
 
@@ -534,109 +716,182 @@ colors.
 column_bold <- ifelse(
    SummarizedExperiment::colData(se)$group %in% "groupA",
    2, 1);
-hm6 <- heatmap_se(se,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
-   control_label="vs WildType",
-   column_names_gp=grid::gpar(col=sample_color_list$group[
-      as.character(SummarizedExperiment::colData(se)$group)],
-      font=column_bold),
-   column_split=c("group"),
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+column_colors <- sample_color_list$group[
+   as.character(SummarizedExperiment::colData(se)$group)
+]
+
+hm8 <- heatmap_se(se,
+   controlSamples=use_controlSamples,
+   control_label="vs groupA",
+   column_names_gp=grid::gpar(
+      col=column_colors,
+      font=column_bold
+   ),
+   column_split="group",
+   row_split="Class",
+   rowData_colnames="Class",
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm6,
-   column_title=attr(hm6, "hm_title"),
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm8,
+   column_title=attr(hm8, "hm_title"))
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_column_fonts-1.png)
 
 ### Create a Correlation Heatmap
 
-Any heatmap can be displayed as a “correlation heatmap”. The correlation
-matrix uses the same data that would have been displayed as the centered
-heatmap, except the centered data are used in the correlation
-[`cor()`](https://rdrr.io/r/stats/cor.html) method.
-
-Using centered data for correlation improves the sensitivity especially
-with biological data. It determines correlation using “difference from
-average” which tells whether any changes from average are consistent
-within sample groups, or across sample groups.
-
-A good rule of thumb, if you see a “shadow diagonal line” in this plot,
-it can be one indication of a sample pairing effect. To test a sample
-pairing issue, you may want to use `centerby_colnames` with the pairing
-factor column name.
+- Just add `correlation=TRUE`.
+  - Any heatmap becomes a correlation heatmap,  
+    using the same centered data as displayed  
+    in the normal heatmap.
+  - Centered data are used with
+    [`cor()`](https://rdrr.io/r/stats/cor.html), which is  
+    the recommended way to calculate correlation values.  
+  - It answers “What correlates using difference-from-average?”
+- `cluster_columns=TRUE` enables column clustering.
+- Remove `column_split` to allow unsupervised clustering.
 
 ``` r
 
 # correlation=TRUE, any heatmap becomes a sample correlation heatmap
-hm6corr <- heatmap_se(se,
+hm8corr <- heatmap_se(se,
    correlation=TRUE,
    apply_hm_column_title=TRUE,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
+   controlSamples=use_controlSamples,
    control_label="vs groupA",
-   column_names_gp=grid::gpar(col=sample_color_list$group[
-      as.character(SummarizedExperiment::colData(se)$group)],
-      font=rep(c(1, 2, 1), c(3, 5, 24))),
-   column_split=c("Group"),
+   column_names_gp=grid::gpar(
+      col=column_colors,
+      font=column_bold),
+   cluster_columns=TRUE,
    sample_color_list=sample_color_list)
-ComplexHeatmap::draw(hm6corr,
-   merge_legends=TRUE)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+
+ComplexHeatmap::draw(hm8corr)
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_correlation-1.png)
 
-### Final Heatmap with Grouped Column Labels
+### Add Grouped Column Labels
 
-The final heatmap combines several conveniences:
-
-1.  `apply_hm_column_title=TRUE` applies a heatmap title as
-    `column_title`.
-2.  `top_colnames` hides the annotation.
-3.  [`heatmap_column_group_labels()`](https://jmw86069.github.io/jamses/reference/heatmap_column_group_labels.md)
-    adds grouped labels above the heatmap.
-4.  `hm_title_buffer` adjusts the whitespace for the title and grouped
-    lines.
+- Several features are enabled:
+  - `apply_hm_column_title=TRUE` displays the heatmap title.
+  - `top_colnames=FALSE` hides the top annotation.
+  - [`heatmap_column_group_labels()`](https://jmw86069.github.io/jamses/reference/heatmap_column_group_labels.md)
+    adds grouped labels.
+  - `hm_title_buffer` adds whitespace for the grouped lines.
+- We add two design factors: `Genotype`, `Treatment`
 
 ``` r
 
-SummarizedExperiment::colData(se)$Genotype <- rep(c("WT", "KO"), each=16);
-SummarizedExperiment::colData(se)$Treatment <- rep(c("Control", "Dex"), each=8);
-hm7 <- heatmap_se(se,
+SummarizedExperiment::colData(se)$Genotype <- rep(
+   factor(c("WT", "KO"), levels=c("WT", "KO")),
+   each=16);
+SummarizedExperiment::colData(se)$Treatment <- rep(
+   c("Control", "Dex"), each=8);
+
+hm9 <- heatmap_se(se,
    apply_hm_column_title=TRUE,
    hm_title_buffer=3,
-   controlSamples=rownames(
-      subset(SummarizedExperiment::colData(se), group %in% "groupA")),
-   control_label="vs groupA",
-   sestats=sestats_list,
+   controlSamples=use_controlSamples,
+   control_label="vs WT_Control",
+   sestats=sestats,
    top_colnames=FALSE,
-   column_split=c("group"),
-   row_split=c("Class"),
-   rowData_colnames=c("Class"),
-   cluster_row_slices=FALSE,
+   column_split=c("Genotype", "Treatment"),
+   row_split=6,
    sample_color_list=sample_color_list)
-hm7_drawn <- ComplexHeatmap::draw(hm7,
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+hm9_drawn <- ComplexHeatmap::draw(hm9,
    merge_legends=TRUE)
 
 # now add fancy labels
 heatmap_column_group_labels(
    hm_group_list=c("Treatment", "Genotype"),
+   font_cex=1.2,
    se=se,
-   hm_drawn=hm7_drawn)
+   hm_drawn=hm9_drawn)
 ```
 
 ![](how_to_heatmap_files/figure-html/hm_final-1.png)
 
+- `y_offset_lines` will adjust the height of labels.
+- This step may not work consistently in RStudio.
+  - Call [`dev.new()`](https://rdrr.io/r/grDevices/dev.html) then re-run
+    the steps.
+
+### Change Column Group Order
+
 ``` r
 
-# Note: this step does not work consistently inside RStudio plot pane,
-# in that case call dev.new() then run the step above to create hm7_drawn,
-# then repeat the step below
-#
-# adjust the height of labels with argument y_offset_lines
-# with positive values (upward), or negative values (downward).
+hm10 <- heatmap_se(se,
+   apply_hm_column_title=TRUE,
+   hm_title_buffer=3,
+   controlSamples=use_controlSamples,
+   control_label="vs WT_Control",
+   sestats=sestats,
+   top_colnames=FALSE,
+   column_split=c("Treatment", "Genotype"),
+   row_split=6,
+   sample_color_list=sample_color_list)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+hm10_drawn <- ComplexHeatmap::draw(hm10,
+   merge_legends=TRUE)
+
+# now add fancy labels
+heatmap_column_group_labels(
+   hm_group_list=c("Genotype", "Treatment"),
+   font_cex=1.2,
+   se=se,
+   hm_drawn=hm10_drawn)
 ```
+
+![](how_to_heatmap_files/figure-html/hm_final_part_deux-1.png)
+
+### Center By Genotype
+
+- `centerby_colnames="Genotype"` centers within WT or KO
+- `use_controlSamples_Treat` uses ‘Control’ samples  
+  in both WT and KO.
+  - It shows “Dex - Control” in each Genotype.
+- `column_gap` adds a custom gap between column groups.
+
+``` r
+
+use_controlSamples_Treat <- rownames(
+      subset(colData(se), Treatment %in% "Control"))
+
+hm11 <- heatmap_se(se,
+   apply_hm_column_title=TRUE,
+   hm_title_buffer=3,
+   controlSamples=use_controlSamples_Treat,
+   control_label="vs Control",
+   sestats=sestats,
+   top_colnames=FALSE,
+   centerby_colnames="Genotype",
+   column_split=c("Genotype", "Treatment"),
+   row_split=6,
+   column_gap=grid::unit(c(2, 4, 2), "mm"),
+   sample_color_list=sample_color_list)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+hm11_drawn <- ComplexHeatmap::draw(hm11,
+   merge_legends=TRUE)
+
+# now add fancy labels
+heatmap_column_group_labels(
+   hm_group_list=c("Treatment", "Genotype"),
+   font_cex=1.2,
+   se=se,
+   hm_drawn=hm11_drawn)
+```
+
+![](how_to_heatmap_files/figure-html/hm_centerby_genotype-1.png)

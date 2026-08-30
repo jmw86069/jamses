@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Sort biological sample labels for experimental design</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_groupstosedesign.R" class="external-link"><code>R/jam_groupstosedesign.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_groupstosedesign.R" class="external-link"><code>R/jam_groupstosedesign.R</code></a></small>
       <div class="d-none name"><code>sort_samples.Rd</code></div>
     </div>
 
@@ -72,6 +72,11 @@
 <dd><p>vector of regular expression patterns used to
 determine control terms, where the patterns are matched and
 returned in order.</p></dd>
+
+
+<dt id="arg-sortfunc">sortFunc<a class="anchor" aria-label="anchor" href="#arg-sortfunc"></a></dt>
+<dd><p><code>function</code> to apply sort after other criteria
+are used for ordering.</p></dd>
 
 
 <dt id="arg-pre-control-terms">pre_control_terms<a class="anchor" aria-label="anchor" href="#arg-pre-control-terms"></a></dt>
@@ -140,6 +145,7 @@ be sorted before <code>"Time_12hr"</code>.</p>
 <code><a href="fold_to_log2fold.html">fold_to_log2fold()</a></code>,
 <code><a href="intercalate.html">intercalate()</a></code>,
 <code><a href="list2im_opt.html">list2im_opt()</a></code>,
+<code><a href="list2im_value_internal.html">list2im_value_internal()</a></code>,
 <code><a href="list_to_sestats.html">list_to_sestats()</a></code>,
 <code><a href="log2fold_to_fold.html">log2fold_to_fold()</a></code>,
 <code><a href="make_block_arrow_polygon.html">make_block_arrow_polygon()</a></code>,

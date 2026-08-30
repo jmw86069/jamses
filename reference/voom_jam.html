@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Limma-voom customized for Jam</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
       <div class="d-none name"><code>voom_jam.Rd</code></div>
     </div>
 
@@ -60,6 +60,61 @@
     </div>
 
     <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+
+
+<dl><dt id="arg-counts">counts<a class="anchor" aria-label="anchor" href="#arg-counts"></a></dt>
+<dd><p>a numeric <code>matrix</code> containing raw counts, or an <code>ExpressionSet</code> containing raw counts, or a <code>DGEList</code> object.
+    Counts must be non-negative and NAs are not permitted.</p></dd>
+
+
+<dt id="arg-design">design<a class="anchor" aria-label="anchor" href="#arg-design"></a></dt>
+<dd><p>design matrix with rows corresponding to samples and columns to coefficients to be estimated.
+    Defaults to <code>model.matrix(~group, data=counts$samples)</code> if <code>counts</code> is a DGEList, otherwise defaults to the unit vector meaning that all samples are treated as replicates.</p></dd>
+
+
+<dt id="arg-lib-size">lib.size<a class="anchor" aria-label="anchor" href="#arg-lib-size"></a></dt>
+<dd><p>numeric vector containing the library sizes for each sample.
+    Defaults to the columnwise count totals if <code>counts</code> is a matrix or
+    to <code>normLibSizes(counts)</code> if <code>counts</code> is a <code>DGEList</code>.</p></dd>
+
+
+<dt id="arg-normalize-method">normalize.method<a class="anchor" aria-label="anchor" href="#arg-normalize-method"></a></dt>
+<dd><p>the microarray-style normalization method to be applied to the logCPM values.
+    Choices are as for the <code>method</code> argument of <code>normalizeBetweenArrays</code> when the data is single-channel.</p></dd>
+
+
+<dt id="arg-block">block<a class="anchor" aria-label="anchor" href="#arg-block"></a></dt>
+<dd><p>vector or factor specifying a blocking variable on the samples.
+    Has length equal to the number of samples (<code>ncol(counts)</code>).</p></dd>
+
+
+<dt id="arg-correlation">correlation<a class="anchor" aria-label="anchor" href="#arg-correlation"></a></dt>
+<dd><p>the intrablock correlation.
+    Normally a single numeric value between -1 and 1, but a vector of genewise correlations is also allowed.</p></dd>
+
+
+<dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
+<dd><p>prior weights.
+    Can be a numeric matrix of individual weights of same dimensions as the <code>counts</code>,
+    or a numeric vector of sample weights with length equal to <code>ncol(counts)</code>,
+    or a numeric vector of gene weights with length equal to <code>nrow(counts)</code>.</p></dd>
+
+
+<dt id="arg-span">span<a class="anchor" aria-label="anchor" href="#arg-span"></a></dt>
+<dd><p>width of the smoothing window used for the lowess mean-variance trend.
+    Expressed as a proportion between 0 and 1.</p></dd>
+
+
+<dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
+<dd><p>logical, should a plot of the mean-variance trend be displayed?</p></dd>
+
+
+<dt id="arg-save-plot">save.plot<a class="anchor" aria-label="anchor" href="#arg-save-plot"></a></dt>
+<dd><p>logical, should the coordinates and line of the plot be saved in the output?</p></dd>
+
+</dl></div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is based directly upon <code><a href="https://rdrr.io/pkg/limma/man/voom.html" class="external-link">limma::voom()</a></code> with a
 small adjustment to handle the presence of <code>NA</code> values, which
@@ -78,8 +133,7 @@ producing a result as expected.</p>
 <code><a href="run_limma_replicate.html">run_limma_replicate()</a></code>,
 <code><a href="save_sestats.html">save_sestats()</a></code>,
 <code><a href="se_contrast_stats.html">se_contrast_stats()</a></code>,
-<code><a href="sestats_to_df.html">sestats_to_df()</a></code>,
-<code><a href="sestats_to_dfs.html">sestats_to_dfs()</a></code></p></div>
+<code><a href="sestats_to_df.html">sestats_to_df()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

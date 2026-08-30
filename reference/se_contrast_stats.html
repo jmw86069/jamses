@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute contrast statistics on SummarizedExperiment data</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
       <div class="d-none name"><code>se_contrast_stats.Rd</code></div>
     </div>
 
@@ -233,6 +233,12 @@ and <code>block</code>.</p></li>
 </ul></dd>
 
 
+<dt id="arg-define-hits">define_hits<a class="anchor" aria-label="anchor" href="#arg-define-hits"></a></dt>
+<dd><p><code>logical</code> default TRUE, whether to define hits using
+the cutoffs provided. It will insert columns beginning with <code>"hit "</code>
+for each set of cutoffs applied.</p></dd>
+
+
 <dt id="arg-posthoc-test">posthoc_test<a class="anchor" aria-label="anchor" href="#arg-posthoc-test"></a></dt>
 <dd><p><code>character</code> string indicating an optional post-hoc
 test to apply.</p><ul><li><p><code>"none"</code>: applies <code><a href="https://rdrr.io/pkg/limma/man/ebayes.html" class="external-link">limma::eBayes()</a></code> by default, the moderated t-test.</p></li>
@@ -244,7 +250,7 @@ by the package <code>"DEqMS"</code>. See <code>posthoc_args</code>.</p></li>
 <dt id="arg-posthoc-args">posthoc_args<a class="anchor" aria-label="anchor" href="#arg-posthoc-args"></a></dt>
 <dd><p><code>list</code> named by the <code>posthoc_test</code> above.
 <code>"DEqMS"</code> recognizes two arguments, which are passed to
-<code>DEqMS::spectraCounteBayes()</code>:</p><ul><li><p><code>"PSM_counts"</code>: a <code>numeric</code> vector of peptide spectra matched, one
+<code><a href="https://rdrr.io/pkg/DEqMS/man/spectraCounteBayes.html" class="external-link">DEqMS::spectraCounteBayes()</a></code>:</p><ul><li><p><code>"PSM_counts"</code>: a <code>numeric</code> vector of peptide spectra matched, one
 per <code>igenes</code> or <code>rownames(se)</code>. These values are used by DEqMS to
 model variability based upon the number of spectra as the key
 measure of confidence.</p></li>
@@ -389,6 +395,10 @@ employ some form of randomization.</p></dd>
 
 </dl></div>
     <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p><code>SEStats</code> object</p>
+    </div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is essentially a wrapper around statistical methods
 in the <code>limma</code> package, with additional steps to apply statistical
@@ -437,7 +447,6 @@ be defined, to restrict calculations to use only the subset data.</p>
 <code><a href="run_limma_replicate.html">run_limma_replicate()</a></code>,
 <code><a href="save_sestats.html">save_sestats()</a></code>,
 <code><a href="sestats_to_df.html">sestats_to_df()</a></code>,
-<code><a href="sestats_to_dfs.html">sestats_to_dfs()</a></code>,
 <code><a href="voom_jam.html">voom_jam()</a></code></p></div>
     </div>
 

@@ -288,8 +288,7 @@ Other jam experiment design:
 [`contrasts<-()`](https://jmw86069.github.io/jamses/reference/contrasts-set.md),
 [`contrasts_to_factors()`](https://jmw86069.github.io/jamses/reference/contrasts_to_factors.md),
 [`contrasts_to_venn_setlists()`](https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.md),
-[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design-SEDesign-method.md),
-`design<-,SEDesign,matrix-method`,
+[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design.md),
 [`draw_oneway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_oneway_contrast.md),
 [`factors()`](https://jmw86069.github.io/jamses/reference/factors.md),
 [`filter_contrast_names()`](https://jmw86069.github.io/jamses/reference/filter_contrast_names.md),
@@ -340,8 +339,8 @@ draw_twoway_contrast(
    label=c("contrast one", "contrast two"), verbose=TRUE,
    extend_ex=0.5, extend_angle=10,
    color=colorjam::rainbowJam(12, Crange=c(90, 120)))
-#> (17:55:44) 28Aug2026: draw_twoway_contrast(): hand: right,right,right,left,left,right
-#> (17:55:44) 28Aug2026: draw_twoway_contrast(): new_contrast_angles: 
+#> (01:54:25) 30Aug2026: draw_twoway_contrast(): hand: right,right,right,left,left,right
+#> (01:54:25) 30Aug2026: draw_twoway_contrast(): new_contrast_angles: 
 #>    contrast_angles  hand angle_diff new_contrast_angles
 #> 1                0 right         10                  10
 #> 2              180 right         10                 190
@@ -355,8 +354,8 @@ draw_twoway_contrast(
 #> 10             180  left        -10                 170
 #> 11             -90 right         10                 -80
 #> 12              90 right         10                 100
-#> (17:55:44) 28Aug2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
-#> (17:55:44) 28Aug2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
+#> (01:54:25) 30Aug2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
+#> (01:54:25) 30Aug2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
 
 draw_twoway_contrast(x0=c(4, 3), x1=c(4, 3), y0=c(2, 2), y1=c(1, 1),
    label=c("contrast one", "contrast two"),

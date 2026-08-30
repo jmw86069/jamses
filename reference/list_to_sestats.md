@@ -169,6 +169,7 @@ Other jamses utilities:
 [`fold_to_log2fold()`](https://jmw86069.github.io/jamses/reference/fold_to_log2fold.md),
 [`intercalate()`](https://jmw86069.github.io/jamses/reference/intercalate.md),
 [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md),
+[`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md),
 [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md),
 [`make_block_arrow_polygon()`](https://jmw86069.github.io/jamses/reference/make_block_arrow_polygon.md),
 [`mark_stat_hits()`](https://jmw86069.github.io/jamses/reference/mark_stat_hits.md),

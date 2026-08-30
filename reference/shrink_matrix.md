@@ -49,6 +49,10 @@ shrink_matrix(
 
   logical indicating whether to print verbose output.
 
+- ...:
+
+  additional arguments are ignored.
+
 ## Value
 
 `data.frame` or `matrix` based upon argument `return_class`.
@@ -69,8 +73,8 @@ apply to specific columns, see
 
 Trivia: This function is identical to `splicejam::shrinkDataFrame()`
 except that the default `shrink_func` includes `na.rm=TRUE` and no
-longer calls the [`.Internal()`](https://rdrr.io/r/base/Internal.html)
-function, since that is not permitted by CRAN package guidelines.
+longer calls an internal function, since that is not permitted by CRAN
+package guidelines.
 
 ## See also
 
@@ -81,6 +85,7 @@ Other jamses utilities:
 [`fold_to_log2fold()`](https://jmw86069.github.io/jamses/reference/fold_to_log2fold.md),
 [`intercalate()`](https://jmw86069.github.io/jamses/reference/intercalate.md),
 [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md),
+[`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md),
 [`list_to_sestats()`](https://jmw86069.github.io/jamses/reference/list_to_sestats.md),
 [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md),
 [`make_block_arrow_polygon()`](https://jmw86069.github.io/jamses/reference/make_block_arrow_polygon.md),

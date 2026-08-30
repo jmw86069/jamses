@@ -38,10 +38,9 @@
   : Convert contrasts to data.frame of design factors
 - [`contrasts_to_venn_setlists()`](https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.md)
   : Convert contrast names to Venn setlists for visual comparison
-- [`design(`*`<SEDesign>`*`)`](https://jmw86069.github.io/jamses/reference/design-SEDesign-method.md)
+- [`design(`*`<SEDesign>`*`)`](https://jmw86069.github.io/jamses/reference/design.md)
+  [`` `design<-`( ``*`<SEDesign>`*`,`*`<matrix>`*`)`](https://jmw86069.github.io/jamses/reference/design.md)
   : Design matrix accessor for SEDesign objects
-- [`` `design<-`( ``*`<SEDesign>`*`,`*`<matrix>`*`)`](https://jmw86069.github.io/jamses/reference/design-set-SEDesign-matrix-method.md)
-  : Design matrix setter for SEDesign objects
 - [`detect_heatmap_components()`](https://jmw86069.github.io/jamses/reference/detect_heatmap_components.md)
   : Detect ComplexHeatmap Heatmap grid layout components
 - [`dim()`](https://jmw86069.github.io/jamses/reference/dim-SEDesign-method.md)
@@ -91,6 +90,8 @@
   : Intercalate two or more vectors
 - [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md)
   : Convert list to incidence matrix
+- [`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md)
+  : List to value incidence matrix
 - [`list_to_sestats()`](https://jmw86069.github.io/jamses/reference/list_to_sestats.md)
   : Prepare SEStats from a list of stat data.frame
 - [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md)
@@ -150,8 +151,6 @@
   : Convert SEDesign to data.frame of design factors
 - [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md)
   : Convert sestats to table summary
-- [`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md)
-  : Extract stats as data.frame from SEStats results
 - [`shortest_unique_abbreviation()`](https://jmw86069.github.io/jamses/reference/shortest_unique_abbreviation.md)
   : Find the shortest abbrevation to retain unique values
 - [`shrinkDataFrame()`](https://jmw86069.github.io/jamses/reference/shrinkDataFrame.md)
@@ -160,6 +159,8 @@
   : Shrink data.frame by row groups
 - [`shrink_matrix()`](https://jmw86069.github.io/jamses/reference/shrink_matrix.md)
   : Shrink a numeric matrix by groups of rows
+- [`simulate_se_test()`](https://jmw86069.github.io/jamses/reference/simulate_se_test.md)
+  : Simulate SummarizedExperiment tests
 - [`sort_contrasts()`](https://jmw86069.github.io/jamses/reference/sort_contrasts.md)
   : Sort contrasts by factor and level
 - [`sort_samples()`](https://jmw86069.github.io/jamses/reference/sort_samples.md)

@@ -235,7 +235,6 @@ Other jamses stats:
 [`run_limma_replicate()`](https://jmw86069.github.io/jamses/reference/run_limma_replicate.md),
 [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md),
 [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md),
-[`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md),
 [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)
 
 ## Examples

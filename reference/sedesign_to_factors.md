@@ -61,6 +61,10 @@ sedesign_to_factors(
 
   `logical` indicating whether to print verbose output.
 
+- ...:
+
+  additional arguments are ignored.
+
 ## Value
 
 `data.frame` with one column for each experiment design factor, where
@@ -93,8 +97,7 @@ Other jam experiment design:
 [`contrasts<-()`](https://jmw86069.github.io/jamses/reference/contrasts-set.md),
 [`contrasts_to_factors()`](https://jmw86069.github.io/jamses/reference/contrasts_to_factors.md),
 [`contrasts_to_venn_setlists()`](https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.md),
-[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design-SEDesign-method.md),
-`design<-,SEDesign,matrix-method`,
+[`design,SEDesign-method`](https://jmw86069.github.io/jamses/reference/design.md),
 [`draw_oneway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_oneway_contrast.md),
 [`draw_twoway_contrast()`](https://jmw86069.github.io/jamses/reference/draw_twoway_contrast.md),
 [`factors()`](https://jmw86069.github.io/jamses/reference/factors.md),

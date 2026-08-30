@@ -37,7 +37,7 @@ two block arrows connected in proper order."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Plot sedesign object contrasts</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_plot_sedesign.R" class="external-link"><code>R/jam_plot_sedesign.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_plot_sedesign.R" class="external-link"><code>R/jam_plot_sedesign.R</code></a></small>
       <div class="d-none name"><code>plot_sedesign.Rd</code></div>
     </div>
 
@@ -137,16 +137,20 @@ contrasts are also included.</p></dd>
 
 
 <dt id="arg-contrast-style">contrast_style<a class="anchor" aria-label="anchor" href="#arg-contrast-style"></a></dt>
-<dd><p><code>character</code> string deciding how to format
-the contrast:</p><ul><li><p><code>"comp"</code>: calls contrast2comp()</p></li>
-<li><p><code>"contrast"</code>: uses the contrast as-is</p></li>
-<li><p><code>"none"</code>: hides the contrast label, appending <code>contrast_labels</code>
-when provided</p></li>
+<dd><p><code>character</code> string indicating how to format
+contrast labels displayed on each one-way contrast:</p><ul><li><p><code>"comp"</code>: the abbreviated 'comp' from <code><a href="contrast2comp.html">contrast2comp()</a></code></p></li>
+<li><p><code>"contrast"</code>: the full contrast name</p></li>
+<li><p><code>"none"</code>: hides the contrast name</p></li>
 </ul></dd>
 
 
 <dt id="arg-contrast-labels">contrast_labels<a class="anchor" aria-label="anchor" href="#arg-contrast-labels"></a></dt>
-<dd><p><code>character</code> vector of labels named by contrast</p></dd>
+<dd><p><code>character</code> vector of optional custom labels
+to append to each contrast name. The <code>names(contrast_labels)</code>
+are expected to match contrast names obtained
+from <code>contrast_names(sedesign)</code>.
+Note: When <code>sestats</code> is supplied, <code>contrast_labels</code> are populated
+with the number of statistical hits for each contrast.</p></dd>
 
 
 <dt id="arg-oneway-position-twoway-position">oneway_position, twoway_position<a class="anchor" aria-label="anchor" href="#arg-oneway-position-twoway-position"></a></dt>
@@ -323,10 +327,6 @@ debug output.</p></dd>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments are ignored.</p></dd>
 
-
-<dt id="arg-contrast">contrast<a class="anchor" aria-label="anchor" href="#arg-contrast"></a></dt>
-<dd><p><code>character</code> contrast name</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -414,8 +414,7 @@ once overall.</p></li>
 <code><a href="contrasts-set.html">contrasts&lt;-()</a></code>,
 <code><a href="contrasts_to_factors.html">contrasts_to_factors()</a></code>,
 <code><a href="contrasts_to_venn_setlists.html">contrasts_to_venn_setlists()</a></code>,
-<code><a href="design-SEDesign-method.html">design,SEDesign-method</a></code>,
-<code>design&lt;-,SEDesign,matrix-method</code>,
+<code><a href="design.html">design,SEDesign-method</a></code>,
 <code><a href="draw_oneway_contrast.html">draw_oneway_contrast()</a></code>,
 <code><a href="draw_twoway_contrast.html">draw_twoway_contrast()</a></code>,
 <code><a href="factors.html">factors()</a></code>,

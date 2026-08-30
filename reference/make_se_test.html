@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Make SummarizedExperiment test data</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_sestats_dfs.R" class="external-link"><code>R/jam_sestats_dfs.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_sestats_dfs.R" class="external-link"><code>R/jam_sestats_dfs.R</code></a></small>
       <div class="d-none name"><code>make_se_test.Rd</code></div>
     </div>
 
@@ -66,6 +66,11 @@
 
 <dl><dt id="arg-ngroups">ngroups<a class="anchor" aria-label="anchor" href="#arg-ngroups"></a></dt>
 <dd><p><code>integer</code> number of experimental groups</p></dd>
+
+
+<dt id="arg-nreps">nreps<a class="anchor" aria-label="anchor" href="#arg-nreps"></a></dt>
+<dd><p><code>integer</code> number of replicates per group, can be used
+to provide the number of replicates for each group in order.</p></dd>
 
 
 <dt id="arg-nrow">nrow<a class="anchor" aria-label="anchor" href="#arg-nrow"></a></dt>
@@ -123,11 +128,6 @@ be simulated by using <code>sparsity=c(0.6, 0, 0)</code> for three groups.</p></
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments are ignored.</p></dd>
 
-
-<dt id="arg-mreps">mreps<a class="anchor" aria-label="anchor" href="#arg-mreps"></a></dt>
-<dd><p><code>integer</code> number of replicates per group, can be used
-to provide the number of replicates for each group in order.</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -144,7 +144,8 @@ to provide the number of replicates for each group in order.</p></dd>
 <code><a href="se_rbind.html">se_rbind()</a></code>,
 <code><a href="se_to_assay_data.html">se_to_assay_data()</a></code>,
 <code><a href="se_to_assay_names.html">se_to_assay_names()</a></code>,
-<code><a href="se_to_rowcoldata.html">se_to_rowcoldata()</a></code></p></div>
+<code><a href="se_to_rowcoldata.html">se_to_rowcoldata()</a></code>,
+<code><a href="simulate_se_test.html">simulate_se_test()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -189,6 +190,10 @@ to provide the number of replicates for each group in order.</p></dd>
 <span class="r-plt img"><img src="make_se_test-10.png" alt="" width="768" height="768"></span>
 <span class="r-plt img"><img src="make_se_test-11.png" alt="" width="768" height="768"></span>
 <span class="r-plt img"><img src="make_se_test-12.png" alt="" width="768" height="768"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># data.frame summary</span></span></span>
+<span class="r-in"><span><span class="fu">sestats_to_dfs</span><span class="op">(</span><span class="va">sestats</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in sestats_to_dfs(sestats):</span> could not find function "sestats_to_dfs"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># demonstrate sparsity</span></span></span>
 <span class="r-in"><span><span class="va">se2</span> <span class="op">&lt;-</span> <span class="fu">make_se_test</span><span class="op">(</span>sparsity<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span>;</span></span>

@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create SEDesign from experimental groups</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_groupstosedesign.R" class="external-link"><code>R/jam_groupstosedesign.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_groupstosedesign.R" class="external-link"><code>R/jam_groupstosedesign.R</code></a></small>
       <div class="d-none name"><code>groups_to_sedesign.Rd</code></div>
     </div>
 
@@ -189,17 +189,20 @@ suitable for debugging purposes for example.</p></li>
 </ul></dd>
 
 
+<dt id="arg-default-order">default_order<a class="anchor" aria-label="anchor" href="#arg-default-order"></a></dt>
+<dd><p><code>character</code> string indicating whether to
+sort contrasts:</p><ul><li><p>'none' (default) no sort is applied.</p></li>
+<li><p>'sort_samples' calls <code><a href="sort_samples.html">sort_samples()</a></code></p></li>
+<li><p>'mixedSort' calls <code><a href="https://jmw86069.github.io/jamba/reference/mixedSort.html" class="external-link">jamba::mixedSort()</a></code></p></li>
+</ul></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p><code>logical</code> indicating whether to print verbose output.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments are ignored.</p></dd>
-
-
-<dt id="arg-make-unique">make_unique<a class="anchor" aria-label="anchor" href="#arg-make-unique"></a></dt>
-<dd><p><code>logical</code> indicating whether to make output
-contrasts unique.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -272,8 +275,7 @@ used for things like group names.</p></li>
 <code><a href="contrasts-set.html">contrasts&lt;-()</a></code>,
 <code><a href="contrasts_to_factors.html">contrasts_to_factors()</a></code>,
 <code><a href="contrasts_to_venn_setlists.html">contrasts_to_venn_setlists()</a></code>,
-<code><a href="design-SEDesign-method.html">design,SEDesign-method</a></code>,
-<code>design&lt;-,SEDesign,matrix-method</code>,
+<code><a href="design.html">design,SEDesign-method</a></code>,
 <code><a href="draw_oneway_contrast.html">draw_oneway_contrast()</a></code>,
 <code><a href="draw_twoway_contrast.html">draw_twoway_contrast()</a></code>,
 <code><a href="factors.html">factors()</a></code>,

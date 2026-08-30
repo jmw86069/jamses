@@ -22,6 +22,7 @@ Other jamses utilities:
 [`fold_to_log2fold()`](https://jmw86069.github.io/jamses/reference/fold_to_log2fold.md),
 [`intercalate()`](https://jmw86069.github.io/jamses/reference/intercalate.md),
 [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md),
+[`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md),
 [`list_to_sestats()`](https://jmw86069.github.io/jamses/reference/list_to_sestats.md),
 [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md),
 [`make_block_arrow_polygon()`](https://jmw86069.github.io/jamses/reference/make_block_arrow_polygon.md),
@@ -53,11 +54,11 @@ contrast2comp_dev(contrast_names1)
 
 # Note: this function fails when contrasts are not balanced
 contrast2comp_dev(c("(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): ilist:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): ilist:
 #> $`(A_c-B_c)-(A_d-C_d)`
 #> [1] ""    "A_c" "B_c" "A_d" "C_d"
 #> 
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf:
 #>                                        C                   B A.1 A.2 split1
 #> (A_c-B_c)-(A_d-C_d)2 (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d)   A   c      1
 #> (A_c-B_c)-(A_d-C_d)3 (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d)   B   c      1
@@ -68,21 +69,21 @@ contrast2comp_dev(c("(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 #> (A_c-B_c)-(A_d-C_d)3           A
 #> (A_c-B_c)-(A_d-C_d)4           B
 #> (A_c-B_c)-(A_d-C_d)5           B
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_new:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_new:
 #>                     C                   B A.1 A.2 split2
 #> A (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B   c      1
 #> B (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-C   d      1
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                                       C                   B     A.1 A.2
 #> (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B-A-C c-d
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): two-way imbalance:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): two-way imbalance:
 #>   A.1   A.2 
 #>  TRUE FALSE 
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                         C                      B A.1 A.2                newB
 #> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)
 #> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                         C                      B A.1 A.2                newB
 #> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)
 #> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)
@@ -91,20 +92,20 @@ contrast2comp_dev(c("(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 #> (A_c-B_c)-(A_d-C_d)_v2 A-C:d
 #> [1] "(A-B:c)-(A-C:d)"
 contrast2comp(c("(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
-#> (17:55:19) 28Aug2026: im:
+#> (01:54:02) 30Aug2026: im:
 #>      [,1] [,2]
 #> [1,] "A"  "c" 
 #> [2,] "B"  "c" 
 #> [3,] "A"  "d" 
 #> [4,] "C"  "d" 
-#> (17:55:19) 28Aug2026: imnew:
+#> (01:54:02) 30Aug2026: imnew:
 #>      [,1]  [,2]
 #> [1,] "A-B" "c" 
 #> [2,] "A-C" "d" 
 #> [1] "(A-B:c)-(A-C:d)"
 
 contrast2comp_dev(c(contrast_names1[1:2], "(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): ilist:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): ilist:
 #> $`(A_c-B_c)-(A_d-B_d)`
 #> [1] ""    "A_c" "B_c" "A_d" "B_d"
 #> 
@@ -114,7 +115,7 @@ contrast2comp_dev(c(contrast_names1[1:2], "(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 #> $`(A_c-B_c)-(A_d-C_d)`
 #> [1] ""    "A_c" "B_c" "A_d" "C_d"
 #> 
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf:
 #>                                        C                   B A.1 A.2 split1
 #> (A_c-B_c)-(A_d-B_d)2 (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)   A   c      1
 #> (A_c-B_c)-(A_d-B_d)3 (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)   B   c      1
@@ -137,30 +138,30 @@ contrast2comp_dev(c(contrast_names1[1:2], "(A_c-B_c)-(A_d-C_d)"), verbose=TRUE)
 #> (A_c-B_c)-(A_d-C_d)3           D
 #> (A_c-B_c)-(A_d-C_d)4           E
 #> (A_c-B_c)-(A_d-C_d)5           E
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_new:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_new:
 #>                     C                   B A.1 A.2 split2
 #> A (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) A-B   c      1
 #> B (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) A-B   d      1
 #> C             A_c-B_c             A_c-B_c A-B   c      2
 #> D (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B   c      3
 #> E (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-C   d      3
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                                       C                   B     A.1 A.2
 #> (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d) (A_c-B_c)-(A_d-B_d)     A-B c-d
 #> A_c-B_c                         A_c-B_c             A_c-B_c     A-B   c
 #> (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) (A_c-B_c)-(A_d-C_d) A-B-A-C c-d
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): two-way imbalance:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): two-way imbalance:
 #>        A.1   A.2
 #> [1,] FALSE FALSE
 #> [2,] FALSE FALSE
 #> [3,]  TRUE FALSE
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                         C                      B A.1 A.2                newB
 #> (A_c-B_c)-(A_d-B_d)          (A_c-B_c)-(A_d-B_d) A-B c-d (A_c-B_c)-(A_d-B_d)
 #> A_c-B_c                                  A_c-B_c A-B   c             A_c-B_c
 #> (A_c-B_c)-(A_d-C_d)_v1 v1 (A_c-B_c)-(A_d-C_d)_v1 A-B   c (A_c-B_c)-(A_d-C_d)
 #> (A_c-B_c)-(A_d-C_d)_v2 v2 (A_c-B_c)-(A_d-C_d)_v2 A-C   d (A_c-B_c)-(A_d-C_d)
-#> (17:55:19) 28Aug2026: contrast2comp_dev(): idf_newer:
+#> (01:54:02) 30Aug2026: contrast2comp_dev(): idf_newer:
 #>                         C                      B A.1 A.2                newB
 #> (A_c-B_c)-(A_d-B_d)          (A_c-B_c)-(A_d-B_d) A-B c-d (A_c-B_c)-(A_d-B_d)
 #> A_c-B_c                                  A_c-B_c A-B   c             A_c-B_c

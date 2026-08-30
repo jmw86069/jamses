@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Run limma contrasts with optional probe replicates</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
       <div class="d-none name"><code>run_limma_replicate.Rd</code></div>
     </div>
 
@@ -82,6 +82,12 @@
 whether to return confidence intervals for each log2 fold change.</p></dd>
 
 
+<dt id="arg-trim-colnames">trim_colnames<a class="anchor" aria-label="anchor" href="#arg-trim-colnames"></a></dt>
+<dd><p><code>character</code> vector of column names to remove in the
+output. Defaults are columns not typically used, however may be useful
+for some applications.</p></dd>
+
+
 <dt id="arg-adjp-cutoff-p-cutoff-fold-cutoff-mgm-cutoff-ave-cutoff">adjp_cutoff, p_cutoff, fold_cutoff, mgm_cutoff, ave_cutoff<a class="anchor" aria-label="anchor" href="#arg-adjp-cutoff-p-cutoff-fold-cutoff-mgm-cutoff-ave-cutoff"></a></dt>
 <dd><p><code>numeric</code>
 values representing the appropriate statistical threshold,
@@ -118,6 +124,12 @@ calling <code><a href="https://rdrr.io/pkg/limma/man/dupcor.html" class="externa
 using the statistical thresholds.</p></dd>
 
 
+<dt id="arg-posthoc-test">posthoc_test<a class="anchor" aria-label="anchor" href="#arg-posthoc-test"></a></dt>
+<dd><p><code>character</code> with optional post-hoc test:</p><ul><li><p>'none': default is no post-hoc test.</p></li>
+<li><p>'DEqMS': for proteomics data, applying the <code>DEqMS</code> package approach.</p></li>
+</ul></dd>
+
+
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p><code>numeric</code> value used to define <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> for reproducibility.
 To avoid setting seed, use <code>seed=NULL</code>.</p></dd>
@@ -125,6 +137,10 @@ To avoid setting seed, use <code>seed=NULL</code>.</p></dd>
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p><code>logical</code> indicating whether to print verbose output.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments are ignored.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -178,7 +194,6 @@ is quite low.</p>
 <code><a href="save_sestats.html">save_sestats()</a></code>,
 <code><a href="se_contrast_stats.html">se_contrast_stats()</a></code>,
 <code><a href="sestats_to_df.html">sestats_to_df()</a></code>,
-<code><a href="sestats_to_dfs.html">sestats_to_dfs()</a></code>,
 <code><a href="voom_jam.html">voom_jam()</a></code></p></div>
     </div>
 

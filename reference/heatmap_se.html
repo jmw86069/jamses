@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Heatmap for SummarizedExperiment data</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_sestats_hm.R" class="external-link"><code>R/jam_sestats_hm.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_sestats_hm.R" class="external-link"><code>R/jam_sestats_hm.R</code></a></small>
       <div class="d-none name"><code>heatmap_se.Rd</code></div>
     </div>
 
@@ -1199,13 +1199,13 @@ be converted to <code>SummarizedExperiment</code> like this:</p>
 <span class="r-in"><span><span class="va">sestats_hitlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="hit_array_to_list.html">hit_array_to_list</a></span><span class="op">(</span><span class="va">sestats</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># convert sestats hitlist to incidence matrix</span></span></span>
 <span class="r-in"><span><span class="co"># - for fun, use only the first two contrasts</span></span></span>
-<span class="r-in"><span><span class="va">sestats_hitim</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/list2im_value.html" class="external-link">list2im_value</a></span><span class="op">(</span><span class="va">sestats_hitlist</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sestats_hitim</span> <span class="op">&lt;-</span> <span class="fu"><a href="list2im_value_internal.html">list2im_value_internal</a></span><span class="op">(</span><span class="va">sestats_hitlist</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sestats_hitim</span><span class="op">)</span><span class="op">)</span>;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># convert sestats_list to signed incidence matrix</span></span></span>
-<span class="r-in"><span><span class="va">sestats_im</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/list2im_value.html" class="external-link">list2im_value</a></span><span class="op">(</span><span class="va">sestats_list</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sestats_im</span> <span class="op">&lt;-</span> <span class="fu"><a href="list2im_value_internal.html">list2im_value_internal</a></span><span class="op">(</span><span class="va">sestats_list</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sestats_im</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span>;</span></span>
-<span class="r-in"><span><span class="co"># if the list has items (no direction) use venndir::list2im_opt()</span></span></span>
+<span class="r-in"><span><span class="co"># if the list has items (no direction) use list2im_opt()</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">hm5</span> <span class="op">&lt;-</span> <span class="fu">heatmap_se</span><span class="op">(</span><span class="va">se</span>,</span></span>
 <span class="r-in"><span>   controlSamples<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span></span></span>

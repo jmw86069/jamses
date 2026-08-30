@@ -35,7 +35,7 @@ in a column, with factor levels or with factor level contrasts."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Convert contrasts to data.frame of design factors</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_sedesign_to_factors.R" class="external-link"><code>R/jam_sedesign_to_factors.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_sedesign_to_factors.R" class="external-link"><code>R/jam_sedesign_to_factors.R</code></a></small>
       <div class="d-none name"><code>contrasts_to_factors.Rd</code></div>
     </div>
 
@@ -80,6 +80,13 @@ not supplied.</p></dd>
 <dd><p><code>character</code> string delimited between factors
 used in each group name. It is passed to <code><a href="contrast2comp.html">contrast2comp()</a></code>
 as <code>contrast_factor_delim</code>.</p></dd>
+
+
+<dt id="arg-rowname">rowname<a class="anchor" aria-label="anchor" href="#arg-rowname"></a></dt>
+<dd><p><code>character</code> string indicating which value to use for
+the row names:</p><ul><li><p>'contrast' uses the full contrast (default)</p></li>
+<li><p>'comp' uses the abbreviated comp, from <code><a href="contrast2comp.html">contrast2comp()</a></code></p></li>
+</ul></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -142,8 +149,7 @@ representing the original contrast.</p></li>
 <code><a href="contrasts.html">contrasts()</a></code>,
 <code><a href="contrasts-set.html">contrasts&lt;-()</a></code>,
 <code><a href="contrasts_to_venn_setlists.html">contrasts_to_venn_setlists()</a></code>,
-<code><a href="design-SEDesign-method.html">design,SEDesign-method</a></code>,
-<code>design&lt;-,SEDesign,matrix-method</code>,
+<code><a href="design.html">design,SEDesign-method</a></code>,
 <code><a href="draw_oneway_contrast.html">draw_oneway_contrast()</a></code>,
 <code><a href="draw_twoway_contrast.html">draw_twoway_contrast()</a></code>,
 <code><a href="factors.html">factors()</a></code>,

@@ -44,6 +44,12 @@ run_limma_replicate(
   which defines whether to return confidence intervals for each log2
   fold change.
 
+- trim_colnames:
+
+  `character` vector of column names to remove in the output. Defaults
+  are columns not typically used, however may be useful for some
+  applications.
+
 - adjp_cutoff, p_cutoff, fold_cutoff, mgm_cutoff, ave_cutoff:
 
   `numeric` values representing the appropriate statistical threshold,
@@ -80,6 +86,14 @@ run_limma_replicate(
   `logical` indicating whether to define hits using the statistical
   thresholds.
 
+- posthoc_test:
+
+  `character` with optional post-hoc test:
+
+  - 'none': default is no post-hoc test.
+
+  - 'DEqMS': for proteomics data, applying the `DEqMS` package approach.
+
 - seed:
 
   `numeric` value used to define
@@ -89,6 +103,10 @@ run_limma_replicate(
 - verbose:
 
   `logical` indicating whether to print verbose output.
+
+- ...:
+
+  additional arguments are ignored.
 
 ## Value
 
@@ -146,5 +164,4 @@ Other jamses stats:
 [`save_sestats()`](https://jmw86069.github.io/jamses/reference/save_sestats.md),
 [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md),
 [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md),
-[`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md),
 [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)

@@ -649,8 +649,7 @@
 
   - `contrast_list_by_factor()`: subdivides a set of contrasts by which
     factor is being compared
-  - [`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md):
-    wrapper for
+  - `sestats_to_dfs()`: wrapper for
     [`save_sestats()`](https://jmw86069.github.io/jamses/reference/save_sestats.md)
     which returns the list of `data.frames`.
 

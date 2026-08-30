@@ -203,6 +203,12 @@ se_contrast_stats(
     `block`; and appropriate `correlation` also using the proper
     `weights` and `block`.
 
+- define_hits:
+
+  `logical` default TRUE, whether to define hits using the cutoffs
+  provided. It will insert columns beginning with `"hit "` for each set
+  of cutoffs applied.
+
 - posthoc_test:
 
   `character` string indicating an optional post-hoc test to apply.
@@ -217,7 +223,8 @@ se_contrast_stats(
 - posthoc_args:
 
   `list` named by the `posthoc_test` above. `"DEqMS"` recognizes two
-  arguments, which are passed to `DEqMS::spectraCounteBayes()`:
+  arguments, which are passed to
+  [`DEqMS::spectraCounteBayes()`](https://rdrr.io/pkg/DEqMS/man/spectraCounteBayes.html):
 
   - `"PSM_counts"`: a `numeric` vector of peptide spectra matched, one
     per `igenes` or `rownames(se)`. These values are used by DEqMS to
@@ -387,6 +394,10 @@ se_contrast_stats(
 
   additional arguments are ignored.
 
+## Value
+
+`SEStats` object
+
 ## Details
 
 This function is essentially a wrapper around statistical methods in the
@@ -458,7 +469,6 @@ Other jamses stats:
 [`run_limma_replicate()`](https://jmw86069.github.io/jamses/reference/run_limma_replicate.md),
 [`save_sestats()`](https://jmw86069.github.io/jamses/reference/save_sestats.md),
 [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md),
-[`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md),
 [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)
 
 ## Examples

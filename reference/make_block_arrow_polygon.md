@@ -99,9 +99,26 @@ make_block_arrow_polygon(
   `numeric` head length, a fixed distance from the end of the line
   described between x,y points.
 
+- color, border:
+
+  `character` R color used for the block arrow color fill, and border,
+  respectively.
+
+- gradient_n:
+
+  `integer` default 15, number of steps for the color gradient.
+
+- verbose:
+
+  `logical` indicating whether to print verbose output.
+
 - ...:
 
   additional arguments are ignored.
+
+## Value
+
+`list` based on argument `data_format`.
 
 ## Details
 
@@ -149,6 +166,7 @@ Other jamses utilities:
 [`fold_to_log2fold()`](https://jmw86069.github.io/jamses/reference/fold_to_log2fold.md),
 [`intercalate()`](https://jmw86069.github.io/jamses/reference/intercalate.md),
 [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md),
+[`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md),
 [`list_to_sestats()`](https://jmw86069.github.io/jamses/reference/list_to_sestats.md),
 [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md),
 [`mark_stat_hits()`](https://jmw86069.github.io/jamses/reference/mark_stat_hits.md),

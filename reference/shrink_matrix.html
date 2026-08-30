@@ -35,7 +35,7 @@ function."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Shrink a numeric matrix by groups of rows</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_shrink_matrix.R" class="external-link"><code>R/jam_shrink_matrix.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_shrink_matrix.R" class="external-link"><code>R/jam_shrink_matrix.R</code></a></small>
       <div class="d-none name"><code>shrink_matrix.Rd</code></div>
     </div>
 
@@ -90,6 +90,10 @@ from <code>groups</code>.</p></li>
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>logical indicating whether to print verbose output.</p></dd>
 
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments are ignored.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -108,7 +112,7 @@ function to apply to specific columns, see <code><a href="shrinkDataFrame.html">
 <p>Trivia:
 This function is identical to <code>splicejam::shrinkDataFrame()</code> except
 that the default <code>shrink_func</code> includes <code>na.rm=TRUE</code> and no
-longer calls the <code><a href="https://rdrr.io/r/base/Internal.html" class="external-link">.Internal()</a></code> function, since that is not
+longer calls an internal function, since that is not
 permitted by CRAN package guidelines.</p>
     </div>
     <div class="section level2">
@@ -120,6 +124,7 @@ permitted by CRAN package guidelines.</p>
 <code><a href="fold_to_log2fold.html">fold_to_log2fold()</a></code>,
 <code><a href="intercalate.html">intercalate()</a></code>,
 <code><a href="list2im_opt.html">list2im_opt()</a></code>,
+<code><a href="list2im_value_internal.html">list2im_value_internal()</a></code>,
 <code><a href="list_to_sestats.html">list_to_sestats()</a></code>,
 <code><a href="log2fold_to_fold.html">log2fold_to_fold()</a></code>,
 <code><a href="make_block_arrow_polygon.html">make_block_arrow_polygon()</a></code>,

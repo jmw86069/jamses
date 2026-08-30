@@ -4,6 +4,12 @@
 
 ### Updates
 
+- Removed ‘multienrichjam’ dependency.
+
+- Added ‘Biobase’, ‘DEqMS’.
+
+- Moved ‘venndir’ to Enhances.
+
 - Added ‘Seurat’ to Enhances, added check.
 
 - Added vignette “How to Make a Heatmap” with the basics.
@@ -14,6 +20,10 @@
     incorrect clustering.
   - Reworded help docs for ‘column_split’ and ‘cluster_columns’.
   - Cleaned up some syntax suggested by Arity, nice.
+
+- New function:
+  [`simulate_se_test()`](https://jmw86069.github.io/jamses/reference/simulate_se_test.md)
+  with rudimentary two-factor changes, and adjustable batch effect.
 
 ## jamses 0.0.78.960
 
@@ -1564,18 +1574,21 @@ to `naControlAction`, see below.
   `data.frame` objects.
 
   - The `DEqMS` package produces `numeric` matrix results that it also
-    summarizes into a `data.frame` via `DEqMS::outputResult()`. When
-    there is only one contrast, many of the `numeric` matrix objects
-    also have one column, and R apparently dropped the
+    summarizes into a `data.frame` via
+    [`DEqMS::outputResult()`](https://rdrr.io/pkg/DEqMS/man/outputResult.html).
+    When there is only one contrast, many of the `numeric` matrix
+    objects also have one column, and R apparently dropped the
     [`colnames()`](https://rdrr.io/r/base/colnames.html) for the `sca.t`
-    matrix, causing `DEqMS::outputResult()` to fail when argument
-    `coef_col` is given the `character` name of the contrast instead of
-    the `integer` column number.
+    matrix, causing
+    [`DEqMS::outputResult()`](https://rdrr.io/pkg/DEqMS/man/outputResult.html)
+    to fail when argument `coef_col` is given the `character` name of
+    the contrast instead of the `integer` column number.
   - The contrast name is preserved in the `coefficients` matrix, so the
     contrast is converted to column number, then passed as `coef_col`,
     and resolves the error.
-  - Calls to `DEqMS::outputResult()` use `integer` values for argument
-    `coef_col`.
+  - Calls to
+    [`DEqMS::outputResult()`](https://rdrr.io/pkg/DEqMS/man/outputResult.html)
+    use `integer` values for argument `coef_col`.
   - Some internal step in `DEqMS` does not properly handle data with
     only one contrast, probably forgot to include `drop=FALSE` in matrix
     subsetting.
@@ -1666,12 +1679,15 @@ to `naControlAction`, see below.
     `show_left_annotation_name`, `left_annotation_name_rot` to customize
     these label positions.
   - new arguments `mark_rows` and `mark_labels_gp` used to define
-    `anno_mark()` call-out labels for a subset of rows in the heatmap.
-    This step is difficult to define upfront when the data in `se` is
-    subset by some other aspect of
+    [`anno_mark()`](https://rdrr.io/pkg/ComplexHeatmap/man/anno_mark.html)
+    call-out labels for a subset of rows in the heatmap. This step is
+    difficult to define upfront when the data in `se` is subset by some
+    other aspect of
     [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md),
-    since `anno_mark()` requires numeric index positions for each label,
-    and the order of rows may not be known upfront.
+    since
+    [`anno_mark()`](https://rdrr.io/pkg/ComplexHeatmap/man/anno_mark.html)
+    requires numeric index positions for each label, and the order of
+    rows may not be known upfront.
 
 ### minor bug fixes
 
@@ -1980,8 +1996,9 @@ to `naControlAction`, see below.
   [`ComplexHeatmap::Heatmap()`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html).
   Instead, when `cluster_rows` or `cluster_columns` is a function, the
   function is evaluated upfront, so the resulting dendrogram or hclust
-  is passed to `Heatmap()`, which does permit integer row and column
-  split.
+  is passed to
+  [`Heatmap()`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html),
+  which does permit integer row and column split.
 
   - Note that when `row_split` or `column_split` are not single numeric
     values, the `function` must not be evaluated, otherwise that process
@@ -2046,7 +2063,8 @@ model.
 - [`ebayes2dfs()`](https://jmw86069.github.io/jamses/reference/ebayes2dfs.md)
 
   - argument `lmFit4` is optional and intended to contain additional
-    output from post-hoc methods such as `DEqMS::spectraCounteBayes()`.
+    output from post-hoc methods such as
+    [`DEqMS::spectraCounteBayes()`](https://rdrr.io/pkg/DEqMS/man/spectraCounteBayes.html).
   - argument `trim_colnames` added `"sca.t"` as additional column to
     omit by default.
   - The order of colnames in the `data.frame` returned was updated to be

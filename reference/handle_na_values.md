@@ -101,5 +101,4 @@ Other jamses stats:
 [`save_sestats()`](https://jmw86069.github.io/jamses/reference/save_sestats.md),
 [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md),
 [`sestats_to_df()`](https://jmw86069.github.io/jamses/reference/sestats_to_df.md),
-[`sestats_to_dfs()`](https://jmw86069.github.io/jamses/reference/sestats_to_dfs.md),
 [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)

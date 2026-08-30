@@ -28,6 +28,11 @@ make_se_test(
 
   `integer` number of experimental groups
 
+- nreps:
+
+  `integer` number of replicates per group, can be used to provide the
+  number of replicates for each group in order.
+
 - nrow:
 
   `integer` number of rows (measurements)
@@ -86,11 +91,6 @@ make_se_test(
 
   additional arguments are ignored.
 
-- mreps:
-
-  `integer` number of replicates per group, can be used to provide the
-  number of replicates for each group in order.
-
 ## Value
 
 `SummarizedExperiment` object
@@ -106,7 +106,8 @@ Other jamses SE utilities:
 [`se_rbind()`](https://jmw86069.github.io/jamses/reference/se_rbind.md),
 [`se_to_assay_data()`](https://jmw86069.github.io/jamses/reference/se_to_assay_data.md),
 [`se_to_assay_names()`](https://jmw86069.github.io/jamses/reference/se_to_assay_names.md),
-[`se_to_rowcoldata()`](https://jmw86069.github.io/jamses/reference/se_to_rowcoldata.md)
+[`se_to_rowcoldata()`](https://jmw86069.github.io/jamses/reference/se_to_rowcoldata.md),
+[`simulate_se_test()`](https://jmw86069.github.io/jamses/reference/simulate_se_test.md)
 
 ## Examples
 
@@ -151,6 +152,10 @@ if (jamba::check_pkg_installed("venndir")) {
 
 
 
+
+# data.frame summary
+sestats_to_dfs(sestats)
+#> Error in sestats_to_dfs(sestats): could not find function "sestats_to_dfs"
 
 # demonstrate sparsity
 se2 <- make_se_test(sparsity=c(0.5, 0));

@@ -22,8 +22,7 @@
 <url><loc>https://jmw86069.github.io/jamses/reference/contrasts.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/contrasts_to_factors.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/contrasts_to_venn_setlists.html</loc></url>
-<url><loc>https://jmw86069.github.io/jamses/reference/design-SEDesign-method.html</loc></url>
-<url><loc>https://jmw86069.github.io/jamses/reference/design-set-SEDesign-matrix-method.html</loc></url>
+<url><loc>https://jmw86069.github.io/jamses/reference/design.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/detect_heatmap_components.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/dim-SEDesign-method.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/dimnames-SEDesign-method.html</loc></url>
@@ -48,6 +47,7 @@
 <url><loc>https://jmw86069.github.io/jamses/reference/index.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/intercalate.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/list2im_opt.html</loc></url>
+<url><loc>https://jmw86069.github.io/jamses/reference/list2im_value_internal.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/list_to_sestats.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/log2fold_to_fold.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/make_block_arrow_polygon.html</loc></url>
@@ -77,11 +77,11 @@
 <url><loc>https://jmw86069.github.io/jamses/reference/se_to_rowcoldata.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/sedesign_to_factors.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/sestats_to_df.html</loc></url>
-<url><loc>https://jmw86069.github.io/jamses/reference/sestats_to_dfs.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/shortest_unique_abbreviation.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/shrinkDataFrame.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/shrink_df.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/shrink_matrix.html</loc></url>
+<url><loc>https://jmw86069.github.io/jamses/reference/simulate_se_test.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/sort_contrasts.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/sort_samples.html</loc></url>
 <url><loc>https://jmw86069.github.io/jamses/reference/stack_contrasts.html</loc></url>

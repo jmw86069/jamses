@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Make block arrow polygon coordinates for line segments</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/R/jam_plot_sedesign.R" class="external-link"><code>R/jam_plot_sedesign.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_plot_sedesign.R" class="external-link"><code>R/jam_plot_sedesign.R</code></a></small>
       <div class="d-none name"><code>make_block_arrow_polygon.Rd</code></div>
     </div>
 
@@ -135,10 +135,28 @@ of the arrow.</p></dd>
 the line described between x,y points.</p></dd>
 
 
+<dt id="arg-color-border">color, border<a class="anchor" aria-label="anchor" href="#arg-color-border"></a></dt>
+<dd><p><code>character</code> R color used for the block arrow
+color fill, and border, respectively.</p></dd>
+
+
+<dt id="arg-gradient-n">gradient_n<a class="anchor" aria-label="anchor" href="#arg-gradient-n"></a></dt>
+<dd><p><code>integer</code> default 15, number of steps for the
+color gradient.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p><code>logical</code> indicating whether to print verbose output.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments are ignored.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p><code>list</code> based on argument <code>data_format</code>.</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function defines a block arrow defined by line segments.</p>
@@ -178,6 +196,7 @@ approach, along with the <code>vwline</code> variable grid line package.</p>
 <code><a href="fold_to_log2fold.html">fold_to_log2fold()</a></code>,
 <code><a href="intercalate.html">intercalate()</a></code>,
 <code><a href="list2im_opt.html">list2im_opt()</a></code>,
+<code><a href="list2im_value_internal.html">list2im_value_internal()</a></code>,
 <code><a href="list_to_sestats.html">list_to_sestats()</a></code>,
 <code><a href="log2fold_to_fold.html">log2fold_to_fold()</a></code>,
 <code><a href="mark_stat_hits.html">mark_stat_hits()</a></code>,

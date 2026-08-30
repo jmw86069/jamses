@@ -30,9 +30,17 @@ point_handedness(
 
   `numeric` slope for each point in pt1 and pt2.
 
+- angle:
+
+  `numeric` angle, used as alternative to slope.
+
 - do_plot:
 
   `logical` indicating whether to plot the result.
+
+- verbose:
+
+  `logical` indicating whether to print verbose output.
 
 - ...:
 
@@ -66,6 +74,7 @@ Other jamses utilities:
 [`fold_to_log2fold()`](https://jmw86069.github.io/jamses/reference/fold_to_log2fold.md),
 [`intercalate()`](https://jmw86069.github.io/jamses/reference/intercalate.md),
 [`list2im_opt()`](https://jmw86069.github.io/jamses/reference/list2im_opt.md),
+[`list2im_value_internal()`](https://jmw86069.github.io/jamses/reference/list2im_value_internal.md),
 [`list_to_sestats()`](https://jmw86069.github.io/jamses/reference/list_to_sestats.md),
 [`log2fold_to_fold()`](https://jmw86069.github.io/jamses/reference/log2fold_to_fold.md),
 [`make_block_arrow_polygon()`](https://jmw86069.github.io/jamses/reference/make_block_arrow_polygon.md),

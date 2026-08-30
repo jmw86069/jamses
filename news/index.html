@@ -33,14 +33,17 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.900/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="http://github.com/jmw86069/jamses/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.79.900" id="jamses-0079900">jamses 0.0.79.900<a class="anchor" aria-label="anchor" href="#jamses-0079900"></a></h2>
 <div class="section level3">
 <h3 id="updates-0-0-79-900">Updates<a class="anchor" aria-label="anchor" href="#updates-0-0-79-900"></a></h3>
-<ul><li><p>Added ‘Seurat’ to Enhances, added check.</p></li>
+<ul><li><p>Removed ‘multienrichjam’ dependency.</p></li>
+<li><p>Added ‘Biobase’, ‘DEqMS’.</p></li>
+<li><p>Moved ‘venndir’ to Enhances.</p></li>
+<li><p>Added ‘Seurat’ to Enhances, added check.</p></li>
 <li><p>Added vignette “How to Make a Heatmap” with the basics.</p></li>
 <li>
 <p><code><a href="../reference/heatmap_se.html">heatmap_se()</a></code></p>
@@ -48,6 +51,7 @@
 <li>Reworded help docs for ‘column_split’ and ‘cluster_columns’.</li>
 <li>Cleaned up some syntax suggested by Arity, nice.</li>
 </ul></li>
+<li><p>New function: <code><a href="../reference/simulate_se_test.html">simulate_se_test()</a></code> with rudimentary two-factor changes, and adjustable batch effect.</p></li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -1067,9 +1071,9 @@
 <h3 id="bug-fixes-0-0-28-900">bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-28-900"></a></h3>
 <ul><li>
 <p><code><a href="../reference/se_contrast_stats.html">se_contrast_stats()</a></code> with <code>posthoc_test="DEqMS"</code> and only one contrast threw an error <code>"Error in fit$sca.t[results.table$gene, coef_col] : subscript out of bounds"</code>. The error actually occurs in <code><a href="../reference/ebayes2dfs.html">ebayes2dfs()</a></code> the function that converts statistical model fit into a list of <code>data.frame</code> objects.</p>
-<ul><li>The <code>DEqMS</code> package produces <code>numeric</code> matrix results that it also summarizes into a <code>data.frame</code> via <code>DEqMS::outputResult()</code>. When there is only one contrast, many of the <code>numeric</code> matrix objects also have one column, and R apparently dropped the <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> for the <code>sca.t</code> matrix, causing <code>DEqMS::outputResult()</code> to fail when argument <code>coef_col</code> is given the <code>character</code> name of the contrast instead of the <code>integer</code> column number.</li>
+<ul><li>The <code>DEqMS</code> package produces <code>numeric</code> matrix results that it also summarizes into a <code>data.frame</code> via <code><a href="https://rdrr.io/pkg/DEqMS/man/outputResult.html" class="external-link">DEqMS::outputResult()</a></code>. When there is only one contrast, many of the <code>numeric</code> matrix objects also have one column, and R apparently dropped the <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> for the <code>sca.t</code> matrix, causing <code><a href="https://rdrr.io/pkg/DEqMS/man/outputResult.html" class="external-link">DEqMS::outputResult()</a></code> to fail when argument <code>coef_col</code> is given the <code>character</code> name of the contrast instead of the <code>integer</code> column number.</li>
 <li>The contrast name is preserved in the <code>coefficients</code> matrix, so the contrast is converted to column number, then passed as <code>coef_col</code>, and resolves the error.</li>
-<li>Calls to <code>DEqMS::outputResult()</code> use <code>integer</code> values for argument <code>coef_col</code>.</li>
+<li>Calls to <code><a href="https://rdrr.io/pkg/DEqMS/man/outputResult.html" class="external-link">DEqMS::outputResult()</a></code> use <code>integer</code> values for argument <code>coef_col</code>.</li>
 <li>Some internal step in <code>DEqMS</code> does not properly handle data with only one contrast, probably forgot to include <code>drop=FALSE</code> in matrix subsetting.</li>
 </ul></li>
 </ul></div>
@@ -1119,7 +1123,7 @@
 <li>new argument <code>mark_rows</code> to enable optional <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/anno_mark.html" class="external-link">ComplexHeatmap::anno_mark()</a></code> row labels for a subset of heatmap rows. <code>mark_labels_gp</code> to customize the displayed font.</li>
 <li>new argument <code>right_annotation</code> for custom annotation</li>
 <li>new arguments <code>show_top_annotation_name</code>, <code>show_left_annotation_name</code>, <code>left_annotation_name_rot</code> to customize these label positions.</li>
-<li>new arguments <code>mark_rows</code> and <code>mark_labels_gp</code> used to define <code>anno_mark()</code> call-out labels for a subset of rows in the heatmap. This step is difficult to define upfront when the data in <code>se</code> is subset by some other aspect of <code><a href="../reference/heatmap_se.html">heatmap_se()</a></code>, since <code>anno_mark()</code> requires numeric index positions for each label, and the order of rows may not be known upfront.</li>
+<li>new arguments <code>mark_rows</code> and <code>mark_labels_gp</code> used to define <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/anno_mark.html" class="external-link">anno_mark()</a></code> call-out labels for a subset of rows in the heatmap. This step is difficult to define upfront when the data in <code>se</code> is subset by some other aspect of <code><a href="../reference/heatmap_se.html">heatmap_se()</a></code>, since <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/anno_mark.html" class="external-link">anno_mark()</a></code> requires numeric index positions for each label, and the order of rows may not be known upfront.</li>
 </ul></li>
 </ul></div>
 <div class="section level3">
@@ -1328,7 +1332,7 @@
 <div class="section level3">
 <h3 id="bug-fixes-0-0-16-900">bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-0-16-900"></a></h3>
 <ul><li>
-<p><code><a href="../reference/heatmap_se.html">heatmap_se()</a></code> error when <code>row_split</code> was an integer number of clusters, and <code>cluster_rows</code> is a <code>function</code>, which is not permitted by <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap()</a></code>. Instead, when <code>cluster_rows</code> or <code>cluster_columns</code> is a function, the function is evaluated upfront, so the resulting dendrogram or hclust is passed to <code>Heatmap()</code>, which does permit integer row and column split.</p>
+<p><code><a href="../reference/heatmap_se.html">heatmap_se()</a></code> error when <code>row_split</code> was an integer number of clusters, and <code>cluster_rows</code> is a <code>function</code>, which is not permitted by <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap()</a></code>. Instead, when <code>cluster_rows</code> or <code>cluster_columns</code> is a function, the function is evaluated upfront, so the resulting dendrogram or hclust is passed to <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap()</a></code>, which does permit integer row and column split.</p>
 <ul><li>Note that when <code>row_split</code> or <code>column_split</code> are not single numeric values, the <code>function</code> must not be evaluated, otherwise that process fails. Haha. Makes sense. Now both scenarios are handled, hopefully this covers all scenarios.</li>
 </ul></li>
 </ul></div>
@@ -1367,7 +1371,7 @@
 </ul></li>
 <li>
 <p><code><a href="../reference/ebayes2dfs.html">ebayes2dfs()</a></code></p>
-<ul><li>argument <code>lmFit4</code> is optional and intended to contain additional output from post-hoc methods such as <code>DEqMS::spectraCounteBayes()</code>.</li>
+<ul><li>argument <code>lmFit4</code> is optional and intended to contain additional output from post-hoc methods such as <code><a href="https://rdrr.io/pkg/DEqMS/man/spectraCounteBayes.html" class="external-link">DEqMS::spectraCounteBayes()</a></code>.</li>
 <li>argument <code>trim_colnames</code> added <code>"sca.t"</code> as additional column to omit by default.</li>
 <li>The order of colnames in the <code>data.frame</code> returned was updated to be more consistent for different formats. Specifically, when <code>posthoc_test="DEqMS"</code> the P-value columns sort with the <code>"sca.P.Value"</code> and <code>"sca.adj.pval"</code> columns before the usual limma columns.</li>
 <li>when calling <code><a href="../reference/mark_stat_hits.html">mark_stat_hits()</a></code> it updates the expected colnames when <code>posthoc_test="DEqMS"</code>, using <code>adjp_colname="sca.adj.pval"</code> and <code>p_colname="sca.P.Value"</code>. In this way, hits are filtered by the DEqMS adjusted P-value and P-value, respectively. All other statistics are carried over from <code>lmFit3</code> and work as before.</li>
