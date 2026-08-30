@@ -21,7 +21,11 @@ point_handedness(
 
 \item{slope}{\code{numeric} slope for each point in pt1 and pt2.}
 
+\item{angle}{\code{numeric} angle, used as alternative to slope.}
+
 \item{do_plot}{\code{logical} indicating whether to plot the result.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
 }
@@ -96,6 +100,7 @@ Other jamses utilities:
 \code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
 \code{\link[=intercalate]{intercalate()}},
 \code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list2im_value_internal]{list2im_value_internal()}},
 \code{\link[=list_to_sestats]{list_to_sestats()}},
 \code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
 \code{\link[=make_block_arrow_polygon]{make_block_arrow_polygon()}},

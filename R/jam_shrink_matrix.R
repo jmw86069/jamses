@@ -18,7 +18,7 @@
 #' Trivia:
 #' This function is identical to `splicejam::shrinkDataFrame()` except
 #' that the default `shrink_func` includes `na.rm=TRUE` and no
-#' longer calls the `.Internal()` function, since that is not
+#' longer calls an internal function, since that is not
 #' permitted by CRAN package guidelines.
 #'
 #' @param x `numeric` matrix
@@ -35,6 +35,7 @@
 #'    * `"matrix"` returns a numeric matrix whose rownames are entries
 #'    from `groups`.
 #' @param verbose logical indicating whether to print verbose output.
+#' @param ... additional arguments are ignored.
 #'
 #' @returns `data.frame` or `matrix` based upon argument `return_class`.
 #'

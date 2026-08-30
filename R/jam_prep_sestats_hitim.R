@@ -27,7 +27,9 @@
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `contrast2comp()` if
 #'    relevant.
-#'
+#' 
+#' @returns `numeric` matrix
+#' 
 #' @export
 process_sestats_to_hitim <- function
 (sestats,
@@ -51,17 +53,17 @@ process_sestats_to_hitim <- function
          # assume named directional sestats
          if (verbose) {
             jamba::printDebug("process_sestats_to_hitim(): ",
-               "converting sestats with venndir::list2im_value().");
+               "converting sestats with list2im_value_internal().");
          }
-         gene_hits_im <- venndir::list2im_value(sestats,
+         gene_hits_im <- list2im_value_internal(sestats,
             do_sparse=FALSE);
       } else {
          # assume list of character vectors with rownames(se)
          if (verbose) {
             jamba::printDebug("process_sestats_to_hitim(): ",
-               "converting sestats with venndir::list2im_opt().");
+               "converting sestats with list2im_opt().");
          }
-         gene_hits_im <- venndir::list2im_opt(sestats,
+         gene_hits_im <- list2im_opt(sestats,
             do_sparse=FALSE);
       }
    } else if (inherits(sestats, "SEStats")) {
@@ -70,7 +72,7 @@ process_sestats_to_hitim <- function
       # if input is list, and does contain name "hit_array"
       # it is sestats, so we grab hit_array
       hit_array <- sestats[["hit_array"]];
-   } else if ("matrix" %in% class(sestats)) {
+   } else if (inherits(sestats, "matrix")) {
       # if input is matrix, use directly as gene_hits_im
       gene_hits_im <- sestats;
       hit_array <- NULL;
@@ -94,7 +96,8 @@ process_sestats_to_hitim <- function
    } else {
       if (verbose) {
          jamba::printDebug("process_sestats_to_hitim(): ",
-            "sestats is generating an incidence matrix with hit_array_to_list().");
+            "sestats is generating an incidence matrix with ",
+            "hit_array_to_list().");
       }
       if (length(contrast_names) == 0) {
          contrast_names <- dimnames(hit_array)[[2]];
@@ -105,7 +108,7 @@ process_sestats_to_hitim <- function
          assay_names=assay_names);
       gene_hits <- names(jamba::tcount(names(unlist(unname(
          gene_hitlist)))));
-      gene_hits_im <- venndir::list2im_value(gene_hitlist,
+      gene_hits_im <- list2im_value_internal(gene_hitlist,
          do_sparse=FALSE)[gene_hits, , drop=FALSE];
    }
 

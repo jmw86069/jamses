@@ -38,6 +38,7 @@
 #'    `jamba::mixedSort()` which performs proper alphanumeric sorting,
 #'    such that "Treat2" appears before "Treat10" for example.
 #' @param verbose `logical` indicating whether to print verbose output.
+#' @param ... additional arguments are ignored.
 #'
 #' @examples
 #' isamples_1 <- paste0(
@@ -102,16 +103,16 @@
 #'    se=se)[,1]
 #'
 #' @export
-sedesign_to_factors <- function
-(sedesign,
- se=NULL,
- factor_names=NULL,
- factor_sep="_",
- default_order=c("appearance",
-    "mixedSort"),
- verbose=FALSE,
- ...)
-{
+sedesign_to_factors <- function(
+   sedesign,
+   se=NULL,
+   factor_names=NULL,
+   factor_sep="_",
+   default_order=c("appearance",
+      "mixedSort"),
+   verbose=FALSE,
+   ...
+) {
    # validate arguments
    default_order <- match.arg(default_order);
 
@@ -119,21 +120,6 @@ sedesign_to_factors <- function
    group_names <- groups(sedesign);
 
    # associated samples to groups
-   im2list_internal <- function
-   (x,
-      empty=0,
-      ...)
-   {
-      # the reciprocal of list2im()
-      x_rows <- rownames(x);
-      x_cols <- colnames(x);
-      l <- lapply(jamba::nameVector(x_cols), function(i){
-         i_empty <- as(empty, class(x[,i]));
-         has_value <- (!x[,i] %in% i_empty);
-         x_rows[has_value];
-      });
-      return(l);
-   }
    groups_list <- im2list_internal(jamses::design(sedesign));
    isamples <- unlist(unname(groups_list));
    sample_groups <- jamba::nameVector(
@@ -168,7 +154,7 @@ sedesign_to_factors <- function
                   indent=0)
             }
             ivals <- samples_df[[icol]];
-            icol_name <- NULL;
+            # icol_name <- NULL;
             for (colData_colname in colData_colnames) {
                if (verbose) {
                   jamba::printDebug("Testing values in '",
@@ -327,11 +313,15 @@ sedesign_to_factors <- function
 #'    `SEDesign` object, which is equivalent to argument 'sedesign'.
 #' @param sedesign `SEDesign` object, used when `contrast_names` is
 #'    not supplied.
+#' @param factor_names `character` vector of colnames to use for the resulting
+#'    `data.frame`, typically the name of each experimental factor.
 #' @param factor_sep `character` string delimited between factors
 #'    used in each group name. It is passed to `contrast2comp()`
 #'    as `contrast_factor_delim`.
-#' @param factor_names `character` vector of colnames to use for the resulting
-#'    `data.frame`, typically the name of each experimental factor.
+#' @param rowname `character` string indicating which value to use for
+#'    the row names:
+#'    * 'contrast' uses the full contrast (default)
+#'    * 'comp' uses the abbreviated comp, from `contrast2comp()`
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `contrast2comp()`
 #'    as relevant.
@@ -344,15 +334,15 @@ sedesign_to_factors <- function
 #' contrasts_to_factors(sedesign)
 #'
 #' @export
-contrasts_to_factors <- function
-(contrast_names=NULL,
- sedesign=NULL,
- factor_names=NULL,
- factor_sep="_",
- rowname=c("contrast", "comp"),
- verbose=FALSE,
- ...)
-{
+contrasts_to_factors <- function(
+   contrast_names=NULL,
+   sedesign=NULL,
+   factor_names=NULL,
+   factor_sep="_",
+   rowname=c("contrast", "comp"),
+   verbose=FALSE,
+   ...
+) {
    # validate input data
    rowname <- match.arg(rowname);
    if (inherits(contrast_names, "SEDesign")) {

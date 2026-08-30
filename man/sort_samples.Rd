@@ -27,6 +27,9 @@ sort_samples(
 determine control terms, where the patterns are matched and
 returned in order.}
 
+\item{sortFunc}{\code{function} to apply sort after other criteria
+are used for ordering.}
+
 \item{pre_control_terms}{vector or NULL, optional control
 terms or regular expressions to use before the \code{control_terms}
 above. This argument is used as a convenient prefix to the
@@ -93,6 +96,7 @@ Other jamses utilities:
 \code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
 \code{\link[=intercalate]{intercalate()}},
 \code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list2im_value_internal]{list2im_value_internal()}},
 \code{\link[=list_to_sestats]{list_to_sestats()}},
 \code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
 \code{\link[=make_block_arrow_polygon]{make_block_arrow_polygon()}},

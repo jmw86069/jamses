@@ -36,6 +36,8 @@ from \code{groups}.
 }}
 
 \item{verbose}{logical indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
 }
 \value{
 \code{data.frame} or \code{matrix} based upon argument \code{return_class}.
@@ -59,7 +61,7 @@ function to apply to specific columns, see \code{shrinkDataFrame()}.
 Trivia:
 This function is identical to \code{splicejam::shrinkDataFrame()} except
 that the default \code{shrink_func} includes \code{na.rm=TRUE} and no
-longer calls the \code{.Internal()} function, since that is not
+longer calls an internal function, since that is not
 permitted by CRAN package guidelines.
 }
 \seealso{
@@ -70,6 +72,7 @@ Other jamses utilities:
 \code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
 \code{\link[=intercalate]{intercalate()}},
 \code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list2im_value_internal]{list2im_value_internal()}},
 \code{\link[=list_to_sestats]{list_to_sestats()}},
 \code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
 \code{\link[=make_block_arrow_polygon]{make_block_arrow_polygon()}},

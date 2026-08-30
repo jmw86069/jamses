@@ -74,7 +74,18 @@ of the arrow.}
 \item{head_l}{\code{numeric} head length, a fixed distance from the end of
 the line described between x,y points.}
 
+\item{color, border}{\code{character} R color used for the block arrow
+color fill, and border, respectively.}
+
+\item{gradient_n}{\code{integer} default 15, number of steps for the
+color gradient.}
+
+\item{verbose}{\code{logical} indicating whether to print verbose output.}
+
 \item{...}{additional arguments are ignored.}
+}
+\value{
+\code{list} based on argument \code{data_format}.
 }
 \description{
 Make block arrow polygon coordinates for line segments
@@ -171,6 +182,7 @@ Other jamses utilities:
 \code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
 \code{\link[=intercalate]{intercalate()}},
 \code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list2im_value_internal]{list2im_value_internal()}},
 \code{\link[=list_to_sestats]{list_to_sestats()}},
 \code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
 \code{\link[=mark_stat_hits]{mark_stat_hits()}},

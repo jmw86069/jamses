@@ -18,8 +18,6 @@
 #'    * `data_content=c("contrasts", "hits")` will return `list` which
 #'    includes both the options above.
 #'
-#' @family jamses stats
-#'
 #' @param sestats `SEStats` or `list` output from `se_contrast_stats()`
 #' @param assay_names `character` string indicating which assay names
 #'    to save, stored in `dimnames(sestats@hit_array)$Signal`.
@@ -56,21 +54,23 @@
 #'    When defined, the first column is renamed to `row_type`.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are passed to `save_sestats()`.
-#'
-sestats_to_dfs <- function
-(sestats,
- assay_names=NULL,
- contrast_names=NULL,
- data_content=c("contrasts",
-    "hits"),
- hits_use_lfc=FALSE,
- rename_contrasts=TRUE,
- se=NULL,
- rowData_colnames=NULL,
- row_type="gene_name",
- verbose=FALSE,
- ...)
-{
+#' 
+#' @keywords internal
+#' @noRd
+sestats_to_dfs <- function(
+   sestats,
+   assay_names=NULL,
+   contrast_names=NULL,
+   data_content=c("contrasts",
+      "hits"),
+   hits_use_lfc=FALSE,
+   rename_contrasts=TRUE,
+   se=NULL,
+   rowData_colnames=NULL,
+   row_type="gene_name",
+   verbose=FALSE,
+   ...
+) {
    #
    df_list <- save_sestats(sestats=sestats,
       assay_names=assay_names,
@@ -153,7 +153,10 @@ sestats_to_dfs <- function
 #'    venndir::venndir(hit_array_to_list(sestats), overlap_type="each", proportional=TRUE)
 #'    venndir::venndir(hit_array_to_list(sestats), overlap_type="each", show_labels="ncs")
 #' }
-#'
+#' 
+#' # data.frame summary
+#' sestats_to_dfs(sestats)
+#' 
 #' # demonstrate sparsity
 #' se2 <- make_se_test(sparsity=c(0.5, 0));
 #' hm2a <- heatmap_se(se2,
@@ -189,8 +192,8 @@ make_se_test <- function(
    if (length(ngroups) != 1 || ngroups < 1) {
       ngroups <- 1
    }
-   nreps <- rep(nreps, length.out = ngroups)
-   hit_fraction <- rep(hit_fraction, length.out = ngroups)
+   nreps <- rep_len(nreps, ngroups)
+   hit_fraction <- rep_len(hit_fraction, ngroups)
    if (any(hit_fraction > 1 | is.na(hit_fraction))) {
       hit_fraction[hit_fraction > 1] <- 1
    }
@@ -215,7 +218,7 @@ make_se_test <- function(
 
    # sparsity
    if (length(sparsity) >= 1 && any(sparsity > 0)) {
-      sparsity <- rep(sparsity, length.out = ngroups)
+      sparsity <- rep_len(sparsity, ngroups)
       group_list <- split(sample_names, group_names)
       for (i in seq_along(sparsity)) {
          ivals <- m[, group_list[[i]], drop = FALSE]
@@ -268,11 +271,11 @@ make_se_test <- function(
    }
 
    # simulate some "hits"
-   if (FALSE) {
-      m[1, 4:6] <- m[1, 4:6] + 2
-      m[2, 4:6] <- m[2, 4:6] + 1.5
-      m[3, 4:6] <- m[3, 4:6] - 1.3
-   }
+   # if (FALSE) {
+   #    m[1, 4:6] <- m[1, 4:6] + 2
+   #    m[2, 4:6] <- m[2, 4:6] + 1.5
+   #    m[3, 4:6] <- m[3, 4:6] - 1.3
+   # }
 
    # create SummarizedExperiment
    se <- SummarizedExperiment::SummarizedExperiment(

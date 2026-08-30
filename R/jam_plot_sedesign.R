@@ -332,18 +332,7 @@ plot_sedesign <- function(
    )
 
    # determine group sizes
-   im2list_internal <- function(x, empty = 0, ...) {
-      # the reciprocal of list2im()
-      x_rows <- rownames(x)
-      x_cols <- colnames(x)
-      l <- lapply(jamba::nameVector(x_cols), function(i) {
-         i_empty <- as(empty, class(x[, i]))
-         has_value <- (!x[, i] %in% i_empty)
-         x_rows[has_value]
-      })
-      return(l)
-   }
-   groups_list <- im2list_internal(design(sedesign))
+   groups_list <- im2list_internal(jamses::design(sedesign))
    groups_n <- lengths(groups_list)
    if (verbose) {
       jamba::printDebug("plot_sedesign(): ", "groups_n:")
@@ -360,7 +349,7 @@ plot_sedesign <- function(
    } else {
       # assign given factor_names
       factor_names <- jamba::makeNames(
-         rep(factor_names, length.out = ncol(factors_df)),
+         rep_len(factor_names, ncol(factors_df)),
          startN = 2,
          renameFirst = FALSE
       )
@@ -540,10 +529,12 @@ plot_sedesign <- function(
    # if (length(remaining_values) > 0) {
    #    axis_df$remaining_names <- remaining_values;
    # }
-   use_axis_colnames <- intersect(
-      c(paste0("axis", 1:4), "remaining_values"),
-      colnames(axis_df)
-   )
+
+   # use_axis_colnames <- intersect(
+   #    c(paste0("axis", 1:4), "remaining_values"),
+   #    colnames(axis_df)
+   # )
+
    axis_df$label <- jamba::pasteByRow(
       axis_df[, c("axis1", "axis2", "axis3", "axis4"), drop = FALSE]
    )
@@ -560,11 +551,11 @@ plot_sedesign <- function(
          !all(axis_df$group %in% names(group_fill))
    ) {
       missing_groups <- setdiff(axis_df$group, names(group_fill))
-      group_fill[missing_groups] <- rep(
+      group_fill[missing_groups] <- rep_len(
          group_fill,
-         length.out = length(missing_groups)
+         length(missing_groups)
       )
-      group_fill <- rep(group_fill, length.out = length(axis_df$group))
+      group_fill <- rep_len(group_fill, length(axis_df$group))
       names(group_fill) <- axis_df$group
    }
    if (
@@ -572,11 +563,11 @@ plot_sedesign <- function(
          !all(axis_df$group %in% names(group_border))
    ) {
       missing_groups <- setdiff(axis_df$group, names(group_border))
-      group_border[missing_groups] <- rep(
+      group_border[missing_groups] <- rep_len(
          group_border,
-         length.out = length(missing_groups)
+         length(missing_groups)
       )
-      group_border <- rep(group_border, length.out = length(axis_df$group))
+      group_border <- rep_len(group_border, length(axis_df$group))
       names(group_border) <- axis_df$group
    }
    # jamba::printDebug("factors_df:");print(factors_df);# debug
@@ -616,43 +607,45 @@ plot_sedesign <- function(
    }
 
    # define contrast_labels when sestats is supplied
-   if (length(sestats) > 0) {
-      if (inherits(sestats, "SEStats") ||
-         (inherits(sestats, "list") && "hit_array" %in% names(sestats))) {
-         hit_list <- hit_array_to_list(
-            sestats,
-            assay_names = assay_names,
-            cutoff_names = cutoff_names
-         )
-         contrast_labels_hits <- NULL
-         if (sestats_style %in% c("label", "simple label")) {
-            contrast_labels_hits <- format_hits(hits = hit_list, style = "text")
-            if (sestats_style %in% "simple label") {
-               # remove directional part of the label
-               contrast_labels_hits <- jamba::nameVector(
-                  gsub(" [(].+", "", contrast_labels_hits),
-                  names(contrast_labels_hits)
-               )
-            }
-         } else if (sestats_style %in% "number") {
-            # use only the number of hits
+   if (length(sestats) > 0 &&
+      (
+         inherits(sestats, "SEStats") ||
+            (inherits(sestats, "list") &&
+               "hit_array" %in% names(sestats)))
+   ) {
+      hit_list <- hit_array_to_list(
+         sestats,
+         assay_names = assay_names,
+         cutoff_names = cutoff_names
+      )
+      contrast_labels_hits <- NULL
+      if (sestats_style %in% c("label", "simple label")) {
+         contrast_labels_hits <- format_hits(hits = hit_list, style = "text")
+         if (sestats_style %in% "simple label") {
+            # remove directional part of the label
             contrast_labels_hits <- jamba::nameVector(
-               jamba::formatInt(lengths(hit_list)),
-               names(hit_list)
+               gsub(" [(].+", "", contrast_labels_hits),
+               names(contrast_labels_hits)
             )
          }
-         if (length(contrast_labels) == 0) {
-            contrast_labels <- contrast_labels_hits
-         } else {
-            # combine custom and contrast labels into a list
-            all_labels <- jamba::nameVector(unique(c(
-               names(contrast_labels),
-               names(contrast_labels_hits)
-            )))
-            contrast_labels <- lapply(all_labels, function(iname) {
-               c(contrast_labels[[iname]], contrast_labels_hits[[iname]])
-            })
-         }
+      } else if (sestats_style %in% "number") {
+         # use only the number of hits
+         contrast_labels_hits <- jamba::nameVector(
+            jamba::formatInt(lengths(hit_list)),
+            names(hit_list)
+         )
+      }
+      if (length(contrast_labels) == 0) {
+         contrast_labels <- contrast_labels_hits
+      } else {
+         # combine custom and contrast labels into a list
+         all_labels <- jamba::nameVector(unique(c(
+            names(contrast_labels),
+            names(contrast_labels_hits)
+         )))
+         contrast_labels <- lapply(all_labels, function(iname) {
+            c(contrast_labels[[iname]], contrast_labels_hits[[iname]])
+         })
       }
    }
 
@@ -685,7 +678,7 @@ plot_sedesign <- function(
          )
       }
       contrast_position <- jamba::nameVector(
-         rep(contrast_position, length.out = length(contrast_names)),
+         rep_len(contrast_position, length(contrast_names)),
          contrast_names
       )
    } else {
@@ -784,9 +777,9 @@ plot_sedesign <- function(
       )
       if (length(new_oneway_contrast_position) > 0) {
          contrast_position[new_oneway_contrast_position] <- jamba::nameVector(
-            rep(
+            rep_len(
                oneway_position,
-               length.out = length(new_oneway_contrast_position)
+               length(new_oneway_contrast_position)
             ),
             new_oneway_contrast_position
          )
@@ -974,7 +967,7 @@ plot_sedesign <- function(
    if (length(bump_factor) == 0) {
       bump_factor <- 1
    }
-   bump_factor <- rep(bump_factor, length.out = 2)
+   bump_factor <- rep_len(bump_factor, 2)
    use_bump_factor <- (
       jamba::noiseFloor(
          bump_factor,
@@ -1017,15 +1010,16 @@ plot_sedesign <- function(
       print(contrast_group_df) # debug
    }
 
-   # custom function to handle contrast labeling
-   #' @param contrast `character` contrast name
-   #' @param contrast_labels `character` vector of labels named by contrast
-   #' @param contrast_style `character` string deciding how to format
-   #'    the contrast:
-   #'    * `"comp"`: calls contrast2comp()
-   #'    * `"contrast"`: uses the contrast as-is
-   #'    * `"none"`: hides the contrast label, appending `contrast_labels`
-   #'    when provided
+   ## custom function to handle contrast labeling
+   ## Internal function to handle the contrast label
+   ## param contrast `character` contrast name
+   ## param contrast_labels `character` vector of labels named by contrast
+   ## param contrast_style `character` string deciding how to format
+   ##    the contrast:
+   ##    * `"comp"`: calls contrast2comp()
+   ##    * `"contrast"`: uses the contrast as-is
+   ##    * `"none"`: hides the contrast label, appending `contrast_labels`
+   ##    when provided
    handle_contrast_label <- function(
       contrast,
       contrast_labels,
@@ -1060,7 +1054,7 @@ plot_sedesign <- function(
 
    if ("base" %in% plot_type && TRUE %in% do_plot) {
       if (length(plot_margins) > 0) {
-         plot_margins <- rep(plot_margins, length.out = 4)
+         plot_margins <- rep_len(plot_margins, 4)
          opar <- par(mar = plot_margins)
          on.exit(par(opar), add = TRUE)
       }
@@ -1072,7 +1066,7 @@ plot_sedesign <- function(
       )
 
       # jamba::printDebug("axis_df:");print(axis_df);# debug
-      if (any(!is.na(axis_df$axis1))) {
+      if (!all(is.na(axis_df$axis1))) {
          jamba::groupedAxis(
             side = 1,
             las = 1,
@@ -1082,7 +1076,7 @@ plot_sedesign <- function(
             group_style = "grouped"
          )
       }
-      if (any(!is.na(axis_df$axis2))) {
+      if (!all(is.na(axis_df$axis2))) {
          jamba::groupedAxis(
             side = 2,
             pos = 0.45,
@@ -1091,7 +1085,7 @@ plot_sedesign <- function(
             group_style = "grouped"
          )
       }
-      if (any(!is.na(axis_df$axis3))) {
+      if (!all(is.na(axis_df$axis3))) {
          if (debug) {
             jamba::printDebug("axis3:") # debug
             print(unique(axis_df[, c("axis3", "x_coord")])) # debug
@@ -1105,7 +1099,7 @@ plot_sedesign <- function(
             group_style = "grouped"
          )
       }
-      if (any(!is.na(axis_df$axis4))) {
+      if (!all(is.na(axis_df$axis4))) {
          jamba::groupedAxis(
             side = 4,
             pos = max(axis_df$x_coord, na.rm = TRUE) + 0.55,
@@ -1139,7 +1133,7 @@ plot_sedesign <- function(
                colorset[names(missing_names)] <- new_colorset
             }
          } else {
-            colorset <- rep(colorset, length.out = sum(!is_twoway))
+            colorset <- rep_len(colorset, sum(!is_twoway))
             names(colorset) <- contrast_names[!is_twoway]
          }
       }
@@ -1255,17 +1249,17 @@ plot_sedesign <- function(
       }
       for (i in seq_along(contrast_group_split)[use_contrasts]) {
          idf <- contrast_group_split[[i]]
-         if (length(contrast_depths) > 0 && is.numeric(contrast_depths)) {
-            if (!contrast_depths %in% idf$depth) {
-               if (verbose) {
-                  jamba::printDebug(
-                     "plot_sedesign(): ",
-                     "Skipping contrast with depth=",
-                     head(idf$depth, 1)
-                  )
-               }
-               next
+         if (length(contrast_depths) > 0 &&
+            is.numeric(contrast_depths) &&
+            !contrast_depths %in% idf$depth) {
+            if (verbose) {
+               jamba::printDebug(
+                  "plot_sedesign(): ",
+                  "Skipping contrast with depth=",
+                  head(idf$depth, 1)
+               )
             }
+            next
          }
          if (idf$angle[1] %in% c(0, 180)) {
             idf$y_coord <- idf$y_coord + idf$bump / max_y_bump
@@ -1571,6 +1565,11 @@ plot.SEDesign <- function(x, ...) {
 #'    of the arrow.
 #' @param head_l `numeric` head length, a fixed distance from the end of
 #'    the line described between x,y points.
+#' @param color,border `character` R color used for the block arrow
+#'    color fill, and border, respectively.
+#' @param gradient_n `integer` default 15, number of steps for the
+#'    color gradient.
+#' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
 #' @examples
@@ -1618,28 +1617,31 @@ plot.SEDesign <- function(x, ...) {
 #'       srt=attr(arrowxy, "text_angle")[i],
 #'       label=paste0("label ", i))
 #' }
-#'
+#' 
+#' @returns `list` based on argument `data_format`.
+#' 
 #' @export
-make_block_arrow_polygon <- function
-(x,
- y,
- x1=NULL,
- y1=NULL,
- reference="last",
- data_format=c("grid",
-    "base",
-    "list"),
- arrow_ex=1,
- head_ex=1,
- arrow_w=0.1 * arrow_ex,
- head_w=arrow_w * 0.75 * head_ex,
- head_l=(head_w + arrow_w) * 1.5,
- color=NA,
- border=NA,
- gradient_n=15,
- verbose=FALSE,
- ...)
-{
+make_block_arrow_polygon <- function(
+   x,
+   y,
+   x1=NULL,
+   y1=NULL,
+   reference="last",
+   data_format=c(
+      "grid",
+      "base",
+      "list"),
+   arrow_ex=1,
+   head_ex=1,
+   arrow_w=0.1 * arrow_ex,
+   head_w=arrow_w * 0.75 * head_ex,
+   head_l=(head_w + arrow_w) * 1.5,
+   color=NA,
+   border=NA,
+   gradient_n=15,
+   verbose=FALSE,
+   ...
+) {
    #
    data_format <- match.arg(data_format);
 
@@ -1670,10 +1672,10 @@ make_block_arrow_polygon <- function
    xy_angle <- atan2(y=(y1 - y), x=(x1 - x))
    text_angle <- ((jamba::rad2deg(xy_angle) + 90) %% 180 - 90) %% 360
 
-   arrow_w <- rep(arrow_w, length.out=length(x));
-   head_w <- rep(head_w, length.out=length(x));
-   head_l <- rep(head_l, length.out=length(x));
-   reference <- rep(reference, length.out=length(x));
+   arrow_w <- rep_len(arrow_w, length(x));
+   head_w <- rep_len(head_w, length(x));
+   head_l <- rep_len(head_l, length(x));
+   reference <- rep_len(reference, length(x));
 
    if (verbose) {
       jamba::printDebug("make_block_arrow_polygon(): ",
@@ -1682,11 +1684,11 @@ make_block_arrow_polygon <- function
          arrow_w, head_w, head_l));
    }
 
-   # vectorized format
-   arrow_w_use <- rep(arrow_w, each=7)
-   head_w_use <- rep(head_w, each=7)
-   head_l_use <- rep(head_l, each=7)
-   line_len_use <- rep(line_len, each=7)
+   # # vectorized format
+   # arrow_w_use <- rep(arrow_w, each=7)
+   # head_w_use <- rep(head_w, each=7)
+   # head_l_use <- rep(head_l, each=7)
+   # line_len_use <- rep(line_len, each=7)
 
    # standard block arrow with sufficient line length
    arrow_x_list <- lapply(seq_along(x), function(i){
@@ -1707,6 +1709,7 @@ make_block_arrow_polygon <- function
             line_len[i] - head_l[i],
             0)
       }
+      iarrow_x
    })
    arrow_y_list <- lapply(seq_along(x), function(i){
       if (line_len[i] < head_l[i]) {
@@ -1726,6 +1729,7 @@ make_block_arrow_polygon <- function
             -arrow_w[i],
             -arrow_w[i])
       }
+      iarrow_y
    })
    if (verbose > 1) {
       jamba::printDebug("make_block_arrow_polygon(): ",
@@ -1738,31 +1742,31 @@ make_block_arrow_polygon <- function
    arrow_x <- unlist(arrow_x_list);
    arrow_y <- unlist(arrow_y_list);
 
-   # Previous single-entry block arrow logic
-   if (FALSE) {
-      if (line_len < head_l) {
-         arrow_x <- c(-head_l, -head_l, -head_l,
-            0,
-            -head_l, -head_l, -head_l)
-         arrow_y <- c(0, arrow_w,
-            arrow_w + head_w, 0, -arrow_w - head_w,
-            -arrow_w, 0)
-      } else if (FALSE) {
-         arrow_x <- c(0,
-            line_len - head_l,
-            line_len - head_l,
-            line_len,
-            line_len - head_l,
-            line_len - head_l,
-            0)
-         arrow_y <- c(arrow_w,
-            arrow_w,
-            arrow_w + head_w,
-            0,
-            -arrow_w - head_w,
-            -arrow_w, -arrow_w)
-      }
-   }
+   # # Previous single-entry block arrow logic
+   # if (FALSE) {
+   #    if (line_len < head_l) {
+   #       arrow_x <- c(-head_l, -head_l, -head_l,
+   #          0,
+   #          -head_l, -head_l, -head_l)
+   #       arrow_y <- c(0, arrow_w,
+   #          arrow_w + head_w, 0, -arrow_w - head_w,
+   #          -arrow_w, 0)
+   #    } else if (FALSE) {
+   #       arrow_x <- c(0,
+   #          line_len - head_l,
+   #          line_len - head_l,
+   #          line_len,
+   #          line_len - head_l,
+   #          line_len - head_l,
+   #          0)
+   #       arrow_y <- c(arrow_w,
+   #          arrow_w,
+   #          arrow_w + head_w,
+   #          0,
+   #          -arrow_w - head_w,
+   #          -arrow_w, -arrow_w)
+   #    }
+   # }
 
    # rotate matrix coordinates
    co <- cos(xy_angle)
@@ -1866,7 +1870,7 @@ point_slope_intercept <- function
          byrow=TRUE,
          pt)
    }
-   slope <- rep(slope, length.out=nrow(pt));
+   slope <- rep_len(slope, nrow(pt));
    intercept <- ifelse(is.infinite(slope),
       pt[,1],
       (slope * (-pt[,1])) + pt[,2]);
@@ -1889,7 +1893,9 @@ point_slope_intercept <- function
 #' @param pt1 `numeric` matrix of 2 columns, with x and y coordinates.
 #' @param pt2 `numeric` matrix of 2 columns, with x and y coordinates.
 #' @param slope `numeric` slope for each point in pt1 and pt2.
+#' @param angle `numeric` angle, used as alternative to slope.
 #' @param do_plot `logical` indicating whether to plot the result.
+#' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
 #' @family jamses utilities
@@ -1941,15 +1947,15 @@ point_slope_intercept <- function
 #' point_handedness(pt1, pt2, slope=-Inf, do_plot=TRUE)
 #'
 #' @export
-point_handedness <- function
-(pt1,
- pt2,
- slope=NULL,
- angle=NULL,
- do_plot=FALSE,
- verbose=FALSE,
- ...)
-{
+point_handedness <- function(
+   pt1,
+   pt2,
+   slope=NULL,
+   angle=NULL,
+   do_plot=FALSE,
+   verbose=FALSE,
+   ...
+) {
    # coerce pt1 and pt2 to two-column matrix form with byrow=TRUE
    if (length(dim(pt1)) == 0) {
       pt1 <- matrix(pt1, ncol=2, byrow=TRUE)
@@ -1961,12 +1967,12 @@ point_handedness <- function
       if (length(angle) == 0) {
          stop("Either slope or angle must be supplied.")
       }
-      angle <- rep(angle, length.out=nrow(pt1));
+      angle <- rep_len(angle, nrow(pt1));
       angle <- angle %% 360;
       slope <- sin(jamba::deg2rad(angle)) / cos(jamba::deg2rad(angle))
       slope <- ifelse(slope > 1e8, Inf * sign(slope), slope)
    } else if (length(angle) == 0) {
-      slope <- rep(slope, length.out=nrow(pt1));
+      slope <- rep_len(slope, nrow(pt1));
       angle <- jamba::rad2deg(atan2(y=slope, x=1))
    }
    angle <- angle %% 360;
@@ -2012,7 +2018,7 @@ point_handedness <- function
          abline(v=pt1_intercept[is_inf], col="grey")
          abline(v=pt2_intercept[is_inf], col="grey")
       }
-      if (any(!is_inf)) {
+      if (!all(is_inf)) {
          abline(a=pt1_intercept[!is_inf], b=slope[!is_inf], col="grey")
          abline(a=pt2_intercept[!is_inf], b=slope[!is_inf], col="grey")
       }

@@ -22,26 +22,27 @@ Imports: jamba (>= 1.0.5),
    SummarizedExperiment (>= 1.16.1),
    data.table,
    BiocGenerics,
+   Biobase,
    limma,
    ComplexHeatmap (>= 2.13.4),
-   multienrichjam (>= 0.0.120.900),
    amap,
    cli,
    gridtext,
    methods,
    S7
 Suggests:
-   venndir (>= 0.0.59.900),
    testthat (>= 3.0.0),
    statmod,
    edgeR,
    knitr,
    rmarkdown
 Enhances:
+   venndir (>= 0.0.59.900),
    genejam (>= 0.0.20.900),
    farrisdata,
    ggplot2 (>= 4.0.0),
-   Seurat
+   Seurat,
+   DEqMS
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

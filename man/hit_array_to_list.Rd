@@ -42,7 +42,6 @@ Other jamses stats:
 \code{\link[=save_sestats]{save_sestats()}},
 \code{\link[=se_contrast_stats]{se_contrast_stats()}},
 \code{\link[=sestats_to_df]{sestats_to_df()}},
-\code{\link[=sestats_to_dfs]{sestats_to_dfs()}},
 \code{\link[=voom_jam]{voom_jam()}}
 }
 \concept{jamses stats}

@@ -19,6 +19,58 @@ voom_jam(
   ...
 )
 }
+\arguments{
+\item{counts}{
+    a numeric \code{matrix} containing raw counts, or an \code{ExpressionSet} containing raw counts, or a \code{DGEList} object.
+    Counts must be non-negative and NAs are not permitted.
+  }
+
+\item{design}{
+    design matrix with rows corresponding to samples and columns to coefficients to be estimated.
+    Defaults to \code{model.matrix(~group, data=counts$samples)} if \code{counts} is a DGEList, otherwise defaults to the unit vector meaning that all samples are treated as replicates.
+  }
+
+\item{lib.size}{
+    numeric vector containing the library sizes for each sample.
+    Defaults to the columnwise count totals if \code{counts} is a matrix or
+    to \code{normLibSizes(counts)} if \code{counts} is a \code{DGEList}.
+  }
+
+\item{normalize.method}{
+    the microarray-style normalization method to be applied to the logCPM values.
+    Choices are as for the \code{method} argument of \code{normalizeBetweenArrays} when the data is single-channel.
+  }
+
+\item{block}{
+    vector or factor specifying a blocking variable on the samples.
+    Has length equal to the number of samples (\code{ncol(counts)}).
+  }
+
+\item{correlation}{
+    the intrablock correlation.
+    Normally a single numeric value between -1 and 1, but a vector of genewise correlations is also allowed.
+  }
+
+\item{weights}{
+    prior weights.
+    Can be a numeric matrix of individual weights of same dimensions as the \code{counts},
+    or a numeric vector of sample weights with length equal to \code{ncol(counts)},
+    or a numeric vector of gene weights with length equal to \code{nrow(counts)}.
+  }
+
+\item{span}{
+    width of the smoothing window used for the lowess mean-variance trend.
+    Expressed as a proportion between 0 and 1.
+  }
+
+\item{plot}{
+    logical, should a plot of the mean-variance trend be displayed?
+  }
+
+\item{save.plot}{
+    logical, should the coordinates and line of the plot be saved in the output?
+  }
+}
 \description{
 Limma-voom customized for Jam
 }
@@ -39,7 +91,6 @@ Other jamses stats:
 \code{\link[=run_limma_replicate]{run_limma_replicate()}},
 \code{\link[=save_sestats]{save_sestats()}},
 \code{\link[=se_contrast_stats]{se_contrast_stats()}},
-\code{\link[=sestats_to_df]{sestats_to_df()}},
-\code{\link[=sestats_to_dfs]{sestats_to_dfs()}}
+\code{\link[=sestats_to_df]{sestats_to_df()}}
 }
 \concept{jamses stats}

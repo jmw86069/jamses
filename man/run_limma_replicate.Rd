@@ -37,6 +37,10 @@ run_limma_replicate(
 \item{confint}{\code{logical} passed to \code{limma::topTable()}, which defines
 whether to return confidence intervals for each log2 fold change.}
 
+\item{trim_colnames}{\code{character} vector of column names to remove in the
+output. Defaults are columns not typically used, however may be useful
+for some applications.}
+
 \item{adjp_cutoff, p_cutoff, fold_cutoff, mgm_cutoff, ave_cutoff}{\code{numeric}
 values representing the appropriate statistical threshold,
 or \code{NULL} when a threshold should not be applied.}
@@ -61,10 +65,18 @@ calling \code{limma::duplicateCorrelation()}.}
 \item{define_hits}{\code{logical} indicating whether to define hits
 using the statistical thresholds.}
 
+\item{posthoc_test}{\code{character} with optional post-hoc test:
+\itemize{
+\item 'none': default is no post-hoc test.
+\item 'DEqMS': for proteomics data, applying the \code{DEqMS} package approach.
+}}
+
 \item{seed}{\code{numeric} value used to define \code{set.seed()} for reproducibility.
 To avoid setting seed, use \code{seed=NULL}.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
 }
 \value{
 \code{list} with the following entries:
@@ -122,7 +134,6 @@ Other jamses stats:
 \code{\link[=save_sestats]{save_sestats()}},
 \code{\link[=se_contrast_stats]{se_contrast_stats()}},
 \code{\link[=sestats_to_df]{sestats_to_df()}},
-\code{\link[=sestats_to_dfs]{sestats_to_dfs()}},
 \code{\link[=voom_jam]{voom_jam()}}
 }
 \concept{jamses stats}

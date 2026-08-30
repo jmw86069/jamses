@@ -892,8 +892,9 @@ S7::method(`contrastnames<-`, SEDesign) <- function(object, value) {
 #' @param ... additional arguments are ignored
 #'
 #' @family jam experiment design
-#'
-#' @import BiocGenerics
+#' 
+#' @rdname design
+#' @importFrom BiocGenerics design
 #' @export
 setMethod("design",
    signature=c(object="SEDesign"),
@@ -909,10 +910,10 @@ setMethod("design",
 #'    exactly (when `groups(object)` is already defined); use
 #'    `groups(object) <- ...` to rename design groups instead.
 #' @param ... additional arguments are ignored
-#'
+#' 
+#' @rdname design
 #' @family jam experiment design
-#'
-#' @importFrom BiocGenerics design
+#' @importFrom BiocGenerics "design<-"
 #' @export
 setMethod("design<-",
    signature=c(object="SEDesign",

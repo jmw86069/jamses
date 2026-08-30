@@ -28,6 +28,13 @@ not supplied.}
 used in each group name. It is passed to \code{contrast2comp()}
 as \code{contrast_factor_delim}.}
 
+\item{rowname}{\code{character} string indicating which value to use for
+the row names:
+\itemize{
+\item 'contrast' uses the full contrast (default)
+\item 'comp' uses the abbreviated comp, from \code{contrast2comp()}
+}}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are passed to \code{contrast2comp()}
@@ -108,7 +115,6 @@ Other jam experiment design:
 \code{\link[=contrasts<-]{contrasts<-()}},
 \code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
 \code{\link{design,SEDesign-method}},
-\code{\link{design<-,SEDesign,matrix-method}},
 \code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
 \code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
 \code{\link[=factors]{factors()}},

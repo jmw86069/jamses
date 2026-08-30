@@ -77,16 +77,20 @@ factors to represent on each axis, with axes defined in order
 When a two-way contrast is defined, its component one-way
 contrasts are also included.}
 
-\item{contrast_style}{\code{character} string deciding how to format
-the contrast:
+\item{contrast_style}{\code{character} string indicating how to format
+contrast labels displayed on each one-way contrast:
 \itemize{
-\item \code{"comp"}: calls contrast2comp()
-\item \code{"contrast"}: uses the contrast as-is
-\item \code{"none"}: hides the contrast label, appending \code{contrast_labels}
-when provided
+\item \code{"comp"}: the abbreviated 'comp' from \code{contrast2comp()}
+\item \code{"contrast"}: the full contrast name
+\item \code{"none"}: hides the contrast name
 }}
 
-\item{contrast_labels}{\code{character} vector of labels named by contrast}
+\item{contrast_labels}{\code{character} vector of optional custom labels
+to append to each contrast name. The \code{names(contrast_labels)}
+are expected to match contrast names obtained
+from \code{contrast_names(sedesign)}.
+Note: When \code{sestats} is supplied, \code{contrast_labels} are populated
+with the number of statistical hits for each contrast.}
 
 \item{oneway_position, twoway_position}{\code{numeric} value between 0 and 1,
 which define the default position of each contrast label for one-way
@@ -224,8 +228,6 @@ and potentially labels with markdown markup.
 debug output.}
 
 \item{...}{additional arguments are ignored.}
-
-\item{contrast}{\code{character} contrast name}
 }
 \value{
 invisible \code{list} of \code{data.frame} representing individual
@@ -376,7 +378,6 @@ Other jam experiment design:
 \code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
 \code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
 \code{\link{design,SEDesign-method}},
-\code{\link{design<-,SEDesign,matrix-method}},
 \code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
 \code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
 \code{\link[=factors]{factors()}},

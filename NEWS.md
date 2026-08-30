@@ -2,6 +2,9 @@
 
 ## Updates
 
+* Removed 'multienrichjam' dependency.
+* Added 'Biobase', 'DEqMS'.
+* Moved 'venndir' to Enhances.
 * Added 'Seurat' to Enhances, added check.
 * Added vignette "How to Make a Heatmap" with the basics.
 * `heatmap_se()`

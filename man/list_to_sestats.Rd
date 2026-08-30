@@ -150,6 +150,7 @@ Other jamses utilities:
 \code{\link[=fold_to_log2fold]{fold_to_log2fold()}},
 \code{\link[=intercalate]{intercalate()}},
 \code{\link[=list2im_opt]{list2im_opt()}},
+\code{\link[=list2im_value_internal]{list2im_value_internal()}},
 \code{\link[=log2fold_to_fold]{log2fold_to_fold()}},
 \code{\link[=make_block_arrow_polygon]{make_block_arrow_polygon()}},
 \code{\link[=mark_stat_hits]{mark_stat_hits()}},

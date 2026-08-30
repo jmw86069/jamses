@@ -84,6 +84,9 @@ helpful, in that they should exactly represent the reported \code{logFC}
 value. Sometimes it is helpful and comforting to see the exact values
 used in that calculation.}
 
+\item{transform_means}{\code{character} with optional transformation for
+means when \code{include_group_means=TRUE}.}
+
 \item{rowData_df}{\code{data.frame} representing optional rowData annotation
 to be retained in the resulting stat \code{data.frame}. This argument
 is usually defined using \code{rowData_colnames} in \code{se_contrast_stats()},
@@ -104,7 +107,19 @@ are considered "interaction contrasts". The default pattern recognizes
 any contrasts that contain multiple fold changes, recognized by the
 presence of more than one hypen \code{"-"} in the contrast name.}
 
+\item{trim_colnames}{\code{character} vector of column names to remove in the
+output. Defaults are columns not typically used, however may be useful
+for some applications.}
+
+\item{posthoc_test}{\code{character} with optional post-hoc test:
+\itemize{
+\item 'none': default is no post-hoc test.
+\item 'DEqMS': for proteomics data, applying the \code{DEqMS} package approach.
+}}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
 }
 \value{
 \code{list} with one \code{data.frame} per contrast defined in
@@ -170,7 +185,6 @@ Other jamses stats:
 \code{\link[=save_sestats]{save_sestats()}},
 \code{\link[=se_contrast_stats]{se_contrast_stats()}},
 \code{\link[=sestats_to_df]{sestats_to_df()}},
-\code{\link[=sestats_to_dfs]{sestats_to_dfs()}},
 \code{\link[=voom_jam]{voom_jam()}}
 }
 \concept{jamses stats}

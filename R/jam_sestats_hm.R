@@ -809,13 +809,13 @@
 #' sestats_hitlist <- hit_array_to_list(sestats)
 #' # convert sestats hitlist to incidence matrix
 #' # - for fun, use only the first two contrasts
-#' sestats_hitim <- venndir::list2im_value(sestats_hitlist[1:2])
+#' sestats_hitim <- list2im_value_internal(sestats_hitlist[1:2])
 #' print(head(sestats_hitim));
 #'
 #' # convert sestats_list to signed incidence matrix
-#' sestats_im <- venndir::list2im_value(sestats_list)
+#' sestats_im <- list2im_value_internal(sestats_list)
 #' print(head(sestats_im, 10));
-#' # if the list has items (no direction) use venndir::list2im_opt()
+#' # if the list has items (no direction) use list2im_opt()
 #'
 #' hm5 <- heatmap_se(se,
 #'    controlSamples=rownames(

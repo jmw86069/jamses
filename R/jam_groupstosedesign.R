@@ -114,8 +114,6 @@
 #'    factor defined `treatment <- c("control", "dex", "compoundx")`.
 #'    To prevent a direct comparison of `"dex"` to `"compoundx"`,
 #'    use argument `remove_pairs=list(c("dex", "compoundx"))`.
-#' @param make_unique `logical` indicating whether to make output
-#'    contrasts unique.
 #' @param pre_control_terms `character` vector used to
 #'    place factor levels first in the order of levels, so these
 #'    terms will be the denominator for contrasts. This approach
@@ -143,6 +141,11 @@
 #'    which become `colnames()` of the contrast matrix.
 #'    * `"idesign"`: a `numeric` design matrix as defined by the input data,
 #'    suitable for debugging purposes for example.
+#' @param default_order `character` string indicating whether to
+#'    sort contrasts:
+#'    * 'none' (default) no sort is applied.
+#'    * 'sort_samples' calls `sort_samples()`
+#'    * 'mixedSort' calls `jamba::mixedSort()`
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
 #'
@@ -523,12 +526,12 @@ groups_to_sedesign <- function(
       }
       if (length(group_colnames) > 0) {
          colnames(ifactors) <- jamba::makeNames(
-            rep(group_colnames, length.out = ncol(ifactors)),
+            rep_len(group_colnames, ncol(ifactors)),
             renameFirst = FALSE
          )
       } else {
          colnames(ifactors) <- jamba::makeNames(
-            rep("factor", length.out = ncol(ifactors)),
+            rep_len("factor", ncol(ifactors)),
             suffix = "",
             renameOnes = TRUE
          )
@@ -561,7 +564,7 @@ groups_to_sedesign <- function(
       }
    } else if (
       jamba::igrepHas("data.frame|dataframe|tbl", class(ifactors)) ||
-         ("matrix" %in% class(ifactors) & !is.numeric(ifactors))
+         (inherits(ifactors, "matrix") && !is.numeric(ifactors))
    ) {
       #####################################################
       # data.frame input, or matrix with non-numeric data
@@ -634,7 +637,7 @@ groups_to_sedesign <- function(
             group_colnames <- jamba::makeNames(
                renameOnes = TRUE,
                suffix = "",
-               rep("factor", length.out = ncol(ifactors))
+               rep_len("factor", ncol(ifactors))
             )
             colnames(ifactors) <- group_colnames
          } else {
@@ -665,7 +668,7 @@ groups_to_sedesign <- function(
       # default_order == "asis" will convert character columns to factor
       #    using the observed order of terms as factor levels
       for (icol in group_colnames) {
-         if ("factor" %in% class(ifactors[, icol])) {
+         if (inherits(ifactors[, icol], "factor")) {
             factor_levels <- levels(ifactors[, icol])
             if (length(pre_control_terms) > 0) {
                factor_levels <- unique(c(
@@ -838,12 +841,12 @@ groups_to_sedesign <- function(
       )
       if (length(group_colnames) > 0) {
          colnames(ifactors) <- jamba::makeNames(
-            rep(group_colnames, length.out = ncol(ifactors)),
+            rep_len(group_colnames, ncol(ifactors)),
             renameFirst = FALSE
          )
       } else {
          colnames(ifactors) <- jamba::makeNames(
-            rep("factor", length.out = ncol(ifactors)),
+            rep_len("factor", ncol(ifactors)),
             renameOnes = TRUE,
             suffix = ""
          )
@@ -947,7 +950,7 @@ groups_to_sedesign <- function(
    ## Check to make sure no factor levels contain "-"
    for (i in colnames(ifactors)) {
       if (jamba::igrepHas("-", ifactors[, i])) {
-         ifactors[, i] <- gsub("-", ".", ifactors[, i])
+         ifactors[, i] <- gsub("-", ".", fixed=TRUE, ifactors[, i])
       }
    }
 
@@ -1082,12 +1085,12 @@ groups_to_sedesign <- function(
                   }
                   iCombn <- combn(iMatch, 2)
                   iGrp1 <- ifelse(
-                     grepl("-", rownames(iFactorsSub)[iCombn[2, ]]),
+                     grepl("-", fixed=TRUE, rownames(iFactorsSub)[iCombn[2, ]]),
                      paste0("(", rownames(iFactorsSub)[iCombn[2, ]], ")"),
                      rownames(iFactorsSub)[iCombn[2, ]]
                   )
                   iGrp2 <- ifelse(
-                     grepl("-", rownames(iFactorsSub)[iCombn[1, ]]),
+                     grepl("-", fixed=TRUE, rownames(iFactorsSub)[iCombn[1, ]]),
                      paste0("(", rownames(iFactorsSub)[iCombn[1, ]], ")"),
                      rownames(iFactorsSub)[iCombn[1, ]]
                   )
@@ -1158,8 +1161,8 @@ groups_to_sedesign <- function(
 
       # Always make each row unique in terms of the factors compared.
       # Note: This step enforces order of comparison in two-way contrasts.
-      # if (make_unique) {
-      if (TRUE) {
+      make_unique <- TRUE;
+      if (make_unique) {
          iDFcomponents <- jamba::pasteByRow(
             iContrastNames[,
                setdiff(colnames(iContrastNames), "contrastName"),
@@ -1182,7 +1185,7 @@ groups_to_sedesign <- function(
                sep = "\n"
             )
          }
-         if (verbose && any(duplicated(iDFcomponents))) {
+         if (verbose && anyDuplicated(iDFcomponents)) {
             dupe_comps <- iDFcomponents[duplicated(iDFcomponents)]
             dupe_kept_df <- data.frame(
                stringsAsFactors = FALSE,
@@ -1334,7 +1337,7 @@ groups_to_sedesign <- function(
          if (
             length(iContrastNamesInt) > 0 &&
                ncol(iContrastNamesInt$contrast_df) > 1 &&
-               any(is.na(iContrastNamesInt$contrast_df[, 1]))
+               anyNA(iContrastNamesInt$contrast_df[, 1])
          ) {
             iContrastNamesInt$contrast_df <- subset(
                iContrastNamesInt$contrast_df,
@@ -1474,6 +1477,8 @@ groups_to_sedesign <- function(
 #' @param control_terms vector of regular expression patterns used to
 #'    determine control terms, where the patterns are matched and
 #'    returned in order.
+#' @param sortFunc `function` to apply sort after other criteria
+#'    are used for ordering.
 #' @param pre_control_terms vector or NULL, optional control
 #'    terms or regular expressions to use before the `control_terms`
 #'    above. This argument is used as a convenient prefix to the
@@ -1558,7 +1563,7 @@ sort_samples <- function
          control_terms1 <- unlist(lapply(control_terms, function(i){
             paste0("(_|\\b)(", i, ")|(", i, ")(_|\\b)")
          }))
-         if (any(!boundary)) {
+         if (!all(boundary)) {
             control_terms <- c(control_terms1,
                control_terms);
          } else {
@@ -1682,7 +1687,7 @@ intercalate <- function
    ##
    ## Note: rmNULL() will remove empty lists
    aList <- jamba::rmNULL(list(...));
-   if (length(aList) == 1 && class(aList[[1]]) %in% "list") {
+   if (length(aList) == 1 && inherits(aList[[1]], "list")) {
       aList <- aList[[1]];
    }
    ## do.call will automatically repeat any vector to fill each row
@@ -1709,42 +1714,3 @@ intercalate <- function
 }
 
 
-#' Convert list to incidence matrix
-#'
-#' Convert list to incidence matrix
-#'
-#' @param setlist `list` of vectors
-#' @param empty default single value used for empty/missing entries.
-#' @param do_sparse `logical` indicating whether to convert output
-#'    to `ngCMatrix` which is best for extremely large incidence
-#'    matrix data.
-#' @param ... additional arguments are ignored.
-#'
-#' @family jamses utilities
-#'
-#' @export
-list2im_opt <- function
-(setlist,
- empty=0,
- do_sparse=FALSE,
- ...)
-{
-   setnamesunion <- Reduce("union", setlist);
-   if (length(empty) == 0) {
-      empty <- NA;
-   } else {
-      empty <- head(empty, 1);
-   }
-   setlistim <- do.call(cbind, lapply(setlist, function(i){
-      i_match <- match(i, setnamesunion);
-      j <- rep(empty,
-         length(setnamesunion));
-      j[i_match] <- 1;
-      j;
-   }))
-   rownames(setlistim) <- setnamesunion;
-   if (TRUE %in% do_sparse) {
-      setlistim <- as(setlistim, "ngCMatrix");
-   }
-   return(setlistim);
-}

@@ -360,7 +360,6 @@ Other jam experiment design:
 \code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
 \code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
 \code{\link{design,SEDesign-method}},
-\code{\link{design<-,SEDesign,matrix-method}},
 \code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
 \code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
 \code{\link[=factors]{factors()}},

@@ -96,6 +96,9 @@ if (jamba::check_pkg_installed("venndir")) {
    venndir::venndir(hit_array_to_list(sestats), overlap_type="each", show_labels="ncs")
 }
 
+# data.frame summary
+sestats_to_dfs(sestats)
+
 # demonstrate sparsity
 se2 <- make_se_test(sparsity=c(0.5, 0));
 hm2a <- heatmap_se(se2,

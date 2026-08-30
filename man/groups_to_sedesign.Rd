@@ -120,12 +120,17 @@ which become \code{colnames()} of the contrast matrix.
 suitable for debugging purposes for example.
 }}
 
+\item{default_order}{\code{character} string indicating whether to
+sort contrasts:
+\itemize{
+\item 'none' (default) no sort is applied.
+\item 'sort_samples' calls \code{sort_samples()}
+\item 'mixedSort' calls \code{jamba::mixedSort()}
+}}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
-
-\item{make_unique}{\code{logical} indicating whether to make output
-contrasts unique.}
 }
 \value{
 \code{SEDesign} object with the following slots:
@@ -314,7 +319,6 @@ Other jam experiment design:
 \code{\link[=contrasts_to_factors]{contrasts_to_factors()}},
 \code{\link[=contrasts_to_venn_setlists]{contrasts_to_venn_setlists()}},
 \code{\link{design,SEDesign-method}},
-\code{\link{design<-,SEDesign,matrix-method}},
 \code{\link[=draw_oneway_contrast]{draw_oneway_contrast()}},
 \code{\link[=draw_twoway_contrast]{draw_twoway_contrast()}},
 \code{\link[=factors]{factors()}},

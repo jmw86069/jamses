@@ -164,6 +164,10 @@ and \code{block} in order to calculate improved \code{correlation}.
 and \code{block}.
 }}
 
+\item{define_hits}{\code{logical} default TRUE, whether to define hits using
+the cutoffs provided. It will insert columns beginning with \code{"hit "}
+for each set of cutoffs applied.}
+
 \item{posthoc_test}{\code{character} string indicating an optional post-hoc
 test to apply.
 \itemize{
@@ -301,6 +305,9 @@ employ some form of randomization.}
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
+}
+\value{
+\code{SEStats} object
 }
 \description{
 Compute contrast statistics on SummarizedExperiment data
@@ -534,7 +541,6 @@ Other jamses stats:
 \code{\link[=run_limma_replicate]{run_limma_replicate()}},
 \code{\link[=save_sestats]{save_sestats()}},
 \code{\link[=sestats_to_df]{sestats_to_df()}},
-\code{\link[=sestats_to_dfs]{sestats_to_dfs()}},
 \code{\link[=voom_jam]{voom_jam()}}
 }
 \concept{jamses stats}
