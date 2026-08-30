@@ -1,3 +1,10 @@
+# jamses 0.0.79.950
+
+## Updates
+
+* Updated vignette: "How to Make a Heatmap"
+* Updated README.
+
 # jamses 0.0.79.900
 
 ## Updates

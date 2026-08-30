@@ -24,8 +24,12 @@ Load R packages:
 
 ```{r setup, warn=FALSE}
 library(jamses)
+suppressPackageStartupMessages(
 library(SummarizedExperiment)
+)
+suppressPackageStartupMessages(
 library(ComplexHeatmap)
+)
 ```
 
 Make the heatmap:
@@ -37,11 +41,12 @@ heatmap_se(se)
 The defaults are very good.  
 The custom options are great.
 
-## Why SummarizedExperiment?
+# Why SummarizedExperiment?
 
 <details><summary>**`SummarizedExperiment` is an enhanced data matrix**</summary>
 
-* It stores multiple data matrices. Some examples:
+* It stores multiple data matrices.  
+Some examples:
    * Raw
    * normalized
    * batch-adjusted
@@ -67,7 +72,7 @@ The custom options are great.
 See the [SummarizedExperiment vignette](https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html)
 for more detail.
 
-## Heatmap Principles
+# Heatmap Principles
 
 <details><summary>**The `heatmap_se()` is opinionated.**</summary>
 

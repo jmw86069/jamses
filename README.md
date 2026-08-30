@@ -58,7 +58,13 @@ opinions.
 - Data are **not scaled**.
 - Row and Column annotations are “easy”.
 
+<details>
+
+<summary>
+
 ## Approach for Statistical Contrasts
+
+</summary>
 
 [The Limma User’s
 Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
@@ -107,6 +113,8 @@ how estimates are reported.
 
       (B_treated - B_knockout) # incompatible one-way contrast
 
+</details>
+
 ## SEDesign: Design and Contrasts
 
 - `groups_to_sedesign()` takes by default a `data.frame` where each
@@ -124,41 +132,221 @@ provided as a `data.frame` with two columns.
 
 ``` r
 library(jamses)
-library(kableExtra)
 
 igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
    rep(c("Control", "Treated"), each=3),
    sep="_"),
    suffix="_rep");
 igroups <- factor(igroups, levels=unique(igroups));
-# jamba::kable_coloring(color_cells=FALSE,
-#    format="markdown",
-#    caption="Sample to group association",
-#    data.frame(groups=igroups))
-knitr::kable(data.frame(groups=igroups))
+
+jamba::kable_coloring(color_cells=FALSE,
+   caption="Sample to group association",
+   data.frame(groups=igroups))
 ```
 
-|                 | groups     |
-|:----------------|:-----------|
-| WT_Control_rep1 | WT_Control |
-| WT_Control_rep2 | WT_Control |
-| WT_Control_rep3 | WT_Control |
-| WT_Treated_rep1 | WT_Treated |
-| WT_Treated_rep2 | WT_Treated |
-| WT_Treated_rep3 | WT_Treated |
-| KO_Control_rep1 | KO_Control |
-| KO_Control_rep2 | KO_Control |
-| KO_Control_rep3 | KO_Control |
-| KO_Treated_rep1 | KO_Treated |
-| KO_Treated_rep2 | KO_Treated |
-| KO_Treated_rep3 | KO_Treated |
+<table class="table" style="margin-left: auto; margin-right: auto;">
+
+<caption>
+
+Sample to group association
+</caption>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+groups
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control_rep1
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control_rep2
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control_rep3
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated_rep1
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated_rep2
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated_rep3
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+WT_Treated
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control_rep1
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control_rep2
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control_rep3
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Control
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated_rep1
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated_rep2
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated_rep3
+</td>
+
+<td style="text-align:left;border-left:1px solid #DDDDDD;white-space: nowrap;">
+
+KO_Treated
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 The resulting design and contrasts matrices are shown below:
 
 ``` r
 sedesign <- groups_to_sedesign(igroups);
 jamba::kable_coloring(
-# knitr::kable(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
@@ -559,7 +747,6 @@ KO_Treated_rep3
 
 ``` r
 
-# knitr::kable(
 jamba::kable_coloring(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Contrast matrix output from contrasts(sedesign).",
@@ -757,16 +944,17 @@ For convenience, SEDesign can be visualized using `plot_sedesign()`:
 ``` r
 # plot the design and contrasts
 plot_sedesign(sedesign);
-title(main="plot_sedesign(sedesign)\noutput:")
+title(main="plot_sedesign(sedesign):")
 ```
 
 ![](man/figures/README-plot_sedesign-1.png)<!-- -->
 
-- Two-way contrasts are indicated by the “squiggly curved line” which
-  connects the end of one contrast to the beginning of the next
-  contrast. This connection describes the first contrast, subtracted by
-  the second contrast.
+- One-way contrasts are shown with a wide block arrow.
 
-## Future work:
+- Two-way contrasts are shown by connecting two block arrows with a
+  “squiggly curved line”.
 
-- Enable equivalent analyses using `DESeq2`, `edgeR` methodology.
+  - It connects the end of one contrast\
+    to the beginning of the next contrast.
+  - The order indicates that the first contrast is subtracted by the
+    second contrast.

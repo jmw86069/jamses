@@ -76,7 +76,9 @@ applies some opinions.
 * Row and Column annotations are "easy".
 
 
+<details><summary>
 ## Approach for Statistical Contrasts
+</summary>
 
 [The Limma User's Guide](https://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/)
 (LUG) is an amazing resource which describes numerous approaches for
@@ -117,6 +119,7 @@ the model fit, see LUG for details.
    (B_treated - B_knockout) # incompatible one-way contrast
    ```
 
+</details>
 
 ## SEDesign: Design and Contrasts
 
@@ -136,19 +139,16 @@ The same data can be provided as a `data.frame` with two columns.
 
 ```{r sedesign, collapse=TRUE}
 library(jamses)
-library(kableExtra)
 
 igroups <- jamba::nameVector(paste(rep(c("WT", "KO"), each=6),
    rep(c("Control", "Treated"), each=3),
    sep="_"),
    suffix="_rep");
 igroups <- factor(igroups, levels=unique(igroups));
-# jamba::kable_coloring(color_cells=FALSE,
-#    format="markdown",
-#    caption="Sample to group association",
-#    data.frame(groups=igroups))
-knitr::kable(data.frame(groups=igroups))
 
+jamba::kable_coloring(color_cells=FALSE,
+   caption="Sample to group association",
+   data.frame(groups=igroups))
 ```
 
 The resulting design and contrasts matrices are shown below:
@@ -156,12 +156,10 @@ The resulting design and contrasts matrices are shown below:
 ```{r sedesign_output, collapse=TRUE}
 sedesign <- groups_to_sedesign(igroups);
 jamba::kable_coloring(
-# knitr::kable(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Design matrix output from design(sedesign).",
    data.frame(check.names=FALSE, design(sedesign)));
 
-# knitr::kable(
 jamba::kable_coloring(
    colorSub=c(`-1`="dodgerblue", `1`="firebrick"),
    caption="Contrast matrix output from contrasts(sedesign).",
@@ -174,16 +172,15 @@ For convenience, SEDesign can be visualized using `plot_sedesign()`:
 ```{r plot_sedesign, collapse=TRUE, alt="Plot of the 'SEDesign' object, using squares to indicate groups, and block arrows to indicate contrasts."}
 # plot the design and contrasts
 plot_sedesign(sedesign);
-title(main="plot_sedesign(sedesign)\noutput:")
+title(main="plot_sedesign(sedesign):")
 ```
 
-* Two-way contrasts are indicated by the "squiggly curved line"
-which connects the end of one contrast to the beginning of the next contrast.
-This connection describes the first contrast, subtracted by the second
-contrast.
+* One-way contrasts are shown with a wide block arrow.
+* Two-way contrasts are shown by connecting two block arrows
+with a "squiggly curved line".
 
-
-## Future work:
-
-   * Enable equivalent analyses using `DESeq2`, `edgeR` methodology.
+   * It connects the end of one contrast   
+   to the beginning of the next contrast.
+   * The order indicates that the first contrast
+   is subtracted by the second contrast.
 
