@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](http://github.com/jmw86069/jamses/blob/main/DESCRIPTION)
+[`DESCRIPTION`](http://github.com/jmw86069/jamses/blob/v0.0.79.950/DESCRIPTION)
 
 Ward J (2026). *jamses: Jam SummarizedExperiment Stats*. R package
 version 0.0.79.950, <http://github.com/jmw86069/jamses>.
