@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Choose interesting annotation colnames from a data.frame</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.950/R/jam_choose_annotation_colnames.R" class="external-link"><code>R/jam_choose_annotation_colnames.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_choose_annotation_colnames.R" class="external-link"><code>R/jam_choose_annotation_colnames.R</code></a></small>
       <div class="d-none name"><code>choose_annotation_colnames.Rd</code></div>
     </div>
 
@@ -94,8 +94,7 @@ override the rules above.</p></dd>
 <dt id="arg-simplify">simplify<a class="anchor" aria-label="anchor" href="#arg-simplify"></a></dt>
 <dd><p><code>logical</code> indicating whether to filter out columns
 whose data already matches another column with 1:1 cardinality.
-This step requires <code>platjam::cardinality()</code> until that function
-is moved into the <code>jamba</code> package.</p></dd>
+This step uses internal <code>cardinality()</code>.</p></dd>
 
 
 <dt id="arg-max-colnames">max_colnames<a class="anchor" aria-label="anchor" href="#arg-max-colnames"></a></dt>
@@ -163,14 +162,28 @@ If no colnames meet the criteria, this function returns <code>NULL</code>.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 7 threereps_g time_g tworeps_p   6 class_G blah       six</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "tworeps"   "maxvalues"</span>
 <span class="r-in"><span><span class="va">df</span><span class="op">[</span>,<span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">]</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     threereps   tworeps maxvalues</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 threereps_a tworeps_l       one</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 threereps_a tworeps_l       two</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 threereps_a tworeps_n     three</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 threereps_c tworeps_n      four</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 threereps_e tworeps_o      five</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 threereps_g tworeps_o       six</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 threereps_g tworeps_p       six</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, max_values<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "tworeps"  </span>
 <span class="r-in"><span><span class="va">df</span><span class="op">[</span>,<span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, max_values<span class="op">=</span><span class="fl">5</span><span class="op">)</span><span class="op">]</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     threereps   tworeps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 threereps_a tworeps_l</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 threereps_a tworeps_l</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 threereps_a tworeps_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 threereps_c tworeps_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 threereps_e tworeps_o</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 threereps_g tworeps_o</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 threereps_g tworeps_p</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, simplify<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   threereps     tworeps       class   maxvalues </span>
@@ -186,19 +199,19 @@ If no colnames meet the criteria, this function returns <code>NULL</code>.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 7 threereps_g tworeps_p class_G       six</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, min_reps<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, min_reps<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "time"      "tworeps"   "maxvalues"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, keep_numeric<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "tworeps"   "num"       "maxvalues"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, min_reps<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "time"      "tworeps"   "maxvalues"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">choose_annotation_colnames</span><span class="op">(</span><span class="va">df</span>, min_reps<span class="op">=</span><span class="fl">1</span>, keep_numeric<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "threereps" "time"      "tworeps"   "num"       "maxvalues"</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

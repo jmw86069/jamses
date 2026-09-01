@@ -7,15 +7,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](http://github.com/jmw86069/jamses/blob/v0.0.79.950/DESCRIPTION)
+[`DESCRIPTION`](http://github.com/jmw86069/jamses/blob/main/DESCRIPTION)
 
 Ward J (2026). *jamses: Jam SummarizedExperiment Stats*. R package
-version 0.0.79.950, <http://github.com/jmw86069/jamses>.
+version 0.0.80.900, <http://github.com/jmw86069/jamses>.
 
     @Manual{,
       title = {jamses: Jam SummarizedExperiment Stats},
       author = {James M. Ward},
       year = {2026},
-      note = {R package version 0.0.79.950},
+      note = {R package version 0.0.80.900},
       url = {http://github.com/jmw86069/jamses},
     }

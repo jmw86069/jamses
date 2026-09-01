@@ -52,9 +52,8 @@ choose_annotation_colnames(
 - simplify:
 
   `logical` indicating whether to filter out columns whose data already
-  matches another column with 1:1 cardinality. This step requires
-  `platjam::cardinality()` until that function is moved into the `jamba`
-  package.
+  matches another column with 1:1 cardinality. This step uses internal
+  `cardinality()`.
 
 - max_colnames:
 
@@ -120,14 +119,28 @@ df
 #> 7 threereps_g time_g tworeps_p   6 class_G blah       six
 
 choose_annotation_colnames(df)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "tworeps"   "maxvalues"
 df[,choose_annotation_colnames(df)]
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#>     threereps   tworeps maxvalues
+#> 1 threereps_a tworeps_l       one
+#> 2 threereps_a tworeps_l       two
+#> 3 threereps_a tworeps_n     three
+#> 4 threereps_c tworeps_n      four
+#> 5 threereps_e tworeps_o      five
+#> 6 threereps_g tworeps_o       six
+#> 7 threereps_g tworeps_p       six
 
 choose_annotation_colnames(df, max_values=5)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "tworeps"  
 df[,choose_annotation_colnames(df, max_values=5)]
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#>     threereps   tworeps
+#> 1 threereps_a tworeps_l
+#> 2 threereps_a tworeps_l
+#> 3 threereps_a tworeps_n
+#> 4 threereps_c tworeps_n
+#> 5 threereps_e tworeps_o
+#> 6 threereps_g tworeps_o
+#> 7 threereps_g tworeps_p
 
 choose_annotation_colnames(df, simplify=FALSE)
 #>   threereps     tworeps       class   maxvalues 
@@ -143,17 +156,17 @@ df[,choose_annotation_colnames(df, simplify=FALSE)]
 #> 7 threereps_g tworeps_p class_G       six
 
 choose_annotation_colnames(df, min_reps=3)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps"
 
 choose_annotation_colnames(df, min_reps=1)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "time"      "tworeps"   "maxvalues"
 
 choose_annotation_colnames(df, keep_numeric=TRUE)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "tworeps"   "num"       "maxvalues"
 
 choose_annotation_colnames(df, min_reps=1)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "time"      "tworeps"   "maxvalues"
 
 choose_annotation_colnames(df, min_reps=1, keep_numeric=TRUE)
-#> Error in loadNamespace(x): there is no package called ‘platjam’
+#> [1] "threereps" "time"      "tworeps"   "num"       "maxvalues"
 ```

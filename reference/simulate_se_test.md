@@ -150,35 +150,34 @@ seb <- simulate_se_test();
 hmb <- heatmap_se(seb,
    controlSamples=colnames(seb)[c(1:5, 11:15)],
    column_title="With batch effect\nglobal-centered")
-#> Error in loadNamespace(x): there is no package called ‘platjam’
 hmb
-#> Error: object 'hmb' not found
+
 
 # when centering versus a sparse control group, some values can be lost:
 hmbg <- heatmap_se(seb,
    controlSamples=colnames(seb)[c(1:5, 11:15)],
    centerby_colnames="batch",
    column_title="With batch effect\ncentered by batch")
-#> Error in loadNamespace(x): there is no package called ‘platjam’
 hmb + hmbg
-#> Error: object 'hmb' not found
+#> Warning: Heatmap/annotation names are duplicated: centered expression
+
 
 hmbc <- heatmap_se(seb,
    correlation=TRUE,
    controlSamples=colnames(seb)[c(1:5, 11:15)],
    column_title="With batch effect\nglobal-centered")
-#> Error in loadNamespace(x): there is no package called ‘platjam’
 hmbc
-#> Error: object 'hmbc' not found
+
 
 hmbgc <- heatmap_se(seb,
    correlation=TRUE,
    controlSamples=colnames(seb)[c(1:5, 11:15)],
    centerby_colnames="batch",
    column_title="With batch effect\ncentered by batch")
-#> Error in loadNamespace(x): there is no package called ‘platjam’
 hmbgc
-#> Error: object 'hmbgc' not found
+
 hmbc + hmbgc
-#> Error: object 'hmbc' not found
+#> Warning: Heatmap/annotation names are duplicated: correlation of centered
+#> expression
+
 ```

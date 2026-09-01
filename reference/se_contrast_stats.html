@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute contrast statistics on SummarizedExperiment data</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.950/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/R/jam_secontrasts.R" class="external-link"><code>R/jam_secontrasts.R</code></a></small>
       <div class="d-none name"><code>se_contrast_stats.Rd</code></div>
     </div>
 
@@ -477,19 +477,23 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span>   rowData<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>measurement<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># assign colors</span></span></span>
-<span class="r-in"><span><span class="va">sample_color_list</span> <span class="op">&lt;-</span> <span class="fu">platjam</span><span class="fu">::</span><span class="fu">design2colors</span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-in"><span><span class="co"># sample_color_list &lt;- platjam::design2colors(se)</span></span></span>
+<span class="r-in"><span><span class="va">sample_color_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   Vehicle<span class="op">=</span><span class="st">"palegoldenrod"</span>,</span></span>
+<span class="r-in"><span>   Treated<span class="op">=</span><span class="st">"firebrick2"</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>, sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'sample_color_list' not found</span>
+<span class="r-plt img"><img src="se_contrast_stats-1.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create SEDesign</span></span></span>
 <span class="r-in"><span><span class="va">sedesign</span> <span class="op">&lt;-</span> <span class="fu"><a href="groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span><span class="va">se</span>, group_colnames<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot the design and contrasts</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-1.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-2.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># limma contrasts</span></span></span>
 <span class="r-in"><span><span class="va">sestats</span> <span class="op">&lt;-</span> <span class="fu">se_contrast_stats</span><span class="op">(</span>se<span class="op">=</span><span class="va">se</span>,</span></span>
@@ -503,13 +507,13 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot the design with number of hits labeled</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span>, sestats<span class="op">=</span><span class="va">sestats</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-2.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-3.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap with hits</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span></span>
 <span class="r-in"><span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span>,</span></span>
 <span class="r-in"><span>   sestats<span class="op">=</span><span class="va">sestats</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'sample_color_list' not found</span>
+<span class="r-plt img"><img src="se_contrast_stats-4.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># review stats table</span></span></span>
 <span class="r-in"><span><span class="va">stats_df</span> <span class="op">&lt;-</span> <span class="va">sestats</span><span class="op">@</span><span class="va">stats_dfs</span><span class="op">$</span><span class="va">counts</span><span class="op">[[</span><span class="st">"Treated-Vehicle"</span><span class="op">]</span><span class="op">]</span></span></span>
@@ -538,7 +542,7 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># volcano plot for one contrast</span></span></span>
 <span class="r-in"><span><span class="fu">jamma</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jamma/man/volcano_plot.html" class="external-link">volcano_plot</a></span><span class="op">(</span><span class="va">stats_df</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-3.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-5.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">###############################</span></span></span>
 <span class="r-in"><span><span class="co"># simulate a two-way model</span></span></span>
@@ -562,13 +566,30 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span>   <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span><span class="op">$</span><span class="va">counts</span><span class="op">[</span>,<span class="fl">10</span><span class="op">:</span><span class="fl">12</span><span class="op">]</span> <span class="op">+</span> <span class="va">new_fold</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># assign colors</span></span></span>
-<span class="r-in"><span><span class="va">sample_color_list2</span> <span class="op">&lt;-</span> <span class="fu">platjam</span><span class="fu">::</span><span class="fu">design2colors</span><span class="op">(</span><span class="va">se2</span>,</span></span>
-<span class="r-in"><span>   class_colnames<span class="op">=</span><span class="st">"genotype"</span>,</span></span>
-<span class="r-in"><span>   color_sub<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="co"># sample_color_list2 &lt;- platjam::design2colors(se2,</span></span></span>
+<span class="r-in"><span><span class="co">#    class_colnames="genotype",</span></span></span>
+<span class="r-in"><span><span class="co">#    color_sub=c(</span></span></span>
+<span class="r-in"><span><span class="co">#       Vehicle="palegoldenrod",</span></span></span>
+<span class="r-in"><span><span class="co">#       Treated="firebrick4"),</span></span></span>
+<span class="r-in"><span><span class="co">#    group_colnames="group")</span></span></span>
+<span class="r-in"><span><span class="va">sample_color_list2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   treatment<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>      Vehicle<span class="op">=</span><span class="st">"palegoldenrod"</span>,</span></span>
-<span class="r-in"><span>      Treated<span class="op">=</span><span class="st">"firebrick4"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>   group_colnames<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘platjam’</span>
+<span class="r-in"><span>      Treated<span class="op">=</span><span class="st">"firebrick4"</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span>,</span></span>
+<span class="r-in"><span>   genotype<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      WT<span class="op">=</span><span class="st">"gold"</span>, KO<span class="op">=</span><span class="st">"navy"</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span>,</span></span>
+<span class="r-in"><span>   group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      WT_Vehicle<span class="op">=</span><span class="st">"gold2"</span>,</span></span>
+<span class="r-in"><span>      WT_Treated<span class="op">=</span><span class="st">"darkorange"</span>,</span></span>
+<span class="r-in"><span>      KO_Vehicle<span class="op">=</span><span class="st">"royalblue3"</span>,</span></span>
+<span class="r-in"><span>      KO_Treated<span class="op">=</span><span class="st">"darkorchid4"</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sample_color_list2</span><span class="op">$</span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/color2gradient.html" class="external-link">color2gradient</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">sample_color_list2</span><span class="op">$</span><span class="va">group</span>, each<span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_color_list2</span><span class="op">$</span><span class="va">samples</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">se2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap</span></span></span>
 <span class="r-in"><span><span class="va">hm2a</span> <span class="op">&lt;-</span> <span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se2</span>,</span></span>
@@ -580,9 +601,8 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span>   column_cex<span class="op">=</span><span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>   column_title_gp<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize<span class="op">=</span><span class="fl">8</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   column_split<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'sample_color_list2' not found</span>
 <span class="r-in"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm2a</span>, column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm2a</span>, <span class="st">"hm_title"</span><span class="op">)</span>, merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in h(simpleError(msg, call)):</span> error in evaluating the argument 'object' in selecting a method for function 'draw': object 'hm2a' not found</span>
+<span class="r-plt img"><img src="se_contrast_stats-6.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap centered by genotype</span></span></span>
 <span class="r-in"><span><span class="va">hm2b</span> <span class="op">&lt;-</span> <span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se2</span>,</span></span>
@@ -596,19 +616,18 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span>   column_cex<span class="op">=</span><span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>   column_title_gp<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize<span class="op">=</span><span class="fl">8</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   column_split<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'sample_color_list2' not found</span>
 <span class="r-in"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm2b</span>, column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm2b</span>, <span class="st">"hm_title"</span><span class="op">)</span>, merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in h(simpleError(msg, call)):</span> error in evaluating the argument 'object' in selecting a method for function 'draw': object 'hm2b' not found</span>
+<span class="r-plt img"><img src="se_contrast_stats-7.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create SEDesign</span></span></span>
 <span class="r-in"><span><span class="va">sedesign2</span> <span class="op">&lt;-</span> <span class="fu"><a href="groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span><span class="va">se2</span>, group_colnames<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot the design and contrasts</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-4.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-8.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span><span class="co"># note the two-way contrast can be flipped</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, flip_twoway<span class="op">=</span><span class="cn">TRUE</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-5.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-9.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># limma contrasts</span></span></span>
 <span class="r-in"><span><span class="va">sestats2</span> <span class="op">&lt;-</span> <span class="fu">se_contrast_stats</span><span class="op">(</span>se<span class="op">=</span><span class="va">se2</span>,</span></span>
@@ -638,7 +657,7 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot the design with number of hits labeled</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, sestats<span class="op">=</span><span class="va">sestats2</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-6.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-10.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap with hits</span></span></span>
 <span class="r-in"><span><span class="va">hm2hits</span> <span class="op">&lt;-</span> <span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se2</span>,</span></span>
@@ -654,25 +673,35 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span>   column_cex<span class="op">=</span><span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>   column_title_gp<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize<span class="op">=</span><span class="fl">8</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   column_split<span class="op">=</span><span class="st">"group"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'sample_color_list2' not found</span>
 <span class="r-in"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm2hits</span>,</span></span>
 <span class="r-in"><span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm2hits</span>, <span class="st">"hm_title"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in h(simpleError(msg, call)):</span> error in evaluating the argument 'object' in selecting a method for function 'draw': object 'hm2hits' not found</span>
+<span class="r-plt img"><img src="se_contrast_stats-11.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># venn diagram</span></span></span>
+<span class="r-in"><span><span class="co"># get the hit list</span></span></span>
 <span class="r-in"><span><span class="va">hit_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="hit_array_to_list.html">hit_array_to_list</a></span><span class="op">(</span><span class="va">sestats2</span>,</span></span>
 <span class="r-in"><span>   contrast_names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/sdim.html" class="external-link">sdim</a></span><span class="op">(</span><span class="va">hit_list</span><span class="op">)</span>;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       rows   class</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> KO_Vehicle-WT_Vehicle    8 numeric</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> KO_Treated-WT_Treated   11 numeric</span>
-<span class="r-in"><span><span class="co"># names(hit_list) &lt;- gsub(":", ",&lt;br&gt;\n", contrast2comp(names(hit_list)))</span></span></span>
-<span class="r-in"><span><span class="co"># vo &lt;- venndir::venndir(hit_list, expand_fraction=0.1)</span></span></span>
-<span class="r-in"><span><span class="co"># venndir::venndir_legender(venndir_out=vo, setlist=hit_list)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># vo &lt;- venndir::venndir(hit_list, expand_fraction=0.1, proportional=TRUE)</span></span></span>
-<span class="r-in"><span><span class="co"># venndir::venndir_legender(venndir_out=vo, setlist=hit_list)</span></span></span>
+<span class="r-in"><span><span class="co"># make directional venn diagram</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hit_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">":"</span>, <span class="st">",&lt;br&gt;\n"</span>,</span></span>
+<span class="r-in"><span>   <span class="fu"><a href="contrast2comp.html">contrast2comp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hit_list</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"venndir"</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>   <span class="va">vo</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/venndir.html" class="external-link">venndir</a></span><span class="op">(</span><span class="va">hit_list</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>   <span class="va">vo</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/venndir.html" class="external-link">venndir</a></span><span class="op">(</span><span class="va">hit_list</span>, show_labels<span class="op">=</span><span class="st">"Ncp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>   <span class="va">vo</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/venndir.html" class="external-link">venndir</a></span><span class="op">(</span><span class="va">hit_list</span>, show_labels<span class="op">=</span><span class="st">"Ni"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>   <span class="va">vo</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/venndir.html" class="external-link">venndir</a></span><span class="op">(</span><span class="va">hit_list</span>, proportional<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-plt img"><img src="se_contrast_stats-12.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-13.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-14.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-15.png" alt="" width="768" height="768"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

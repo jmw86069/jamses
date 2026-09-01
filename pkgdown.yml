@@ -3,7 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   how_to_heatmap: how_to_heatmap.html
-last_built: 2026-08-31T18:04Z
+last_built: 2026-09-01T14:32Z
 urls:
   reference: https://jmw86069.github.io/jamses/reference
   article: https://jmw86069.github.io/jamses/articles

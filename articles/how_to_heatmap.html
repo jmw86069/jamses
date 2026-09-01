@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@
       <h1>How to Make a Heatmap</h1>
             
       
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.950/vignettes/how_to_heatmap.Rmd" class="external-link"><code>vignettes/how_to_heatmap.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/vignettes/how_to_heatmap.Rmd" class="external-link"><code>vignettes/how_to_heatmap.Rmd</code></a></small>
       <div class="d-none name"><code>how_to_heatmap.Rmd</code></div>
     </div>
 
@@ -301,7 +301,7 @@ colors.</li>
 <code>rowData_colnames</code> added row annotations to the
 left.</li>
 <li>
-<code>left_annotation_name_rot=150</code> rotated the annotation
+<code>left_annotation_name_rot=60</code> rotated the annotation
 label.</li>
 </ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -317,7 +317,7 @@ label.</li>
 <span></span>
 <span><span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
-<span>   left_annotation_name_rot<span class="op">=</span><span class="fl">150</span>,</span>
+<span>   left_annotation_name_rot<span class="op">=</span><span class="fl">60</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -331,19 +331,25 @@ label.</li>
 <li>
 <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/ht_opt.html" class="external-link">ComplexHeatmap::ht_opt()</a></code> allows some stylistic
 options<br>
-to be default whenever you draw a heatmap.
+to be default whenever you draw a heatmap.<br>
+Some common options:
 <ul>
-<li>A common option is: <code>merge_legends=TRUE</code> which<br>
-combines all color legends into one column.</li>
+<li>
+<code>merge_legends=TRUE</code> merges the color legends to one
+column.</li>
+<li>
+<code>ROW_ANNO_PADDING</code>, <code>COLUMN_ANNO_PADDING</code>
+defines a gap<br>
+between heatmap and row/column annotations, respectively.</li>
 </ul>
 </li>
-<li>
-<code>show_left_annotation_name="top"</code> places the
-annotation<br>
-label at the top instead of the bottom.</li>
-<li>Notice you can draw the heatmap directly:
-<code><a href="../reference/heatmap_se.html">heatmap_se()</a></code>
-</li>
+<li>Also: <code>show_left_annotation_name="top"</code> places the
+left<br>
+annotation label at the top instead of the bottom.</li>
+<li>Also: <code><a href="../reference/heatmap_se.html">heatmap_se()</a></code> will draw the heatmap by
+default,<br>
+useful when you don’t need to store the output.<br>
+(I usually end up needing the heatmap.)</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/ht_opt.html" class="external-link">ht_opt</a></span><span class="op">(</span>merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -358,6 +364,10 @@ label at the top instead of the bottom.</li>
 <span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span></code></pre></div>
 <p><img src="how_to_heatmap_files/figure-html/hm_merge_legends-1.png" class="r-plt" alt="" width="768"></p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="row-and-column-groups">Row and Column Groups<a class="anchor" aria-label="anchor" href="#row-and-column-groups"></a>
+</h2>
 <div class="section level3">
 <h3 id="split-rows-by-annotation">Split Rows by Annotation<a class="anchor" aria-label="anchor" href="#split-rows-by-annotation"></a>
 </h3>
@@ -442,6 +452,134 @@ some clustering methods use a random element.</li>
 <span><span class="co">#&gt; "row_0948" "row_0115" "row_0874" "row_0165" "row_0227"</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="add-grouped-column-labels">Add Grouped Column Labels<a class="anchor" aria-label="anchor" href="#add-grouped-column-labels"></a>
+</h3>
+<p>The example illustrates a two-factor design: 1. Genotype: wildtype
+(WT) and knockout (KO) 2. Treatment: Control and Dexamethasone (Dex)</p>
+<ul>
+<li><p>Column split:
+<code>column_split=c("Genotype", "Treatment")</code></p></li>
+<li><p><code>controlSamples</code> uses “WT” and “Control”</p></li>
+<li>
+<p>Several features are enabled:</p>
+<ul>
+<li>
+<code>apply_hm_column_title=TRUE</code> displays the heatmap
+title.</li>
+<li>
+<code>top_colnames=FALSE</code> hides the top annotation.</li>
+<li>
+<code><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels()</a></code> adds grouped labels.</li>
+<li>
+<code>hm_title_buffer</code> adds whitespace for the grouped
+lines.</li>
+</ul>
+</li>
+<li><p>We add two design factors: <code>Genotype</code>,
+<code>Treatment</code></p></li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">Genotype</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>   each<span class="op">=</span><span class="fl">16</span><span class="op">)</span>;</span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">Treatment</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Dex"</span><span class="op">)</span>,</span>
+<span>   each<span class="op">=</span><span class="fl">8</span><span class="op">)</span>;</span>
+<span></span>
+<span><span class="co"># center by groupA samples</span></span>
+<span><span class="va">use_controlSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span>,</span>
+<span>      <span class="va">Genotype</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"WT"</span> <span class="op">&amp;</span></span>
+<span>      <span class="va">Treatment</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"Control"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hm9</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
+<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   hm_title_buffer<span class="op">=</span><span class="fl">4</span>,</span>
+<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
+<span>   control_label<span class="op">=</span><span class="st">"vs WT_Control"</span>,</span>
+<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
+<span>   top_colnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
+<span>   column_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span><span class="va">hm9_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm9</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># now add fancy labels</span></span>
+<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
+<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
+<span>   font_cex<span class="op">=</span><span class="fl">1.3</span>,</span>
+<span>   se<span class="op">=</span><span class="va">se</span>,</span>
+<span>   hm_drawn<span class="op">=</span><span class="va">hm9_drawn</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_final-1.png" class="r-plt" alt="" width="768"></p>
+<ul>
+<li>Use <code>y_offset_lines</code> to adjust the y position of
+labels.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="change-column-group-order">Change Column Group Order<a class="anchor" aria-label="anchor" href="#change-column-group-order"></a>
+</h3>
+<p>The example below shows the same heatmap<br>
+grouped by: 1. Treatment 2. Genotype</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hm10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
+<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   hm_title_buffer<span class="op">=</span><span class="fl">4</span>,</span>
+<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
+<span>   control_label<span class="op">=</span><span class="st">"vs WT_Control"</span>,</span>
+<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
+<span>   top_colnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
+<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
+<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span><span class="va">hm10_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm10</span>,</span>
+<span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># now add fancy labels</span></span>
+<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
+<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   font_cex<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span>   se<span class="op">=</span><span class="va">se</span>,</span>
+<span>   hm_drawn<span class="op">=</span><span class="va">hm10_drawn</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_final_part_deux-1.png" class="r-plt" alt="" width="768"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="data-centering">Data Centering<a class="anchor" aria-label="anchor" href="#data-centering"></a>
+</h2>
+<ul>
+<li>Default “data centering” subtracts the row mean value,<br>
+resulting in “difference from global mean”.<br>
+We refer to this approach as “global centering”.</li>
+<li>Centering typically uses the mean value (the average),<br>
+however it can use median with <code>useMedian=TRUE</code>.<br>
+The median is effective in reducing the visual effects<br>
+of outlier points.</li>
+<li>“<strong>Versus control</strong>”: Centering can be focused on
+a<br>
+control group, instead of global centering. This approach<br>
+is very effective at visualizing the data as it is seen<br>
+by statistical contrasts. In fact, it is encouraged.</li>
+<li>“<strong>Within Groups</strong>”: Data can be centered within<br>
+sub-groups, called ‘<strong>center-by groups</strong>’. This
+approach<br>
+is quite useful and versatile.
+<ol style="list-style-type: decimal">
+<li>Consider an experiment with two different cell lines,<br>
+comparing treatment versus control.<br>
+The cell lines have substantial differences from each other,<br>
+however the treatment effects may be similar.<br>
+We would “center-by Cell Line”, then “versus Control”.</li>
+<li>Consider an experiment with cells derived from clinical<br>
+patients, each patient sample is treated multiple ways.<br>
+Again, “center-by Patient”, then either “global center” or<br>
+“versus Control”.</li>
+</ol>
+</li>
+</ul>
+<p>Working examples are shown below.</p>
+<div class="section level3">
 <h3 id="center-using-a-control-group">Center Using a Control Group<a class="anchor" aria-label="anchor" href="#center-using-a-control-group"></a>
 </h3>
 <ul>
@@ -467,7 +605,7 @@ the heatmap.</li>
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># center by groupA samples</span></span>
 <span><span class="va">use_controlSamples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span>, <span class="va">group</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"groupA"</span><span class="op">)</span><span class="op">)</span></span>
@@ -482,53 +620,162 @@ the heatmap.</li>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   cluster_row_slices<span class="op">=</span><span class="cn">FALSE</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="va">hm4</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm3</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm3</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="how_to_heatmap_files/figure-html/hm_control_group-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level3">
-<h3 id="add-callout-labels-for-some-rows">Add Callout Labels for Some Rows<a class="anchor" aria-label="anchor" href="#add-callout-labels-for-some-rows"></a>
+<h3 id="center-by-genotype">Center By Genotype<a class="anchor" aria-label="anchor" href="#center-by-genotype"></a>
 </h3>
 <ul>
 <li>
-<code>mark_rows</code> adds labels to the right
+<code>centerby_colnames="Genotype"</code> centers within WT or
+KO</li>
+<li>
+<code>use_controlSamples_Treat</code> uses ‘Control’ samples<br>
+in both WT and KO.
 <ul>
-<li>Great for labeling genes of interest, especially<br>
-when there are too many rows in the heatmap.</li>
-<li>We add 5 labels from ‘A’, and 3 labels from ‘D’.</li>
+<li>It shows “Dex - Control” in each Genotype.</li>
 </ul>
 </li>
-<li>In RStudio, you may want to silence some warnings:<br><code>ComplexHeatmap::ht_opt(message=FALSE)</code>
-</li>
+<li>
+<code>column_gap</code> adds a custom gap between column
+groups.</li>
 </ul>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># add "callout" labels for a subset of rows</span></span>
-<span><span class="va">hro</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/heatmap_row_order.html" class="external-link">heatmap_row_order</a></span><span class="op">(</span><span class="va">hm4</span><span class="op">)</span>;</span>
-<span><span class="va">mark_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>   <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">hro</span><span class="op">[[</span><span class="st">"A"</span><span class="op">]</span><span class="op">]</span>, size<span class="op">=</span><span class="fl">5</span><span class="op">)</span>,</span>
-<span>   <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">hro</span><span class="op">[[</span><span class="st">"D"</span><span class="op">]</span><span class="op">]</span>, size<span class="op">=</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>;</span>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">use_controlSamples_Treat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span>, <span class="va">Treatment</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"Control"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">hm5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
-<span>   mark_rows<span class="op">=</span><span class="va">mark_rows</span>,</span>
-<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
-<span>   control_label<span class="op">=</span><span class="st">"vs groupA"</span>,</span>
-<span>   column_split<span class="op">=</span><span class="st">"group"</span>,</span>
-<span>   column_title_rot<span class="op">=</span><span class="fl">90</span>,</span>
-<span>   row_split<span class="op">=</span><span class="st">"Class"</span>,</span>
-<span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
+<span><span class="va">hm11</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
+<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   hm_title_buffer<span class="op">=</span><span class="fl">3</span>,</span>
+<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples_Treat</span>,</span>
+<span>   control_label<span class="op">=</span><span class="st">"vs Control"</span>,</span>
+<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
+<span>   top_colnames<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>   centerby_colnames<span class="op">=</span><span class="st">"Genotype"</span>,</span>
+<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
+<span>   column_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
+<span><span class="va">hm11_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm11</span>,</span>
+<span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm5</span>,</span>
-<span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm5</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="how_to_heatmap_files/figure-html/hm_mark_rows-1.png" class="r-plt" alt="" width="768"></p>
+<span><span class="co"># now add fancy labels</span></span>
+<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
+<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
+<span>   font_cex<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span>   se<span class="op">=</span><span class="va">se</span>,</span>
+<span>   hm_drawn<span class="op">=</span><span class="va">hm11_drawn</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_centerby_genotype-1.png" class="r-plt" alt="" width="768"></p>
 </div>
+<div class="section level3">
+<h3 id="center-by-batch">Center by Batch<a class="anchor" aria-label="anchor" href="#center-by-batch"></a>
+</h3>
+<ul>
+<li>
+<code><a href="../reference/simulate_se_test.html">simulate_se_test()</a></code>
+<ul>
+<li>Simulates test data that contains a blocking effect.<br>
+It also represents pairing factors (repeated measures), or batch
+effect.</li>
+<li>When simulating four groups (default),<br>
+it simulates two-factor additive changes.</li>
+</ul>
+</li>
+<li>
+<code>centerby_colnames="batch"</code> &gt; <strong>Important
+Note:</strong> This technique is entirely visual,<br>
+although it helps confirm potential structure within the data.<br>
+The math very closely mimics the adjustment performed in most<br>
+statistical tools, however we recommend using the proper<br>
+statistical adjustments, specifically <code>block</code> in limma,
+or<br>
+using an additional factor in DESeq2 or edgeR. It is generally<br>
+not recommended to perform statistical testing with<br>
+batch-adjusted data.</li>
+</ul>
+<div class="section level4">
+<h4 id="without-batch-centering">Without Batch-Centering<a class="anchor" aria-label="anchor" href="#without-batch-centering"></a>
+</h4>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_se_test.html">simulate_se_test</a></span><span class="op">(</span>ngroups<span class="op">=</span><span class="fl">4</span>, nreps<span class="op">=</span><span class="fl">8</span>, multiplier<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in rep(c("Ctl", "Dex"), each = nreps * 2): first element used of 'each'</span></span>
+<span><span class="co">#&gt; argument</span></span>
+<span><span class="co">#&gt; Warning in rep(c("WT", "KO"), each = nreps): first element used of 'each'</span></span>
+<span><span class="co">#&gt; argument</span></span>
+<span><span class="co">#&gt; Warning in matrix(ncol = ngroups, nrow = nrow(m), data = c(rep(0, nrow(m)), :</span></span>
+<span><span class="co">#&gt; data length [1249] is not a sub-multiple or multiple of the number of rows</span></span>
+<span><span class="co">#&gt; [250]</span></span>
+<span><span class="co">#&gt; Warning in seq_len(nreps): first element used of 'length.out' argument</span></span>
+<span><span class="co">#&gt; Warning in seq_len(nreps): first element used of 'length.out' argument</span></span>
+<span><span class="co">#&gt; Warning in seq_len(nreps): first element used of 'length.out' argument</span></span>
+<span><span class="co">#&gt; Warning in seq_len(nreps): first element used of 'length.out' argument</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">seb</span><span class="op">)</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">seb</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">hm11</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span></span>
+<span>   <span class="va">seb</span>,</span>
+<span>   column_title<span class="op">=</span><span class="st">"Global Centering"</span>,</span>
+<span>   top_colnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span>, <span class="st">"batch"</span><span class="op">)</span>,</span>
+<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
+<span>   column_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span><span class="va">hm11_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm11</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_centerby_batch_1-1.png" class="r-plt" alt="" width="768"></p>
+</div>
+<div class="section level4">
+<h4 id="center-within-batch">Center within batch<a class="anchor" aria-label="anchor" href="#center-within-batch"></a>
+</h4>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hm12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span></span>
+<span>   <span class="va">seb</span>,</span>
+<span>   column_title<span class="op">=</span><span class="st">"Within-Batch Centering"</span>,</span>
+<span>   top_colnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span>, <span class="st">"batch"</span><span class="op">)</span>,</span>
+<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
+<span>   centerby_colnames<span class="op">=</span><span class="st">"batch"</span>,</span>
+<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
+<span>   column_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span><span class="va">hm12_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm12</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_centerby_batch_2-1.png" class="r-plt" alt="" width="768"></p>
+</div>
+<div class="section level4">
+<h4 id="compare-two-heatmaps">Compare Two Heatmaps<a class="anchor" aria-label="anchor" href="#compare-two-heatmaps"></a>
+</h4>
+<ul>
+<li>
+<code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">ComplexHeatmap::Heatmap</a></code> objects can be <code>+</code>
+added<br>
+together to display both heatmaps side-by-side.</li>
+<li>**It requires both heatmaps to have identical rows.
+<ul>
+<li>It does not require the heatmaps to have identical clustering, row
+split.</li>
+</ul>
+</li>
+<li>
+<code>ht_gap</code> uses <code><a href="https://rdrr.io/r/grid/unit.html" class="external-link">grid::unit()</a></code> to define a
+3-cm<br>
+gap between heatmaps.</li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>   <span class="va">hm11</span> <span class="op">+</span> <span class="va">hm12</span>,</span>
+<span>   column_title<span class="op">=</span><span class="st">"Comparing Two Data Centering Approaches"</span>,</span>
+<span>   column_title_gp<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize<span class="op">=</span><span class="fl">20</span><span class="op">)</span>,</span>
+<span>   ht_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">3</span>, <span class="st">"cm"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Heatmap/annotation names are duplicated: centered expression</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_compare_centering-1.png" class="r-plt" alt="" width="768"></p>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="statistical-hits">Statistical Hits<a class="anchor" aria-label="anchor" href="#statistical-hits"></a>
+</h2>
 <div class="section level3">
 <h3 id="display-statistical-hits">Display Statistical Hits<a class="anchor" aria-label="anchor" href="#display-statistical-hits"></a>
 </h3>
@@ -564,7 +811,7 @@ an example.</li>
 </li>
 </ul>
 <p>We create a <code>list</code> of hit vectors:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># define a random set of hits</span></span>
 <span><span class="va">sestats_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>   contrast1<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span></span>
@@ -579,7 +826,7 @@ an example.</li>
 <ul>
 <li>Now create the heatmap with <code>sestats</code>:</li>
 </ul>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hm6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
 <span>   control_label<span class="op">=</span><span class="st">"vs groupA"</span>,</span>
@@ -588,9 +835,6 @@ an example.</li>
 <span>   row_split<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm6</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm6</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -612,7 +856,7 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># SEDesign</span></span>
 <span><span class="va">sedesign</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/groups_to_sedesign.html">groups_to_sedesign</a></span><span class="op">(</span></span>
 <span>   <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">[</span>, <span class="st">"group"</span>, drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
@@ -628,7 +872,7 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <ul>
 <li>Use <code>SEStats</code> with <code><a href="../reference/heatmap_se.html">heatmap_se()</a></code>:</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hm6s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
 <span>   control_label<span class="op">=</span><span class="st">"vs groupA"</span>,</span>
@@ -637,9 +881,6 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm6s</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm6s</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -653,7 +894,7 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <code>row_subcluster="4"</code> makes it easy to answer<br>
 “What is going on with Cluster 4?”</li>
 </ul>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># for fun, "drill down" into cluster 5</span></span>
 <span><span class="va">hm6s_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
@@ -664,35 +905,29 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <span>   row_subcluster<span class="op">=</span><span class="fl">4</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span><span class="co">#&gt; Warning: The heatmap has not been initialized. You might have different results</span></span>
 <span><span class="co">#&gt; if you repeatedly execute this function, e.g. when row_km/column_km was</span></span>
 <span><span class="co">#&gt; set. It is more suggested to do as `ht = draw(ht); row_order(ht)`.</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm6s_4</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm6s_4</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="how_to_heatmap_files/figure-html/hm_row_subcluster-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level3">
-<h3 id="sestats-with-an-incidence-matrix">
-<code>sestats</code> with an Incidence Matrix<a class="anchor" aria-label="anchor" href="#sestats-with-an-incidence-matrix"></a>
+<h3 id="use-a-hit-incidence-matrix">Use a Hit Incidence Matrix<a class="anchor" aria-label="anchor" href="#use-a-hit-incidence-matrix"></a>
 </h3>
 <ul>
-<li>What is an incidence matrix, you say?
+<li>What is an incidence matrix, you wonder?
 <ul>
-<li>We demonstrate what it looks like.</li>
-<li>Rows should match <code>rownames(se)</code>
-</li>
-<li>Columns are named by statistical contrasts.</li>
+<li>We demonstrate the data format below.</li>
+<li>Rows are genes from <code>rownames(se)</code>.</li>
+<li>Columns are contrasts, comparisons, or any useful label.</li>
+<li>Any non-zero value is considered a hit,<br>
+and it colorized by direction.</li>
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># convert sestats to list, then incidence matrix</span></span>
 <span><span class="va">sestats_hitlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hit_array_to_list.html">hit_array_to_list</a></span><span class="op">(</span><span class="va">sestats</span><span class="op">)</span></span>
 <span><span class="va">sestats_hitim</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/list2im_value.html" class="external-link">list2im_value</a></span><span class="op">(</span><span class="va">sestats_hitlist</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
@@ -707,7 +942,7 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <ul>
 <li>Now <code>sestats_hitim</code> defines statistical hits.</li>
 </ul>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hm7</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
 <span>   control_label<span class="op">=</span><span class="st">"vs groupA"</span>,</span>
@@ -715,25 +950,144 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <span>   column_split<span class="op">=</span><span class="st">"group"</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm7</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm7</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="how_to_heatmap_files/figure-html/hm_sestats_incidence-1.png" class="r-plt" alt="" width="768"></p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="correlation-heatmaps">Correlation Heatmaps<a class="anchor" aria-label="anchor" href="#correlation-heatmaps"></a>
+</h2>
+<p>Any standard <code><a href="../reference/heatmap_se.html">heatmap_se()</a></code> can be converted to a<br>
+correlation heatmap by adding:<br><code>correlation=TRUE</code></p>
+<ul>
+<li>It uses the centered data that would have been displayed<br>
+in the heatmap, and instead calls <code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor()</a></code> to create
+Pearson<br>
+correlation <code>matrix</code>.
+<ul>
+<li>You can review the data used for correlation using:<br><code>hm &lt;- heatmap_se(se)</code><br>
+then:<br><code>hm@matrix</code>
+</li>
+<li>Correlation uses <code>use="pairwise.complete.obs"</code> and
+<code>...</code><br>
+ellipses can be used for custom <code>method</code>.</li>
+</ul>
+</li>
+<li>The heatmap defaults are changed:
+<ul>
+<li>
+<code>max_color=1</code> so the color range becomes
+<code>-1 to +1</code>
+</li>
+<li>
+<code>row_split</code> and <code>row_label_colname</code> refer to
+<code>colData(se)</code>.</li>
+<li>
+<code>legend_labels</code> use <code>legend_at</code> directly, no
+fold conversion.</li>
+<li>
+<code>cluster_columns</code> controls rows and columns, for
+symmetry.</li>
+<li>The default legend title adds <code>'correlation of'</code>.</li>
+</ul>
+</li>
+</ul>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hm8corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">seb</span>,</span>
+<span>   correlation<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   <span class="co"># controlSamples=use_controlSamples,</span></span>
+<span>   cluster_columns<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm8corr</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_correlation-1.png" class="r-plt" alt="" width="768"></p>
+<blockquote>
+<p>Hint: This correlation heatmap shows what we expect<br>
+when there is a sample pairing or batch effect.<br>
+The key feature is “positive correlation along a diagonal.”</p>
+</blockquote>
+<ul>
+<li>You can adjust for pairing factor using<br><code>centerby_colnames="batch"</code>:</li>
+</ul>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hm8corr_batch</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">seb</span>,</span>
+<span>   correlation<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   centerby_colnames<span class="op">=</span><span class="st">"batch"</span>,</span>
+<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>   cluster_columns<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm8corr_batch</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_correlation_batch-1.png" class="r-plt" alt="" width="768"></p>
+<blockquote>
+<p>Incidentally, the very small negative correlation along<br>
+the diagonal is also indicative of simple batch adjustment.<br>
+The common signal is removed across replicates in the same<br>
+batch, which by definition leaves only slight differences.<br>
+As a result, the residual is typically slightly negative.</p>
+</blockquote>
+<blockquote>
+<p>Notice also that the overall group correlations have<br>
+increased substantially, due to the reduction in non-group<br>
+correlated signal. This increase is another indication that<br>
+the batch/pairing effect was appropriately modeled.</p>
+</blockquote>
+</div>
+<div class="section level2">
+<h2 id="custom-visual-options">Custom Visual Options<a class="anchor" aria-label="anchor" href="#custom-visual-options"></a>
+</h2>
+<div class="section level3">
+<h3 id="add-callout-labels-for-some-rows">Add Callout Labels for Some Rows<a class="anchor" aria-label="anchor" href="#add-callout-labels-for-some-rows"></a>
+</h3>
+<ul>
+<li>
+<code>mark_rows</code> adds labels to the right
+<ul>
+<li>Great for labeling genes of interest, especially<br>
+when there are too many rows in the heatmap.</li>
+<li>We add 5 labels from ‘A’, and 3 labels from ‘D’.</li>
+</ul>
+</li>
+<li>In RStudio, you may want to silence some warnings:<br><code>ComplexHeatmap::ht_opt(message=FALSE)</code>
+</li>
+</ul>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># add "callout" labels for a subset of rows</span></span>
+<span><span class="va">hro</span> <span class="op">&lt;-</span> <span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/heatmap_row_order.html" class="external-link">heatmap_row_order</a></span><span class="op">(</span><span class="va">hm4</span><span class="op">)</span>;</span>
+<span><span class="va">mark_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">hro</span><span class="op">[[</span><span class="st">"A"</span><span class="op">]</span><span class="op">]</span>, size<span class="op">=</span><span class="fl">5</span><span class="op">)</span>,</span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">hro</span><span class="op">[[</span><span class="st">"D"</span><span class="op">]</span><span class="op">]</span>, size<span class="op">=</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>;</span>
+<span></span>
+<span><span class="va">hm5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
+<span>   mark_rows<span class="op">=</span><span class="va">mark_rows</span>,</span>
+<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
+<span>   control_label<span class="op">=</span><span class="st">"vs groupA"</span>,</span>
+<span>   column_split<span class="op">=</span><span class="st">"group"</span>,</span>
+<span>   column_title_rot<span class="op">=</span><span class="fl">90</span>,</span>
+<span>   row_split<span class="op">=</span><span class="st">"Class"</span>,</span>
+<span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
+<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm5</span>,</span>
+<span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm5</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="how_to_heatmap_files/figure-html/hm_mark_rows-1.png" class="r-plt" alt="" width="768"></p>
+</div>
 <div class="section level3">
 <h3 id="customize-column-labels">Customize Column Labels<a class="anchor" aria-label="anchor" href="#customize-column-labels"></a>
 </h3>
 <ul>
-<li>Many labels can be customized: size, color, fontface
+<li>Many labels options can be customized: size, color, fontface
 <ul>
-<li>This example shows how to change the color.</li>
+<li>This example shows how to change the color<br>
+using <code>column_names_gp</code>, which uses
+<code><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">grid::gpar()</a></code>.</li>
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># customize column label fonts using column_names_gp</span></span>
 <span><span class="va">column_bold</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
 <span>   <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">group</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"groupA"</span>,</span>
@@ -753,9 +1107,6 @@ even <code>voom()</code> or <code>DEqMS</code> as appropriate.</li>
 <span>   row_split<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   rowData_colnames<span class="op">=</span><span class="st">"Class"</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm8</span>,</span>
 <span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm8</span>, <span class="st">"hm_title"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -781,7 +1132,7 @@ the recommended way to calculate correlation values.<br>
 <li>Remove <code>column_split</code> to allow unsupervised
 clustering.</li>
 </ul>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># correlation=TRUE, any heatmap becomes a sample correlation heatmap</span></span>
 <span><span class="va">hm8corr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
 <span>   correlation<span class="op">=</span><span class="cn">TRUE</span>,</span>
@@ -793,150 +1144,9 @@ clustering.</li>
 <span>      font<span class="op">=</span><span class="va">column_bold</span><span class="op">)</span>,</span>
 <span>   cluster_columns<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
 <span></span>
 <span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm8corr</span><span class="op">)</span></span></code></pre></div>
-<p><img src="how_to_heatmap_files/figure-html/hm_correlation-1.png" class="r-plt" alt="" width="768"></p>
-</div>
-<div class="section level3">
-<h3 id="add-grouped-column-labels">Add Grouped Column Labels<a class="anchor" aria-label="anchor" href="#add-grouped-column-labels"></a>
-</h3>
-<ul>
-<li>Several features are enabled:
-<ul>
-<li>
-<code>apply_hm_column_title=TRUE</code> displays the heatmap
-title.</li>
-<li>
-<code>top_colnames=FALSE</code> hides the top annotation.</li>
-<li>
-<code><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels()</a></code> adds grouped labels.</li>
-<li>
-<code>hm_title_buffer</code> adds whitespace for the grouped
-lines.</li>
-</ul>
-</li>
-<li>We add two design factors: <code>Genotype</code>,
-<code>Treatment</code>
-</li>
-</ul>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">Genotype</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span></span>
-<span>   <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span>, levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>, <span class="st">"KO"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>   each<span class="op">=</span><span class="fl">16</span><span class="op">)</span>;</span>
-<span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span><span class="op">$</span><span class="va">Treatment</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span></span>
-<span>   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Dex"</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">8</span><span class="op">)</span>;</span>
-<span></span>
-<span><span class="va">hm9</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
-<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>   hm_title_buffer<span class="op">=</span><span class="fl">3</span>,</span>
-<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
-<span>   control_label<span class="op">=</span><span class="st">"vs WT_Control"</span>,</span>
-<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
-<span>   top_colnames<span class="op">=</span><span class="cn">FALSE</span>,</span>
-<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
-<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
-<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
-<span><span class="va">hm9_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm9</span>,</span>
-<span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># now add fancy labels</span></span>
-<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
-<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
-<span>   font_cex<span class="op">=</span><span class="fl">1.2</span>,</span>
-<span>   se<span class="op">=</span><span class="va">se</span>,</span>
-<span>   hm_drawn<span class="op">=</span><span class="va">hm9_drawn</span><span class="op">)</span></span></code></pre></div>
-<p><img src="how_to_heatmap_files/figure-html/hm_final-1.png" class="r-plt" alt="" width="768"></p>
-<ul>
-<li>
-<code>y_offset_lines</code> will adjust the height of labels.</li>
-<li>This step may not work consistently in RStudio.
-<ul>
-<li>Call <code><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.new()</a></code> then re-run the steps.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="change-column-group-order">Change Column Group Order<a class="anchor" aria-label="anchor" href="#change-column-group-order"></a>
-</h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hm10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
-<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>   hm_title_buffer<span class="op">=</span><span class="fl">3</span>,</span>
-<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples</span>,</span>
-<span>   control_label<span class="op">=</span><span class="st">"vs WT_Control"</span>,</span>
-<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
-<span>   top_colnames<span class="op">=</span><span class="cn">FALSE</span>,</span>
-<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
-<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
-<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
-<span><span class="va">hm10_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm10</span>,</span>
-<span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># now add fancy labels</span></span>
-<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
-<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
-<span>   font_cex<span class="op">=</span><span class="fl">1.2</span>,</span>
-<span>   se<span class="op">=</span><span class="va">se</span>,</span>
-<span>   hm_drawn<span class="op">=</span><span class="va">hm10_drawn</span><span class="op">)</span></span></code></pre></div>
-<p><img src="how_to_heatmap_files/figure-html/hm_final_part_deux-1.png" class="r-plt" alt="" width="768"></p>
-</div>
-<div class="section level3">
-<h3 id="center-by-genotype">Center By Genotype<a class="anchor" aria-label="anchor" href="#center-by-genotype"></a>
-</h3>
-<ul>
-<li>
-<code>centerby_colnames="Genotype"</code> centers within WT or
-KO</li>
-<li>
-<code>use_controlSamples_Treat</code> uses ‘Control’ samples<br>
-in both WT and KO.
-<ul>
-<li>It shows “Dex - Control” in each Genotype.</li>
-</ul>
-</li>
-<li>
-<code>column_gap</code> adds a custom gap between column
-groups.</li>
-</ul>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">use_controlSamples_Treat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span>, <span class="va">Treatment</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"Control"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">hm11</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span>
-<span>   apply_hm_column_title<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>   hm_title_buffer<span class="op">=</span><span class="fl">3</span>,</span>
-<span>   controlSamples<span class="op">=</span><span class="va">use_controlSamples_Treat</span>,</span>
-<span>   control_label<span class="op">=</span><span class="st">"vs Control"</span>,</span>
-<span>   sestats<span class="op">=</span><span class="va">sestats</span>,</span>
-<span>   top_colnames<span class="op">=</span><span class="cn">FALSE</span>,</span>
-<span>   centerby_colnames<span class="op">=</span><span class="st">"Genotype"</span>,</span>
-<span>   column_split<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Genotype"</span>, <span class="st">"Treatment"</span><span class="op">)</span>,</span>
-<span>   row_split<span class="op">=</span><span class="fl">6</span>,</span>
-<span>   column_gap<span class="op">=</span><span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
-<span>   sample_color_list<span class="op">=</span><span class="va">sample_color_list</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 'magick' package is suggested to install to give better rasterization.</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Set `ht_opt$message = FALSE` to turn off this message.</span></span>
-<span><span class="va">hm11_drawn</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm11</span>,</span>
-<span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># now add fancy labels</span></span>
-<span><span class="fu"><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels</a></span><span class="op">(</span></span>
-<span>   hm_group_list<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treatment"</span>, <span class="st">"Genotype"</span><span class="op">)</span>,</span>
-<span>   font_cex<span class="op">=</span><span class="fl">1.2</span>,</span>
-<span>   se<span class="op">=</span><span class="va">se</span>,</span>
-<span>   hm_drawn<span class="op">=</span><span class="va">hm11_drawn</span><span class="op">)</span></span></code></pre></div>
-<p><img src="how_to_heatmap_files/figure-html/hm_centerby_genotype-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="how_to_heatmap_files/figure-html/hm_correlation_2-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

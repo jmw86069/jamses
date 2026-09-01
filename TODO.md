@@ -1,12 +1,27 @@
 # TODO for jamses
 
+## 31aug2026
+
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) for SEStats
+  should use plot_sedesign() using hits.
+
+- [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
+
+  - Consider some method to split rows by stats hits?
+
+    - Essentially divide rows by
+      [`rowSums()`](https://rdrr.io/r/base/colSums.html) of hit flags.
+    - Divide rows by combinations, sort by net sign
+      [`rowSums()`](https://rdrr.io/r/base/colSums.html).
+    - Title by hit flag? `'1_0_-1'`, `'-1_-1_0'`
+
 ## 13aug2026
 
-- Fix
+- DONE. Fix
   [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
   arg `column_split=3` as integer.
 
-- Add vignette: “How to Make a Heatmap”
+- DONE. Add vignette: “How to Make a Heatmap”
 
 - Add testthat for
   [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)

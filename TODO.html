@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.79.950</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,15 +33,29 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>TODO for jamses</h1>
-      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/v0.0.79.950/TODO.md" class="external-link"><code>TODO.md</code></a></small>
+      <small class="dont-index">Source: <a href="http://github.com/jmw86069/jamses/blob/main/TODO.md" class="external-link"><code>TODO.md</code></a></small>
     </div>
 
 <div id="todo-for-jamses" class="section level1">
 
 <div class="section level2">
+<h2 id="id_31aug2026">31aug2026<a class="anchor" aria-label="anchor" href="#id_31aug2026"></a></h2>
+<ul><li><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> for SEStats should use plot_sedesign() using hits.</p></li>
+<li>
+<p><code><a href="reference/heatmap_se.html">heatmap_se()</a></code></p>
+<ul><li>
+<p>Consider some method to split rows by stats hits?</p>
+<ul><li>Essentially divide rows by <code><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums()</a></code> of hit flags.</li>
+<li>Divide rows by combinations, sort by net sign <code><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums()</a></code>.</li>
+<li>Title by hit flag? <code>'1_0_-1'</code>, <code>'-1_-1_0'</code>
+</li>
+</ul></li>
+</ul></li>
+</ul></div>
+<div class="section level2">
 <h2 id="id_13aug2026">13aug2026<a class="anchor" aria-label="anchor" href="#id_13aug2026"></a></h2>
-<ul><li><p>Fix <code><a href="reference/heatmap_se.html">heatmap_se()</a></code> arg <code>column_split=3</code> as integer.</p></li>
-<li><p>Add vignette: “How to Make a Heatmap”</p></li>
+<ul><li><p>DONE. Fix <code><a href="reference/heatmap_se.html">heatmap_se()</a></code> arg <code>column_split=3</code> as integer.</p></li>
+<li><p>DONE. Add vignette: “How to Make a Heatmap”</p></li>
 <li>
 <p>Add testthat for <code><a href="reference/heatmap_se.html">heatmap_se()</a></code> using <code>vdiffr</code>.</p>
 <ul><li>confirm <code>sample_color_list</code> with <code>character</code> and <code>function</code>.</li>
