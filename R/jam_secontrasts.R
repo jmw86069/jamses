@@ -290,7 +290,12 @@
 #'    rowData=data.frame(measurement=rownames(m)))
 #'
 #' # assign colors
-#' sample_color_list <- platjam::design2colors(se)
+#' # sample_color_list <- platjam::design2colors(se)
+#' sample_color_list <- list(
+#' group=c(
+#'    Vehicle="palegoldenrod",
+#'    Treated="firebrick2"
+#' ))
 #'
 #' # heatmap
 #' heatmap_se(se, sample_color_list=sample_color_list)
@@ -346,12 +351,30 @@
 #'    SummarizedExperiment::assays(se2)$counts[,10:12] + new_fold)
 #'
 #' # assign colors
-#' sample_color_list2 <- platjam::design2colors(se2,
-#'    class_colnames="genotype",
-#'    color_sub=c(
+#' # sample_color_list2 <- platjam::design2colors(se2,
+#' #    class_colnames="genotype",
+#' #    color_sub=c(
+#' #       Vehicle="palegoldenrod",
+#' #       Treated="firebrick4"),
+#' #    group_colnames="group")
+#' sample_color_list2 <- list(
+#'    treatment=c(
 #'       Vehicle="palegoldenrod",
-#'       Treated="firebrick4"),
-#'    group_colnames="group")
+#'       Treated="firebrick4"
+#'    ),
+#'    genotype=c(
+#'       WT="gold", KO="navy"
+#'    ),
+#'    group=c(
+#'       WT_Vehicle="gold2",
+#'       WT_Treated="darkorange",
+#'       KO_Vehicle="royalblue3",
+#'       KO_Treated="darkorchid4"
+#'    )
+#' )
+#' sample_color_list2$samples <- jamba::color2gradient(
+#'    rep(sample_color_list2$group, each=4))
+#' names(sample_color_list2$samples) <- colnames(se2)
 #'
 #' # heatmap
 #' hm2a <- heatmap_se(se2,
@@ -416,16 +439,23 @@
 #'    column_title=attr(hm2hits, "hm_title"),
 #'    merge_legends=TRUE)
 #'
-#' # venn diagram
+#' # get the hit list
 #' hit_list <- hit_array_to_list(sestats2,
 #'    contrast_names=c(1:2))
 #' jamba::sdim(hit_list);
-#' # names(hit_list) <- gsub(":", ",<br>\n", contrast2comp(names(hit_list)))
-#' # vo <- venndir::venndir(hit_list, expand_fraction=0.1)
-#' # venndir::venndir_legender(venndir_out=vo, setlist=hit_list)
+#' 
+#' # make directional venn diagram
+#' names(hit_list) <- gsub(":", ",<br>\n",
+#'    contrast2comp(names(hit_list)))
+#' if (requireNamespace("venndir", quietly=TRUE)) {
+#'    vo <- venndir::venndir(hit_list)
 #'
-#' # vo <- venndir::venndir(hit_list, expand_fraction=0.1, proportional=TRUE)
-#' # venndir::venndir_legender(venndir_out=vo, setlist=hit_list)
+#'    vo <- venndir::venndir(hit_list, show_labels="Ncp")
+#' 
+#'    vo <- venndir::venndir(hit_list, show_labels="Ni")
+#' 
+#'    vo <- venndir::venndir(hit_list, proportional=TRUE)
+#' }
 #' @returns `SEStats` object
 #' 
 #' @export

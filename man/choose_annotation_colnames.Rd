@@ -40,8 +40,7 @@ override the rules above.}
 
 \item{simplify}{\code{logical} indicating whether to filter out columns
 whose data already matches another column with 1:1 cardinality.
-This step requires \code{platjam::cardinality()} until that function
-is moved into the \code{jamba} package.}
+This step uses internal \code{cardinality()}.}
 
 \item{max_colnames}{\code{numeric} maximum number of colnames to return.
 Note that columns are not sorted for priority, so they will be

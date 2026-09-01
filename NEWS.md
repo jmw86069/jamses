@@ -4,6 +4,10 @@
 
 * Updated "How to Make a Heatmap" to add categories.
 
+## Other changes
+
+* Added `cardinality()` for internal use.
+* Removed all 'platjam::' uses.
 
 # jamses 0.0.79.950
 

@@ -22,8 +22,7 @@
 #'    override the rules above.
 #' @param simplify `logical` indicating whether to filter out columns
 #'    whose data already matches another column with 1:1 cardinality.
-#'    This step requires `platjam::cardinality()` until that function
-#'    is moved into the `jamba` package.
+#'    This step uses internal `cardinality()`.
 #' @param max_colnames `numeric` maximum number of colnames to return.
 #'    Note that columns are not sorted for priority, so they will be
 #'    returned in the order they appear in `df` after applying the
@@ -107,7 +106,7 @@ choose_annotation_colnames <- function
             keep_colnames <- test_colname;
          } else {
             min_cardinality <- min(sapply(keep_colnames, function(keep_colname){
-               max(platjam::cardinality(
+               max(cardinality(
                   x=df[[test_colname]],
                   y=df[[keep_colname]]))
             }))
