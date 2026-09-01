@@ -1882,7 +1882,7 @@ heatmap_se <- function
 
    # optional row_split
    if (length(row_split) > 0) {
-      if (TRUE %in% correlation) {
+      if (isTRUE(correlation)) {
          # correlation uses colData for split
          if (any(c("factor", "character") %in% class(row_split))) {
             if (!anyDuplicated(row_split) &&
@@ -1936,7 +1936,7 @@ heatmap_se <- function
             }
          }
       }
-   } else if (TRUE %in% correlation) {
+   } else if (isTRUE(correlation)) {
       row_split <- column_split;
    }
    if (verbose && length(row_split) > 0) {
@@ -1997,7 +1997,7 @@ heatmap_se <- function
    }
 
    # row_labels
-   if (correlation) {
+   if (isTRUE(correlation)) {
       # for correlation, samples are shown on rows
       # so it must use colData_se
       if (length(row_label_colname) == 0 ||
@@ -2065,7 +2065,7 @@ heatmap_se <- function
    # heatmap legend labels
    # TODO: handle non-zero color_floor
    if (length(legend_at) == 0) {
-      if (correlation) {
+      if (isTRUE(correlation)) {
          if (abs(color_max) > 1) {
             color_max <- 1;
          }
@@ -2107,7 +2107,7 @@ heatmap_se <- function
       }
    }
    if (length(legend_labels) != length(legend_at)) {
-      if (correlation) {
+      if (isTRUE(correlation)) {
          legend_labels <- legend_at;
       } else {
          legend_labels <- round(jamba::exp2signed(legend_at+0.000001, offset=0))
@@ -2154,7 +2154,7 @@ heatmap_se <- function
          ...)[, isamples, drop=FALSE];
       legend_title <- paste0("centered\n", data_type);
    }
-   if (correlation) {
+   if (isTRUE(correlation)) {
       # call correlation function cor()
       se_matrix <- jamba::call_fn_ellipsis(cor,
          x=se_matrix,

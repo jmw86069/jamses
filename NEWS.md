@@ -1,3 +1,10 @@
+# jamses 0.0.80.900
+
+## Updates In Progress
+
+* Updated "How to Make a Heatmap" to add categories.
+
+
 # jamses 0.0.79.950
 
 ## Updates

@@ -1,10 +1,21 @@
-
 # TODO for jamses
+
+## 31aug2026
+
+* `plot()` for SEStats should use plot_sedesign() using hits.
+* `heatmap_se()`
+
+   * Consider some method to split rows by stats hits?
+
+      * Essentially divide rows by `rowSums()` of hit flags.
+      * Divide rows by combinations, sort by net sign `rowSums()`.
+      * Title by hit flag? `'1_0_-1'`, `'-1_-1_0'`
+
 
 ## 13aug2026
 
-* Fix `heatmap_se()` arg `column_split=3` as integer.
-* Add vignette: "How to Make a Heatmap"
+* DONE. Fix `heatmap_se()` arg `column_split=3` as integer.
+* DONE. Add vignette: "How to Make a Heatmap"
 * Add testthat for `heatmap_se()` using `vdiffr`.
 
    * confirm `sample_color_list` with `character` and `function`.
