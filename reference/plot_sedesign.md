@@ -454,21 +454,24 @@ sedesign_1 <- groups_to_sedesign(idf)
 # plot the contrasts
 plot_sedesign(sedesign_1)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # re-order the factors along each axis
 plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # flip the group ordering for two-way contrasts
 # (These are mathematically equivalent, but shown in flipped orientation)
 plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2, flip_twoway=TRUE)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # plot only the two-way contrasts
 is_twoway <- grepl("[(]", contrast_names(sedesign_1))
 plot_sedesign(sedesign_1, which_contrasts=which(is_twoway),
    axis1=1, axis2=3, axis3=2)
-
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 group_names <- paste0(
    rep(c("DMSO", "Etop"), each=4),
@@ -479,10 +482,12 @@ group_names <- paste0(
 sedesign <- groups_to_sedesign(group_names)
 plot_sedesign(sedesign)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # plot only the two-way contrasts
 is_twoway <- grepl("[(]", contrast_names(sedesign))
 plot_sedesign(sedesign, which_contrasts=which(is_twoway),
    axis1=1, axis2=3, axis3=2)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 ```

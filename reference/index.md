@@ -176,7 +176,7 @@
 - [`update_function_params()`](https://jmw86069.github.io/jamses/reference/update_function_params.md)
   : Update function default parameters
 - [`update_list_elements()`](https://jmw86069.github.io/jamses/reference/update_list_elements.md)
-  : Update a subset of list elements
+  : Update a subset of list elements, deprecated
 - [`validate_sedesign()`](https://jmw86069.github.io/jamses/reference/validate_sedesign.md)
   : Validate SEDesign object contents
 - [`voom_jam()`](https://jmw86069.github.io/jamses/reference/voom_jam.md)

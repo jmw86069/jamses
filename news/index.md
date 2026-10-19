@@ -2,14 +2,35 @@
 
 ## jamses 0.0.80.900
 
-### Updates In Progress
+### Updates
 
+- Import
+  [`ComplexHeatmap::draw()`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html)
+  so we can use
+  [`draw()`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html).
 - Updated “How to Make a Heatmap” to add categories.
 
 ### Other changes
 
+- [`se_normalize()`](https://jmw86069.github.io/jamses/reference/se_normalize.md)
+  and
+  [`matrix_normalize()`](https://jmw86069.github.io/jamses/reference/matrix_normalize.md)
+  - added normalization method ‘cyclicLoess’
+  - added parameter ‘maximum_mean’ for method ‘jammanorm’, so the
+    normalization can be bound by ‘min_mean’ to confine the data within
+    a set range trusted for normalization.
+- [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
+  - argument ‘hm_title_buffer’ now works even when there is no
+    column_split, inserting an empty annotation. In future,
+    [`heatmap_column_group_labels()`](https://jmw86069.github.io/jamses/reference/heatmap_column_group_labels.md)
+    will tolerate subgroupings that are not tied to column_split.
 - Added `cardinality()` for internal use.
 - Removed all ‘platjam::’ uses.
+- Added import
+  [`ComplexHeatmap::draw()`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html)
+  for convenience.
+- [`merge_statdf_all_test()`](https://jmw86069.github.io/jamses/reference/merge_statdf_all_test.md)
+  was updated to handle edge cases.
 
 ## jamses 0.0.79.950
 

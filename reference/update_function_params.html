@@ -53,10 +53,41 @@
     </div>
 
     <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+
+
+<dl><dt id="arg-function-name">function_name<a class="anchor" aria-label="anchor" href="#arg-function-name"></a></dt>
+<dd><p><code>character</code> function name, passed to <code><a href="https://rdrr.io/r/base/formals.html" class="external-link">formals()</a></code></p></dd>
+
+
+<dt id="arg-param-name">param_name<a class="anchor" aria-label="anchor" href="#arg-param-name"></a></dt>
+<dd><p><code>character</code> string of one parameter / argument name.</p></dd>
+
+
+<dt id="arg-new-values">new_values<a class="anchor" aria-label="anchor" href="#arg-new-values"></a></dt>
+<dd><p>any relevant R object type to use for the function
+parameter / argument.</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p><code>logical</code> whether to print verbose output</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments are ignored.</p></dd>
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>a <code>list</code> with class matching the R function argument.</p>
+    </div>
+    <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is a minor extension to <code><a href="update_list_elements.html">update_list_elements()</a></code>
 intended to help update function parameters which are defined
-as a nested list.</p>
+as a nested <code>list</code>. It will update internal components of the
+nested <code>list</code> without replacing the whole list.</p>
+<p>It is very similar to <code><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList()</a></code> except for a nested list.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -86,6 +117,130 @@ as a nested list.</p>
 <code><a href="update_list_elements.html">update_list_elements()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">params1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   jammanorm<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      controlGenes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HK1"</span>, <span class="st">"HK2"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span>,</span></span>
+<span class="r-in"><span>   cyclicLoess<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"affy"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>   quantile<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ties<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 1. Not correct: update arguments with modifyList()</span></span></span>
+<span class="r-in"><span><span class="va">fn_defaults</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/formals.html" class="external-link">formals</a></span><span class="op">(</span><span class="st">"matrix_normalize"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">new_fn_args</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="va">fn_defaults</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>params<span class="op">=</span><span class="va">params1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">new_fn_args</span><span class="op">$</span><span class="va">params</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ jammanorm  :List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ controlGenes: chr [1:2] "HK1" "HK2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ cyclicLoess:List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ method: chr "affy"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ quantile   :List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ ties: logi FALSE</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">new_fn_args</span><span class="op">$</span><span class="va">params</span><span class="op">$</span><span class="va">jammanorm</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ controlGenes: chr [1:2] "HK1" "HK2"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2. update only params argument with modifyList()</span></span></span>
+<span class="r-in"><span><span class="va">new_fn_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/modifyList.html" class="external-link">modifyList</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="va">fn_defaults</span><span class="op">$</span><span class="va">params</span><span class="op">)</span>, <span class="va">params1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">new_fn_params</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ cyclicLoess       :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ weights      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ span         : num 0.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ adaptive.span: logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ iterations   : num 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ method       : chr "affy"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ quantile          :List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ ties: logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ jammanorm         :List of 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ controlGenes     : chr [1:2] "HK1" "HK2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ minimum_mean     : num 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ maximum_mean     : num Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ controlSamples   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ centerGroups     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ useMedian        : logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ noise_floor      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ noise_floor_value: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ limma_batch_adjust:List of 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ batch: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ group: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ TMM               :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ refColumn   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ logratioTrim: num 0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sumTrim     : num 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ doWeighting : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ Acutoff     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ TMMwsp            :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ refColumn   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ logratioTrim: num 0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sumTrim     : num 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ doWeighting : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ Acutoff     : NULL</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">new_fn_params</span><span class="op">$</span><span class="va">jammanorm</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ controlGenes     : chr [1:2] "HK1" "HK2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ minimum_mean     : num 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ maximum_mean     : num Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ controlSamples   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ centerGroups     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ useMedian        : logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ noise_floor      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ noise_floor_value: NULL</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 3. use update_function_params()</span></span></span>
+<span class="r-in"><span><span class="va">params2</span> <span class="op">&lt;-</span> <span class="fu">update_function_params</span><span class="op">(</span></span></span>
+<span class="r-in"><span>   function_name<span class="op">=</span><span class="st">"matrix_normalize"</span>,</span></span>
+<span class="r-in"><span>   param_name<span class="op">=</span><span class="st">"params"</span>,</span></span>
+<span class="r-in"><span>   new_values<span class="op">=</span><span class="va">params1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">params2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ cyclicLoess       :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ weights      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ span         : num 0.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ adaptive.span: logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ iterations   : num 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ method       : chr "affy"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ quantile          :List of 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ ties: logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ jammanorm         :List of 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ controlGenes     : chr [1:2] "HK1" "HK2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ minimum_mean     : num 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ maximum_mean     : num Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ controlSamples   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ centerGroups     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ useMedian        : logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ noise_floor      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ noise_floor_value: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ limma_batch_adjust:List of 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ batch: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ group: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ TMM               :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ refColumn   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ logratioTrim: num 0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sumTrim     : num 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ doWeighting : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ Acutoff     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ TMMwsp            :List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ refColumn   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ logratioTrim: num 0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ sumTrim     : num 0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ doWeighting : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ..$ Acutoff     : NULL</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">params2</span><span class="op">$</span><span class="va">jammanorm</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ controlGenes     : chr [1:2] "HK1" "HK2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ minimum_mean     : num 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ maximum_mean     : num Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ controlSamples   : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ centerGroups     : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ useMedian        : logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ noise_floor      : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ noise_floor_value: NULL</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

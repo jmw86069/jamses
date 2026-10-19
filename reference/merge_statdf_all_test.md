@@ -1,8 +1,9 @@
 # Merge stats data.frame from two sestats results
 
-Merge stats data.frame from two sestats results, specifically when one
-object has "all rows" and is intended only to produce the non-P-value
-statistics such as group mean, max group mean (mgm), fold, and logFC.
+Merge stats `data.frame` rows from two sestats results, specifically
+when one object has "all rows" and is intended only to produce the
+non-P-value statistics such as group mean, max group mean (mgm), fold,
+and logFC.
 
 ## Usage
 
@@ -19,24 +20,30 @@ merge_statdf_all_test(
 
 - sestats_all:
 
-  `list` with sestats data from
+  `SEStats` object or equivalent legacy `list` format, as returned by
   [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md)
-  which used "all rows" of the source data, along with
-  `define_hits=FALSE`.
+  when using argument `define_hits=FALSE`. These results should
+  therefore only contain the group mean and log fold change values, for
+  all rows in the input data, regardless if they were tested in
+  `sestts_test`.
 
 - sestats_test:
 
-  `list` with sestats data from
+  `SEStats` object or equivalent legacy `list` format, as returned by
   [`se_contrast_stats()`](https://jmw86069.github.io/jamses/reference/se_contrast_stats.md)
-  which used a subset of rows, usually "detected rows" for the
-  statistical test.
+  when using argument `define_hits=TRUE`. These results should therefore
+  contain the 'hit' column and with 'hit_array' data populated. It
+  should only contain rows that were tested, which is assumed to be a
+  subset of rows contained in `sestats_all`.
 
 - exclude_from_all:
 
   `character` pattern used with
   [`jamba::unvigrep()`](https://jmw86069.github.io/jamba/reference/unvigrep.html)
-  to exclude colnames from `sestats_all`. Default `'P.val|^hit '`
-  excludes P-values and hit columns.
+  to exclude colnames from each `data.frame` in the 'stats_dfs' property
+  of `sestats_all`. The default `'P.val|^hit '` will exclude P-value and
+  adjusted P-value columns if they exist (they should not, but it can be
+  tolerated).
 
 - ...:
 

@@ -1,26 +1,30 @@
 # Normalize SummarizedExperiment data
 
-Normalize SummarizedExperiment data
+Normalize SummarizedExperiment data, using one or more methods, and
+applied to one or more assays.
 
 ## Usage
 
 ``` r
 se_normalize(
   se,
-  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE"),
+  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE",
+    "cyclicLoess"),
   assay_names = NULL,
   output_method_prefix = NULL,
   output_assay_names = NULL,
   genes = NULL,
   samples = NULL,
-  params = list(quantile = list(ties = TRUE), jammanorm = list(controlGenes = NULL,
-    minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
-    noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
-    NULL, group = NULL), TMM = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05,
-    doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
-    0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL), RLE = list(refColumn =
-    NULL, logratioTrim = 0.3, 
-     sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
+  params = list(cyclicLoess = list(weights = NULL, span = 0.7, adaptive.span = FALSE,
+    iterations = 3, method = c("fast", "affy", "pairs")), quantile = list(ties = TRUE),
+    jammanorm = list(controlGenes = NULL, minimum_mean = 0, maximum_mean = Inf,
+    controlSamples = NULL, centerGroups = NULL, useMedian = FALSE, noise_floor = NULL,
+    noise_floor_value = NULL), limma_batch_adjust = list(batch = NULL, group = NULL), TMM
+    = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05, doWeighting = TRUE,
+    Acutoff = NULL), 
+     TMMwsp = list(refColumn = NULL, logratioTrim = 0.3, sumTrim =
+    0.05, doWeighting = TRUE, Acutoff = NULL), RLE = list(refColumn = NULL, logratioTrim
+    = 0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
   floor = 0,
   enforce_norm_floor = TRUE,
@@ -40,27 +44,34 @@ se_normalize(
 
 - method:
 
-  `character` vector indicating which normalization method(s) to apply.
+  `character` string indicating which normalization method to apply.
 
-  - `"quantile"`: quantile normalization via
+  - `'quantile'`: quantile normalization provided by
     [`limma::normalizeQuantiles()`](https://rdrr.io/pkg/limma/man/normalizequantiles.html)
 
-  - `"jammanorm"`: log-ratio normalization via
-    [`jamma::jammanorm()`](https://rdrr.io/pkg/jamma/man/jammanorm.html)
+  - `'jammanorm'`: log-ratio normalization
+    [`jamma::jammanorm()`](https://rdrr.io/pkg/jamma/man/jammanorm.html),
+    using the MA-plot equivalent data, bounded within `minimum_mean` and
+    `maximum_mean`, optionally subset to use `controlGenes` for
+    housekeeper gene or reference normalization, optionally
+    `controlSamples` to use reference samples for normalization.
 
-  - `"limma_batch_adjust"`: batch adjustment via
+  - `'limma_batch_adjust'`: batch adjustment via
     [`limma::removeBatchEffect()`](https://rdrr.io/pkg/limma/man/removeBatchEffect.html),
-    recommended for data visualization, but not recommended for
+    recommended for data visualization, and not recommended for
     downstream statistical comparisons.
 
-  - `"TMM"`: trimmed mean of M-values via
+  - `'TMM'`: trimmed mean of M-values via
     [`edgeR::calcNormFactors()`](https://rdrr.io/pkg/edgeR/man/calcNormFactors.html)
 
-  - `"TMMwsp"`: TMM with singleton pairing via
+  - `'TMMwsp'`: TMM with singleton pairing via
     [`edgeR::calcNormFactors()`](https://rdrr.io/pkg/edgeR/man/calcNormFactors.html)
 
-  - `"RLE"`: relative log expression via
+  - `'RLE'`: relative log expression via
     [`edgeR::calcNormFactors()`](https://rdrr.io/pkg/edgeR/man/calcNormFactors.html)
+
+  - `'cyclicLoess'`: Cyclic Loess provided by
+    [`limma::normalizeCyclicLoess()`](https://rdrr.io/pkg/limma/man/normalizeCyclicLoess.html)
 
 - assay_names:
 
@@ -146,6 +157,25 @@ se_normalize(
     normgroups are not normalized relative to each other. Data are only
     normalized within each independent normgroup.
 
+- floor:
+
+  `numeric` value indicating the lowest accepted numeric value, below
+  which values are assigned to this floor. The default `floor=0`
+  requires all values are `0`, and any values below `0` are assigned
+  `0`. Note that the `floor` is applied after log2 transform, when the
+  log2 transform is performed.
+
+- enforce_norm_floor:
+
+  `logical` indicating whether to enforce the `floor` for the normalized
+  results, default is `TRUE`. For example, when `floor=0` any values at
+  or below `0` are set to `0` before normalization. After normalization
+  some of these values will be above or below `0`. When
+  `enforce_norm_floor=TRUE` these values will again be set to `0`
+  because they are considered to be below the noise threshold of the
+  protocol, and adjustments are not relevant; also any normalized values
+  below the `floor` will also be set to `floor`.
+
 - output_sep:
 
   `character` string used as a delimited between the `method` and the
@@ -184,13 +214,13 @@ se_normalize(
 ## Details
 
 This function applies one or more data normalization methods to an input
-`SummarizedExperiment` object. The normalization is applied to one or
-more matrix data stored in `assays(se)`, each one is run independently.
+`SummarizedExperiment` object, and independent to one or more
+`assays(se)` as defined by `assay_names`.
 
-Note that supplying `genes` and `samples` will apply normalization to
-only those `genes` and `samples`, and this data will be stored in the
-full `SummarizedExperiment` object `se` with `NA` values used to fill
-any values not present in `genes` or `samples`.
+Supplying `genes` and `samples` will apply normalization to only those
+`genes` and `samples`, and this data will be stored in the full
+`SummarizedExperiment` object `se` with `NA` values used to fill any
+values not present in `genes` or `samples`.
 
 For example if `assay_names` contains two assay names, and `method`
 contains two methods, the output will include four normalizations, where

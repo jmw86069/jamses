@@ -1,6 +1,6 @@
-# Update a subset of list elements
+# Update a subset of list elements, deprecated
 
-Update a subset of list elements
+Update a subset of list elements, deprecated
 
 ## Usage
 
@@ -13,6 +13,32 @@ update_list_elements(
   ...
 )
 ```
+
+## Arguments
+
+- source_list:
+
+  `list`
+
+- update_list:
+
+  `list`
+
+- list_layer_num:
+
+  `integer` used iteratively by this function
+
+- verbose:
+
+  `logical` whether to print verbose output.
+
+- ...:
+
+  additional arguments are ignored.
+
+## Value
+
+`list` in similar format as the input `source_list`.
 
 ## Details
 

@@ -316,6 +316,7 @@ title(main="22 oneway contrasts (filtered)")
 plot_sedesign(sedesign3,
    which_contrasts=jamba::vigrep("[(]", contrast_names(sedesign3)),
    arrow_ex=0.5, twoway_lwd=1, contrast_style="none")
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 title(main="8 twoway contrasts (filtered)")
 
 
@@ -324,6 +325,7 @@ plot_sedesign(sedesign3,
    flip_twoway=TRUE,
    which_contrasts=jamba::vigrep("[(]", contrast_names(sedesign3)),
    arrow_ex=0.5, twoway_lwd=1, contrast_style="none")
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 title(main="8 twoway contrasts (flipped)")
 
 ```

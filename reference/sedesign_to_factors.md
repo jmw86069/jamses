@@ -129,6 +129,7 @@ rownames(idf) <- isamples_1;
 sedesign <- groups_to_sedesign(idf)
 plot_sedesign(sedesign, axis1=2, axis2=3, axis3=1, label_cex=0.5)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # prepare colData data.frame
 cdf <- data.frame(check.names=FALSE, stringsAsFactors=FALSE,

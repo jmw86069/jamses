@@ -25,6 +25,7 @@ heatmap_column_group_labels(
   y_offset_lines = 0,
   endlines = 1,
   use_gridtext = TRUE,
+  debug = 0,
   verbose = FALSE,
   ...
 )
@@ -150,6 +151,10 @@ heatmap_column_group_labels(
   [`gridtext::richtext_grob()`](https://wilkelab.org/gridtext/reference/richtext_grob.html)
   in order to enable markdown and limited HTML-based formatting.
 
+- debug:
+
+  `integer` with any non-zero value enabling some debug output.
+
 - verbose:
 
   `logical` indicating whether to print verbose output.
@@ -157,6 +162,10 @@ heatmap_column_group_labels(
 - ...:
 
   additional arguments are ignored.
+
+## Value
+
+This function is called for its graphical output.
 
 ## Details
 
@@ -273,3 +282,31 @@ Other jamses heatmaps:
 [`detect_heatmap_components()`](https://jmw86069.github.io/jamses/reference/detect_heatmap_components.md),
 [`heatmap_profile_plot()`](https://jmw86069.github.io/jamses/reference/heatmap_profile_plot.md),
 [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
+
+## Examples
+
+``` r
+se <- simulate_se_test()
+#> Warning: first element used of 'each' argument
+#> Warning: first element used of 'each' argument
+#> Warning: data length [1249] is not a sub-multiple or multiple of the number of rows [250]
+#> Warning: first element used of 'length.out' argument
+#> Warning: first element used of 'length.out' argument
+#> Warning: first element used of 'length.out' argument
+#> Warning: first element used of 'length.out' argument
+
+hm <- heatmap_se(se,
+   top_colnames=c("Geno", "Trt"))
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+hmd <- ComplexHeatmap::draw(hm)
+heatmap_column_group_labels(
+   c("Trt", "Geno"),
+   hm_drawn=hmd,
+   hm_title_base_default=NULL, hm_body_base_default=NULL,
+   se=se)
+
+#> Error in grid.Call.graphics(C_downviewport, name$name, strict): Viewport 'centered
+#> expression_heatmap_body_1_5' was not found
+```

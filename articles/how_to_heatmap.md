@@ -415,6 +415,7 @@ hm9 <- heatmap_se(se,
    row_split=6,
    column_gap=grid::unit(c(1, 2, 1), "mm"),
    sample_color_list=sample_color_list)
+#> (<span style="color:#00C3C3FF">20:13:09</span>) 19Oct2026: <span style="color:#FF7F00FF">top_empty for hm_title_buffer:</span><span style="color:#1E90FFFF">4</span><br/>
 hm9_drawn <- ComplexHeatmap::draw(hm9)
 
 # now add fancy labels
@@ -446,6 +447,7 @@ hm10 <- heatmap_se(se,
    column_split=c("Treatment", "Genotype"),
    row_split=6,
    sample_color_list=sample_color_list)
+#> (<span style="color:#00C3C3FF">20:13:11</span>) 19Oct2026: <span style="color:#FF7F00FF">top_empty for hm_title_buffer:</span><span style="color:#1E90FFFF">4</span><br/>
 hm10_drawn <- ComplexHeatmap::draw(hm10,
    merge_legends=TRUE)
 

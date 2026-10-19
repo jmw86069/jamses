@@ -39,6 +39,26 @@
 <div id="todo-for-jamses" class="section level1">
 
 <div class="section level2">
+<h2 id="id_02sep2026">02sep2026<a class="anchor" aria-label="anchor" href="#id_02sep2026"></a></h2>
+<ul><li>For “How to Create a Heatmap”
+<ul><li>Consider using numbers for sections, sub-sections.</li>
+<li>Add “How to Create SummarizedExperiment”.</li>
+<li>Edge cases:
+<ul><li>Start with a correlation matrix.</li>
+<li>Show un-centered magnitude.</li>
+<li>Put the color key at the bottom, and horizontal.</li>
+</ul></li>
+</ul></li>
+<li>Refactor <code><a href="reference/heatmap_column_group_labels.html">heatmap_column_group_labels()</a></code> and <code><a href="reference/heatmap_se.html">heatmap_se()</a></code>
+<ul><li>Consider <code>anno_empty()</code> to create space for group labels, within <code><a href="reference/heatmap_se.html">heatmap_se()</a></code> instead of adding <code>'\n'</code> to <code>column_title</code>.</li>
+<li>hcgl uses <code>'annotation_top_empty_'</code> components.</li>
+<li>Make it work for un-split heatmaps, it should find the x-axis cell position using heatmap layout/order.</li>
+<li>Dependent upon <code><a href="https://rdrr.io/r/grid/deviceLoc.html" class="external-link">grid::deviceLoc()</a></code> support by Positron, or external device <code>dev.new('X11')</code> or <code>windows()</code>.</li>
+<li>Consider rolling it back inside <code><a href="reference/heatmap_se.html">heatmap_se()</a></code>?</li>
+<li>Consider enhancing <code>draw()</code> to include optional attributes: ‘hm_title’, ‘hm_column_group_labels’.</li>
+</ul></li>
+</ul></div>
+<div class="section level2">
 <h2 id="id_31aug2026">31aug2026<a class="anchor" aria-label="anchor" href="#id_31aug2026"></a></h2>
 <ul><li><p><code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> for SEStats should use plot_sedesign() using hits.</p></li>
 <li>

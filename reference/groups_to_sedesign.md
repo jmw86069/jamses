@@ -328,10 +328,12 @@ contrasts(sedesign);
 # plot the design and contrasts
 plot_sedesign(sedesign)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # the two-way contrasts can be visibly flipped, since they are equivalent
 plot_sedesign(sedesign, flip_twoway=TRUE)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # the design can be subset by sample
 all_samples <- samples(sedesign)
@@ -343,6 +345,7 @@ plot_sedesign(sedesign[subset_samples1, ])
 subset_samples2 <- all_samples[c(-1, -6, -11)];
 plot_sedesign(sedesign[subset_samples2, ])
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # The design * contrast matrix can be displayed in full
 design(sedesign) %*%  contrasts(sedesign);
@@ -414,6 +417,7 @@ contrast_names(sedesign_2)
 #> [3] "(KO_Treated-WT_Treated)-(KO_Control-WT_Control)"
 plot_sedesign(sedesign_2)
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # prevent comparisons of Treated to Treated, or Control to Control
 sedesign_3 <- groups_to_sedesign(as.character(igroups),
@@ -423,7 +427,7 @@ contrast_names(sedesign_3)
 #> [2] "KO_Treated-KO_Control"                          
 #> [3] "(KO_Treated-KO_Control)-(WT_Treated-WT_Control)"
 plot_sedesign(sedesign_3)
-
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # input as a data.frame with ordered factor levels
 ifactors <- data.frame(Genotype=factor(c("WT","WT","KO","KO"),
@@ -446,10 +450,12 @@ contrast_names(groups_to_sedesign(ifactors))
 #> [5] "(KO_Treated-WT_Treated)-(KO_Control-WT_Control)"
 plot_sedesign(groups_to_sedesign(ifactors))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # you can still override factor levels with pre_control_terms
 plot_sedesign(groups_to_sedesign(ifactors, pre_control_terms=c("KO")))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # input as design matrix
 design_matrix <- design(groups_to_sedesign(ifactors))
@@ -482,7 +488,9 @@ df_test <- data.frame(
    treat=c("Treated", "Untreated"))
 plot_sedesign(groups_to_sedesign(df_test))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 plot_sedesign(groups_to_sedesign(jamba::pasteByRow(df_test)))
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # default_order="sort_samples"
 # contrasts show B-A, because A is sorted first
@@ -491,6 +499,7 @@ plot_sedesign(groups_to_sedesign(jamba::pasteByRow(df_test)))
 plot_sedesign(groups_to_sedesign(df_test,
    default_order="sort_samples"))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # default_order="mixedSort"
 # contrasts show B-A, because A is sorted first
@@ -498,8 +507,10 @@ plot_sedesign(groups_to_sedesign(df_test,
 plot_sedesign(groups_to_sedesign(df_test,
    default_order="mixedSort"))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 plot_sedesign(groups_to_sedesign(df_test,
    default_order="mixedSort",
    pre_control_terms=c("Untreated")))
 
+#> Error in loadNamespace(x): there is no package called ‘bezier’
 ```

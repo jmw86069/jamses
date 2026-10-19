@@ -39,13 +39,26 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.80.900" id="jamses-0080900">jamses 0.0.80.900<a class="anchor" aria-label="anchor" href="#jamses-0080900"></a></h2>
 <div class="section level3">
-<h3 id="updates-in-progress-0-0-80-900">Updates In Progress<a class="anchor" aria-label="anchor" href="#updates-in-progress-0-0-80-900"></a></h3>
-<ul><li>Updated “How to Make a Heatmap” to add categories.</li>
+<h3 id="updates-0-0-80-900">Updates<a class="anchor" aria-label="anchor" href="#updates-0-0-80-900"></a></h3>
+<ul><li>Import <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">ComplexHeatmap::draw()</a></code> so we can use <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw()</a></code>.</li>
+<li>Updated “How to Make a Heatmap” to add categories.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="other-changes-0-0-80-900">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-0-0-80-900"></a></h3>
-<ul><li>Added <code>cardinality()</code> for internal use.</li>
+<ul><li>
+<code><a href="../reference/se_normalize.html">se_normalize()</a></code> and <code><a href="../reference/matrix_normalize.html">matrix_normalize()</a></code>
+<ul><li>added normalization method ‘cyclicLoess’</li>
+<li>added parameter ‘maximum_mean’ for method ‘jammanorm’, so the normalization can be bound by ‘min_mean’ to confine the data within a set range trusted for normalization.</li>
+</ul></li>
+<li>
+<code><a href="../reference/heatmap_se.html">heatmap_se()</a></code>
+<ul><li>argument ‘hm_title_buffer’ now works even when there is no column_split, inserting an empty annotation. In future, <code><a href="../reference/heatmap_column_group_labels.html">heatmap_column_group_labels()</a></code> will tolerate subgroupings that are not tied to column_split.</li>
+</ul></li>
+<li>Added <code>cardinality()</code> for internal use.</li>
 <li>Removed all ‘platjam::’ uses.</li>
+<li>Added import <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">ComplexHeatmap::draw()</a></code> for convenience.</li>
+<li>
+<code><a href="../reference/merge_statdf_all_test.html">merge_statdf_all_test()</a></code> was updated to handle edge cases.</li>
 </ul></div>
 </div>
     <div class="section level2">

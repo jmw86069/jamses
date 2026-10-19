@@ -63,6 +63,7 @@
 <span>  y_offset_lines <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  endlines <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  use_gridtext <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  debug <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -188,6 +189,10 @@ label upwards slightly.</p></dd>
 limited HTML-based formatting.</p></dd>
 
 
+<dt id="arg-debug">debug<a class="anchor" aria-label="anchor" href="#arg-debug"></a></dt>
+<dd><p><code>integer</code> with any non-zero value enabling some debug output.</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p><code>logical</code> indicating whether to print verbose output.</p></dd>
 
@@ -196,6 +201,10 @@ limited HTML-based formatting.</p></dd>
 <dd><p>additional arguments are ignored.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>This function is called for its graphical output.</p>
+    </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function is currently experimental, and is intended only for
@@ -299,6 +308,34 @@ annotations with no associated label.</p></li>
 <code><a href="heatmap_se.html">heatmap_se()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulate_se_test.html">simulate_se_test</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'each' argument</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'each' argument</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data length [1249] is not a sub-multiple or multiple of the number of rows [250]</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>first element used of 'length.out' argument</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">hm</span> <span class="op">&lt;-</span> <span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se</span>,</span></span>
+<span class="r-in"><span>   top_colnames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Geno"</span>, <span class="st">"Trt"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 'magick' package is suggested to install to give better rasterization.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Set `ht_opt$message = FALSE` to turn off this message.</span>
+<span class="r-in"><span><span class="va">hmd</span> <span class="op">&lt;-</span> <span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">heatmap_column_group_labels</span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Trt"</span>, <span class="st">"Geno"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>   hm_drawn<span class="op">=</span><span class="va">hmd</span>,</span></span>
+<span class="r-in"><span>   hm_title_base_default<span class="op">=</span><span class="cn">NULL</span>, hm_body_base_default<span class="op">=</span><span class="cn">NULL</span>,</span></span>
+<span class="r-in"><span>   se<span class="op">=</span><span class="va">se</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="heatmap_column_group_labels-1.png" alt="" width="768" height="768"></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in grid.Call.graphics(C_downviewport, name$name, strict):</span> Viewport 'centered</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> expression_heatmap_body_1_5' was not found</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
