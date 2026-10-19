@@ -654,7 +654,8 @@
 #'    * `left_annotation` object `ComplexHeatmap::HeatmapAnnotation` for rows
 #'    * `hm_title` object `character` string with the heatmap title.
 #' @param ... additional arguments are passed to supporting functions.
-#'
+#' 
+#' @importFrom ComplexHeatmap draw
 #' @examples
 #' se <- make_se_test(nrow=1000, ngroups=4, nreps=8)
 #'
@@ -1545,6 +1546,22 @@ heatmap_se <- function
          show_annotation_name=show_top_annotation_name,
          annotation_name_side=top_annotation_name_side,
          col=top_color_list);
+      # Optionally insert blank annotation for hm_title_buffer
+      if (hm_title_buffer > 0) {
+         jamba::printDebug("top_empty for hm_title_buffer:", hm_title_buffer);# debug
+         top_empty <- ComplexHeatmap::HeatmapAnnotation(
+            top_empty=ComplexHeatmap::anno_empty(
+               which="column",
+               height=grid::unit(hm_title_buffer * 2, "lines"),
+               # zoom=TRUE,
+               border=FALSE
+            )
+         )
+         top_annotation <- c(
+            top_empty,
+            top_annotation
+         )
+      }
    }
 
    # left_annotation
@@ -2299,12 +2316,14 @@ heatmap_se <- function
    # optionally add whitespace buffer after the title
    if (length(hm_title_buffer) == 1 && hm_title_buffer > 0) {
       hm_title_buffer <- ceiling(hm_title_buffer);
-      hm_title <- paste0(hm_title,
-         paste0(rep("\n", hm_title_buffer),
-            collapse=""))
+      hm_newlines <- paste0(rep("\n", hm_title_buffer), collapse="");
+      hm_title <- paste0(
+         hm_title,
+         hm_newlines
+      )
    }
    # optionally apply heatmap title to column_title
-   if (TRUE %in% apply_hm_column_title) {
+   if (isTRUE(apply_hm_column_title)) {
       column_title <- hm_title;
       hm_title <- "";
    }

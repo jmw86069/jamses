@@ -6,20 +6,23 @@
 \usage{
 se_normalize(
   se,
-  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE"),
+  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE",
+    "cyclicLoess"),
   assay_names = NULL,
   output_method_prefix = NULL,
   output_assay_names = NULL,
   genes = NULL,
   samples = NULL,
-  params = list(quantile = list(ties = TRUE), jammanorm = list(controlGenes = NULL,
-    minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
-    noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
-    NULL, group = NULL), TMM = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05,
-    doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
-    0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL), RLE = list(refColumn =
-    NULL, logratioTrim = 0.3, 
-     sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
+  params = list(cyclicLoess = list(weights = NULL, span = 0.7, adaptive.span = FALSE,
+    iterations = 3, method = c("fast", "affy", "pairs")), quantile = list(ties = TRUE),
+    jammanorm = list(controlGenes = NULL, minimum_mean = 0, maximum_mean = Inf,
+    controlSamples = NULL, centerGroups = NULL, useMedian = FALSE, noise_floor = NULL,
+    noise_floor_value = NULL), limma_batch_adjust = list(batch = NULL, group = NULL), TMM
+    = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05, doWeighting = TRUE,
+    Acutoff = NULL), 
+     TMMwsp = list(refColumn = NULL, logratioTrim = 0.3, sumTrim =
+    0.05, doWeighting = TRUE, Acutoff = NULL), RLE = list(refColumn = NULL, logratioTrim
+    = 0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
   floor = 0,
   enforce_norm_floor = TRUE,
@@ -33,17 +36,24 @@ se_normalize(
 \arguments{
 \item{se}{\code{SummarizedExperiment} object}
 
-\item{method}{\code{character} vector indicating which normalization method(s)
-to apply.
+\item{method}{\code{character} string indicating which normalization
+method to apply.
 \itemize{
-\item \code{"quantile"}: quantile normalization via \code{limma::normalizeQuantiles()}
-\item \code{"jammanorm"}: log-ratio normalization via \code{jamma::jammanorm()}
-\item \code{"limma_batch_adjust"}: batch adjustment via
+\item \code{'quantile'}: quantile normalization provided by
+\code{limma::normalizeQuantiles()}
+\item \code{'jammanorm'}: log-ratio normalization \code{jamma::jammanorm()},
+using the MA-plot equivalent data, bounded within \code{minimum_mean}
+and \code{maximum_mean}, optionally subset to use \code{controlGenes}
+for housekeeper gene or reference normalization, optionally
+\code{controlSamples} to use reference samples for normalization.
+\item \code{'limma_batch_adjust'}: batch adjustment via
 \code{limma::removeBatchEffect()}, recommended for data visualization,
-but not recommended for downstream statistical comparisons.
-\item \code{"TMM"}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
-\item \code{"TMMwsp"}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
-\item \code{"RLE"}: relative log expression via \code{edgeR::calcNormFactors()}
+and not recommended for downstream statistical comparisons.
+\item \code{'TMM'}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
+\item \code{'TMMwsp'}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
+\item \code{'RLE'}: relative log expression via \code{edgeR::calcNormFactors()}
+\item \code{'cyclicLoess'}: Cyclic Loess provided by
+\code{limma::normalizeCyclicLoess()}
 }}
 
 \item{assay_names}{\code{character} vector or one or more \code{names(assays(se))}
@@ -112,6 +122,22 @@ these normgroups are not normalized relative to each other.
 Data are only normalized within each independent normgroup.
 }}
 
+\item{floor}{\code{numeric} value indicating the lowest accepted numeric
+value, below which values are assigned to this floor. The default
+\code{floor=0} requires all values are \code{0}, and any values below \code{0} are
+assigned \code{0}. Note that the \code{floor} is applied after log2 transform,
+when the log2 transform is performed.}
+
+\item{enforce_norm_floor}{\code{logical} indicating whether to enforce the
+\code{floor} for the normalized results, default is \code{TRUE}. For example,
+when \code{floor=0} any values at or below \code{0} are set to \code{0} before
+normalization. After normalization some of these values will be
+above or below \code{0}. When \code{enforce_norm_floor=TRUE} these values
+will again be set to \code{0} because they are considered to be
+below the noise threshold of the protocol, and adjustments
+are not relevant; also any normalized values below the \code{floor}
+will also be set to \code{floor}.}
+
 \item{output_sep}{\code{character} string used as a delimited between the
 \code{method} and the \code{assay_names} to define the output assay name,
 for example when \code{assay_name="counts"}, \code{method="quantile"},
@@ -136,15 +162,15 @@ normalization, and values from \code{params}.}
 is added to \code{assays(se)} using the naming format \code{method_assayname}.
 }
 \description{
-Normalize SummarizedExperiment data
+Normalize SummarizedExperiment data, using one or more methods,
+and applied to one or more assays.
 }
 \details{
 This function applies one or more data normalization methods
-to an input \code{SummarizedExperiment} object. The normalization is
-applied to one or more matrix data stored in \code{assays(se)},
-each one is run independently.
+to an input \code{SummarizedExperiment} object, and independent to
+one or more \code{assays(se)} as defined by \code{assay_names}.
 
-Note that supplying \code{genes} and \code{samples} will apply normalization
+Supplying \code{genes} and \code{samples} will apply normalization
 to only those \code{genes} and \code{samples}, and this data will be
 stored in the full \code{SummarizedExperiment} object \code{se} with
 \code{NA} values used to fill any values not present in \code{genes}

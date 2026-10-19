@@ -3,21 +3,19 @@ Title: Jam SummarizedExperiment Stats
 Version: 0.0.80.900
 Authors@R: person(given="James M.", family="Ward",
    email="jmw86069@gmail.com", role=c("aut", "cre"))
-Description: Jam SummarizedExperiment Stats methods to
-   normalize SummarizedExperiment data, define
-   experiment design, visualize the experiment design,
-   define statistical contrasts,
+Description: Methods to analyze SummarizedExperiment data,
+   define experiment design, visualize the experiment design,
+   normalize assay data, define statistical contrasts, and
    perform differential analysis (via other packages).
-   S7 object SEDesign enforces relationship between
+   S7 object 'SEDesign' enforces relationship between
    individual samples, design groups, and groups involved
-   in statistical contrasts. S7 object SEStats stores
-   multiple contrast statistical results in one
-   convenient object, to apply cutoffs and summarize
-   altogether.
+   in statistical contrasts. S7 object 'SEStats' stores
+   multiple contrasts in one object, to apply cutoffs
+   and summarize altogether.
 biocViews:
 Depends: R (>= 4.1.0)
 Imports: jamba (>= 1.0.5),
-   jamma (>= 0.0.41.900),
+   jamma (>= 0.0.42.900),
    colorjam (>= 0.0.35.900),
    SummarizedExperiment (>= 1.16.1),
    data.table,
@@ -42,7 +40,8 @@ Enhances:
    farrisdata,
    ggplot2 (>= 4.0.0),
    Seurat,
-   DEqMS
+   DEqMS,
+   S4Vectors
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

@@ -1,13 +1,28 @@
 # jamses 0.0.80.900
 
-## Updates In Progress
+## Updates
 
+* Import `ComplexHeatmap::draw()` so we can use `draw()`.
 * Updated "How to Make a Heatmap" to add categories.
 
 ## Other changes
 
+* `se_normalize()` and `matrix_normalize()`
+   * added normalization method 'cyclicLoess'
+   * added parameter 'maximum_mean' for method 'jammanorm', so
+   the normalization can be bound by 'min_mean' to confine
+   the data within a set range trusted for normalization.
+
+* `heatmap_se()`
+   * argument 'hm_title_buffer' now works even when there is
+   no column_split, inserting an empty annotation.
+   In future, `heatmap_column_group_labels()` will tolerate
+   subgroupings that are not tied to column_split.
+
 * Added `cardinality()` for internal use.
 * Removed all 'platjam::' uses.
+* Added import `ComplexHeatmap::draw()` for convenience.
+* `merge_statdf_all_test()` was updated to handle edge cases.
 
 # jamses 0.0.79.950
 

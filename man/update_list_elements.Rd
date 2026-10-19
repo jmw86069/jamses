@@ -2,7 +2,7 @@
 % Please edit documentation in R/jam_senormalize.R
 \name{update_list_elements}
 \alias{update_list_elements}
-\title{Update a subset of list elements}
+\title{Update a subset of list elements, deprecated}
 \usage{
 update_list_elements(
   source_list,
@@ -12,8 +12,22 @@ update_list_elements(
   ...
 )
 }
+\arguments{
+\item{source_list}{\code{list}}
+
+\item{update_list}{\code{list}}
+
+\item{list_layer_num}{\code{integer} used iteratively by this function}
+
+\item{verbose}{\code{logical} whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
+}
+\value{
+\code{list} in similar format as the input \code{source_list}.
+}
 \description{
-Update a subset of list elements
+Update a subset of list elements, deprecated
 }
 \details{
 This function is intended to help update a nested \code{source_list},

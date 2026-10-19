@@ -220,33 +220,48 @@ detect_heatmap_components <- function
 #' @param use_gridtext `logical` (default TRUE) whether to render text using
 #'    `gridtext::richtext_grob()` in order to enable markdown and
 #'    limited HTML-based formatting.
+#' @param debug `integer` with any non-zero value enabling some debug output.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param ... additional arguments are ignored.
-#'
+#' @returns This function is called for its graphical output.
+#' 
+#' @examples
+#' se <- simulate_se_test()
+#' 
+#' hm <- heatmap_se(se,
+#'    top_colnames=c("Geno", "Trt"))
+#' hmd <- ComplexHeatmap::draw(hm)
+#' heatmap_column_group_labels(
+#'    c("Trt", "Geno"),
+#'    hm_drawn=hmd,
+#'    hm_title_base_default=NULL, hm_body_base_default=NULL,
+#'    se=se)
+#' 
 #' @export
-heatmap_column_group_labels <- function
-(hm_group_list,
- hm_drawn=NULL,
- se=NULL,
- add_group_label=TRUE,
- add_group_line=TRUE,
- add_group_box=FALSE,
- group_line_buffer=grid::unit(1, "mm"),
- group_line_lwd=2,
- group_line_requires_label=TRUE,
- group_box_lwd=2,
- group_box_outer=TRUE,
- font_cex=1,
- hm_title_base=NULL,
- hm_body_base=NULL,
- hm_title_base_default="centered\nexpression_column_title_",
- hm_body_base_default="centered\nexpression_heatmap_body_1_",
- y_offset_lines=0,
- endlines=1,
- use_gridtext=TRUE,
- verbose=FALSE,
- ...)
-{
+heatmap_column_group_labels <- function(
+   hm_group_list,
+   hm_drawn=NULL,
+   se=NULL,
+   add_group_label=TRUE,
+   add_group_line=TRUE,
+   add_group_box=FALSE,
+   group_line_buffer=grid::unit(1, "mm"),
+   group_line_lwd=2,
+   group_line_requires_label=TRUE,
+   group_box_lwd=2,
+   group_box_outer=TRUE,
+   font_cex=1,
+   hm_title_base=NULL,
+   hm_body_base=NULL,
+   hm_title_base_default="centered\nexpression_column_title_",
+   hm_body_base_default="centered\nexpression_heatmap_body_1_",
+   y_offset_lines=0,
+   endlines=1,
+   use_gridtext=TRUE,
+   debug=0,
+   verbose=FALSE,
+   ...
+) {
    #
    # tip: find column_title names with
    # vigrep("column_title_[1-9]", list_components())
@@ -289,7 +304,8 @@ heatmap_column_group_labels <- function
 
    # determine whether there is also a "global_column_title"
    # - if no global title, assume the hm_title is applied to column_title
-   hlc <- ComplexHeatmap::list_components();
+   # hlc <- ComplexHeatmap::list_components();
+   hlc <- unique(ComplexHeatmap::list_components());
    if (!jamba::igrepHas("global_column_title", hlc)) {
       y_offset_lines <- y_offset_lines - 4;
    }
@@ -310,7 +326,7 @@ heatmap_column_group_labels <- function
    # hm_group_list can be a list of integer vectors, named by label
    # hm_group_list can be a character vector of colnames(colData(se))
    # - hm_drawn and se must also be supplied
-   if ("character" %in% class(hm_group_list)) {
+   if (inherits(hm_group_list, "character")) {
       if (length(se) == 0) {
          stop(paste0("When hm_group_list is character colnames(colData(se)), ",
             "se must be supplied."))
@@ -353,6 +369,7 @@ heatmap_column_group_labels <- function
             y_offset_lines=y_offset_lines,
             hm_title_base=hm_title_base,
             hm_body_base=hm_body_base,
+            debug=debug,
             ...)
          y_offset_lines <- y_offset_lines + 2;
          add_group_box <- FALSE;
@@ -361,7 +378,9 @@ heatmap_column_group_labels <- function
    }
 
    # define grid layout components
-   all_hm_components <- ComplexHeatmap::list_components();
+   # all_hm_components <- ComplexHeatmap::list_components();
+   # all_hm_components <- unique(ComplexHeatmap::list_components());
+   all_hm_components <- hlc;
    # printDebug("hm_group_list: ");print(hm_group_list);
    # use_hm_components <- paste0(hm_title_base, seq_along(hm_group_list))
    use_hm_components <- paste0(hm_title_base,
@@ -369,13 +388,17 @@ heatmap_column_group_labels <- function
    # use_hm_body_components <- paste0(hm_body_base, seq_along(hm_group_list))
    use_hm_body_components <- paste0(hm_body_base,
       sort(unique(unlist(hm_group_list))))
-
-   if (any(grepl("_1_$", hm_body_base))) {
+   if (debug) {
+      jamba::printDebug("hm_group_list:", hm_group_list);# debug
+      jamba::printDebug("use_hm_components:", use_hm_components);# debug
+      jamba::printDebug("use_hm_body_components:", use_hm_body_components);# debug
+   }
+   if (any(endsWith(hm_body_base, "_1_"))) {
       hm_body_test <- gsub("_1_$", "_2_", hm_body_base)
       use_hm_test_components <- paste0(hm_body_test, seq_along(hm_group_list))
       if (all(use_hm_test_components %in% all_hm_components)) {
          hm_body_base_t <- use_hm_body_components;
-         hm_body_pattern <- gsub("_1_", "_[0-9]+_", hm_body_base);
+         hm_body_pattern <- gsub("_1_", fixed=TRUE, "_[0-9]+_", hm_body_base);
          hm_body_base_b1 <- tail(unique(gsub("_[0-9]+$", "_",
             setdiff(
                jamba::vigrep(hm_body_pattern, all_hm_components),
@@ -394,8 +417,10 @@ heatmap_column_group_labels <- function
       hm_title_base_lr <- use_hm_components;
       hm_title_base_tb <- use_hm_components;
    } else {
-      use_hm_components <- rep(head(use_hm_components, 1),
-         length.out=length(use_hm_components))
+      use_hm_components <- rep_len(
+         head(use_hm_components, 1),
+         length(use_hm_components)
+      )
       hm_title_base_lr <- use_hm_body_components;
       hm_title_base_tb <- use_hm_components;
    }
@@ -422,7 +447,27 @@ heatmap_column_group_labels <- function
       }
 
       # left
+      if (debug != 0) {
+         # jamba::printDebug("hlc:\n   ", gsub("\n", "\\\\n", hlc), sep="\n   ");# debug
+         jamba::printDebug("current.vpPath: ", grid::current.vpPath());# debug
+         jamba::printDebug("hm_title viewport 1: ", hm_title_base_lr[[head(hm_num, 1)]]);# debug
+      }
       grid::seekViewport(hm_title_base_lr[[head(hm_num, 1)]])
+      if (debug != 0) {
+         grid::grid.rect(gp=grid::gpar(col="red", fill="#FF000011"));
+         grid::grid.text(
+            paste0("hm_title viewport 1: ", hm_title_base_lr[[head(hm_num, 1)]]))
+         grid::grid.points(
+            x=c(0, 0, 1, 1),
+            y=c(0, 1, 0, 1),
+            pch=20,
+            gp=grid::gpar(
+               col="gold",
+               fill="#FF000055",
+               cex=2
+            )
+         )
+      }
       if (verbose) {
          jamba::printDebug("heatmap_column_group_labels(): ",
             "seekViewport() left-right: '",
@@ -431,15 +476,24 @@ heatmap_column_group_labels <- function
       loc1_l <- grid::deviceLoc(
          x=grid::unit(0, "npc"),# + group_line_buffer,
          y=grid::unit(1, "npc") + grid::unit(y_offset_lines, "lines"))
+
       # right
       if (head(hm_num, 1) != tail(hm_num, 1)) {
+         if (debug != 0) {
+            jamba::printDebug("hm_title viewport 2: ", hm_title_base_lr[[tail(hm_num, 1)]]);# debug
+         }
          grid::seekViewport(hm_title_base_lr[[tail(hm_num, 1)]])
+         if (debug != 0) {
+            grid::grid.rect(gp=grid::gpar(col="red", fill="#FF000033"));
+            grid::grid.text(
+               paste0("hm_title viewport 2: ", hm_title_base_lr[[tail(hm_num, 1)]]))
+         }
       }
       loc1_r <- grid::deviceLoc(
          x=grid::unit(1, "npc"),# - group_line_buffer,
          y=grid::unit(1, "npc") + grid::unit(y_offset_lines, "lines"))
       # top/bottom label boundaries
-      if (!hm_title_base_tb[[inum]] == hm_title_base_lr[[inum]]) {
+      if (hm_title_base_tb[[inum]] != hm_title_base_lr[[inum]]) {
          grid::seekViewport(hm_title_base_tb[[inum]])
          if (verbose) {
             jamba::printDebug("heatmap_column_group_labels(): ",
@@ -501,7 +555,7 @@ heatmap_column_group_labels <- function
       # line below group label
       if (TRUE %in% add_group_line) {
          if (FALSE %in% group_line_requires_label ||
-               (!any(is.na(i)) &&
+               (!anyNA(i) &&
                   length(i) > 0 &&
                   jamba::igrepHas("[^ \t\n]", i))) {
             if (verbose) {
@@ -537,7 +591,7 @@ heatmap_column_group_labels <- function
          loc3_t <- grid::deviceLoc(
             x=grid::unit(0, "npc"),
             y=grid::unit(1, "npc"))
-         if (!hm_body_base_t[[inum]] == hm_body_base_b[[inum]]) {
+         if (hm_body_base_t[[inum]] != hm_body_base_b[[inum]]) {
             grid::seekViewport(hm_body_base_b[[inum]])
             if (verbose) {
                jamba::printDebug("heatmap_column_group_labels(): ",

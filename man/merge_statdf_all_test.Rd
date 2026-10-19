@@ -12,16 +12,25 @@ merge_statdf_all_test(
 )
 }
 \arguments{
-\item{sestats_all}{\code{list} with sestats data from \code{se_contrast_stats()}
-which used "all rows" of the source data, along with \code{define_hits=FALSE}.}
+\item{sestats_all}{\code{SEStats} object or equivalent legacy \code{list} format,
+as returned by \code{se_contrast_stats()} when using argument
+\code{define_hits=FALSE}. These results should therefore only contain
+the group mean and log fold change values, for all rows in the
+input data, regardless if they were tested in \code{sestts_test}.}
 
-\item{sestats_test}{\code{list} with sestats data from \code{se_contrast_stats()}
-which used a subset of rows, usually "detected rows" for the statistical
-test.}
+\item{sestats_test}{\code{SEStats} object or equivalent legacy \code{list} format,
+as returned by \code{se_contrast_stats()} when using argument
+\code{define_hits=TRUE}.
+These results should therefore contain the 'hit' column and
+with 'hit_array' data populated.
+It should only contain rows that were tested, which is assumed
+to be a subset of rows contained in \code{sestats_all}.}
 
 \item{exclude_from_all}{\code{character} pattern used with \code{jamba::unvigrep()}
-to exclude colnames from \code{sestats_all}. Default \code{'P.val|^hit '}
-excludes P-values and hit columns.}
+to exclude colnames from each \code{data.frame} in the 'stats_dfs' property
+of \code{sestats_all}.
+The default \code{'P.val|^hit '} will exclude P-value and adjusted P-value
+columns if they exist (they should not, but it can be tolerated).}
 
 \item{...}{additional arguments are ignored.}
 }
@@ -31,7 +40,7 @@ the elements 'stats_df' and 'stats_dfs' replaced with the expanded
 complete set of data.
 }
 \description{
-Merge stats data.frame from two sestats results, specifically
+Merge stats \code{data.frame} rows from two sestats results, specifically
 when one object has "all rows" and is intended only to produce
 the non-P-value statistics such as group mean, max group mean (mgm),
 fold, and logFC.

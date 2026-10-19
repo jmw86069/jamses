@@ -24,6 +24,7 @@ heatmap_column_group_labels(
   y_offset_lines = 0,
   endlines = 1,
   use_gridtext = TRUE,
+  debug = 0,
   verbose = FALSE,
   ...
 )
@@ -113,9 +114,14 @@ label upwards slightly.}
 \code{gridtext::richtext_grob()} in order to enable markdown and
 limited HTML-based formatting.}
 
+\item{debug}{\code{integer} with any non-zero value enabling some debug output.}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
 
 \item{...}{additional arguments are ignored.}
+}
+\value{
+This function is called for its graphical output.
 }
 \description{
 Add Heatmap column group labels, specifically for ComplexHeatmap output.
@@ -221,6 +227,19 @@ boundaries) using the full set of row groups.
 annotations with no associated label.
 }
 }
+}
+\examples{
+se <- simulate_se_test()
+
+hm <- heatmap_se(se,
+   top_colnames=c("Geno", "Trt"))
+hmd <- ComplexHeatmap::draw(hm)
+heatmap_column_group_labels(
+   c("Trt", "Geno"),
+   hm_drawn=hmd,
+   hm_title_base_default=NULL, hm_body_base_default=NULL,
+   se=se)
+
 }
 \seealso{
 Other jamses heatmaps:

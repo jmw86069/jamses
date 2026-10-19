@@ -1,14 +1,14 @@
 
 #' Normalize SummarizedExperiment data
 #'
-#' Normalize SummarizedExperiment data
+#' Normalize SummarizedExperiment data, using one or more methods,
+#' and applied to one or more assays.
 #'
 #' This function applies one or more data normalization methods
-#' to an input `SummarizedExperiment` object. The normalization is
-#' applied to one or more matrix data stored in `assays(se)`,
-#' each one is run independently.
-#'
-#' Note that supplying `genes` and `samples` will apply normalization
+#' to an input `SummarizedExperiment` object, and independent to
+#' one or more `assays(se)` as defined by `assay_names`.
+#' 
+#' Supplying `genes` and `samples` will apply normalization
 #' to only those `genes` and `samples`, and this data will be
 #' stored in the full `SummarizedExperiment` object `se` with
 #' `NA` values used to fill any values not present in `genes`
@@ -36,17 +36,8 @@
 #' @return `SummarizedExperiment` object where the normalized output
 #'    is added to `assays(se)` using the naming format `method_assayname`.
 #'
+#' @inheritParams matrix_normalize
 #' @param se `SummarizedExperiment` object
-#' @param method `character` vector indicating which normalization method(s)
-#'    to apply.
-#'    * `"quantile"`: quantile normalization via `limma::normalizeQuantiles()`
-#'    * `"jammanorm"`: log-ratio normalization via `jamma::jammanorm()`
-#'    * `"limma_batch_adjust"`: batch adjustment via
-#'    `limma::removeBatchEffect()`, recommended for data visualization,
-#'    but not recommended for downstream statistical comparisons.
-#'    * `"TMM"`: trimmed mean of M-values via `edgeR::calcNormFactors()`
-#'    * `"TMMwsp"`: TMM with singleton pairing via `edgeR::calcNormFactors()`
-#'    * `"RLE"`: relative log expression via `edgeR::calcNormFactors()`
 #' @param assay_names `character` vector or one or more `names(assays(se))`
 #'    that indicates which numeric matrix to use during normalization. When
 #'    multiple values are provided, each matrix is normalized independently
@@ -174,59 +165,74 @@
 #'
 #'
 #' @export
-se_normalize <- function
-(se,
- method=c("quantile",
-    "jammanorm",
-    "limma_batch_adjust",
-    "TMM",
-    "TMMwsp",
-    "RLE"),
- assay_names=NULL,
- output_method_prefix=NULL,
- output_assay_names=NULL,
- genes=NULL,
- samples=NULL,
- params=list(
-    `quantile`=list(
-       ties=TRUE),
-    `jammanorm`=list(controlGenes=NULL,
-       minimum_mean=0,
-       controlSamples=NULL,
-       centerGroups=NULL,
-       useMedian=FALSE,
-       noise_floor=NULL,
-       noise_floor_value=NULL),
-    `limma_batch_adjust`=list(
-       batch=NULL,
-       group=NULL),
-    `TMM`=list(
-       refColumn=NULL,
-       logratioTrim=0.3,
-       sumTrim=0.05,
-       doWeighting=TRUE,
-       Acutoff=NULL),
-    `TMMwsp`=list(
-       refColumn=NULL,
-       logratioTrim=0.3,
-       sumTrim=0.05,
-       doWeighting=TRUE,
-       Acutoff=NULL),
-    `RLE`=list(
-       refColumn=NULL,
-       logratioTrim=0.3,
-       sumTrim=0.05,
-       doWeighting=TRUE,
-       Acutoff=NULL)),
- normgroup=NULL,
- floor=0,
- enforce_norm_floor=TRUE,
- output_sep="_",
- override=TRUE,
- populate_mcols=TRUE,
- verbose=FALSE,
- ...)
-{
+se_normalize <- function(
+   se,
+   method=c(
+      "quantile",
+      "jammanorm",
+      "limma_batch_adjust",
+      "TMM",
+      "TMMwsp",
+      "RLE",
+      "cyclicLoess"
+   ),
+   assay_names=NULL,
+   output_method_prefix=NULL,
+   output_assay_names=NULL,
+   genes=NULL,
+   samples=NULL,
+   params=list(
+      cyclicLoess=list(
+         weights=NULL,
+         span=0.7,
+         adaptive.span=FALSE,
+         iterations=3,
+         method=c(
+            "fast",
+            "affy",
+            "pairs"
+         )
+      ),
+      `quantile`=list(
+         ties=TRUE),
+      `jammanorm`=list(controlGenes=NULL,
+         minimum_mean=0,
+         maximum_mean=Inf,
+         controlSamples=NULL,
+         centerGroups=NULL,
+         useMedian=FALSE,
+         noise_floor=NULL,
+         noise_floor_value=NULL),
+      `limma_batch_adjust`=list(
+         batch=NULL,
+         group=NULL),
+      `TMM`=list(
+         refColumn=NULL,
+         logratioTrim=0.3,
+         sumTrim=0.05,
+         doWeighting=TRUE,
+         Acutoff=NULL),
+      `TMMwsp`=list(
+         refColumn=NULL,
+         logratioTrim=0.3,
+         sumTrim=0.05,
+         doWeighting=TRUE,
+         Acutoff=NULL),
+      `RLE`=list(
+         refColumn=NULL,
+         logratioTrim=0.3,
+         sumTrim=0.05,
+         doWeighting=TRUE,
+         Acutoff=NULL)),
+   normgroup=NULL,
+   floor=0,
+   enforce_norm_floor=TRUE,
+   output_sep="_",
+   override=TRUE,
+   populate_mcols=TRUE,
+   verbose=FALSE,
+   ...
+) {
    assay_names <- intersect(assay_names,
       names(SummarizedExperiment::assays(se)));
    if (length(assay_names) == 0) {
@@ -238,7 +244,7 @@ se_normalize <- function
       several.ok=TRUE);
 
    if (length(output_method_prefix) > 0) {
-      if (!length(output_method_prefix) == length(method)) {
+      if (length(output_method_prefix) != length(method)) {
          cli::cli_abort(paste0(
             "{.var length(method)}={length(method)}",
             " must equal {.var length(output_method_prefix)}=",
@@ -462,14 +468,15 @@ se_normalize <- function
          SummarizedExperiment::assays(se)[[output_assay_name]] <- namatrix;
 
          # Bonus points: populate mcols() with normalization details
-         if (TRUE %in% populate_mcols) {
+         if (isTRUE(populate_mcols)) {
             # create default DataFrame if it does not exist
             if (length(SummarizedExperiment::mcols(
                SummarizedExperiment::assays(se))) == 0) {
                SummarizedExperiment::mcols(
                   SummarizedExperiment::assays(se)) <- S4Vectors::DataFrame(
-                  assay_name=SummarizedExperiment::assayNames(se),
-                  row.names=SummarizedExperiment::assayNames(se))
+                     assay_name=SummarizedExperiment::assayNames(se),
+                     row.names=SummarizedExperiment::assayNames(se)
+                  )
             }
             # define list to update mcols()
             mcol_list <- jamba::rmNULL(c(
@@ -678,14 +685,21 @@ se_normalize <- function
 #'    of the method.
 #' @param method `character` string indicating which normalization
 #'    method to apply.
-#'    * `"quantile"`: quantile normalization via `limma::normalizeQuantiles()`
-#'    * `"jammanorm"`: log-ratio normalization via `jamma::jammanorm()`
-#'    * `"limma_batch_adjust"`: batch adjustment via
+#'    * `'quantile'`: quantile normalization provided by
+#'    `limma::normalizeQuantiles()`
+#'    * `'jammanorm'`: log-ratio normalization `jamma::jammanorm()`,
+#'    using the MA-plot equivalent data, bounded within `minimum_mean`
+#'    and `maximum_mean`, optionally subset to use `controlGenes`
+#'    for housekeeper gene or reference normalization, optionally
+#'    `controlSamples` to use reference samples for normalization.
+#'    * `'limma_batch_adjust'`: batch adjustment via
 #'    `limma::removeBatchEffect()`, recommended for data visualization,
-#'    but not recommended for downstream statistical comparisons.
-#'    * `"TMM"`: trimmed mean of M-values via `edgeR::calcNormFactors()`
-#'    * `"TMMwsp"`: TMM with singleton pairing via `edgeR::calcNormFactors()`
-#'    * `"RLE"`: relative log expression via `edgeR::calcNormFactors()`
+#'    and not recommended for downstream statistical comparisons.
+#'    * `'TMM'`: trimmed mean of M-values via `edgeR::calcNormFactors()`
+#'    * `'TMMwsp'`: TMM with singleton pairing via `edgeR::calcNormFactors()`
+#'    * `'RLE'`: relative log expression via `edgeR::calcNormFactors()`
+#'    * `'cyclicLoess'`: Cyclic Loess provided by
+#'    `limma::normalizeCyclicLoess()`
 #' @param apply_log2 `character` string indicating whether to apply
 #'    log2 transformation: `"ifneeded"` will apply log2 transform
 #'    when any absolute value is greater than 40; `"no"` will not
@@ -738,7 +752,9 @@ se_normalize <- function
 #'    `normgroup` is provided. This argument is used to instruct
 #'    each normalization method to use an appropriate subset of
 #'    `params` based upon the subset of columns being analyzed.
+#' @param debug `logical` default FALSE, whether to perform debug.
 #' @param verbose `logical` indicating whether to print verbose output.
+#' @param ... additional arguments are ignored.
 #'
 #' @examples
 #' # use farrisdata real world data if available
@@ -843,62 +859,76 @@ se_normalize <- function
 #'    maintitle="quantile-normalized: signal-dependent noise and non-linear effects");
 #'
 #' @export
-matrix_normalize <- function
-(x,
- method=c("quantile",
-    "jammanorm",
-    "limma_batch_adjust",
-    "TMM",
-    "TMMwsp",
-    "RLE"),
- apply_log2=c("ifneeded",
-    "no",
-    "always"),
- floor=0,
- floor_value=floor,
- enforce_norm_floor=TRUE,
- params=list(
-    #`vsn`=list(lts.quantile=0.5),
-    #`rsn`=list(excludeFold=2,
-    #   span=0.03),
-    #cyclicLoess=list(method="default",
-    #   span=0.8),
-    `quantile`=list(
-       ties=TRUE),
-    `jammanorm`=list(controlGenes=NULL,
-       minimum_mean=0,
-       controlSamples=NULL,
-       centerGroups=NULL,
-       useMedian=FALSE,
-       noise_floor=NULL,
-       noise_floor_value=NULL),
-    `limma_batch_adjust`=list(
-       batch=NULL,
-       group=NULL),
-    `TMM`=list(
-       refColumn=NULL,
-       logratioTrim=0.3,
-       sumTrim=0.05,
-       doWeighting=TRUE,
-       Acutoff=NULL),
-    `TMMwsp`=list(
-       refColumn=NULL,
-       logratioTrim=0.3,
-       sumTrim=0.05,
-       doWeighting=TRUE,
-       Acutoff=NULL)),
- normgroup=NULL,
- normgroup_rows=NULL,
- subset_columns=NULL,
- debug=FALSE,
- verbose=FALSE,
- ...)
-{
+matrix_normalize <- function(
+   x,
+   method=c(
+      "quantile",
+      "jammanorm",
+      "limma_batch_adjust",
+      "TMM",
+      "TMMwsp",
+      "RLE",
+      "cyclicLoess"
+   ),
+   apply_log2=c("ifneeded",
+      "no",
+      "always"),
+   floor=0,
+   floor_value=floor,
+   enforce_norm_floor=TRUE,
+   params=list(
+      #`vsn`=list(lts.quantile=0.5),
+      #`rsn`=list(excludeFold=2,
+      #   span=0.03),
+      cyclicLoess=list(
+         weights=NULL,
+         span=0.7,
+         adaptive.span=FALSE,
+         iterations=3,
+         method=c(
+            "fast",
+            "fast",
+            "pairs"
+         )
+      ),
+      `quantile`=list(
+         ties=TRUE),
+      `jammanorm`=list(controlGenes=NULL,
+         minimum_mean=0,
+         maximum_mean=Inf,
+         controlSamples=NULL,
+         centerGroups=NULL,
+         useMedian=FALSE,
+         noise_floor=NULL,
+         noise_floor_value=NULL),
+      `limma_batch_adjust`=list(
+         batch=NULL,
+         group=NULL),
+      `TMM`=list(
+         refColumn=NULL,
+         logratioTrim=0.3,
+         sumTrim=0.05,
+         doWeighting=TRUE,
+         Acutoff=NULL),
+      `TMMwsp`=list(
+         refColumn=NULL,
+         logratioTrim=0.3,
+         sumTrim=0.05,
+         doWeighting=TRUE,
+         Acutoff=NULL)),
+   normgroup=NULL,
+   normgroup_rows=NULL,
+   subset_columns=NULL,
+   debug=FALSE,
+   verbose=FALSE,
+   ...
+) {
    method <- match.arg(method);
    apply_log2 <- match.arg(apply_log2);
 
    ## Update the default methodParams without losing the original defaults if not overriden
-   params <- update_function_params("matrix_normalize",
+   params <- update_function_params(
+      "matrix_normalize",
       "params",
       params,
       verbose=FALSE);
@@ -921,6 +951,8 @@ matrix_normalize <- function
                "{.var names(normgroup_rows)}."));
             stop(paste0("All normgroup values must be ",
                "provided in names(normgroup_rows)."));
+         } else {
+            # normgroup is valid
          }
       }
 
@@ -960,6 +992,7 @@ matrix_normalize <- function
       normgroup_attrnames <- unique(unlist(lapply(normgroup_out, function(inorm){
          attr_names <- setdiff(names(attributes(inorm)),
             c("dim", "names", "dimnames"))
+         attr_names
       })))
       if (length(normgroup_attrnames) > 0) {
          normgroup_attrs <- lapply(jamba::nameVector(normgroup_attrnames), function(iattr){
@@ -1030,9 +1063,25 @@ matrix_normalize <- function
       inorm <- limma::normalizeQuantiles(A=x,
          ties=ties);
       attr(inorm, "norm_method") <- "quantile";
+   } else if ("cyclicLoess" %in% method) {
+      weights <- params$cyclicLoess$weights;
+      span <- params$cyclicLoess$span;
+      adaptive.span <- params$cyclicLoess$adaptive.span;
+      iterations <- params$cyclicLoess$iterations;
+      method <- head(params$cyclicLoess$method, 1);
+      inorm <- limma::normalizeCyclicLoess(
+         x=x,
+         weights=weights,
+         span=span,
+         adaptive.span=adaptive.span,
+         iterations=iterations,
+         method=method
+      );
+      attr(inorm, "norm_method") <- "quantile";
    } else if ("jammanorm" %in% method) {
       controlGenes <- params$jammanorm$controlGenes;
       minimum_mean <- params$jammanorm$minimum_mean;
+      maximum_mean <- params$jammanorm$maximum_mean;
       controlSamples <- params$jammanorm$controlSamples;
       centerGroups <- params$jammanorm$centerGroups;
       useMedian <- params$jammanorm$useMedian;
@@ -1041,18 +1090,22 @@ matrix_normalize <- function
       if (length(noise_floor) == 0) {
          noise_floor <- -Inf;
       }
+      noise_floor <- head(noise_floor, 1);
       if (length(noise_floor_value) == 0) {
          noise_floor_value <- noise_floor;
       }
+      noise_floor_value <- head(noise_floor_value, 1);
       if (verbose) {
          jamba::printDebug("matrix_normalize(): ",
             "Calling ", "jammanorm():",
             c("\n      minimum_mean:", minimum_mean,
+               "\n      maximum_mean:", maximum_mean,
                "\n      useMedian:", useMedian,
                if (length(noise_floor) > 0 && noise_floor > -Inf) {
                   c("\n      noise_floor:", noise_floor)},
-               if ((length(jamba::rmNA(noise_floor_value)) > 0 && jamba::rmNA(noise_floor_value) > -Inf) ||
-                     any(is.na(noise_floor_value))) {
+               if ((length(jamba::rmNA(noise_floor_value)) > 0 &&
+                  jamba::rmNA(noise_floor_value) > -Inf) ||
+                     anyNA(noise_floor_value)) {
                   c("\n      noise_floor_value:", noise_floor_value)}),
             sep="");
       }
@@ -1064,6 +1117,7 @@ matrix_normalize <- function
       inorm <- jamma::jammanorm(x,
          controlGenes=controlGenes,
          minimum_mean=minimum_mean,
+         maximum_mean=maximum_mean,
          controlSamples=controlSamples,
          centerGroups=centerGroups,
          useMedian=useMedian,
@@ -1114,7 +1168,7 @@ matrix_normalize <- function
          Acutoff <- -1e10;
       }
       # TMM disallows NA values, so we must replace with zero
-      if (any(is.na(x))) {
+      if (anyNA(x)) {
          x[is.na(x)] <- 0;
       }
       # obtain normalization factors
@@ -1155,18 +1209,57 @@ matrix_normalize <- function
 #'
 #' This function is a minor extension to `update_list_elements()`
 #' intended to help update function parameters which are defined
-#' as a nested list.
-#'
+#' as a nested `list`. It will update internal components of the
+#' nested `list` without replacing the whole list.
+#' 
+#' It is very similar to `modifyList()` except for a nested list.
+#' 
+#' @param function_name `character` function name, passed to `formals()`
+#' @param param_name `character` string of one parameter / argument name.
+#' @param new_values any relevant R object type to use for the function
+#'    parameter / argument.
+#' @param verbose `logical` whether to print verbose output
+#' @param ... additional arguments are ignored.
+#' 
 #' @family jamses utilities
-#'
+#' @returns a `list` with class matching the R function argument.
+#' 
+#' @examples
+#' params1 <- list(
+#'    jammanorm=list(
+#'       controlGenes=c("HK1", "HK2")
+#'    ),
+#'    cyclicLoess=list(method="affy"),
+#'    quantile=list(ties=FALSE)
+#' )
+#' 
+#' # 1. Not correct: update arguments with modifyList()
+#' fn_defaults <- eval(formals("matrix_normalize"))
+#' new_fn_args <- modifyList(fn_defaults, list(params=params1))
+#' str(new_fn_args$params)
+#' str(new_fn_args$params$jammanorm)
+#' 
+#' # 2. update only params argument with modifyList()
+#' new_fn_params <- modifyList(eval(fn_defaults$params), params1)
+#' str(new_fn_params)
+#' str(new_fn_params$jammanorm)
+#' 
+#' # 3. use update_function_params()
+#' params2 <- update_function_params(
+#'    function_name="matrix_normalize",
+#'    param_name="params",
+#'    new_values=params1)
+#' str(params2)
+#' str(params2$jammanorm)
+#' 
 #' @export
-update_function_params <- function
-(function_name=NULL,
+update_function_params <- function(
+   function_name=NULL,
    param_name=NULL,
    new_values=NULL,
    verbose=FALSE,
-   ...)
-{
+   ...
+) {
    ## Purpose is to facilitate updating default parameters which are present in a list,
    ## but where defaults are defined in a function name.  So if someone wants to change
    ## one of the default values, but keep the rest of the list of defaults, this function
@@ -1179,15 +1272,17 @@ update_function_params <- function
          "str(default_params)");
       print(str(default_params));
    }
-   default_params <- update_list_elements(default_params,
+   default_params <- update_list_elements(
+      default_params,
       new_values,
-      verbose=verbose);
+      verbose=verbose
+   );
    return(default_params);
 }
 
-#' Update a subset of list elements
+#' Update a subset of list elements, deprecated
 #'
-#' Update a subset of list elements
+#' Update a subset of list elements, deprecated
 #'
 #' This function is intended to help update a nested `source_list`,
 #' a subset of whose values should be replaced with entries
@@ -1199,15 +1294,23 @@ update_function_params <- function
 #' list structure.
 #'
 #' @family jamses utilities
-#'
+#' 
+#' @param source_list `list`
+#' @param update_list `list`
+#' @param list_layer_num `integer` used iteratively by this function
+#' @param verbose `logical` whether to print verbose output.
+#' @param ... additional arguments are ignored.
+#' 
+#' @returns `list` in similar format as the input `source_list`.
+#' 
 #' @export
-update_list_elements <- function
-(source_list,
+update_list_elements <- function(
+   source_list,
    update_list,
    list_layer_num=1,
    verbose=FALSE,
-   ...)
-{
+   ...
+) {
    ## Purpose is to update elements in a list, allowing for multi-layered lists
    ## of lists. In case of a list-of-list, it will call this function again with
    ## each successive layer of listedness.
@@ -1222,7 +1325,7 @@ update_list_elements <- function
    if (length(update_list) == 0) {
       return(source_list);
    }
-   if ("list" %in% class(update_list) && "list" %in% class(update_list[[1]])) {
+   if (inherits(update_list, "list") && inherits(update_list[[1]], "list")) {
       for (update_list_name in names(update_list)) {
          if (update_list_name %in% names(source_list)) {
             ## If the name already exists, we must update items within the list

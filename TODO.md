@@ -1,5 +1,28 @@
 # TODO for jamses
 
+## 02sep2026
+
+* For "How to Create a Heatmap"
+   * Consider using numbers for sections, sub-sections.
+   * Add "How to Create SummarizedExperiment".
+   * Edge cases:
+      * Start with a correlation matrix.
+      * Show un-centered magnitude.
+      * Put the color key at the bottom, and horizontal.
+      
+
+* Refactor `heatmap_column_group_labels()`  and `heatmap_se()`
+   * Consider `anno_empty()` to create space for group labels,
+   within `heatmap_se()` instead of adding `'\n'` to `column_title`.
+   * hcgl uses `'annotation_top_empty_'` components.
+   * Make it work for un-split heatmaps, it should find the
+   x-axis cell position using heatmap layout/order.
+   * Dependent upon `grid::deviceLoc()` support by Positron, or
+   external device `dev.new('X11')` or `windows()`.
+   * Consider rolling it back inside `heatmap_se()`?
+   * Consider enhancing `draw()` to include optional attributes:
+   'hm_title', 'hm_column_group_labels'.
+
 ## 31aug2026
 
 * `plot()` for SEStats should use plot_sedesign() using hits.

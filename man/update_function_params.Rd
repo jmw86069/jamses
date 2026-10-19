@@ -12,13 +12,60 @@ update_function_params(
   ...
 )
 }
+\arguments{
+\item{function_name}{\code{character} function name, passed to \code{formals()}}
+
+\item{param_name}{\code{character} string of one parameter / argument name.}
+
+\item{new_values}{any relevant R object type to use for the function
+parameter / argument.}
+
+\item{verbose}{\code{logical} whether to print verbose output}
+
+\item{...}{additional arguments are ignored.}
+}
+\value{
+a \code{list} with class matching the R function argument.
+}
 \description{
 Update function default parameters
 }
 \details{
 This function is a minor extension to \code{update_list_elements()}
 intended to help update function parameters which are defined
-as a nested list.
+as a nested \code{list}. It will update internal components of the
+nested \code{list} without replacing the whole list.
+
+It is very similar to \code{modifyList()} except for a nested list.
+}
+\examples{
+params1 <- list(
+   jammanorm=list(
+      controlGenes=c("HK1", "HK2")
+   ),
+   cyclicLoess=list(method="affy"),
+   quantile=list(ties=FALSE)
+)
+
+# 1. Not correct: update arguments with modifyList()
+fn_defaults <- eval(formals("matrix_normalize"))
+new_fn_args <- modifyList(fn_defaults, list(params=params1))
+str(new_fn_args$params)
+str(new_fn_args$params$jammanorm)
+
+# 2. update only params argument with modifyList()
+new_fn_params <- modifyList(eval(fn_defaults$params), params1)
+str(new_fn_params)
+str(new_fn_params$jammanorm)
+
+# 3. use update_function_params()
+params2 <- update_function_params(
+   function_name="matrix_normalize",
+   param_name="params",
+   new_values=params1)
+str(params2)
+str(params2$jammanorm)
+
 }
 \seealso{
 Other jamses utilities:

@@ -92,3 +92,4 @@ importFrom(BiocGenerics,
   "design<-",
   design
 )
+importFrom(ComplexHeatmap,draw)

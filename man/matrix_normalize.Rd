@@ -6,17 +6,21 @@
 \usage{
 matrix_normalize(
   x,
-  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE"),
+  method = c("quantile", "jammanorm", "limma_batch_adjust", "TMM", "TMMwsp", "RLE",
+    "cyclicLoess"),
   apply_log2 = c("ifneeded", "no", "always"),
   floor = 0,
   floor_value = floor,
   enforce_norm_floor = TRUE,
-  params = list(quantile = list(ties = TRUE), jammanorm = list(controlGenes = NULL,
-    minimum_mean = 0, controlSamples = NULL, centerGroups = NULL, useMedian = FALSE,
-    noise_floor = NULL, noise_floor_value = NULL), limma_batch_adjust = list(batch =
-    NULL, group = NULL), TMM = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05,
-    doWeighting = TRUE, Acutoff = NULL), TMMwsp = list(refColumn = NULL, logratioTrim =
-    0.3, sumTrim = 0.05, doWeighting = TRUE, Acutoff = NULL)),
+  params = list(cyclicLoess = list(weights = NULL, span = 0.7, adaptive.span = FALSE,
+    iterations = 3, method = c("fast", "fast", "pairs")), quantile = list(ties = TRUE),
+    jammanorm = list(controlGenes = NULL, minimum_mean = 0, maximum_mean = Inf,
+    controlSamples = NULL, centerGroups = NULL, useMedian = FALSE, noise_floor = NULL,
+    noise_floor_value = NULL), limma_batch_adjust = list(batch = NULL, group = NULL), TMM
+    = list(refColumn = NULL, logratioTrim = 0.3, sumTrim = 0.05, doWeighting = TRUE,
+    Acutoff = NULL), 
+     TMMwsp = list(refColumn = NULL, logratioTrim = 0.3, sumTrim =
+    0.05, doWeighting = TRUE, Acutoff = NULL)),
   normgroup = NULL,
   normgroup_rows = NULL,
   subset_columns = NULL,
@@ -33,14 +37,21 @@ of the method.}
 \item{method}{\code{character} string indicating which normalization
 method to apply.
 \itemize{
-\item \code{"quantile"}: quantile normalization via \code{limma::normalizeQuantiles()}
-\item \code{"jammanorm"}: log-ratio normalization via \code{jamma::jammanorm()}
-\item \code{"limma_batch_adjust"}: batch adjustment via
+\item \code{'quantile'}: quantile normalization provided by
+\code{limma::normalizeQuantiles()}
+\item \code{'jammanorm'}: log-ratio normalization \code{jamma::jammanorm()},
+using the MA-plot equivalent data, bounded within \code{minimum_mean}
+and \code{maximum_mean}, optionally subset to use \code{controlGenes}
+for housekeeper gene or reference normalization, optionally
+\code{controlSamples} to use reference samples for normalization.
+\item \code{'limma_batch_adjust'}: batch adjustment via
 \code{limma::removeBatchEffect()}, recommended for data visualization,
-but not recommended for downstream statistical comparisons.
-\item \code{"TMM"}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
-\item \code{"TMMwsp"}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
-\item \code{"RLE"}: relative log expression via \code{edgeR::calcNormFactors()}
+and not recommended for downstream statistical comparisons.
+\item \code{'TMM'}: trimmed mean of M-values via \code{edgeR::calcNormFactors()}
+\item \code{'TMMwsp'}: TMM with singleton pairing via \code{edgeR::calcNormFactors()}
+\item \code{'RLE'}: relative log expression via \code{edgeR::calcNormFactors()}
+\item \code{'cyclicLoess'}: Cyclic Loess provided by
+\code{limma::normalizeCyclicLoess()}
 }}
 
 \item{apply_log2}{\code{character} string indicating whether to apply
@@ -107,7 +118,11 @@ not included in the normalization for that normgroup.
 each normalization method to use an appropriate subset of
 \code{params} based upon the subset of columns being analyzed.}
 
+\item{debug}{\code{logical} default FALSE, whether to perform debug.}
+
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
+
+\item{...}{additional arguments are ignored.}
 }
 \value{
 \code{numeric} matrix with the same dimensions as the
