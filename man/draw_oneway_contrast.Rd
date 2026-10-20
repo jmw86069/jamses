@@ -10,6 +10,7 @@ draw_oneway_contrast(
   y0,
   y1,
   color = "peachpuff",
+  color2 = NULL,
   border = "black",
   plot_type = c("base", "grid"),
   label = NULL,
@@ -30,7 +31,10 @@ draw_oneway_contrast(
 for the x and y axes, respectively.}
 
 \item{color, border}{\code{character} R colors used to define color fill
-and border, respectively, for each block arrow,}
+and border, respectively, for each block arrow.}
+
+\item{color2}{\code{character} optional second color, used for a color
+gradient. Default NULL only uses one color.}
 
 \item{plot_type}{\code{character} string indicating the type of plot output:
 \itemize{
@@ -84,6 +88,9 @@ the font size of the text label.}
 \item 4 = bold, italic font
 }}
 
+\item{oneway_position}{\code{numeric} default 0.5, location of the one-way
+contrast label, in fraction from 0 (start) to 1 (end).}
+
 \item{do_plot}{\code{logical} indicating whether to draw the block arrow.}
 
 \item{verbose}{\code{logical} indicating whether to print verbose output.}
@@ -94,6 +101,10 @@ the font size of the text label.}
 including \code{arrow_ex} the arrow size expansion factor, and
 \code{head_ex} the arrow head expansion factor, which is adjusted
 relative to the arrow stem width.}
+}
+\value{
+\code{numeric} coordinates suitable for \code{graphics::polygon()} or
+grid path objects, returned invisibly.
 }
 \description{
 Draw one-way contrast using block arrows

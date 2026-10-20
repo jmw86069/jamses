@@ -40,7 +40,7 @@ draw_twoway_contrast(
 for the x and y axes, respectively.}
 
 \item{color, border}{\code{character} R colors used to define color fill
-and border, respectively, for each block arrow,}
+and border, respectively, for each block arrow.}
 
 \item{extend_ex}{\code{numeric} which defines the amount to extend each
 contrast arrow when defining control points for a bezier spline
@@ -107,6 +107,9 @@ the font size of the text label.}
 \item 3 = italic font
 \item 4 = bold, italic font
 }}
+
+\item{oneway_position}{\code{numeric} default 0.5, location of the one-way
+contrast label, in fraction from 0 (start) to 1 (end).}
 
 \item{twoway_label}{\code{character} or \code{list} handled the same as \code{label}.
 This label is placed atop the two-way connector, at an angle aligned

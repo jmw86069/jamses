@@ -37,7 +37,7 @@ plot_sedesign(
   group_border = "grey65",
   group_fill = "grey95",
   replicate_color = "grey40",
-  replicate_cex = 0.8,
+  replicate_cex = 1,
   do_plot = TRUE,
   plot_margins = c(0.1, 0.1, 0.1, 0.1),
   plot_type = c("base", "grid"),
@@ -240,6 +240,50 @@ one-way contrasts as block arrow, and two-way contrasts as
 two block arrows connected in proper order.
 }
 \details{
+The core of this visualization is to represent each
+experiment group as a combination of its factor levels,
+and to stack groups with each factor along one dimension.
+As a result, oneway contrasts should be visualized by
+a horizontal or vertical line, comparing levels within
+only one factor at a time.
+
+Similarly, twoway contrasts are represented in the style
+of "fold change of fold changes" and therefore should
+only be represented by two oneway contrasts which are
+parallel in these axes, and where only one additional
+factor is being compared. This additional factor should
+also only use the exact levels of the other factors
+in the contrast.
+
+In the event a "custom contrast" is defined for which
+the oneway comparison involves more than one factor change,
+it will be seen as a diagonal arrow.
+For example:
+\code{"Dex_Knockout-Control_Wildtype"}
+This contrast compares Dex to Control (treatment), and
+Knockout to Wildtype (genotype), and therefore fully
+confounds the treatment effects with genetype effects.
+This contrast would be visible as a diagonal line.
+To be fair, in some experiments this type of contrast
+is reasonable.
+\subsection{Colors}{
+
+When no group colors are provided using \code{group_fill},
+and no \code{colorset} is provided for contrast colors,
+random categorical colors are assigned to the contrasts.
+
+When group colors are supplied using \code{group_fill}, the
+background of each group is filled with this color.
+Further, when \code{colorset} is not supplied, the \code{group_fill}
+is used to produce a color for each contrast based upon
+each group color.
+
+Two-way contrasts use a bezier curved line to connect the
+end of the first oneway contrast to the start of the
+second oneway contrast, and it uses a color gradient
+along the line. This visualization is intended to represent
+the "fold change of fold changes" style of two-way contrast.
+
 TODO:
 \itemize{
 \item Mostly done: Confirm functionality with different combinations
@@ -264,8 +308,6 @@ using a color gradient for each one-way block arrow.
 second contrast start color as a gradient.
 \item If colors are not defined per group, call \code{design2colors()}?
 }
-\item DONE. Confirm/implement method to display fewer factors on axes
-than are present in the underlying group labels.
 \item Improve location of axis labels - currently uses \code{jamba::groupedAxis()}
 however they appear too distant from the figure itself.
 \item Determine method to "recognize" factor order from \code{colData(se)}.
@@ -284,7 +326,6 @@ the full \code{data.frame}. It would requiring passing both the
 \item Another option is to require \code{colnames(colData(se))} to match
 the order in the group names defined in \code{colnames(sedesign@design)}.
 }
-\item DONE. implement block arrows functions for improved quality output.
 \item consider \code{grid} graphics (package \code{vwline}) or \code{ggplot2} output.
 \item implement sensible method to display a subset of one-way or
 two-way contrasts. For example, two-way contrasts are easier to see
@@ -319,6 +360,7 @@ once overall.
 }
 }
 }
+}
 \examples{
 isamples_1 <- paste0(
    rep(c("DMSO", "Etop", "DMSO", "Etop"), each=6),
@@ -335,10 +377,48 @@ rownames(idf) <- isamples_1;
 sedesign_1 <- groups_to_sedesign(idf)
 
 # plot the contrasts
-plot_sedesign(sedesign_1)
+psd1 <- plot_sedesign(sedesign_1)
+
+# plot the contrasts with specific colors
+group_names <- unique(unlist(
+   strsplit(gsub("[()]", "", names(psd1)), "-")))
+group_fill <- (c(
+   "lightgoldenrod3",
+   "gray50",
+   "orange2",
+   "salmon3",
+   "slateblue",
+   "orchid4",
+   "aquamarine3",
+   "lightgoldenrod1"))
+names(group_fill) <- group_names;
+group_fill <- jamba::alpha2col(alpha=0.7, group_fill)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis3=2,
+   group_fill=group_fill,
+   which_contrasts=1:10)
+
+group_fill2 <- c(
+   "gold2",
+   "gold1",
+   "gold4",
+   "gold3",
+   "indianred1",
+   "indianred3",
+   "slateblue2",
+   "slateblue3")
+names(group_fill2) <- names(group_fill)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis3=2,
+   group_fill=group_fill2)
 
 # re-order the factors along each axis
-plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis4=2,
+   group_fill=group_fill)
 
 # flip the group ordering for two-way contrasts
 # (These are mathematically equivalent, but shown in flipped orientation)
@@ -347,6 +427,7 @@ plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2, flip_twoway=TRUE)
 # plot only the two-way contrasts
 is_twoway <- grepl("[(]", contrast_names(sedesign_1))
 plot_sedesign(sedesign_1, which_contrasts=which(is_twoway),
+   group_fill=group_fill,
    axis1=1, axis2=3, axis3=2)
 
 group_names <- paste0(

@@ -1,6 +1,6 @@
 # TODO for jamses
 
-## 02sep2026
+## 20oct2026
 
 * For "How to Create a Heatmap"
    * Consider using numbers for sections, sub-sections.
@@ -9,7 +9,16 @@
       * Start with a correlation matrix.
       * Show un-centered magnitude.
       * Put the color key at the bottom, and horizontal.
-      
+
+* Add 'vdiffr' for visual testthat entries, then add `heatmap_se()`
+and `plot_sedesign()` visual tests.
+* `plot_sedesign()`
+   * Consider color gradient for block arrows when `group_fill`
+   is defined. Issue is with `make_block_arrow_polygon()` which
+   needs to subdivide the stem, and render the color fill in
+   segments then the overall polygon border.
+   * Consider using 'ggplot2' with 'ggarrow' for better
+   plot panel portability, including use with patchwork.
 
 * Refactor `heatmap_column_group_labels()`  and `heatmap_se()`
    * Consider `anno_empty()` to create space for group labels,

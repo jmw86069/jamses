@@ -8,7 +8,9 @@
 #' @param x0,x1,y0,y1 `numeric` values with the start and end coordinates,
 #'    for the x and y axes, respectively.
 #' @param color,border `character` R colors used to define color fill
-#'    and border, respectively, for each block arrow,
+#'    and border, respectively, for each block arrow.
+#' @param color2 `character` optional second color, used for a color
+#'    gradient. Default NULL only uses one color.
 #' @param plot_type `character` string indicating the type of plot output:
 #'    * `"base"`: base R graphics
 #'    * `"grid"`: grid graphics (not yet implemented)
@@ -44,6 +46,8 @@
 #'    * 2 = bold font
 #'    * 3 = italic font
 #'    * 4 = bold, italic font
+#' @param oneway_position `numeric` default 0.5, location of the one-way
+#'    contrast label, in fraction from 0 (start) to 1 (end).
 #' @param do_plot `logical` indicating whether to draw the block arrow.
 #' @param verbose `logical` indicating whether to print verbose output.
 #' @param debug `logical` indicating whether to print additional debug info.
@@ -58,29 +62,35 @@
 #' draw_oneway_contrast(1, 4, 2, 2, head_ex=2, label_cex=1, label="contrast label")
 #' draw_oneway_contrast(1, 4, 3, 3, arrow_ex=2, label_cex=2, label="contrast label")
 #' draw_oneway_contrast(3, 0, 4, 1, arrow_ex=2, label_cex=2, label="contrast label")
-#'
+#' 
+#' @returns `numeric` coordinates suitable for `graphics::polygon()` or
+#'    grid path objects, returned invisibly.
+#' 
 #' @export
-draw_oneway_contrast <- function
-(x0,
- x1,
- y0,
- y1,
- color="peachpuff",
- border="black",
- plot_type=c("base",
-    "grid"),
- label=NULL,
- label_sep="\n",
- na.rm=TRUE,
- label_color="white",
- label_cex=1,
- label_font=2,
- oneway_position=0.5,
- do_plot=TRUE,
- verbose=FALSE,
- debug=FALSE,
- ...)
-{
+draw_oneway_contrast <- function(
+   x0,
+   x1,
+   y0,
+   y1,
+   color="peachpuff",
+   color2=NULL,
+   border="black",
+   plot_type=c(
+      "base",
+      "grid"
+   ),
+   label=NULL,
+   label_sep="\n",
+   na.rm=TRUE,
+   label_color="white",
+   label_cex=1,
+   label_font=2,
+   oneway_position=0.5,
+   do_plot=TRUE,
+   verbose=FALSE,
+   debug=FALSE,
+   ...
+) {
    # validate arguments
    plot_type <- match.arg(plot_type);
 
@@ -90,14 +100,14 @@ draw_oneway_contrast <- function
       # consider adding a warning
       return(NULL)
    }
-   x0 <- rep(x0, length.out=n)
-   x1 <- rep(x1, length.out=n)
-   y0 <- rep(y0, length.out=n)
-   y1 <- rep(y1, length.out=n)
+   x0 <- rep_len(x0, n)
+   x1 <- rep_len(x1, n)
+   y0 <- rep_len(y0, n)
+   y1 <- rep_len(y1, n)
 
    # handle label argument
    if (length(label) == 0) {
-      label <- rep(list(""), length.out=n);
+      label <- rep_len(list(""), n);
    }
 
    # TODO: recognize color as list type,
@@ -123,23 +133,21 @@ draw_oneway_contrast <- function
       ...)
 
    # render polygon(s)
-   if ("base" %in% plot_type) {
-      if (TRUE %in% do_plot) {
-         graphics::polygon(x=arrow_coords$x,
-            y=arrow_coords$y,
-            col=color,
-            border=border)
-      }
+   if ("base" %in% plot_type && isTRUE(do_plot)) {
+      graphics::polygon(x=arrow_coords$x,
+         y=arrow_coords$y,
+         col=color,
+         border=border)
    }
 
    # optional text label
    if (length(label) > 0) {
       # ensure vectorized values are proper lengths
-      label <- rep(label, length.out=length(x0))
-      label_cex <- rep(label_cex, length.out=length(x0))
-      label_color <- rep(label_color, length.out=length(x0))
-      label_font <- rep(label_font, length.out=length(x0))
-      oneway_position <- rep(oneway_position, length.out=length(x0))
+      label <- rep_len(label, length(x0))
+      label_cex <- rep_len(label_cex, length(x0))
+      label_color <- rep_len(label_color, length(x0))
+      label_font <- rep_len(label_font, length(x0))
+      oneway_position <- rep_len(oneway_position, length(x0))
       oneway_position <- jamba::noiseFloor(oneway_position,
          minimum=0,
          ceiling=1);
@@ -162,10 +170,10 @@ draw_oneway_contrast <- function
                ", arrow_angle: ", arrow_angle,
                ", label_angle: ", label_angle)
          }
-         use_label <- jamba::cPaste(label,
-            sep=label_sep,
-            na.rm=TRUE)
-         which_labels <- which(!is.na(label) & nchar(label) > 0);
+         # use_label <- jamba::cPaste(label,
+         #    sep=label_sep,
+         #    na.rm=TRUE)
+         which_labels <- which(!is.na(label) & nzchar(label));
          if (length(which_labels) > 0) {
             # k_list <- split(which_labels, label_angle[which_labels])
             label_split <- paste0(label_angle[which_labels], "_",
@@ -345,49 +353,49 @@ draw_oneway_contrast <- function
 #'    label=c("contrast one", "contrast two"),
 #'    color=c("gold", "dodgerblue"), extend_angle=-20)
 #' @export
-draw_twoway_contrast <- function
-(x0,
- x1,
- y0,
- y1,
- color="peachpuff",
- border="black",
- extend_ex=0.3,
- extend_angle=10,
- plot_type=c("base",
-    "grid"),
- label=NULL,
- label_sep="\n",
- na.rm=TRUE,
- label_color="white",
- label_cex=1,
- label_font=2,
- oneway_position=0.5,
- twoway_label=NULL,
- twoway_label_color=label_color,
- twoway_label_cex=label_cex,
- twoway_label_font=label_font,
- twoway_position=0.5,
- twoway_lwd=5,
- contingency=c(none="none",
-    half="scrunch",
-    full="loop"),
- draw_oneway=TRUE,
- drawing_order=c(
-    "two-two-one",
-    "one-two",
-    "two-one-two"),
- do_plot=TRUE,
- verbose=FALSE,
- ...)
-{
+draw_twoway_contrast <- function(
+   x0,
+   x1,
+   y0,
+   y1,
+   color="peachpuff",
+   border="black",
+   extend_ex=0.3,
+   extend_angle=10,
+   plot_type=c("base",
+      "grid"),
+   label=NULL,
+   label_sep="\n",
+   na.rm=TRUE,
+   label_color="white",
+   label_cex=1,
+   label_font=2,
+   oneway_position=0.5,
+   twoway_label=NULL,
+   twoway_label_color=label_color,
+   twoway_label_cex=label_cex,
+   twoway_label_font=label_font,
+   twoway_position=0.5,
+   twoway_lwd=5,
+   contingency=c(none="none",
+      half="scrunch",
+      full="loop"),
+   draw_oneway=TRUE,
+   drawing_order=c(
+      "two-two-one",
+      "one-two",
+      "two-one-two"),
+   do_plot=TRUE,
+   verbose=FALSE,
+   ...
+) {
    # validate arguments
    plot_type <- match.arg(plot_type);
    contingency <- match.arg(contingency,
       several.ok=TRUE);
    contingency_names <- c("none", "half", "full");
    if (!all(contingency_names %in% contingency)) {
-      contingency <- rep(contingency, length.out=3);
+      contingency <- rep_len(contingency, 3);
       names(contingency) <- contingency_names;
    }
    drawing_order <- match.arg(drawing_order);
@@ -398,13 +406,13 @@ draw_twoway_contrast <- function
       # consider adding a warning
       return(NULL)
    }
-   x0 <- rep(x0, length.out=n)
-   x1 <- rep(x1, length.out=n)
-   y0 <- rep(y0, length.out=n)
-   y1 <- rep(y1, length.out=n)
-   color <- rep(color, length.out=n);
+   x0 <- rep_len(x0, n)
+   x1 <- rep_len(x1, n)
+   y0 <- rep_len(y0, n)
+   y1 <- rep_len(y1, n)
+   color <- rep_len(color, n);
    colorset_twoway <- split(color, rep(seq_len(n / 2), each=2))
-   border <- rep(border, length.out=n);
+   border <- rep_len(border, n);
 
    # first draw the two one-way contrasts
    if (TRUE %in% draw_oneway && "one-two" %in% drawing_order) {
@@ -450,16 +458,16 @@ draw_twoway_contrast <- function
       (x1 - x0)^2 + (y1 - y0)^2)
 
    # helper function to make bezier control points
-   make_bezier_lines_df <- function
-   (x0, x1, y0, y1,
-    k1, k2,
-    contrast_lengths,
-    extend_ex,
-    xadj,
-    yadj)
-   {
+   make_bezier_lines_df <- function(
+      x0, x1, y0, y1,
+      k1, k2,
+      contrast_lengths,
+      extend_ex,
+      xadj,
+      yadj
+   ) {
       # Note: using length=1 instead of contrast_lengths[k1]
-      extend_ex <- rep(extend_ex, length.out=length(x0));
+      extend_ex <- rep_len(extend_ex, length(x0));
       # so the extension has consistent length.
       lines_df <- data.frame(
          x=c(
@@ -572,9 +580,9 @@ draw_twoway_contrast <- function
       if (length(x1) < 2) {
          return(NULL)
       }
-      x1 <- rep(x1, length.out=length(x0));
-      y0 <- rep(y0, length.out=length(x0));
-      y1 <- rep(y1, length.out=length(x0));
+      x1 <- rep_len(x1, length(x0));
+      y0 <- rep_len(y0, length(x0));
+      y1 <- rep_len(y1, length(x0));
       xym <- cbind(c(x0, x1), c(y0, y1));
       rownames(xym) <- jamba::makeNames(
          rep(c("A", "B"), each=length(x0)),
@@ -597,7 +605,7 @@ draw_twoway_contrast <- function
    if (any(c("scrunch", "loop") %in% contingency_output)) {
       # mirror the second angle?
       # if (any(changed_hands_25)) {
-      extend_ex <- rep(extend_ex, length.out=length(contrast_angles))
+      extend_ex <- rep_len(extend_ex, length(contrast_angles))
       # do_loop <- ("loop" %in% contingency_output);
       do_loop <- (contingency_output %in% "loop");
       if (any(do_loop)) {
@@ -653,20 +661,22 @@ draw_twoway_contrast <- function
       k_seq <- seq(from=k, length.out=9, by=k_multiple)
       use_lines_df <- lines_df[k_seq, , drop=FALSE]
 
-      # optionally display the control points with labels for debugging
-      if (FALSE) {
-         points(use_lines_df,
-            pch=21,
-            cex=4,
-            col="grey",
-            bg="white")
-         text(use_lines_df, rownames(lines_df), pch=21, cex=0.8)
-      }
+      ## optionally display the control points with labels for debugging
+      # if (FALSE) {
+      #    points(use_lines_df,
+      #       pch=21,
+      #       cex=4,
+      #       col="grey",
+      #       bg="white")
+      #    text(use_lines_df, rownames(lines_df), pch=21, cex=0.8)
+      # }
 
       # calculate bezier curve
       bezier_points <- bezier::bezier(
          t=seq(from=0, to=4, length.out=100),
-         p=as.matrix(use_lines_df), deg=2)
+         p=as.matrix(use_lines_df),
+         deg=2
+      )
       bezier_points
    })
 
@@ -859,7 +869,9 @@ draw_twoway_contrast <- function
 
 
    }
+   doc_list <- list(
+      doc=doc
+   )
 
-
-   invisible(NULL)
+   invisible(doc_list)
 }

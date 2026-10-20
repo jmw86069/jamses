@@ -4,7 +4,52 @@
 #' Plot contrasts from sedesign object (in development), showing
 #' one-way contrasts as block arrow, and two-way contrasts as
 #' two block arrows connected in proper order.
-#'
+#' 
+#' The core of this visualization is to represent each
+#' experiment group as a combination of its factor levels,
+#' and to stack groups with each factor along one dimension.
+#' As a result, oneway contrasts should be visualized by
+#' a horizontal or vertical line, comparing levels within
+#' only one factor at a time.
+#' 
+#' Similarly, twoway contrasts are represented in the style
+#' of "fold change of fold changes" and therefore should
+#' only be represented by two oneway contrasts which are
+#' parallel in these axes, and where only one additional
+#' factor is being compared. This additional factor should
+#' also only use the exact levels of the other factors
+#' in the contrast.
+#' 
+#' In the event a "custom contrast" is defined for which
+#' the oneway comparison involves more than one factor change,
+#' it will be seen as a diagonal arrow.  
+#' For example:  
+#' `"Dex_Knockout-Control_Wildtype"`  
+#' This contrast compares Dex to Control (treatment), and
+#' Knockout to Wildtype (genotype), and therefore fully
+#' confounds the treatment effects with genetype effects.
+#' This contrast would be visible as a diagonal line.
+#' To be fair, in some experiments this type of contrast
+#' is reasonable.
+#' 
+#' ## Colors
+#' 
+#' When no group colors are provided using `group_fill`,
+#' and no `colorset` is provided for contrast colors,
+#' random categorical colors are assigned to the contrasts.
+#' 
+#' When group colors are supplied using `group_fill`, the
+#' background of each group is filled with this color.
+#' Further, when `colorset` is not supplied, the `group_fill`
+#' is used to produce a color for each contrast based upon
+#' each group color.
+#' 
+#' Two-way contrasts use a bezier curved line to connect the
+#' end of the first oneway contrast to the start of the
+#' second oneway contrast, and it uses a color gradient
+#' along the line. This visualization is intended to represent
+#' the "fold change of fold changes" style of two-way contrast.
+#' 
 #' TODO:
 #' * Mostly done: Confirm functionality with different combinations
 #' of axis values.
@@ -28,8 +73,6 @@
 #'    second contrast start color as a gradient.
 #'    * If colors are not defined per group, call `design2colors()`?
 #'
-#' * DONE. Confirm/implement method to display fewer factors on axes
-#' than are present in the underlying group labels.
 #' * Improve location of axis labels - currently uses `jamba::groupedAxis()`
 #' however they appear too distant from the figure itself.
 #' * Determine method to "recognize" factor order from `colData(se)`.
@@ -48,7 +91,6 @@
 #'    * Another option is to require `colnames(colData(se))` to match
 #'    the order in the group names defined in `colnames(sedesign@design)`.
 #'
-#' * DONE. implement block arrows functions for improved quality output.
 #' * consider `grid` graphics (package `vwline`) or `ggplot2` output.
 #' * implement sensible method to display a subset of one-way or
 #' two-way contrasts. For example, two-way contrasts are easier to see
@@ -237,10 +279,48 @@
 #' sedesign_1 <- groups_to_sedesign(idf)
 #'
 #' # plot the contrasts
-#' plot_sedesign(sedesign_1)
+#' psd1 <- plot_sedesign(sedesign_1)
 #'
+#' # plot the contrasts with specific colors
+#' group_names <- unique(unlist(
+#'    strsplit(gsub("[()]", "", names(psd1)), "-")))
+#' group_fill <- (c(
+#'    "lightgoldenrod3",
+#'    "gray50",
+#'    "orange2",
+#'    "salmon3",
+#'    "slateblue",
+#'    "orchid4",
+#'    "aquamarine3",
+#'    "lightgoldenrod1"))
+#' names(group_fill) <- group_names;
+#' group_fill <- jamba::alpha2col(alpha=0.7, group_fill)
+#' psd <- plot_sedesign(
+#'    sedesign_1,
+#'    axis1=1, axis2=3, axis3=2,
+#'    group_fill=group_fill,
+#'    which_contrasts=1:10)
+#'
+#' group_fill2 <- c(
+#'    "gold2",
+#'    "gold1",
+#'    "gold4",
+#'    "gold3",
+#'    "indianred1",
+#'    "indianred3",
+#'    "slateblue2",
+#'    "slateblue3")
+#' names(group_fill2) <- names(group_fill)
+#' psd <- plot_sedesign(
+#'    sedesign_1,
+#'    axis1=1, axis2=3, axis3=2,
+#'    group_fill=group_fill2)
+#' 
 #' # re-order the factors along each axis
-#' plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2)
+#' psd <- plot_sedesign(
+#'    sedesign_1,
+#'    axis1=1, axis2=3, axis4=2,
+#'    group_fill=group_fill)
 #'
 #' # flip the group ordering for two-way contrasts
 #' # (These are mathematically equivalent, but shown in flipped orientation)
@@ -249,6 +329,7 @@
 #' # plot only the two-way contrasts
 #' is_twoway <- grepl("[(]", contrast_names(sedesign_1))
 #' plot_sedesign(sedesign_1, which_contrasts=which(is_twoway),
+#'    group_fill=group_fill,
 #'    axis1=1, axis2=3, axis3=2)
 #'
 #' group_names <- paste0(
@@ -264,7 +345,7 @@
 #' is_twoway <- grepl("[(]", contrast_names(sedesign))
 #' plot_sedesign(sedesign, which_contrasts=which(is_twoway),
 #'    axis1=1, axis2=3, axis3=2)
-#'
+#' 
 #' @export
 plot_sedesign <- function(
    sedesign,
@@ -299,7 +380,7 @@ plot_sedesign <- function(
    group_border = "grey65",
    group_fill = "grey95",
    replicate_color = "grey40",
-   replicate_cex = 0.8,
+   replicate_cex = 1,
    do_plot = TRUE,
    plot_margins = c(0.1, 0.1, 0.1, 0.1),
    plot_type = c("base", "grid"),
@@ -546,21 +627,37 @@ plot_sedesign <- function(
    # add group name to axis_df for convenience
    fmatch <- match(as.character(axis_df$label), as.character(factors_df$label))
    axis_df$group <- rownames(factors_df)[fmatch]
+   group_fill_complete <- TRUE;
    if (
-      names(group_fill) == 0 ||
-         !all(axis_df$group %in% names(group_fill))
+      length(names(group_fill)) == 0 ||
+      !all(jamba::rmNA(axis_df$group) %in% names(group_fill))
    ) {
-      missing_groups <- setdiff(axis_df$group, names(group_fill))
+      # jamba::printDebug("Adding missing_groups: ", missing_groups);# debug
+      missing_groups <- setdiff(
+         jamba::rmNA(axis_df$group),
+         names(group_fill)
+      )
+      known_groups <- intersect(
+         jamba::rmNA(axis_df$group),
+         names(group_fill)
+      )
+      if (length(missing_groups) > length(known_groups)) {
+         group_fill_complete <- FALSE;
+      }
       group_fill[missing_groups] <- rep_len(
          group_fill,
          length(missing_groups)
       )
       group_fill <- rep_len(group_fill, length(axis_df$group))
-      names(group_fill) <- axis_df$group
+      names(group_fill) <- axis_df$group;
    }
+   # axis_df$group_fill <- group_fill[axis_df$group];
+   # jamba::showColors(jamba::nameVector(axis_df[, c("group_fill", "group"), drop=FALSE]))
+   # print("axis_df:");print(axis_df);# debug
+   # return(FALSE);
    if (
-      names(group_border) == 0 ||
-         !all(axis_df$group %in% names(group_border))
+      length(names(group_border)) == 0 ||
+      !all(axis_df$group %in% names(group_border))
    ) {
       missing_groups <- setdiff(axis_df$group, names(group_border))
       group_border[missing_groups] <- rep_len(
@@ -711,7 +808,7 @@ plot_sedesign <- function(
 
    # optionally "flip" two-way contrasts
    is_twoway <- grepl("[(]", contrast_names)
-   if (TRUE %in% flip_twoway && TRUE %in% is_twoway) {
+   if (isTRUE(flip_twoway) && isTRUE(is_twoway)) {
       twoway_split <- strsplit(
          gsub("[()]", "", contrast_names[is_twoway]),
          "-"
@@ -945,6 +1042,7 @@ plot_sedesign <- function(
          contrast_group_df[ibump_rows, "bump"] <- rep(ibump_values, each = 2)
       }
    }
+   contrast_group_df$fill <- group_fill[contrast_group_df$group];
 
    contrast_group_split <- split(
       contrast_group_df,
@@ -1111,12 +1209,20 @@ plot_sedesign <- function(
 
       is_twoway <- grepl("[(]", contrast_names)
       if (length(colorset) == 0) {
-         colorset <- colorjam::rainbowJam(
-            n = sum(!is_twoway),
-            Crange = c(60, 90),
-            Lrange = c(44, 80)
-         )
-         names(colorset) <- contrast_names[!is_twoway]
+         if (isTRUE(group_fill_complete)) {
+            # special case: use group_fill
+            colorset_names <- contrast_names[!is_twoway];
+            colorset <- sapply(strsplit(colorset_names, "-"), function(igroups){
+               colorjam::blend_colors(jamba::unalpha(group_fill[igroups]))
+            })
+         } else {
+            colorset <- colorjam::rainbowJam(
+               n = sum(!is_twoway),
+               Crange = c(60, 90),
+               Lrange = c(44, 80)
+            )
+         }
+         names(colorset) <- contrast_names[!is_twoway];
       } else {
          if (length(names(colorset)) > 0) {
             missing_names <- setdiff(
@@ -1137,6 +1243,7 @@ plot_sedesign <- function(
             names(colorset) <- contrast_names[!is_twoway]
          }
       }
+      # jamba::printDebug("contrast_names[!is_twoway]:");print(contrast_names[!is_twoway]);# debug
       # jamba::printDebug(colorset, sep=",\n");# debug
 
       # iterate each group to draw a visible square around each group
@@ -1171,9 +1278,16 @@ plot_sedesign <- function(
          x = axis_df$x_coord - use_group_buffer + 0.04,
          y = axis_df$y_coord + use_group_buffer - 0.04,
          adj = c(0, 1),
-         labels = ifelse(is.na(axis_df$n), "", paste0("n=", axis_df$n)),
-         col = replicate_color,
-         cex = replicate_cex
+         labels = ifelse(
+            is.na(axis_df$n),
+            "",
+            paste0("n=", axis_df$n)
+         ),
+         col = jamba::setTextContrastColor(
+            group_fill[axis_df$group]
+         ),
+         # col = replicate_color,
+         cex = replicate_cex * 1.3
       )
 
       # generate summary of pairwise contrasts
@@ -1181,6 +1295,8 @@ plot_sedesign <- function(
          lapply(seq_along(contrast_group_split), function(i) {
             idf <- contrast_group_split[[i]]
             idf$color <- colorset[as.character(idf$oneway_contrast)]
+            idf$color1 <- head(idf$fill, 1)
+            idf$color2 <- tail(idf$fill, 1)
             if (nrow(idf) == 2) {
                data.frame(
                   from = idf$label[1],
@@ -1188,6 +1304,8 @@ plot_sedesign <- function(
                   contrast = idf$contrast[1],
                   full_contrast = idf$contrast[1],
                   color = colorset[idf$contrast[1]],
+                  color1 = idf$color1[1],
+                  color2 = idf$color2[1],
                   depth = "one-way",
                   contrast_depth = 1
                )
@@ -1215,6 +1333,8 @@ plot_sedesign <- function(
                   ),
                   full_contrast = idf$contrast[1],
                   color = use_colors,
+                  color1 = idf$fill[2],
+                  color2 = idf$fill[3],
                   depth = "two-way",
                   contrast_depth = 2
                )
@@ -1234,7 +1354,6 @@ plot_sedesign <- function(
 
       # iterate each contrast
       use_contrasts <- seq_along(contrast_group_split)
-      # jamba::printDebug("contrast_summary_df:");print(contrast_summary_df);# debug
       # jamba::printDebug("contrast_group_split:");print(contrast_group_split);# debug
       if (debug) {
          jamba::printDebug("contrast_group_split cgs_df:")
@@ -1314,9 +1433,10 @@ plot_sedesign <- function(
                match(summary_df1$contrast, summary_df$contrast),
                ,
                drop = FALSE
-            ]
+            ];
+            # jamba::printDebug("summary_df:");print(summary_df);# debug
             colorset_twoway <- summary_df$color
-            if (any("grey" %in% colorset_twoway) && TRUE %in% debug) {
+            if (any("grey" %in% colorset_twoway) && isTRUE(debug)) {
                jamba::printDebug("contrast_summary_df:")
                print(contrast_summary_df) # debug
                jamba::printDebug("idf:")
@@ -1838,8 +1958,10 @@ make_block_arrow_polygon <- function(
       })), -1)
    }
 
-   retlist <- list(x=new_x,
-      y=new_y);
+   retlist <- list(
+      x=new_x,
+      y=new_y
+   );
    attr(retlist, "text_angle") <- text_angle;
    return(retlist)
 }
