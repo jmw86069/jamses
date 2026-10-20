@@ -40,7 +40,7 @@ plot_sedesign(
   group_border = "grey65",
   group_fill = "grey95",
   replicate_color = "grey40",
-  replicate_cex = 0.8,
+  replicate_cex = 1,
   do_plot = TRUE,
   plot_margins = c(0.1, 0.1, 0.1, 0.1),
   plot_type = c("base", "grid"),
@@ -308,6 +308,42 @@ figure.
 
 ## Details
 
+The core of this visualization is to represent each experiment group as
+a combination of its factor levels, and to stack groups with each factor
+along one dimension. As a result, oneway contrasts should be visualized
+by a horizontal or vertical line, comparing levels within only one
+factor at a time.
+
+Similarly, twoway contrasts are represented in the style of "fold change
+of fold changes" and therefore should only be represented by two oneway
+contrasts which are parallel in these axes, and where only one
+additional factor is being compared. This additional factor should also
+only use the exact levels of the other factors in the contrast.
+
+In the event a "custom contrast" is defined for which the oneway
+comparison involves more than one factor change, it will be seen as a
+diagonal arrow. For example: `"Dex_Knockout-Control_Wildtype"` This
+contrast compares Dex to Control (treatment), and Knockout to Wildtype
+(genotype), and therefore fully confounds the treatment effects with
+genetype effects. This contrast would be visible as a diagonal line. To
+be fair, in some experiments this type of contrast is reasonable.
+
+### Colors
+
+When no group colors are provided using `group_fill`, and no `colorset`
+is provided for contrast colors, random categorical colors are assigned
+to the contrasts.
+
+When group colors are supplied using `group_fill`, the background of
+each group is filled with this color. Further, when `colorset` is not
+supplied, the `group_fill` is used to produce a color for each contrast
+based upon each group color.
+
+Two-way contrasts use a bezier curved line to connect the end of the
+first oneway contrast to the start of the second oneway contrast, and it
+uses a color gradient along the line. This visualization is intended to
+represent the "fold change of fold changes" style of two-way contrast.
+
 TODO:
 
 - Mostly done: Confirm functionality with different combinations of axis
@@ -339,9 +375,6 @@ TODO:
 
   - If colors are not defined per group, call `design2colors()`?
 
-- DONE. Confirm/implement method to display fewer factors on axes than
-  are present in the underlying group labels.
-
 - Improve location of axis labels - currently uses
   [`jamba::groupedAxis()`](https://jmw86069.github.io/jamba/reference/groupedAxis.html)
   however they appear too distant from the figure itself.
@@ -366,8 +399,6 @@ TODO:
 
   - Another option is to require `colnames(colData(se))` to match the
     order in the group names defined in `colnames(sedesign@design)`.
-
-- DONE. implement block arrows functions for improved quality output.
 
 - consider `grid` graphics (package `vwline`) or `ggplot2` output.
 
@@ -452,26 +483,64 @@ rownames(idf) <- isamples_1;
 sedesign_1 <- groups_to_sedesign(idf)
 
 # plot the contrasts
-plot_sedesign(sedesign_1)
+psd1 <- plot_sedesign(sedesign_1)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
+# plot the contrasts with specific colors
+group_names <- unique(unlist(
+   strsplit(gsub("[()]", "", names(psd1)), "-")))
+group_fill <- (c(
+   "lightgoldenrod3",
+   "gray50",
+   "orange2",
+   "salmon3",
+   "slateblue",
+   "orchid4",
+   "aquamarine3",
+   "lightgoldenrod1"))
+names(group_fill) <- group_names;
+group_fill <- jamba::alpha2col(alpha=0.7, group_fill)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis3=2,
+   group_fill=group_fill,
+   which_contrasts=1:10)
+
+
+group_fill2 <- c(
+   "gold2",
+   "gold1",
+   "gold4",
+   "gold3",
+   "indianred1",
+   "indianred3",
+   "slateblue2",
+   "slateblue3")
+names(group_fill2) <- names(group_fill)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis3=2,
+   group_fill=group_fill2)
+
 
 # re-order the factors along each axis
-plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2)
+psd <- plot_sedesign(
+   sedesign_1,
+   axis1=1, axis2=3, axis4=2,
+   group_fill=group_fill)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # flip the group ordering for two-way contrasts
 # (These are mathematically equivalent, but shown in flipped orientation)
 plot_sedesign(sedesign_1, axis1=1, axis2=3, axis3=2, flip_twoway=TRUE)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # plot only the two-way contrasts
 is_twoway <- grepl("[(]", contrast_names(sedesign_1))
 plot_sedesign(sedesign_1, which_contrasts=which(is_twoway),
+   group_fill=group_fill,
    axis1=1, axis2=3, axis3=2)
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
 
 group_names <- paste0(
    rep(c("DMSO", "Etop"), each=4),
@@ -482,12 +551,10 @@ group_names <- paste0(
 sedesign <- groups_to_sedesign(group_names)
 plot_sedesign(sedesign)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # plot only the two-way contrasts
 is_twoway <- grepl("[(]", contrast_names(sedesign))
 plot_sedesign(sedesign, which_contrasts=which(is_twoway),
    axis1=1, axis2=3, axis3=2)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 ```

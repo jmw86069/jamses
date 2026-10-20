@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.950</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,7 @@
 <span>  <span class="va">y0</span>,</span>
 <span>  <span class="va">y1</span>,</span>
 <span>  color <span class="op">=</span> <span class="st">"peachpuff"</span>,</span>
+<span>  color2 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  border <span class="op">=</span> <span class="st">"black"</span>,</span>
 <span>  plot_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"base"</span>, <span class="st">"grid"</span><span class="op">)</span>,</span>
 <span>  label <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -76,7 +77,12 @@ for the x and y axes, respectively.</p></dd>
 
 <dt id="arg-color-border">color, border<a class="anchor" aria-label="anchor" href="#arg-color-border"></a></dt>
 <dd><p><code>character</code> R colors used to define color fill
-and border, respectively, for each block arrow,</p></dd>
+and border, respectively, for each block arrow.</p></dd>
+
+
+<dt id="arg-color-">color2<a class="anchor" aria-label="anchor" href="#arg-color-"></a></dt>
+<dd><p><code>character</code> optional second color, used for a color
+gradient. Default NULL only uses one color.</p></dd>
 
 
 <dt id="arg-plot-type">plot_type<a class="anchor" aria-label="anchor" href="#arg-plot-type"></a></dt>
@@ -133,6 +139,11 @@ the font size of the text label.</p></dd>
 </ul></dd>
 
 
+<dt id="arg-oneway-position">oneway_position<a class="anchor" aria-label="anchor" href="#arg-oneway-position"></a></dt>
+<dd><p><code>numeric</code> default 0.5, location of the one-way
+contrast label, in fraction from 0 (start) to 1 (end).</p></dd>
+
+
 <dt id="arg-do-plot">do_plot<a class="anchor" aria-label="anchor" href="#arg-do-plot"></a></dt>
 <dd><p><code>logical</code> indicating whether to draw the block arrow.</p></dd>
 
@@ -152,6 +163,11 @@ including <code>arrow_ex</code> the arrow size expansion factor, and
 relative to the arrow stem width.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p><code>numeric</code> coordinates suitable for <code><a href="https://rdrr.io/r/graphics/polygon.html" class="external-link">graphics::polygon()</a></code> or
+grid path objects, returned invisibly.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other jam experiment design:

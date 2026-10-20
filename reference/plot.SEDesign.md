@@ -78,5 +78,4 @@ sedesign_1 <- groups_to_sedesign(idf)
 
 plot(sedesign_1)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 ```

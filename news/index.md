@@ -1,5 +1,14 @@
 # Changelog
 
+## jamses 0.0.80.950
+
+### Hotfix
+
+- [`plot_sedesign()`](https://jmw86069.github.io/jamses/reference/plot_sedesign.md)
+  updated to fix ‘group_fill’ argument. Updated behavior to define
+  ‘colorset’ using ‘group_fill’ unless it is also defined specifically.
+- Added ‘bezier’ to Imports.
+
 ## jamses 0.0.80.900
 
 ### Updates

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.950</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -625,11 +625,8 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span><span class="co"># plot the design and contrasts</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="se_contrast_stats-8.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span><span class="co"># note the two-way contrast can be flipped</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, flip_twoway<span class="op">=</span><span class="cn">TRUE</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-9.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># limma contrasts</span></span></span>
 <span class="r-in"><span><span class="va">sestats2</span> <span class="op">&lt;-</span> <span class="fu">se_contrast_stats</span><span class="op">(</span>se<span class="op">=</span><span class="va">se2</span>,</span></span>
@@ -659,8 +656,7 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># plot the design with number of hits labeled</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign2</span>, sestats<span class="op">=</span><span class="va">sestats2</span>, label_cex<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-10.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
+<span class="r-plt img"><img src="se_contrast_stats-9.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># heatmap with hits</span></span></span>
 <span class="r-in"><span><span class="va">hm2hits</span> <span class="op">&lt;-</span> <span class="fu"><a href="heatmap_se.html">heatmap_se</a></span><span class="op">(</span><span class="va">se2</span>,</span></span>
@@ -679,7 +675,7 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span><span class="fu">ComplexHeatmap</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">hm2hits</span>,</span></span>
 <span class="r-in"><span>   column_title<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">hm2hits</span>, <span class="st">"hm_title"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   merge_legends<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="se_contrast_stats-11.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="se_contrast_stats-10.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># get the hit list</span></span></span>
 <span class="r-in"><span><span class="va">hit_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="hit_array_to_list.html">hit_array_to_list</a></span><span class="op">(</span><span class="va">sestats2</span>,</span></span>
@@ -701,10 +697,10 @@ be defined, to restrict calculations to use only the subset data.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>   <span class="va">vo</span> <span class="op">&lt;-</span> <span class="fu">venndir</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/venndir/reference/venndir.html" class="external-link">venndir</a></span><span class="op">(</span><span class="va">hit_list</span>, proportional<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-plt img"><img src="se_contrast_stats-11.png" alt="" width="768" height="768"></span>
 <span class="r-plt img"><img src="se_contrast_stats-12.png" alt="" width="768" height="768"></span>
 <span class="r-plt img"><img src="se_contrast_stats-13.png" alt="" width="768" height="768"></span>
 <span class="r-plt img"><img src="se_contrast_stats-14.png" alt="" width="768" height="768"></span>
-<span class="r-plt img"><img src="se_contrast_stats-15.png" alt="" width="768" height="768"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

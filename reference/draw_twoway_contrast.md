@@ -48,7 +48,7 @@ draw_twoway_contrast(
 - color, border:
 
   `character` R colors used to define color fill and border,
-  respectively, for each block arrow,
+  respectively, for each block arrow.
 
 - extend_ex:
 
@@ -135,6 +135,11 @@ draw_twoway_contrast(
   - 3 = italic font
 
   - 4 = bold, italic font
+
+- oneway_position:
+
+  `numeric` default 0.5, location of the one-way contrast label, in
+  fraction from 0 (start) to 1 (end).
 
 - twoway_label:
 
@@ -306,34 +311,31 @@ Other jam experiment design:
 
 ``` r
 plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
-
 draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
    label=c("contrast one", "contrast two"))
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
 
 plot(NULL, xlim=c(0, 5), ylim=c(0, 4), asp=1, xlab="", ylab="")
 draw_twoway_contrast(c(1, 1), c(4, 4), c(1, 2), c(1, 2),
    contingency=c("loop"),
    label=c("contrast one", "contrast two"))
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
 
 plot(NULL, xlim=c(0, 5), ylim=c(0, 6), asp=1, xlab="", ylab="")
-
 draw_twoway_contrast(c(1, 2, 1, 2, 2, 2), c(4, 5, 4, 5, 5, 5),
    c(1, 1.3, 2, 3, 4, 5), c(1, 1.3, 2, 3, 4, 5),
    label=c("contrast one", "contrast two"),
    extend_ex=0.5, extend_angle=10, color=colorjam::rainbowJam(6))
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
 
 plot(NULL, xlim=c(0, 5), ylim=c(0, 6), asp=1, xlab="", ylab="")
 draw_twoway_contrast(c(1, 2, 1, 2, 2, 2), c(4, 5, 4, 5, 5, 5),
    c(1, 1.3, 2, 2.2, 4, 5), c(1, 1.3, 2, 2.2, 4, 5),
    label=c("contrast one", "contrast two"),
    extend_ex=0.3, extend_angle=20, color=colorjam::rainbowJam(6))
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+
 
 plot(NULL, xlim=c(-2, 8), ylim=c(1, 6), asp=1, xlab="", ylab="")
-
 draw_twoway_contrast(
    x0=c(1, 2, 1, 2, 1, 1, 0, -2, 4, 3, 2, 4),
    x1=c(4, 5, 4, 5, 6, 6, 0, -2, 7, 6, 2, 4),
@@ -342,8 +344,8 @@ draw_twoway_contrast(
    label=c("contrast one", "contrast two"), verbose=TRUE,
    extend_ex=0.5, extend_angle=10,
    color=colorjam::rainbowJam(12, Crange=c(90, 120)))
-#> (20:10:09) 19Oct2026: draw_twoway_contrast(): hand: right,right,right,left,left,right
-#> (20:10:09) 19Oct2026: draw_twoway_contrast(): new_contrast_angles: 
+#> (22:44:21) 20Oct2026: draw_twoway_contrast(): hand: right,right,right,left,left,right
+#> (22:44:21) 20Oct2026: draw_twoway_contrast(): new_contrast_angles: 
 #>    contrast_angles  hand angle_diff new_contrast_angles
 #> 1                0 right         10                  10
 #> 2              180 right         10                 190
@@ -357,10 +359,10 @@ draw_twoway_contrast(
 #> 10             180  left        -10                 170
 #> 11             -90 right         10                 -80
 #> 12              90 right         10                 100
-#> Error in loadNamespace(x): there is no package called ‘bezier’
+#> (22:44:21) 20Oct2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
+#> (22:44:21) 20Oct2026: draw_oneway_contrast(): x0: 1,2,1,2,1,1,0,-2,4,3,2,4, x: 2.5,3.5,2.5,3.5,3.5,3.5,0.0,-2.0,5.5,4.5,2.0,4.0, x1: 4,5,4,5,6,6,0,-2,7,6,2,4, y0: 1.0,1.3,2.0,2.2,4.0,5.0,5.0,5.0,3.2,3.0,6.0,6.0, y: 1.00,1.30,2.00,2.20,4.00,5.00,4.00,4.00,3.20,3.00,4.75,4.75, y1: 1.0,1.3,2.0,2.2,4.0,5.0,3.0,3.0,3.2,3.0,3.5,3.5, arrow_angle: 0,0,0,0,0,0,270,270,0,0,270,270, label_angle: 0,0,0,0,0,0,270,270,0,0,270,270
 
 draw_twoway_contrast(x0=c(4, 3), x1=c(4, 3), y0=c(2, 2), y1=c(1, 1),
    label=c("contrast one", "contrast two"),
    color=c("gold", "dodgerblue"), extend_angle=-20)
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 ```

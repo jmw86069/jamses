@@ -11,6 +11,7 @@ draw_oneway_contrast(
   y0,
   y1,
   color = "peachpuff",
+  color2 = NULL,
   border = "black",
   plot_type = c("base", "grid"),
   label = NULL,
@@ -37,7 +38,12 @@ draw_oneway_contrast(
 - color, border:
 
   `character` R colors used to define color fill and border,
-  respectively, for each block arrow,
+  respectively, for each block arrow.
+
+- color2:
+
+  `character` optional second color, used for a color gradient. Default
+  NULL only uses one color.
 
 - plot_type:
 
@@ -108,6 +114,11 @@ draw_oneway_contrast(
 
   - 4 = bold, italic font
 
+- oneway_position:
+
+  `numeric` default 0.5, location of the one-way contrast label, in
+  fraction from 0 (start) to 1 (end).
+
 - do_plot:
 
   `logical` indicating whether to draw the block arrow.
@@ -127,6 +138,12 @@ draw_oneway_contrast(
   including `arrow_ex` the arrow size expansion factor, and `head_ex`
   the arrow head expansion factor, which is adjusted relative to the
   arrow stem width.
+
+## Value
+
+`numeric` coordinates suitable for
+[`graphics::polygon()`](https://rdrr.io/r/graphics/polygon.html) or grid
+path objects, returned invisibly.
 
 ## See also
 

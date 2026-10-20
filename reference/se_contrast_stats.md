@@ -647,11 +647,8 @@ sedesign2 <- groups_to_sedesign(se2, group_colnames="group")
 # plot the design and contrasts
 plot_sedesign(sedesign2, label_cex=0.7)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 # note the two-way contrast can be flipped
 plot_sedesign(sedesign2, flip_twoway=TRUE, label_cex=0.7)
-
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # limma contrasts
 sestats2 <- se_contrast_stats(se=se2,
@@ -682,7 +679,6 @@ sestats_to_df(sestats2)
 # plot the design with number of hits labeled
 plot_sedesign(sedesign2, sestats=sestats2, label_cex=0.7)
 
-#> Error in loadNamespace(x): there is no package called ‘bezier’
 
 # heatmap with hits
 hm2hits <- heatmap_se(se2,

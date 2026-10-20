@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jamses</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.900</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.80.950</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -345,24 +345,20 @@ used for things like group names.</p></li>
 <span class="r-in"><span><span class="co"># plot the design and contrasts</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-1.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the two-way contrasts can be visibly flipped, since they are equivalent</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span>, flip_twoway<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="groups_to_sedesign-2.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the design can be subset by sample</span></span></span>
 <span class="r-in"><span><span class="va">all_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="samples.html">samples</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">subset_samples1</span> <span class="op">&lt;-</span> <span class="va">all_samples</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">:</span><span class="op">-</span><span class="fl">3</span><span class="op">]</span>;</span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">[</span><span class="va">subset_samples1</span>, <span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="groups_to_sedesign-3.png" alt="" width="768" height="768"></span>
+<span class="r-plt img"><img src="groups_to_sedesign-2.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the group n=# replicates are updated</span></span></span>
 <span class="r-in"><span><span class="va">subset_samples2</span> <span class="op">&lt;-</span> <span class="va">all_samples</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">6</span>, <span class="op">-</span><span class="fl">11</span><span class="op">)</span><span class="op">]</span>;</span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">[</span><span class="va">subset_samples2</span>, <span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="groups_to_sedesign-4.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
+<span class="r-plt img"><img src="groups_to_sedesign-3.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The design * contrast matrix can be displayed in full</span></span></span>
 <span class="r-in"><span><span class="fu">design</span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span>  <span class="fu"><a href="contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">sedesign</span><span class="op">)</span>;</span></span>
@@ -433,8 +429,7 @@ used for things like group names.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2] "KO_Treated-WT_Treated"                          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3] "(KO_Treated-WT_Treated)-(KO_Control-WT_Control)"</span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign_2</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="groups_to_sedesign-5.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
+<span class="r-plt img"><img src="groups_to_sedesign-4.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># prevent comparisons of Treated to Treated, or Control to Control</span></span></span>
 <span class="r-in"><span><span class="va">sedesign_3</span> <span class="op">&lt;-</span> <span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">igroups</span><span class="op">)</span>,</span></span>
@@ -444,7 +439,7 @@ used for things like group names.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2] "KO_Treated-KO_Control"                          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3] "(KO_Treated-KO_Control)-(WT_Treated-WT_Control)"</span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="va">sedesign_3</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
+<span class="r-plt img"><img src="groups_to_sedesign-5.png" alt="" width="768" height="768"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># input as a data.frame with ordered factor levels</span></span></span>
 <span class="r-in"><span><span class="va">ifactors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Genotype<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"WT"</span>,<span class="st">"WT"</span>,<span class="st">"KO"</span>,<span class="st">"KO"</span><span class="op">)</span>,</span></span>
@@ -467,12 +462,10 @@ used for things like group names.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [5] "(KO_Treated-WT_Treated)-(KO_Control-WT_Control)"</span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">ifactors</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-6.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># you can still override factor levels with pre_control_terms</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">ifactors</span>, pre_control_terms<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"KO"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-7.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># input as design matrix</span></span></span>
 <span class="r-in"><span><span class="va">design_matrix</span> <span class="op">&lt;-</span> <span class="fu">design</span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">ifactors</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -505,9 +498,7 @@ used for things like group names.</p></li>
 <span class="r-in"><span>   treat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Treated"</span>, <span class="st">"Untreated"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">df_test</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-8.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="fu">jamba</span><span class="fu">::</span><span class="fu"><a href="https://jmw86069.github.io/jamba/reference/pasteByRow.html" class="external-link">pasteByRow</a></span><span class="op">(</span><span class="va">df_test</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># default_order="sort_samples"</span></span></span>
 <span class="r-in"><span><span class="co"># contrasts show B-A, because A is sorted first</span></span></span>
@@ -516,7 +507,6 @@ used for things like group names.</p></li>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">df_test</span>,</span></span>
 <span class="r-in"><span>   default_order<span class="op">=</span><span class="st">"sort_samples"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-9.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># default_order="mixedSort"</span></span></span>
 <span class="r-in"><span><span class="co"># contrasts show B-A, because A is sorted first</span></span></span>
@@ -524,12 +514,10 @@ used for things like group names.</p></li>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">df_test</span>,</span></span>
 <span class="r-in"><span>   default_order<span class="op">=</span><span class="st">"mixedSort"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-10.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span><span class="fu"><a href="plot_sedesign.html">plot_sedesign</a></span><span class="op">(</span><span class="fu">groups_to_sedesign</span><span class="op">(</span><span class="va">df_test</span>,</span></span>
 <span class="r-in"><span>   default_order<span class="op">=</span><span class="st">"mixedSort"</span>,</span></span>
 <span class="r-in"><span>   pre_control_terms<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Untreated"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="groups_to_sedesign-11.png" alt="" width="768" height="768"></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in loadNamespace(x):</span> there is no package called ‘bezier’</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
