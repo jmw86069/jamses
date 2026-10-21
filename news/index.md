@@ -9,7 +9,8 @@
   ‘colorset’ using ‘group_fill’ unless it is also defined specifically.
 - Added ‘bezier’ to Imports.
 - [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
-  removed verbose output for title buffer.
+  removed verbose output for title buffer. Intermediate update to use
+  top blank annotation.
 
 ## jamses 0.0.80.900
 
