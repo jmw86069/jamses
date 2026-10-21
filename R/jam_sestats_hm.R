@@ -1380,6 +1380,7 @@ heatmap_se <- function
    }
    top_colnames <- intersect(top_colnames,
       colnames(colData_se));
+   top_empty <- NULL;
    if (length(top_annotation) == 0 &&
          length(top_colnames) > 0 &&
          !any(top_colnames %in% FALSE)) {
@@ -1547,12 +1548,13 @@ heatmap_se <- function
          annotation_name_side=top_annotation_name_side,
          col=top_color_list);
       # Optionally insert blank annotation for hm_title_buffer
-      if (hm_title_buffer > 0) {
+      if (hm_title_buffer < 0) {
          # jamba::printDebug("top_empty for hm_title_buffer:", hm_title_buffer);# debug
+         # Todo: Implement top buffer and remove newlines
          top_empty <- ComplexHeatmap::HeatmapAnnotation(
             top_empty=ComplexHeatmap::anno_empty(
                which="column",
-               height=grid::unit(hm_title_buffer * 2, "lines"),
+               height=grid::unit(abs(hm_title_buffer * 2), "lines"),
                # zoom=TRUE,
                border=FALSE
             )
@@ -2314,7 +2316,10 @@ heatmap_se <- function
             ""))
    }
    # optionally add whitespace buffer after the title
-   if (length(hm_title_buffer) == 1 && hm_title_buffer > 0) {
+   if (length(hm_title_buffer) == 1 &&
+      hm_title_buffer > 0 &&
+      length(top_empty) == 0) {
+      # add buffer only if top_empty is not already in use
       hm_title_buffer <- ceiling(hm_title_buffer);
       hm_newlines <- paste0(rep("\n", hm_title_buffer), collapse="");
       hm_title <- paste0(
