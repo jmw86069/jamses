@@ -1548,7 +1548,7 @@ heatmap_se <- function
          col=top_color_list);
       # Optionally insert blank annotation for hm_title_buffer
       if (hm_title_buffer > 0) {
-         jamba::printDebug("top_empty for hm_title_buffer:", hm_title_buffer);# debug
+         # jamba::printDebug("top_empty for hm_title_buffer:", hm_title_buffer);# debug
          top_empty <- ComplexHeatmap::HeatmapAnnotation(
             top_empty=ComplexHeatmap::anno_empty(
                which="column",
