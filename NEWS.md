@@ -1,3 +1,20 @@
+# jamses 0.0.81.900
+
+* `heatmap_se()`
+   * The resulting `Heatmap` now includes a new attribute
+   'anno_color_list' with the top and left annotation
+   colors as used for the heatmap.
+   It is useful when colors are automatically assigned, or
+   when colors are trimmed to remove missing values.
+   Also used with subcluster heatmaps, see below.
+   The output gives the colors shown in the color legend.
+   * New argument 'column_subcluster' that works the same as
+   'row_subcluster' to drill-down into a specific 'column_split'
+   group while keeping all other row/column orders and colors
+   the same.
+   * Both 'row_subcluster' and 'column_subcluster' will re-use
+   colors defined and stored in attribute in 'anno_color_list'.
+
 # jamses 0.0.80.950
 
 ## Hotfix

@@ -83,6 +83,7 @@ heatmap_se(
   column_names_gp = NULL,
   column_split = NULL,
   column_split_sep = ",",
+  column_subcluster = NULL,
   color_max = 3,
   color_floor = 0,
   lens = 2,
@@ -648,6 +649,11 @@ heatmap column split.}
 
 \item{column_split_sep}{\code{character} string used as delimited when
 \code{column_split} defines multiple split levels.}
+
+\item{column_subcluster}{\code{integer} or \code{character} vector representing one
+or more elements returned by \code{column_split} to drill-down into a
+specific column sub-cluster heatmap. It works the same as
+the argument \code{row_subcluster}.}
 
 \item{color_max}{\code{numeric} value passed to \code{colorjam::col_div_xf()}
 which defines the upper limit of color gradient used in the heatmap.}

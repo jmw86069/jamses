@@ -622,6 +622,10 @@
 #'    heatmap column split.
 #' @param column_split_sep `character` string used as delimited when
 #'    `column_split` defines multiple split levels.
+#' @param column_subcluster `integer` or `character` vector representing one
+#'    or more elements returned by `column_split` to drill-down into a
+#'    specific column sub-cluster heatmap. It works the same as
+#'    the argument `row_subcluster`.
 #' @param color_max `numeric` value passed to `colorjam::col_div_xf()`
 #'    which defines the upper limit of color gradient used in the heatmap.
 #' @param color_floor `numeric` value passed to `colorjam::col_div_xf()`
@@ -1002,6 +1006,7 @@ heatmap_se <- function
  column_names_gp=NULL,
  column_split=NULL,
  column_split_sep=",",
+ column_subcluster=NULL,
  color_max=3,
  color_floor=0,
  lens=2,
@@ -1088,7 +1093,8 @@ heatmap_se <- function
    }
 
    # row_subcluster
-   if (length(row_subcluster) > 0) {
+   if (length(row_subcluster) > 0 ||
+      length(column_subcluster) > 0) {
       if (verbose) {
          jamba::printDebug("heatmap_se(): ",
             "Preparing sub-cluster heatmap.");
@@ -1153,6 +1159,7 @@ heatmap_se <- function
          cluster_rows=cluster_rows,
          column_split=column_split,
          column_split_sep=column_split_sep,
+         column_subcluster=NULL,
          color_max=color_max,
          color_floor=color_floor,
          lens=lens,
@@ -1161,36 +1168,86 @@ heatmap_se <- function
          verbose=verbose,
          debug=debug,
          ...)
+      
+      # Optionally re-use anno_color_list
+      anno_color_list <- attr(hm_total, "anno_color_list");
+      if (length(anno_color_list) > 0 &&
+         !all(names(anno_color_list) %in% names(sample_color_list))) {
+         new_color_names <- setdiff(
+            names(anno_color_list),
+            names(sample_color_list)
+         )
+         if (length(sample_color_list) == 0) {
+            sample_color_list <- list();
+         }
+         sample_color_list[new_color_names] <- anno_color_list[new_color_names];
+      }
       row_order <- jamba::heatmap_row_order(hm_total);
+      column_order <- jamba::heatmap_column_order(hm_total);
+      # jamba::printDebug("column_order:");print(column_order);# debug
       if (length(names(row_order)) == 0) {
          names(row_order) <- as.character(seq_along(row_order))
       }
+      if (length(names(column_order)) == 0) {
+         names(column_order) <- as.character(seq_along(column_order))
+      }
 
-      if (is.numeric(row_subcluster)) {
-         row_order_use <- row_order[seq_along(row_order) %in% row_subcluster];
-      } else {
-         row_order_use <- row_order[names(row_order) %in% as.character(row_subcluster)];
+      if (length(row_subcluster) > 0) {
+         if (is.numeric(row_subcluster)) {
+            row_order_use <- row_order[seq_along(row_order) %in% row_subcluster];
+         } else {
+            row_order_use <- row_order[names(row_order) %in% as.character(row_subcluster)];
+         }
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "row_subcluster: ", row_subcluster);
+            jamba::printDebug("heatmap_se(): ",
+               "selected: '",
+               sep="', '",
+               names(row_order_use),
+               "'")
+         }
+         # set new argument values for the drill-down heatmap
+         rows <- unlist(unname(row_order_use));
+         cluster_rows <- FALSE;
+         row_split <- jamba::nameVector(rep(names(row_order_use),
+            lengths(row_order_use)),
+            rows);
+         # subset the se data?
+         se <- se[rows, ];
       }
-      if (verbose) {
-         jamba::printDebug("heatmap_se(): ",
-            "row_subcluster: ", row_subcluster);
-         jamba::printDebug("heatmap_se(): ",
-            "selected: '",
-            sep="', '",
-            names(row_order_use),
-            "'")
+
+      # 0.0.81.900 - new addition
+      if (length(column_subcluster) > 0) {
+         if (is.numeric(column_subcluster)) {
+            column_order_use <- column_order[seq_along(column_order) %in% column_subcluster];
+         } else {
+            column_order_use <- column_order[names(column_order) %in% as.character(column_subcluster)];
+         }
+         if (verbose) {
+            jamba::printDebug("heatmap_se(): ",
+               "column_subcluster: ", column_subcluster);
+            jamba::printDebug("heatmap_se(): ",
+               "selected: '",
+               sep="', '",
+               names(column_order_use),
+               "'")
+         }
+         # set new argument values for the drill-down heatmap
+         isamples <- unlist(unname(column_order_use));
+         cluster_columns <- FALSE;
+         column_split <- jamba::nameVector(rep(names(column_order_use),
+            lengths(column_order_use)),
+            isamples);
+         # subset the se data? not for columns, so the centering is preserved
+         # se <- se[, isamples];
       }
-      # set new argument values for the drill-down heatmap
-      rows <- unlist(unname(row_order_use));
-      cluster_rows <- FALSE;
-      row_split <- jamba::nameVector(rep(names(row_order_use),
-         lengths(row_order_use)),
-         rows);
-      # subset the se data?
-      se <- se[rows, ];
 
       if (debug) {
-         return(invisible(row_order));
+         return(invisible(
+            row_order=row_order,
+            column_order=column_order
+         ));
       }
    }
 
@@ -1381,11 +1438,11 @@ heatmap_se <- function
    top_colnames <- intersect(top_colnames,
       colnames(colData_se));
    top_empty <- NULL;
+   top_color_list <- list();
    if (length(top_annotation) == 0 &&
          length(top_colnames) > 0 &&
          !any(top_colnames %in% FALSE)) {
       # subset color key by data shown in the heatmap
-      top_color_list <- NULL;
       # subset any factor columns to limit colors shown in the legend
       top_df <- data.frame(check.names=FALSE,
          colData_se[isamples, top_colnames, drop=FALSE]);
@@ -1568,13 +1625,13 @@ heatmap_se <- function
 
    # left_annotation
    left_arglist <- NULL;
+   left_color_list <- list();
    if (length(left_annotation) == 0 && !correlation) {
       row_anno_fontsize <- jamba::noiseFloor(
          column_cex * row_anno_fontsize,
          ceiling=24,
          minimum=2);
       left_anno_list <- list();
-      left_color_list <- list();
       left_param_list <- list();
       if (length(show_left_legend) == 0) {
          show_left_legend <- TRUE;
@@ -2392,6 +2449,15 @@ heatmap_se <- function
    if (inherits(right_annotation_hml, "HeatmapList")) {
       hm_hits <- hm_hits + right_annotation_hml
    }
+   # optionally include color_list
+   anno_color_list <- list();
+   if (length(top_color_list) > 0) {
+      anno_color_list[names(top_color_list)] <- top_color_list;
+   }
+   if (length(left_color_list) > 0) {
+      anno_color_list[names(left_color_list)] <- left_color_list;
+   }
+   attr(hm_hits, "anno_color_list") <- anno_color_list;
    if (debug) {
       ret_list <- list(
          hm=hm_hits,
