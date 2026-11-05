@@ -1,5 +1,14 @@
 # TODO for jamses
 
+## 04nov2026
+
+- DONE.
+  [`heatmap_se()`](https://jmw86069.github.io/jamses/reference/heatmap_se.md)
+  defines colors when necessary, it should have a mechanism to re-use
+  the color assignments.
+- Consider a new attribute with description of data centering? At
+  simplest, it could hold all relevant arguments used.
+
 ## 20oct2026
 
 - For “How to Create a Heatmap”

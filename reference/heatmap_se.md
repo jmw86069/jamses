@@ -84,6 +84,7 @@ heatmap_se(
   column_names_gp = NULL,
   column_split = NULL,
   column_split_sep = ",",
+  column_subcluster = NULL,
   color_max = 3,
   color_floor = 0,
   lens = 2,
@@ -793,6 +794,13 @@ heatmap_se(
   `character` string used as delimited when `column_split` defines
   multiple split levels.
 
+- column_subcluster:
+
+  `integer` or `character` vector representing one or more elements
+  returned by `column_split` to drill-down into a specific column
+  sub-cluster heatmap. It works the same as the argument
+  `row_subcluster`.
+
 - color_max:
 
   `numeric` value passed to
@@ -1264,6 +1272,9 @@ hm4s_4 <- heatmap_se(se,
 #> Warning: The heatmap has not been initialized. You might have different results
 #> if you repeatedly execute this function, e.g. when row_km/column_km was
 #> set. It is more suggested to do as `ht = draw(ht); row_order(ht)`.
+#> Warning: The heatmap has not been initialized. You might have different results
+#> if you repeatedly execute this function, e.g. when row_km/column_km was
+#> set. It is more suggested to do as `ht = draw(ht); column_order(ht)`.
 ComplexHeatmap::draw(hm4s_4,
    column_title=attr(hm4s_4, "hm_title"),
    merge_legends=TRUE)

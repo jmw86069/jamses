@@ -775,6 +775,9 @@ hm6s_4 <- heatmap_se(se,
 #> Warning: The heatmap has not been initialized. You might have different results
 #> if you repeatedly execute this function, e.g. when row_km/column_km was
 #> set. It is more suggested to do as `ht = draw(ht); row_order(ht)`.
+#> Warning: The heatmap has not been initialized. You might have different results
+#> if you repeatedly execute this function, e.g. when row_km/column_km was
+#> set. It is more suggested to do as `ht = draw(ht); column_order(ht)`.
 
 ComplexHeatmap::draw(hm6s_4,
    column_title=attr(hm6s_4, "hm_title"))
