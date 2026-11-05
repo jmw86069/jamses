@@ -1083,7 +1083,7 @@ heatmap_se <- function
          assays=list(data=se),
          rowData=data.frame(rows=rownames(se),
             row.names=rownames(se)),
-         colData=data.frame(rows=colnames(se),
+         colData=data.frame(columns=colnames(se),
             row.names=colnames(se)))
       if (length(assay_name) > 0) {
          names(SummarizedExperiment::assays(se))[1] <- assay_name;
@@ -1099,7 +1099,8 @@ heatmap_se <- function
          jamba::printDebug("heatmap_se(): ",
             "Preparing sub-cluster heatmap.");
       }
-      hm_total <- heatmap_se(
+      hm_total <- jamba::call_fn_ellipsis(
+         FUN=heatmap_se,
          se=se,
          sestats=sestats,
          hm_name=hm_name,
@@ -1192,7 +1193,7 @@ heatmap_se <- function
          names(column_order) <- as.character(seq_along(column_order))
       }
 
-      if (length(row_subcluster) > 0) {
+      if (length(row_subcluster) > 0 && length(row_split) > 0) {
          if (is.numeric(row_subcluster)) {
             row_order_use <- row_order[seq_along(row_order) %in% row_subcluster];
          } else {
@@ -1208,17 +1209,21 @@ heatmap_se <- function
                "'")
          }
          # set new argument values for the drill-down heatmap
-         rows <- unlist(unname(row_order_use));
+         rows <- unname(unlist(unname(row_order_use)));
          cluster_rows <- FALSE;
-         row_split <- jamba::nameVector(rep(names(row_order_use),
-            lengths(row_order_use)),
-            rows);
-         # subset the se data?
-         se <- se[rows, ];
+         row_split <- jamba::nameVector(
+            rep(
+               names(row_order_use),
+               lengths(row_order_use)
+            ),
+            rows
+         );
+         # subset the se data? try without 0.0.81.900b
+         # se <- se[rows, ];
       }
 
       # 0.0.81.900 - new addition
-      if (length(column_subcluster) > 0) {
+      if (length(column_subcluster) > 0 && length(column_split) > 0) {
          if (is.numeric(column_subcluster)) {
             column_order_use <- column_order[seq_along(column_order) %in% column_subcluster];
          } else {
@@ -1263,7 +1268,8 @@ heatmap_se <- function
 
    if (length(sestats) > 0) {
       # generate an appropriate incidence matrix
-      gene_hits_im <- process_sestats_to_hitim(sestats,
+      gene_hits_im <- process_sestats_to_hitim(
+         sestats,
          cutoff_names=cutoff_name,
          contrast_names=contrast_names,
          assay_names=assay_name,
@@ -1271,11 +1277,16 @@ heatmap_se <- function
          rename_contrasts=rename_contrasts,
          rows=rows,
          verbose=verbose,
-         ...);
+         ...
+      );
       gene_hits <- rownames(gene_hits_im);
       if (length(rows) == 0) {
          rows <- gene_hits;
       }
+   }
+   if (verbose) {
+      jamba::printDebug("heatmap_se(): ",
+         "length(rows):", length(rows));
    }
    if (length(gene_hits) == 0) {
       if (length(rows) == 0) {
@@ -1295,6 +1306,9 @@ heatmap_se <- function
       jamba::printDebug("heatmap_se(): ",
          "nrows in heatmap: ",
          jamba::formatInt(length(rows)));
+      jamba::printDebug("heatmap_se(): ",
+         "head(rows) in heatmap: ",
+         head(rows));
    }
 
    # alt_sestats only for rows and gene_hits defined from sestats
